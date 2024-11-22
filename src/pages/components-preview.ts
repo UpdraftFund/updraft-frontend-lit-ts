@@ -51,6 +51,14 @@ export class ComponentsPreview extends LitElement {
       >
         <example-with-tabs></example-with-tabs>
       </demo-wrapper>
+
+      <demo-wrapper 
+        title="Link" 
+        description="Anchor tag with custom styling"
+      >
+        <app-link href="https://rever.co" ?active=${true}>Primary Link</app-link>
+        <app-link href="https://rever.co">Primary Link</app-link>
+      </demo-wrapper>
       
       <!-- Add more components as needed -->
     `;
