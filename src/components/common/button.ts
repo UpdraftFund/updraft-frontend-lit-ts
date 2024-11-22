@@ -21,25 +21,38 @@ export class AppButton extends LitElement {
     }
 
     button {
-      border-radius: 8px;
-      border: 1px solid transparent;
-      padding: 0.6em 1.2em;
-      font-size: 1em;
-      font-weight: 500;
-      font-family: inherit;
       cursor: pointer;
-      transition: border-color 0.25s;
+      border: none;
+    }
+    
+    button.primary {
+      background-color: var(--rever-blue-600);
+      color: var(--white);
+    }
+    
+    button.sm {
+      font-size: 1rem;
+      padding: 0.5em 1em;
+      border-radius: 10px;
+    }
+    
+    button.md {
+      font-size: 1.25rem;
+      padding: 0.75em 1.25em;
+      border-radius: 12px;
+    }
+    
+    button.lg {
+      font-size: 1.5rem;
+      padding: 1em 1.5em;
+      border-radius: 14px;
     }
 
-    button.primary {
-      background-color: #646cff;
-      color: white;
-    }
   `;
 
   render() {
     return html`
-      <button class=${this.variant}>
+      <button class="${this.variant} ${this.size}">
         ${this.label}
         <slot></slot>
       </button>

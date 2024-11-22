@@ -25,6 +25,7 @@ export class ComponentsPreview extends LitElement {
       display: flex;
       gap: 1rem;
       margin-top: 1rem;
+      align-items: flex-end
     }
   `;
 
@@ -38,6 +39,9 @@ export class ComponentsPreview extends LitElement {
       >
         <div class="variants">
           <app-button label="Primary Button"></app-button>
+          <app-button label="small Button" size="sm"></app-button>
+          <app-button label="medium Button" size="md"></app-button>
+          <app-button label="large Button" size="lg"></app-button>
         </div>
       </demo-wrapper>
       
