@@ -45,6 +45,13 @@ export class ComponentsPreview extends LitElement {
         </div>
       </demo-wrapper>
       
+      <demo-wrapper 
+        title="Tabs" 
+        description="Tabbed interface component"
+      >
+        <example-with-tabs></example-with-tabs>
+      </demo-wrapper>
+      
       <!-- Add more components as needed -->
     `;
   }
