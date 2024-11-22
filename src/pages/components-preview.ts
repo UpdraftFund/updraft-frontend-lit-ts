@@ -38,7 +38,6 @@ export class ComponentsPreview extends LitElement {
       >
         <div class="variants">
           <app-button label="Primary Button"></app-button>
-          <app-button variant="secondary" label="Secondary Button"></app-button>
         </div>
       </demo-wrapper>
       

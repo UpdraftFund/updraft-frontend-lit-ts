@@ -7,7 +7,13 @@ export class AppButton extends LitElement {
   label = '';
 
   @property()
-  variant: 'primary' | 'secondary' = 'primary';
+  variant: 'primary' = 'primary';
+
+  @property()
+  size: 'sm' | 'md' | 'lg' = 'md';
+
+  @property()
+  icon: string | null = null;
 
   static styles = css`
     :host {
@@ -28,12 +34,6 @@ export class AppButton extends LitElement {
     button.primary {
       background-color: #646cff;
       color: white;
-    }
-
-    button.secondary {
-      background-color: transparent;
-      border-color: #646cff;
-      color: #646cff;
     }
   `;
 

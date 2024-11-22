@@ -1,2 +1,2 @@
 export * from './common/button';
-// Export other components as you create them
+export * from './demo-wrapper';
