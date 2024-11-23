@@ -1,41 +1,18 @@
-import { createAppKit } from '@reown/appkit';
-import { AppKitNetwork, arbitrumSepolia, arbitrum } from '@reown/appkit/networks';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { createConnection } from './web3.ts';
+import { updraftAddress, feeToken } from './contracts/updraft.ts';
 
-const projectId = 'a259923fc99520ecad30021b33486037';
+createConnection();
 
-export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrumSepolia, arbitrum];
-
-const wagmiAdapter = new WagmiAdapter({
-  projectId,
-  networks,
+const b1 = document.getElementById("updraft-address-button");
+const e1 = document.getElementById("updraft-address");
+b1.addEventListener("click", () => {
+  e1.innerHTML = `Updraft address: ${updraftAddress()}`;
 });
 
-const metadata = {
-  name: 'Updraft',
-  description: 'Get paid to crowdfund and work on public goods.',
-  url: 'https://updraft.fund', // origin must match your domain & subdomain
-  icons: ['https://avatars.githubusercontent.com/u/187091561'],
-};
-
-createAppKit({
-  adapters: [wagmiAdapter],
-  networks,
-  metadata,
-  projectId,
-// TODO: add UPD token to customTokens list so people can buy it
-// swapOptions: {
-//   customTokens: [
-//     {
-//       address: '0x...', // The contract address of your custom token (required)
-//       symbol: '...',    // The symbol of your custom token (required)
-//       decimals: 18,     // The number of decimals the token uses (required)
-//       name: '...',      // The name of your custom token (optional)
-//       logoURI: '...',   // A URI pointing to the logo of your custom token (optional)
-//       chainId: 1,       // The chain ID where the token is deployed (optional)
-//     }
-//   ],
-// },
+const b2 = document.getElementById("feeToken-button");
+const e2 = document.getElementById("feeToken");
+b2.addEventListener("click", async () => {
+  const feeTokenAddress = await feeToken();
+  e2.innerHTML = `Fee token address: ${feeTokenAddress}`;
 });
 
-export const config = wagmiAdapter.wagmiConfig;
