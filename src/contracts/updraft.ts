@@ -1,10 +1,17 @@
-import { writeContract, readContract } from '@wagmi/core';
+import { readContract } from '@wagmi/core';
 import { config } from '../web3.ts';
-import updraftAddresses from './updraftAddresses.json';
+import addresses from './updraftAddresses.json';
 import abi from './abis/Updraft.json';
 
+type AddressMap = {
+  [chainName: string]: `0x${string}`;
+};
+
+const updraftAddresses: AddressMap = addresses as AddressMap;
+
 const updraftAddress = () => {
-  return updraftAddresses[config.getClient().chain.name];
+  const address: `0x${string}` = updraftAddresses[config.getClient().chain.name];
+  return address;
 };
 
 const feeToken = async () => {
