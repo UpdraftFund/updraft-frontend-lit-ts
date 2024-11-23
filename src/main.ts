@@ -23,6 +23,19 @@ createAppKit({
   networks,
   metadata,
   projectId,
+// TODO: add UPD token to customTokens list so people can buy it
+// swapOptions: {
+//   customTokens: [
+//     {
+//       address: '0x...', // The contract address of your custom token (required)
+//       symbol: '...',    // The symbol of your custom token (required)
+//       decimals: 18,     // The number of decimals the token uses (required)
+//       name: '...',      // The name of your custom token (optional)
+//       logoURI: '...',   // A URI pointing to the logo of your custom token (optional)
+//       chainId: 1,       // The chain ID where the token is deployed (optional)
+//     }
+//   ],
+// },
 });
 
 export const config = wagmiAdapter.wagmiConfig;
