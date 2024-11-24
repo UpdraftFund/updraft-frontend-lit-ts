@@ -16,6 +16,36 @@
     <button id="feeToken-button">Fee token</button>
     <p id="feeToken">Fee token address:</p>
 
+    <label for="profile">Profile Data (JSON):</label><br>
+    <textarea id="profile" rows="6" cols="40">
+{
+  "name": "Test Person"
+}
+    </textarea><br>
+    <button id="updateProfile-button">Update Profile</button>
+    <p>-----------------------</p>
+    <form id="idea-form">
+      <div>
+        <label for="contributor-fee">Contributor Fee (%):</label>
+        <input type="number" id="contributor-fee" name="contributorFee" value="10"/>
+      </div>
+      <div>
+        <label for="contribution">Contribution (UPD):</label>
+        <input type="number" id="contribution" name="contribution" value="100"/>
+      </div>
+      <div>
+        <label for="idea-data">Idea Data (JSON):</label><br>
+        <textarea id="idea-data" name="ideaData" rows="5" cols="50">
+{
+  "name": "Test Idea",
+  "description": "A test idea."
+}
+        </textarea>
+      </div>
+      <button type="submit">Create Idea</button>
+    </form>
+    <p>Idea contract created at address:</p><p id="idea-address"></p>
+
     <script type="module" src="src/main.ts"></script>
   </body>
 </html>
