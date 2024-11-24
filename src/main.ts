@@ -22,7 +22,7 @@ if (b2 && e2){
 }
 
 const profileButton = document.getElementById("updateProfile-button");
-const profile = document.getElementById("profile");
+const profile = document.getElementById("profile") as HTMLInputElement;
 if (profileButton && profile){
   profileButton.addEventListener("click", async () => {
     updateProfile(toHex(profile.value));
@@ -34,9 +34,9 @@ if (form) {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const scale = await percentScale();
-    const contributorFee = document.getElementById('contributor-fee');
-    const contribution = document.getElementById('contribution');
-    const ideaData = document.getElementById('idea-data');
+    const contributorFee = document.getElementById('contributor-fee') as HTMLInputElement;
+    const contribution = document.getElementById('contribution') as HTMLInputElement;
+    const ideaData = document.getElementById('idea-data') as HTMLInputElement;
     const ideaAddress = document.getElementById('idea-address');
     if(contributorFee && contribution && ideaData && ideaAddress){
       ideaAddress.textContent = await createIdea(

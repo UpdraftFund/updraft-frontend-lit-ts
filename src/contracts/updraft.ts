@@ -16,41 +16,41 @@ export const updraftAddress = () => {
 };
 
 //region Read Functions
-export const percentScale = async () => {
+export const percentScale = async (): Promise<bigint> => {
   return await readContract(config, {
     abi,
     address: updraftAddress(),
     functionName: 'percentScale',
-  });
+  }) as bigint;
 };
 
-export const feeToken = async () => {
+export const feeToken = async (): Promise<`0x${string}`> => {
   return await readContract(config, {
     abi,
     address: updraftAddress(),
     functionName: 'feeToken',
-  });
+  }) as `0x${string}`;
 };
 
-export const minFee = async () => {
+export const minFee = async (): Promise<bigint> => {
   return await readContract(config, {
     abi,
     address: updraftAddress(),
     functionName: 'minFee',
-  });
+  }) as bigint;
 }
 
-export const percentFee = async () => {
+export const percentFee = async (): Promise<bigint> => {
   return await readContract(config, {
     abi,
     address: updraftAddress(),
     functionName: 'percentFee',
-  });
+  }) as bigint;
 }
 //endregion
 
 //region Write Functions
-export const updateProfile = async (profileData) => {
+export const updateProfile = async (profileData: `0x${string}`) => {
   const { request } = await simulateContract(config, {
     abi,
     address: updraftAddress(),
@@ -60,7 +60,8 @@ export const updateProfile = async (profileData) => {
   await writeContract(config, request);
 }
 
-export const createIdea = async (contributorFee, contribution, ideaData):`0x${string}` => {
+export const createIdea = async (contributorFee: BigInt, contribution: BigInt, ideaData: `0x${string}`)
+: Promise<`0x${string}`> => {
   const { request } = await simulateContract(config, {
     abi,
     address: updraftAddress(),
@@ -69,10 +70,12 @@ export const createIdea = async (contributorFee, contribution, ideaData):`0x${st
   });
   const hash = await writeContract(config, request);
   const receipt = await getTransactionReceipt(config, { hash });
-//   console.log('Transaction receipt');
-//   console.dir(receipt);
-
-  // address of the new Idea contract
-  return trim(receipt.logs[0].topics[1]);
+  const ideaAddress = receipt?.logs?.[0]?.topics?.[1];
+  if(ideaAddress){
+    return trim(ideaAddress);
+  } else {
+    throw new Error(`Transaction receipt missing expected "IdeaCreated" event.
+      Receipt: ${JSON.stringify(receipt)}`);
+  }
 }
 //endregion
