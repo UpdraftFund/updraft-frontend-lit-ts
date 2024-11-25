@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@lit-labs/router": "^0.1.3",
     "@reown/appkit": "^1.5.1",
     "@reown/appkit-adapter-wagmi": "^1.5.1",
     "@reown/appkit-siwe": "^1.5.1",
