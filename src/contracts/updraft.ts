@@ -60,7 +60,7 @@ export const updateProfile = async (profileData: `0x${string}`) => {
   await writeContract(config, request);
 }
 
-export const createIdea = async (contributorFee: BigInt, contribution: BigInt, ideaData: `0x${string}`)
+export const createIdea = async (contributorFee: bigint, contribution: bigint, ideaData: `0x${string}`)
 : Promise<`0x${string}`> => {
   const { request } = await simulateContract(config, {
     abi,
@@ -80,8 +80,8 @@ export const createIdea = async (contributorFee: BigInt, contribution: BigInt, i
 }
 
 export const createIdeaWithProfile = async (
-  contributorFee: BigInt,
-  contribution: BigInt,
+  contributorFee: bigint,
+  contribution: bigint,
   ideaData: `0x${string}`,
   profileData: `0x${string}`
 ): Promise<`0x${string}`> => {
@@ -105,10 +105,10 @@ export const createIdeaWithProfile = async (
 export const createSolution = async (
   ideaAddress: `0x${string}`,
   fundingToken: `0x${string}`,
-  stake: BigInt,
-  goal: BigInt,
-  deadline: BigInt,
-  contributorFee: BigInt,
+  stake: bigint,
+  goal: bigint,
+  deadline: bigint,
+  contributorFee: bigint,
   solutionData: `0x${string}`
 ): Promise<`0x${string}`> => {
   const { request } = await simulateContract(config, {
@@ -131,10 +131,10 @@ export const createSolution = async (
 export const createSolutionWithProfile = async (
   ideaAddress: `0x${string}`,
   fundingToken: `0x${string}`,
-  stake: BigInt,
-  goal: BigInt,
-  deadline: BigInt,
-  contributorFee: BigInt,
+  stake: bigint,
+  goal: bigint,
+  deadline: bigint,
+  contributorFee: bigint,
   solutionData: `0x${string}`,
   profileData: `0x${string}`
 ): Promise<`0x${string}`> => {
