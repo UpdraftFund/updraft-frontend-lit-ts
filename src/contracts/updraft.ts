@@ -15,7 +15,7 @@ export const address = () => {
   return address;
 };
 
-//region Read Functions
+//region Read functions
 export const percentScale = async (): Promise<bigint> => {
   return await readContract(config, {
     abi,
@@ -49,7 +49,7 @@ export const percentFee = async (): Promise<bigint> => {
 }
 //endregion
 
-//region Write Functions
+//region Write functions
 export const updateProfile = async (profileData: `0x${string}`) => {
   const { request } = await simulateContract(config, {
     abi,
