@@ -1,17 +1,17 @@
 import { readContract, simulateContract, writeContract, getTransactionReceipt } from '@wagmi/core';
 import { trim } from 'viem';
 import { config } from '../web3.ts';
-import addresses from './updraftAddresses.json';
+import updraftAddresses from './updraftAddresses.json';
 import abi from './abis/Updraft.json';
 
 type AddressMap = {
   [chainName: string]: `0x${string}`;
 };
 
-const updraftAddresses: AddressMap = addresses as AddressMap;
+const addresses: AddressMap = updraftAddresses as AddressMap;
 
-export const updraftAddress = () => {
-  const address: `0x${string}` = updraftAddresses[config.getClient().chain.name];
+export const address = () => {
+  const address: `0x${string}` = addresses[config.getClient().chain.name];
   return address;
 };
 
@@ -19,7 +19,7 @@ export const updraftAddress = () => {
 export const percentScale = async (): Promise<bigint> => {
   return await readContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'percentScale',
   }) as bigint;
 };
@@ -27,7 +27,7 @@ export const percentScale = async (): Promise<bigint> => {
 export const feeToken = async (): Promise<`0x${string}`> => {
   return await readContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'feeToken',
   }) as `0x${string}`;
 };
@@ -35,7 +35,7 @@ export const feeToken = async (): Promise<`0x${string}`> => {
 export const minFee = async (): Promise<bigint> => {
   return await readContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'minFee',
   }) as bigint;
 }
@@ -43,7 +43,7 @@ export const minFee = async (): Promise<bigint> => {
 export const percentFee = async (): Promise<bigint> => {
   return await readContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'percentFee',
   }) as bigint;
 }
@@ -53,7 +53,7 @@ export const percentFee = async (): Promise<bigint> => {
 export const updateProfile = async (profileData: `0x${string}`) => {
   const { request } = await simulateContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'updateProfile',
     args: [profileData],
   });
@@ -64,7 +64,7 @@ export const createIdea = async (contributorFee: BigInt, contribution: BigInt, i
 : Promise<`0x${string}`> => {
   const { request } = await simulateContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'createIdea',
     args: [contributorFee, contribution, ideaData],
   });
@@ -87,7 +87,7 @@ export const createIdeaWithProfile = async (
 ): Promise<`0x${string}`> => {
   const { request } = await simulateContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'createIdeaWithProfile',
     args: [contributorFee, contribution, ideaData, profileData],
   });
@@ -113,7 +113,7 @@ export const createSolution = async (
 ): Promise<`0x${string}`> => {
   const { request } = await simulateContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'createSolution',
     args: [ideaAddress, fundingToken, stake, goal, deadline, contributorFee, solutionData],
   });
@@ -140,7 +140,7 @@ export const createSolutionWithProfile = async (
 ): Promise<`0x${string}`> => {
   const { request } = await simulateContract(config, {
     abi,
-    address: updraftAddress(),
+    address: address(),
     functionName: 'createSolutionWithProfile',
     args: [ideaAddress, fundingToken, stake, goal, deadline, contributorFee, solutionData, profileData],
   });
