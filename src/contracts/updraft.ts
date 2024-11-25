@@ -78,4 +78,80 @@ export const createIdea = async (contributorFee: BigInt, contribution: BigInt, i
       Receipt: ${JSON.stringify(receipt)}`);
   }
 }
+
+export const createIdeaWithProfile = async (
+  contributorFee: BigInt,
+  contribution: BigInt,
+  ideaData: `0x${string}`,
+  profileData: `0x${string}`
+): Promise<`0x${string}`> => {
+  const { request } = await simulateContract(config, {
+    abi,
+    address: updraftAddress(),
+    functionName: 'createIdeaWithProfile',
+    args: [contributorFee, contribution, ideaData, profileData],
+  });
+  const hash = await writeContract(config, request);
+  const receipt = await getTransactionReceipt(config, { hash });
+  const ideaAddress = receipt?.logs?.[0]?.topics?.[1];
+  if(ideaAddress){
+    return trim(ideaAddress);
+  } else {
+    throw new Error(`Transaction receipt missing expected "IdeaCreated" event.
+      Receipt: ${JSON.stringify(receipt)}`);
+  }
+}
+
+export const createSolution = async (
+  ideaAddress: `0x${string}`,
+  fundingToken: `0x${string}`,
+  stake: BigInt,
+  goal: BigInt,
+  deadline: BigInt,
+  contributorFee: BigInt,
+  solutionData: `0x${string}`
+): Promise<`0x${string}`> => {
+  const { request } = await simulateContract(config, {
+    abi,
+    address: updraftAddress(),
+    functionName: 'createSolution',
+    args: [ideaAddress, fundingToken, stake, goal, deadline, contributorFee, solutionData],
+  });
+  const hash = await writeContract(config, request);
+  const receipt = await getTransactionReceipt(config, { hash });
+  const solutionAddress = receipt?.logs?.[0]?.topics?.[1];
+  if(solutionAddress){
+    return trim(solutionAddress);
+  } else {
+    throw new Error(`Transaction receipt missing expected "SolutionCreated" event.
+      Receipt: ${JSON.stringify(receipt)}`);
+  }
+}
+
+export const createSolutionWithProfile = async (
+  ideaAddress: `0x${string}`,
+  fundingToken: `0x${string}`,
+  stake: BigInt,
+  goal: BigInt,
+  deadline: BigInt,
+  contributorFee: BigInt,
+  solutionData: `0x${string}`,
+  profileData: `0x${string}`
+): Promise<`0x${string}`> => {
+  const { request } = await simulateContract(config, {
+    abi,
+    address: updraftAddress(),
+    functionName: 'createSolutionWithProfile',
+    args: [ideaAddress, fundingToken, stake, goal, deadline, contributorFee, solutionData, profileData],
+  });
+  const hash = await writeContract(config, request);
+  const receipt = await getTransactionReceipt(config, { hash });
+  const solutionAddress = receipt?.logs?.[0]?.topics?.[1];
+  if(solutionAddress){
+    return trim(solutionAddress);
+  } else {
+    throw new Error(`Transaction receipt missing expected "SolutionCreated" event.
+      Receipt: ${JSON.stringify(receipt)}`);
+  }
+}
 //endregion
