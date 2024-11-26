@@ -17,7 +17,7 @@ const config = wagmiAdapter.wagmiConfig;
 const metadata = {
   name: 'Updraft',
   description: 'Get paid to crowdfund and work on public goods.',
-  url: 'https://updraft.fund', // origin must match your domain & subdomain
+  url: 'https://www.updraft.fund', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/187091561'],
 };
 
