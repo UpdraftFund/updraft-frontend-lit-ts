@@ -3,7 +3,11 @@
 }
 
 body {
+  font-family: 'Titillium Web', sans-serif;
+}
 
+h1, h2, h3, p {
+  font-family: 'Titillium Web', sans-serif;
 }
 
 @media (prefers-color-scheme: light) {
