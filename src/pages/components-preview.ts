@@ -137,6 +137,7 @@ export class ComponentsPreview extends LitElement {
         <div style="display: flex; flex-direction: column; gap: 1rem;">
           <app-input label="Input Label" placeholder="Input placeholder"></app-input>
           <app-input placeholder="Input placeholder"></app-input>
+          <app-textarea label="Textarea Label" placeholder="Textarea placeholder"></app-textarea>
         </div>
       </demo-wrapper>
     `;

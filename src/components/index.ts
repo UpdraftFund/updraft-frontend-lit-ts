@@ -5,7 +5,7 @@ export * from './common/icon';
 export * from './common/tag';
 export * from './common/modal';
 export * from './common/input';
-
+export * from './common/textarea';
 export * from './layout/navbar';
 export * from './layout/section-header';
 
