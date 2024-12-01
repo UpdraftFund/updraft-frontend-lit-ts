@@ -1,8 +1,9 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { LitComponent } from './litComponent';
 
 @customElement('demo-wrapper')
-export class DemoWrapper extends LitElement {
+export class DemoWrapper extends LitComponent {
   @property()
   title = '';
 
@@ -15,6 +16,7 @@ export class DemoWrapper extends LitElement {
       margin: 1rem 0;
       padding: 1rem;
       border: 1px solid #ddd;
+      background: #f5f5f5;
       border-radius: 4px;
     }
 
@@ -31,8 +33,9 @@ export class DemoWrapper extends LitElement {
 
     .demo-content {
       padding: 1rem;
-      background: #f5f5f5;
+      background: #ffffff;
       border-radius: 4px;
+      border: 1px solid #f1f1f1;
     }
   `;
 

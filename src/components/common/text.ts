@@ -1,9 +1,10 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { theme } from '../../styles/theme';
+import { LitComponent } from '../litComponent';
 
 @customElement('app-text')
-export class AppText extends LitElement {
+export class AppText extends LitComponent {
   @property()
   variant: 'h1' | 'h2' | 'h3' | 'h4' | 'body' | 'caption' | 'label' = 'body';
 

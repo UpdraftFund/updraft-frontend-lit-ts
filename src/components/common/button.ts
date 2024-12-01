@@ -1,8 +1,9 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { LitComponent } from '../litComponent';
 
 @customElement('app-button')
-export class AppButton extends LitElement {
+export class AppButton extends LitComponent {
   @property()
   label = '';
 
@@ -26,7 +27,7 @@ export class AppButton extends LitElement {
     }
     
     button.primary {
-      background-color: var(--rever-blue-600);
+      background-color: var(--river-blue-600);
       color: var(--white);
     }
     

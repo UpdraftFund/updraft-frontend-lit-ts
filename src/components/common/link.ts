@@ -1,8 +1,9 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { LitComponent } from '../litComponent';
 
 @customElement('app-link')
-export class AppLink extends LitElement {
+export class AppLink extends LitComponent {
   @property()
   href = '';
 
@@ -27,7 +28,7 @@ export class AppLink extends LitElement {
     }
 
     a.active {
-      color: var(--rever-blue-600);
+      color: var(--river-blue-600);
       font-weight: bold;
     }
   `;
