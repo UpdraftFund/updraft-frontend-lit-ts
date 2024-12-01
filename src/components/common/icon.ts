@@ -5,12 +5,6 @@ import { LitComponent } from "../litComponent";
 @customElement('app-icon')
 export class Icon extends LitComponent {
 
-  static styles = css`
-    :host {
-      height: fit-content
-    }
-  `;
-
   @property({ type: String })
   name = '';
 
@@ -19,6 +13,14 @@ export class Icon extends LitComponent {
 
   @property({ type: String })
   height = '26px';
+
+  static styles = css`
+    :host {
+      display: inline-block;
+      line-height: 0;
+    }
+  `;
+
 
   render() {
     return html`

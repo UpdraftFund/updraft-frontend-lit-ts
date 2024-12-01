@@ -109,7 +109,7 @@ export class AppIdeaCard extends LitComponent {
 
     .idea-card-support-info-support-bolt {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       gap: 2px;
 
       margin-bottom: 8px;

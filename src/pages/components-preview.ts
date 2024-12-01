@@ -1,8 +1,12 @@
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 
 @customElement('components-preview')
 export class ComponentsPreview extends LitElement {
+
+  @state()
+  isModalOpen = false;
+
   static styles = css`
     :host {
       display: block;
@@ -110,6 +114,20 @@ export class ComponentsPreview extends LitElement {
           <app-overall-card style="min-width: 190px" title="Supported Ideas" value="23" variant="radishical"></app-overall-card>
           <app-overall-card style="min-width: 190px" title="Drafted Solutions" value="10" variant="golden"></app-overall-card>
         </div>
+      </demo-wrapper>
+
+      <demo-wrapper 
+        title="Modal" 
+        description="Modal component"
+      >
+        <app-button @click=${() => this.isModalOpen = true}>Open Modal</app-button> 
+        <app-modal ?isOpen=${this.isModalOpen} @close=${() => this.isModalOpen = false} title="Modal Title">
+          <p>Modal body</p>
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <app-button>Cancel</app-button>
+            <app-button variant="primary">Save</app-button>
+          </div>
+        </app-modal>
       </demo-wrapper>
     `;
   }
