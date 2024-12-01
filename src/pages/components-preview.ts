@@ -93,6 +93,13 @@ export class ComponentsPreview extends LitElement {
           ></app-idea-card>
         </div>
       </demo-wrapper>
+      
+      <demo-wrapper 
+        title="Section Header" 
+        description="Section header component"
+      >
+        <app-section-header title="Your Activities" icon="wave-pulse"></app-section-header>
+      </demo-wrapper>
     `;
   }
 }
