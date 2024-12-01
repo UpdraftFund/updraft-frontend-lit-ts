@@ -10,6 +10,7 @@ export * from './layout/navbar';
 export * from './layout/section-header';
 
 export * from './feature-specific/idea-card';
+export * from './feature-specific/solution-card';
 export * from './feature-specific/overall-card';
 
 export * from './demo-wrapper';

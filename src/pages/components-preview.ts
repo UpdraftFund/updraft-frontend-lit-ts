@@ -97,7 +97,42 @@ export class ComponentsPreview extends LitElement {
           ></app-idea-card>
         </div>
       </demo-wrapper>
-      
+
+      <demo-wrapper 
+        title="Solution Card" 
+        description="Solution card component"
+      >
+        <div style="display: flex; gap: 1rem;">
+          <app-solution-card
+            title="Smart Microgrid Nodes for Efficient Solar Energy Distribution" 
+            ideaTitle="Decentralized Solar Power Grid for Remote Communities"
+            description="Imagine a network where remote communities can generate, share, and trade solar energy on a decentralized grid. This solution empowers local users to become energy self-sufficient, reducing reliance on traditional power sources and enabling clean energy access even in the most isolated regions. Support this idea to fuel renewable energy transformation and make a lasting environmental impact"
+            createdBy="Sina.eth" 
+            createdAt="29 days ago" 
+            supportUPDAmount="100"
+            style="width: 32%"
+          ></app-solution-card>
+          <app-solution-card  
+            title="Smart Microgrid Nodes for Efficient Solar Energy Distribution" 
+            ideaTitle="Decentralized Solar Power Grid for Remote Communities"
+            description="Imagine a network where remote communities can generate, share, and trade solar energy on a decentralized grid. This solution empowers local users to become energy self-sufficient, reducing reliance on traditional power sources and enabling clean energy access even in the most isolated regions. Support this idea to fuel renewable energy transformation and make a lasting environmental impact"
+            createdBy="Sina.eth" 
+            createdAt="29 days ago" 
+            supportUPDAmount="100"
+            style="width: 32%"
+          ></app-solution-card>
+          <app-solution-card
+            title="Smart Microgrid Nodes for Efficient Solar Energy Distribution" 
+            ideaTitle="Decentralized Solar Power Grid for Remote Communities"
+            description="Imagine a network where remote communities can generate, share, and trade solar energy on a decentralized grid. This solution empowers local users to become energy self-sufficient, reducing reliance on traditional power sources and enabling clean energy access even in the most isolated regions. Support this idea to fuel renewable energy transformation and make a lasting environmental impact"
+            createdBy="Sina.eth" 
+            createdAt="29 days ago" 
+            supportUPDAmount="100"
+            style="width: 32%"
+          ></app-solution-card>
+        </div>
+      </demo-wrapper>
+
       <demo-wrapper 
         title="Section Header" 
         description="Section header component"
