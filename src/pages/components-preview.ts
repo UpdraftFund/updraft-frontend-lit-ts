@@ -129,6 +129,16 @@ export class ComponentsPreview extends LitElement {
           </div>
         </app-modal>
       </demo-wrapper>
+
+      <demo-wrapper 
+        title="Input" 
+        description="Input component"
+      >
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <app-input label="Input Label" placeholder="Input placeholder"></app-input>
+          <app-input placeholder="Input placeholder"></app-input>
+        </div>
+      </demo-wrapper>
     `;
   }
 }

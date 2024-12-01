@@ -28,6 +28,8 @@ export const theme = css`
     --mako-900: #323636;
     --mako-1000: #232626;
 
+    --light-gray: #EBECEF;
+
     --dimond-river-gradient: radial-gradient(129.94% 315.77% at 12.04% 84.51%, #F3F8FB 5.22%, #E5F2F6 56.06%);
     --dimond-radishical-gradient: radial-gradient(129.94% 315.77% at 12.04% 84.51%, #FDF3F4 5.22%, #FCE6E9 56.06%);
     --dimond-golden-gradient: radial-gradient(129.94% 315.77% at 12.04% 84.51%, #FEFCF3 5.22%, #F3F3F3 56.06%);
