@@ -5,7 +5,7 @@ import { css, html } from "lit";
 @customElement('app-tag')
 export class Tag extends LitComponent {
     @property({ type: String })
-    variant: 'blue' | 'gold' | 'red' = 'blue';
+    variant: 'blue' | 'radishical' | 'golden' = 'blue';
 
 
     static styles = css`
@@ -25,12 +25,12 @@ export class Tag extends LitComponent {
             color: var(--river-blue-1000);
         }
 
-        .tag.gold {
+        .tag.golden {
             background-color: var(--golden-snitch-400);
             color: var(--golden-snitch-1000);
         }
 
-        .tag.red {
+        .tag.radishical {
             background-color: var(--radishical-400);
             color: var(--radishical-1000);
         }

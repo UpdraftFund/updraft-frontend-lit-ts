@@ -100,6 +100,17 @@ export class ComponentsPreview extends LitElement {
       >
         <app-section-header title="Your Activities" icon="wave-pulse"></app-section-header>
       </demo-wrapper>
+
+      <demo-wrapper 
+        title="Overall Card" 
+        description="Overall card component"
+      >
+        <div style="display: flex; gap: 1rem;">
+          <app-overall-card style="min-width: 190px" title="Drafted Ideas" value="10" variant="blue"></app-overall-card>
+          <app-overall-card style="min-width: 190px" title="Supported Ideas" value="23" variant="radishical"></app-overall-card>
+          <app-overall-card style="min-width: 190px" title="Drafted Solutions" value="10" variant="golden"></app-overall-card>
+        </div>
+      </demo-wrapper>
     `;
   }
 }
