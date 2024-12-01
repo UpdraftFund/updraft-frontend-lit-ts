@@ -20,7 +20,8 @@ export class AppModal extends LitElement {
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(87, 87, 87, 0.25);
+      backdrop-filter: blur(4px);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -64,11 +65,11 @@ export class AppModal extends LitElement {
     if (!this.isOpen) return null;
 
     return html`
-      <div class="modal">
-        <div class="modal-content">
+      <div class="modal" @click=${this._dispatchClose}>
+        <div class="modal-content" @click=${(event: MouseEvent) => event.stopPropagation()}>
           <div class="modal-content-title">${this.title}</div>
           <slot></slot>
-          
+
           ${this.hasCloseButton ? html`
               <span class="close-button" @click=${this._dispatchClose}>
                 <app-icon name="xmark" width="12" height="16"></app-icon>
