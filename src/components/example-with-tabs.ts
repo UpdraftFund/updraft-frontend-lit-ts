@@ -1,11 +1,12 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
 import { theme } from '../styles/theme';
 import type { TabOption } from './common/tabs';
+import { LitComponent } from './litComponent';
 
 @customElement('example-with-tabs')
-export class ExampleWithTabs extends LitElement {
+export class ExampleWithTabs extends LitComponent {
   @state()
   private activeTab: string = 'tab1';
 

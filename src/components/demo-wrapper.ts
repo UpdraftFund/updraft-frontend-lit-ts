@@ -1,8 +1,9 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { LitComponent } from './litComponent';
 
 @customElement('demo-wrapper')
-export class DemoWrapper extends LitElement {
+export class DemoWrapper extends LitComponent {
   @property()
   title = '';
 

@@ -1,6 +1,7 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { theme } from '../../styles/theme';
+import { LitComponent } from '../litComponent';
 
 export interface TabOption {
   id: string;
@@ -8,7 +9,7 @@ export interface TabOption {
 }
 
 @customElement('app-tabs')
-export class AppTabs extends LitElement {
+export class AppTabs extends LitComponent {
   @property({ type: Array })
   options: TabOption[] = [];
 
@@ -44,9 +45,9 @@ export class AppTabs extends LitElement {
       }
 
       .tab.active {
-        color: var(--rever-blue-600);
+        color: var(--river-blue-600);
         font-weight: 600;
-        border-bottom: 1px solid var(--rever-blue-600);
+        border-bottom: 1px solid var(--river-blue-600);
       }
     `
   ];

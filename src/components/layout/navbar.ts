@@ -1,15 +1,16 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { LitComponent } from '../litComponent';
 
 @customElement('app-navbar')
-export class AppNavbar extends LitElement {
+export class AppNavbar extends LitComponent {
   @state()
   private currentPath = '';
 
   connectedCallback() {
     super.connectedCallback();
     this.currentPath = window.location.pathname;
-    
+
     // Update currentPath when navigation occurs
     window.addEventListener('popstate', () => {
       this.currentPath = window.location.pathname;

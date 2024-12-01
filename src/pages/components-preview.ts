@@ -60,7 +60,39 @@ export class ComponentsPreview extends LitElement {
         <app-link href="https://rever.co">Primary Link</app-link>
       </demo-wrapper>
       
-      <!-- Add more components as needed -->
+      <demo-wrapper 
+        title="Idea Card" 
+        description="Idea card component"
+      >
+        <div style="display: flex; justify-content: space-between;">
+          <app-idea-card 
+            title="Decentralized Solar Power Grid for Remote Communities" 
+            description="Imagine a network where remote communities can generate, share, and trade solar energy on a decentralized grid. This solution empowers local users to become energy self-sufficient, reducing reliance on traditional power sources and enabling clean energy access even in the most isolated regions. Support this idea to fuel renewable energy transformation and make a lasting environmental impact"
+            createdBy="Sina.eth" 
+            createdAt="29 days ago" 
+            supportUPDAmount="100"
+            style="width: 32%"
+          ></app-idea-card>
+
+          <app-idea-card 
+            title="Decentralized Solar Power Grid for Remote Communities" 
+            description="Imagine a network where remote communities can generate, share, and trade solar energy on a decentralized grid. This solution empowers local users to become energy self-sufficient, reducing reliance on traditional power sources and enabling clean energy access even in the most isolated regions. Support this idea to fuel renewable energy transformation and make a lasting environmental impact"
+            createdBy="Sina.eth" 
+            createdAt="29 days ago" 
+            supportUPDAmount="100"
+            style="width: 32%"
+          ></app-idea-card>
+          
+          <app-idea-card 
+            title="Decentralized Solar Power Grid for Remote Communities" 
+            description="Imagine a network where remote communities can generate, share, and trade solar energy on a decentralized grid. This solution empowers local users to become energy self-sufficient, reducing reliance on traditional power sources and enabling clean energy access even in the most isolated regions. Support this idea to fuel renewable energy transformation and make a lasting environmental impact"
+            createdBy="Sina.eth" 
+            createdAt="29 days ago" 
+            supportUPDAmount="100"
+            style="width: 32%"
+          ></app-idea-card>
+        </div>
+      </demo-wrapper>
     `;
   }
 }
