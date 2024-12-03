@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "tsc",
+    "tsc": "tsc",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build-graph": "graphclient build"
