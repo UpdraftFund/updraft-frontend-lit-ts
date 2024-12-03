@@ -1,0 +1,20 @@
+fragment SolutionFieldsWithIdea on Solution {
+    id
+    drafter {
+        profile
+    }
+    idea {
+        id
+        name
+        description
+        tags
+    }
+    fundingToken
+    startTime
+    deadline
+    shares
+    tokensContributed
+    fundingGoal
+    stake
+    info
+}

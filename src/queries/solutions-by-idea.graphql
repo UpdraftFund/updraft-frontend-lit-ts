@@ -1,0 +1,5 @@
+query SolutionsByIdea($ideaId: [Bytes!]) {
+    solutions(where: { idea: $ideaId }) {
+        ...SolutionFields
+    }
+}
