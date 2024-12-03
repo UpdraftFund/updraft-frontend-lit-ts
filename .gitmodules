@@ -1,0 +1,3 @@
+[submodule "updraft-schemas"]
+	path = updraft-schemas
+	url = https://github.com/UpdraftFund/updraft-schemas
