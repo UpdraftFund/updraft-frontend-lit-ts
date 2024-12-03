@@ -1,0 +1,5 @@
+query IdeasByShares {
+    ideas(orderBy: shares, orderDirection: desc) {
+        ...IdeaFields
+    }
+}

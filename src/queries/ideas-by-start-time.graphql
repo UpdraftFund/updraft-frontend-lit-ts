@@ -1,0 +1,5 @@
+query IdeasByStartTime {
+    ideas(orderBy: startTime, orderDirection: desc) {
+        ...IdeaFields
+    }
+}
