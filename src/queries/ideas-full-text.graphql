@@ -1,0 +1,10 @@
+query IdeasFullText($text: String!) {
+    ideaSearch(text: $text) {
+        id,
+        name,
+        description,
+        shares,
+        startTime,
+        tags
+    }
+}
