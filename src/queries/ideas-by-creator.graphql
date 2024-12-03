@@ -1,0 +1,5 @@
+query IdeasByCreator($creatorId: Bytes!) {
+    ideas(where: { creator: $creatorId }) {
+        ...IdeaFields
+    }
+}
