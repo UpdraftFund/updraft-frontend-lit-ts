@@ -1,0 +1,5 @@
+query Profile($userId: Bytes!) {
+    user(id: $userId) {
+        profile
+    }
+}
