@@ -1,0 +1,5 @@
+query IdeasByTags($tags: [String!]) {
+    ideas(where: { tags_contains_nocase: $tags }) {
+        ...IdeaFields
+    }
+}
