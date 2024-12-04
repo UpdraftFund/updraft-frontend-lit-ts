@@ -1,0 +1,9 @@
+query IdeaContributions($ideaId: Bytes!) {
+    ideaContributions(where: { idea: $ideaId}, orderBy: contribution, orderDirection: desc) {
+        funder {
+            id
+            profile
+        }
+        contribution
+    }
+}

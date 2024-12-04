@@ -1,0 +1,9 @@
+query SolutionContributions($solutionId: Bytes!) {
+    solutionContributions(where: { solution: $solutionId}, orderBy: contribution, orderDirection: desc) {
+        funder {
+            id
+            profile
+        }
+        contribution
+    }
+}
