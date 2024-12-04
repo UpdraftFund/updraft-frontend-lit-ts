@@ -1,4 +1,4 @@
-query SolutionContributionsByFunder($solutionId: Bytes!, $userId: Bytes!) {
+query SolutionContributionsByFunder($solutionId: String!, $userId: String!) {
     solutionContributions(where: { solution: $solutionId, funder: $userId }) {
         positionIndex
         contribution

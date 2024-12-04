@@ -1,4 +1,4 @@
-query Profile($userId: Bytes!) {
+query Profile($userId: ID!) {
     user(id: $userId) {
         profile
     }

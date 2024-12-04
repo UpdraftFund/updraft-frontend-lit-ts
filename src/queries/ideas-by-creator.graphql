@@ -1,4 +1,4 @@
-query IdeasByCreator($creatorId: Bytes!) {
+query IdeasByCreator($creatorId: String!) {
     ideas(where: { creator: $creatorId }) {
         ...IdeaFields
     }

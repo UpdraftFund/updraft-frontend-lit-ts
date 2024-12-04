@@ -1,26 +1,26 @@
-query UserActivity($userId: Bytes!) {
-    user(id: $userId) {
-        ideasFunded: ideaContributions(where: { funder: $userId }) {
-            idea {
-                ...IdeaFields
-            }
-            positionIndex
-            contribution
+query UserActivity($userId: String!) {
+    ideasFunded: ideaContributions(where: { funder: $userId }) {
+        idea {
+            ...IdeaFields
         }
-        solutionsFunded: solutionContributions(where: { funder: $userId }) {
-            solution {
-                ...SolutionFieldsWithIdea
-            }
-            positionIndex
-            contribution
-            refunded
-        }
-        solutionsDrafted: solutions(where: { drafter: $userId }) {
+        positionIndex
+        contribution
+    }
+    solutionsFunded: solutionContributions(where: { funder: $userId }) {
+        solution {
             ...SolutionFieldsWithIdea
         }
-        solutionsStaked: stakes(where: { staker: $userId }) {
+        positionIndex
+        contribution
+        refunded
+    }
+    solutionsDrafted: solutions(where: { drafter: $userId }) {
+        ...SolutionFieldsWithIdea
+    }
+    solutionsStaked: stakes(where: { staker: $userId }) {
+        solution {
             ...SolutionFieldsWithIdea
-            amount
         }
+        amount
     }
 }

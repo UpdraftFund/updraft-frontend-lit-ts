@@ -1,4 +1,4 @@
-query IdeaContributionsByFunder($ideaId: Bytes!, $userId: Bytes!) {
+query IdeaContributionsByFunder($ideaId: String!, $userId: String!) {
     ideaContributions(where: { idea: $ideaId, funder: $userId }) {
         positionIndex
         contribution

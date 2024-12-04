@@ -1,4 +1,4 @@
-query SolutionContributions($solutionId: Bytes!) {
+query SolutionContributions($solutionId: String!) {
     solutionContributions(where: { solution: $solutionId}, orderBy: contribution, orderDirection: desc) {
         funder {
             id

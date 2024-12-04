@@ -1,4 +1,4 @@
-query IdeaContributions($ideaId: Bytes!) {
+query IdeaContributions($ideaId: String!) {
     ideaContributions(where: { idea: $ideaId}, orderBy: contribution, orderDirection: desc) {
         funder {
             id
