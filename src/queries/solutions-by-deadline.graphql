@@ -1,0 +1,8 @@
+# Solutions ordered by the closest upcoming deadline.
+# `now` is seconds since the epoch and used to filter Solutions where the deadline already passed.
+
+query SolutionsByDeadline($now: BigInt!) {
+    solutions(where: { deadline_gt: $now }, orderBy: deadline, orderDirection: asc) {
+        ...SolutionFieldsWithIdea
+    }
+}
