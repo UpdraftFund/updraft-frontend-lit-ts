@@ -1,0 +1,5 @@
+query Idea($ideaId: ID!) {
+    idea(id: $ideaId) {
+        ...IdeaFields
+    }
+}
