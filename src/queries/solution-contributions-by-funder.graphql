@@ -1,0 +1,7 @@
+query SolutionContributionsByFunder($solutionId: Bytes!, $userId: Bytes!) {
+    solutionContributions(where: { solution: $solutionId, funder: $userId }) {
+        positionIndex
+        contribution
+        refunded
+    }
+}
