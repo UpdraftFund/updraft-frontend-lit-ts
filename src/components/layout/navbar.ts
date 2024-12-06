@@ -11,7 +11,6 @@ export class AppNavbar extends LitComponent {
     super.connectedCallback();
     this.currentPath = window.location.pathname;
 
-    // Update currentPath when navigation occurs
     window.addEventListener('popstate', () => {
       this.currentPath = window.location.pathname;
     });
@@ -20,20 +19,20 @@ export class AppNavbar extends LitComponent {
   static styles = css`
     :host {
       display: block;
-      position: fixed;
+      position: sticky;
       top: 0;
       left: 0;
       right: 0;
       z-index: 1000;
-      background: var(--white);
-      padding: 12px 32px;
     }
-
+    
     nav {
       display: flex;
       width: 100%;
       justify-content: space-between;
       align-items: center;
+      padding: 12px 32px;
+      background: var(--white);
     }
 
     nav > * {
@@ -67,7 +66,7 @@ export class AppNavbar extends LitComponent {
     return html`
       <nav>
         <div class="logo">
-          <img src="/logo/updraft-512.png" alt="Logo" />
+          <img src="/logo/updraft-512.png" alt="Logo"/>
         </div>
 
         <div class="nav-links">

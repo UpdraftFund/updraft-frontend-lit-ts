@@ -1,8 +1,9 @@
-import { LitElement, html, css } from 'lit';
+import { html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { LitComponent } from '../components/litComponent';
 
 @customElement('components-preview')
-export class ComponentsPreview extends LitElement {
+export class ComponentsPreview extends LitComponent {
 
   @state()
   isModalOpen = false;
@@ -10,7 +11,15 @@ export class ComponentsPreview extends LitElement {
   static styles = css`
     :host {
       display: block;
-      padding: 2rem;
+      align-self: stretch;
+      overflow: auto;
+    }
+
+    .components-preview-container {
+      width: clamp(300px, calc(100vw - 64px), 1280px);
+      margin: 0 auto;
+      padding-top: 64px;
+
     }
     
     .component-section {
@@ -35,8 +44,9 @@ export class ComponentsPreview extends LitElement {
 
   render() {
     return html`
-      <h1>Components Preview</h1>
-      
+      <div class="components-preview-container">
+        <h1>Components Preview</h1>
+
       <demo-wrapper 
         title="Buttons" 
         description="Available button variants"
@@ -174,7 +184,8 @@ export class ComponentsPreview extends LitElement {
           <app-input placeholder="Input placeholder"></app-input>
           <app-textarea label="Textarea Label" placeholder="Textarea placeholder"></app-textarea>
         </div>
-      </demo-wrapper>
+        </demo-wrapper>
+      </div>
     `;
   }
 }

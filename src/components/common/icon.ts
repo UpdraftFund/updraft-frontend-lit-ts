@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import { LitComponent } from "../litComponent";
 
 @customElement('app-icon')
-export class Icon extends LitComponent {
+export class AppIcon extends LitComponent {
 
   @property({ type: String })
   name = '';
@@ -31,6 +31,6 @@ export class Icon extends LitComponent {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'app-icon': Icon;
+    'app-icon': AppIcon;
   }
 }

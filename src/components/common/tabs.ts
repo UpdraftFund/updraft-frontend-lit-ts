@@ -16,9 +16,6 @@ export class AppTabs extends LitComponent {
   @property({ type: String })
   activeTab: string = '';
 
-  @property()
-  onChange?: (tabId: string) => void;
-
   static styles = [
     theme,
     css`
@@ -52,10 +49,8 @@ export class AppTabs extends LitComponent {
     `
   ];
 
-  private handleTabClick(tabId: string) {
-    if (this.onChange) {
-      this.onChange(tabId);
-    }
+  private _handleTabClick(tabId: string) {
+    this.dispatchEvent(new CustomEvent('change', { detail: { tabId } }));
   }
 
   render() {
@@ -64,7 +59,7 @@ export class AppTabs extends LitComponent {
         ${this.options.map(tab => html`
           <button
             class="tab ${tab.id === this.activeTab ? 'active' : ''}"
-            @click=${() => this.handleTabClick(tab.id)}
+            @click=${() => this._handleTabClick(tab.id)}
             role="tab"
             aria-selected=${tab.id === this.activeTab}
             aria-controls="panel-${tab.id}"

@@ -3,7 +3,7 @@ import { LitComponent } from "../litComponent";
 import { css, html } from "lit";
 
 @customElement('app-tag')
-export class Tag extends LitComponent {
+export class AppTag extends LitComponent {
     @property({ type: String })
     variant: 'blue' | 'radishical' | 'golden' = 'blue';
 
@@ -47,6 +47,6 @@ export class Tag extends LitComponent {
 
 declare global {
     interface HTMLElementTagNameMap {
-        'app-tag': Tag;
+        'app-tag': AppTag;
     }
 }
