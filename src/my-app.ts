@@ -41,10 +41,7 @@ export class MyApp extends LitElement {
     },
     {
       path: '/idea/:id',
-      render: ({ id }) => {
-        console.log(`ID is ${id}`);
-        return html`<idea-page .ideaId=${id} />`
-      }
+      render: ({ id }) => html`<idea-page .ideaId=${id} />`
     },
   ]);
 
