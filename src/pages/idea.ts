@@ -3,7 +3,7 @@ import { LitComponent } from "../components/litComponent";
 import { html } from "lit";
 import { createRequest } from '@urql/core';
 import { IdeaDocument } from '../../.graphclient';
-import urqlClient from '../urqlClient';
+import urqlClient from '../urql-client';
 
 @customElement('idea-page')
 export class IdeaPage extends LitComponent {
