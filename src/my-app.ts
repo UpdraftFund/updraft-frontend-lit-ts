@@ -7,7 +7,13 @@ import { theme } from './styles/theme';
 import './components/index.ts';
 import './pages/components-preview';
 import './pages/home';
+import './pages/idea';
 import './components/layout/navbar';
+
+// @ts-ignore: Property 'UrlPattern' does not exist
+if (!globalThis.URLPattern) {
+  await import("urlpattern-polyfill");
+}
 
 @customElement('my-app')
 export class MyApp extends LitElement {
@@ -32,7 +38,14 @@ export class MyApp extends LitElement {
     {
       path: '/',
       render: () => html`<app-home-page />`
-    }
+    },
+    {
+      path: '/idea/:id',
+      render: ({ id }) => {
+        console.log(`ID is ${id}`);
+        return html`<idea-page .ideaId=${id} />`
+      }
+    },
   ]);
 
   render() {
