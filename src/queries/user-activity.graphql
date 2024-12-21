@@ -23,4 +23,7 @@ query UserActivity($userId: String!) {
         }
         amount
     }
+    ideasCreated: ideas(where: { creator: $userId }) {
+        ...IdeaFields
+    }
 }
