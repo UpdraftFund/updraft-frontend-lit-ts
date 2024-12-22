@@ -1,6 +1,6 @@
 #    New Supporter(s) ✅
 #    New Solution ✅
-#    New Funder(s)
+#    New Funder(s) ✅
 #    Goal reached ✅
 #    Goal failed ✅
 #    New Goal ✅
@@ -28,5 +28,17 @@ query TrackedChanges($ideaIds: [String!], $solutionIds: [Bytes!], $since: BigInt
     }
     solutionUpdated: solutions(where: { id_in: $solutionIds, modifiedTime_gt: $since }) {
         ...SolutionFieldsWithIdea
+    }
+    newFunders: solutionContributions(where: { solution_: { id_in: $solutionIds}, createdTime_gt: $since }) {
+        solution {
+            id
+            info
+        }
+        funder {
+            id
+            profile
+        }
+        contribution
+        createdTime
     }
 }
