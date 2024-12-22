@@ -1,5 +1,4 @@
 schema: .graphclient/schema.graphql
-documents: 'src/queries/*.graphql'
 extensions:
   endpoints:
     test:
