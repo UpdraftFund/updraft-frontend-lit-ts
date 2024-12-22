@@ -1,0 +1,32 @@
+#    New Supporter(s) ✅
+#    New Solution ✅
+#    New Funder(s)
+#    Goal reached ✅
+#    Goal failed ✅
+#    New Goal ✅
+#    Info changed (news) ✅
+
+query TrackedChanges($ideaIds: [String!], $solutionIds: [Bytes!], $since: BigInt!) {
+    newSupporters: ideaContributions(where: { idea_in: $ideaIds, createdTime_gt: $since }) {
+        idea {
+            id
+            name
+        }
+        funder {
+            id
+            profile
+        }
+        contribution
+        createdTime
+    }
+    newSolutions: solutions(where: { idea_in: $ideaIds, startTime_gt: $since }) {
+        idea {
+            id
+            name
+        }
+        ...SolutionFields
+    }
+    solutionUpdated: solutions(where: { id_in: $solutionIds, startTime_gt: $since }) {
+        ...SolutionFieldsWithIdea
+    }
+}
