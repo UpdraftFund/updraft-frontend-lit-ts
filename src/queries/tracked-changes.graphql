@@ -26,7 +26,7 @@ query TrackedChanges($ideaIds: [String!], $solutionIds: [Bytes!], $since: BigInt
         }
         ...SolutionFields
     }
-    solutionUpdated: solutions(where: { id_in: $solutionIds, startTime_gt: $since }) {
+    solutionUpdated: solutions(where: { id_in: $solutionIds, modifiedTime_gt: $since }) {
         ...SolutionFieldsWithIdea
     }
 }
