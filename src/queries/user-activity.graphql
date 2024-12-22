@@ -17,12 +17,6 @@ query UserActivity($userId: String!) {
     solutionsDrafted: solutions(where: { drafter: $userId }) {
         ...SolutionFieldsWithIdea
     }
-    solutionsStaked: stakes(where: { staker: $userId }) {
-        solution {
-            ...SolutionFieldsWithIdea
-        }
-        amount
-    }
     ideasCreated: ideas(where: { creator: $userId }) {
         ...IdeaFields
     }
