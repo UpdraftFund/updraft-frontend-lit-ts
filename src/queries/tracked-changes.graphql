@@ -27,6 +27,7 @@ query TrackedChanges($ideaIds: [String!], $solutionIds: [Bytes!], $since: BigInt
         ...SolutionFields
     }
     solutionUpdated: solutions(where: { id_in: $solutionIds, modifiedTime_gt: $since }) {
+        # Compare fundingGoal, deadline and info to local storage to determine what changed.
         ...SolutionFields
     }
     newFunders: solutionContributions(where: { solution_: { id_in: $solutionIds }, createdTime_gt: $since }) {
