@@ -27,12 +27,12 @@ query TrackedChanges($ideaIds: [String!], $solutionIds: [Bytes!], $since: BigInt
         ...SolutionFields
     }
     solutionUpdated: solutions(where: { id_in: $solutionIds, modifiedTime_gt: $since }) {
-        ...SolutionFieldsWithIdea
+        ...SolutionFields
     }
-    newFunders: solutionContributions(where: { solution_: { id_in: $solutionIds}, createdTime_gt: $since }) {
+    newFunders: solutionContributions(where: { solution_: { id_in: $solutionIds }, createdTime_gt: $since }) {
+        # Use this to also check if the fundingGoal has been reached
         solution {
-            id
-            info
+            ...SolutionFields
         }
         funder {
             id

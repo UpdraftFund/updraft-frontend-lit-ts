@@ -6,7 +6,6 @@ fragment SolutionFields on Solution {
     fundingToken
     startTime
     deadline
-    shares
     tokensContributed
     fundingGoal
     stake
