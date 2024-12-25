@@ -1,5 +1,5 @@
-query SolutionsByIdea($ideaId: String!) {
-    solutions(where: { idea: $ideaId }, orderBy: shares, orderDirection: desc) {
-        ...SolutionFields
+query SolutionsByIdea($first: Int = 3, $skip: Int = 0, $ideaId: String!) {
+    solutions(first: $first, skip: $skip, where: { idea: $ideaId }, orderBy: shares, orderDirection: desc) {
+        ...SolutionFieldsDetailed
     }
 }
