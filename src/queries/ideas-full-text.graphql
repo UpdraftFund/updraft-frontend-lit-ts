@@ -1,5 +1,5 @@
-query IdeasFullText($text: String!) {
-    ideaSearch(text: $text) {
-        ...IdeaFields
+query IdeasFullText($first: Int = 4, $skip: Int = 0, $text: String!) {
+    ideaSearch(first: $first, skip: $skip, text: $text) {
+        ...IdeaFieldsDetailed
     }
 }
