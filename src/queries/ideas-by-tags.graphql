@@ -5,7 +5,7 @@ query IdeasByTags(
     $tag2: String!, # if tag2 isn't used, repeat the value of tag1
     $tag3: String!, # if tag3 isn't used, repeat the value of tag1
     $tag4: String!, # if tag4 isn't used, repeat the value of tag1
-    $tag5: String!,  # if tag5 isn't used, repeat the value of tag1
+    $tag5: String!, # if tag5 isn't used, repeat the value of tag1
     $detailed: Boolean = false
 ) {
     ideas(
