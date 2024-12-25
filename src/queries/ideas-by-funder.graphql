@@ -1,0 +1,7 @@
+query IdeasByFunder($funder: String!, $first: Int = 3, $skip: Int = 0) {
+    ideaContributions(first: $first, skip: $skip, where: {funder: $funder }) {
+        idea {
+            ...IdeaFields
+        }
+    }
+}

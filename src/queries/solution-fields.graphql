@@ -1,13 +1,10 @@
 fragment SolutionFields on Solution {
     id
-    drafter {
-        profile
-    }
-    fundingToken
     startTime
     deadline
     tokensContributed
     fundingGoal
     stake
     info
+    funderReward
 }

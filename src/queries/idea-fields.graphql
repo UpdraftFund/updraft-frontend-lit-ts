@@ -2,11 +2,8 @@ fragment IdeaFields on Idea {
     id
     name
     description
-    creator {
-        id
-        profile
-    }
     shares
     startTime
+    funderReward
     tags
 }
