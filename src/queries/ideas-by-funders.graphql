@@ -1,5 +1,11 @@
 query IdeasByFunders($first: Int = 4, $skip: Int = 0, $funders: [String!]) {
-    ideaContributions(where: { funder_in: $funders }, first: $first, skip: $skip, orderBy: createdTime, orderDirection: desc) {
+    ideaContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder_in: $funders },
+        orderBy: createdTime,
+        orderDirection: desc
+    ) {
         idea {
             ...IdeaFieldsDetailed
         }
