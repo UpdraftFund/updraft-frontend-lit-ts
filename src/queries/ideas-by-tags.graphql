@@ -1,5 +1,5 @@
-query IdeasByTags($tags: [String!]) {
-    ideas(where: { tags_contains_nocase: $tags }) {
-        ...IdeaFields
+query IdeasByTags($first: Int = 4, $skip: Int = 0, $tags: [String!]) {
+    ideas(where: { tags_contains_nocase: $tags }, first: $first, skip: $skip, orderBy: shares, orderDirection: desc) {
+        ...IdeaFieldsDetailed
     }
 }
