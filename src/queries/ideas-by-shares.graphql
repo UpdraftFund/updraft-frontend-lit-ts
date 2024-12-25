@@ -1,5 +1,10 @@
-query IdeasByShares($first: Int = 4, $skip: Int = 0) {
+query IdeasByShares($first: Int = 4, $skip: Int = 0, $detailed: Boolean = false) {
     ideas(first: $first, skip: $skip, orderBy: shares, orderDirection: desc) {
-        ...IdeaFields
+        ... @skip(if: $detailed) {
+            ...IdeaFields
+        }
+        ... @include(if: $detailed) {
+            ...IdeaFieldsDetailed
+        }
     }
 }

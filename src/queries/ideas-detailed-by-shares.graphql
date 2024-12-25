@@ -1,5 +1,0 @@
-query IdeasDetailedByShares($first: Int = 4, $skip: Int = 0) {
-    ideas(first: $first, skip: $skip, orderBy: shares, orderDirection: desc) {
-        ...IdeaFieldsDetailed
-    }
-}
