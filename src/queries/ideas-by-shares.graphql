@@ -1,5 +1,5 @@
-query IdeasByShares {
-    ideas(orderBy: shares, orderDirection: desc) {
+query IdeasByShares($first: Int = 4, $skip: Int = 0) {
+    ideas(first: $first, skip: $skip, orderBy: shares, orderDirection: desc) {
         ...IdeaFields
     }
 }
