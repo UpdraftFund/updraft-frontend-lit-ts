@@ -1,20 +1,38 @@
-query UserActivity($userId: String!) {
-    ideasFunded: ideaContributions(where: { funder: $userId }) {
+query UserActivity($first: Int = 4, $skip: Int = 0, $userId: String!) {
+    ideasFunded: ideaContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder: $userId },
+        orderBy: createdTime,
+        orderDirection: desc
+    ) {
         idea {
             ...IdeaFields
+            creator {
+                id
+            }
         }
-        positionIndex
         contribution
     }
-    solutionsFunded: solutionContributions(where: { funder: $userId }) {
+    solutionsFunded: solutionContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder: $userId },
+        orderBy: createdTime,
+        orderDirection: desc
+    ) {
         solution {
-            ...SolutionFieldsWithIdea
+            ...SolutionFields
         }
-        positionIndex
         contribution
-        refunded
     }
-    solutionsDrafted: solutions(where: { drafter: $userId }) {
-        ...SolutionFieldsWithIdea
+    solutionsDrafted: solutions(
+        first: $first,
+        skip: $skip,
+        where: { drafter: $userId },
+        orderBy: startTime,
+        orderDirection: desc
+    ) {
+        ...SolutionFields
     }
 }
