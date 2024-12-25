@@ -1,5 +1,5 @@
 query TopTags{
-    tagCounts(first: 20, orderBy: count, orderDirection: desc) {
+    tagCounts(first: 12, orderBy: count, orderDirection: desc) {
         id
         count
     }
