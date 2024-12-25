@@ -1,0 +1,13 @@
+fragment IdeaFieldsDetailed on Idea {
+    id
+    name
+    description
+    shares
+    startTime
+    funderReward
+    tags
+    creator {
+        id
+        profile
+    }
+}
