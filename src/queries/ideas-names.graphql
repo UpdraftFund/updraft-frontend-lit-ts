@@ -1,5 +1,0 @@
-query IdeasNames {
-    ideas {
-      name
-    }
-  }
