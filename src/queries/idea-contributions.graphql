@@ -1,4 +1,4 @@
-query IdeaContributions($first: Int =4, $skip: Int = 0, $ideaId: String!) {
+query IdeaContributions($first: Int = 5, $skip: Int = 0, $ideaId: String!) {
     ideaContributions(
         first: $first,
         skip: $skip,
