@@ -1,0 +1,19 @@
+fragment SolutionFieldsDetailed on Solution {
+    id
+    startTime
+    deadline
+    tokensContributed
+    fundingGoal
+    fundingToken
+    stake
+    info
+    funderReward
+    drafter {
+        id
+        profile
+    }
+    idea {
+        id
+        name
+    }
+}

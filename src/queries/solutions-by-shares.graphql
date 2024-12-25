@@ -1,5 +1,5 @@
 query SolutionsByShares($token: Bytes!) {
     solutions(where: { fundingToken: $token }, orderBy: shares, orderDirection: desc) {
-        ...SolutionFieldsWithIdea
+        ...SolutionFieldsDetailed
     }
 }

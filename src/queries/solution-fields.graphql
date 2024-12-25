@@ -4,6 +4,7 @@ fragment SolutionFields on Solution {
     deadline
     tokensContributed
     fundingGoal
+    fundingToken
     stake
     info
     funderReward

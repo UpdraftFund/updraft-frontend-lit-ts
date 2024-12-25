@@ -1,5 +1,5 @@
 query Solution($solutionId: ID!) {
     solution(id: $solutionId) {
-        ...SolutionFieldsWithIdea
+        ...SolutionFieldsDetailed
     }
 }

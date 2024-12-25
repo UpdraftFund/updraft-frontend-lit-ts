@@ -1,5 +1,5 @@
 query SolutionsByStartTime {
     solutions(orderBy: startTime, orderDirection: desc) {
-        ...SolutionFieldsWithIdea
+        ...SolutionFieldsDetailed
     }
 }

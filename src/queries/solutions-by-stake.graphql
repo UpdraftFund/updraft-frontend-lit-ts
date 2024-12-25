@@ -1,5 +1,5 @@
 query SolutionsByStake {
     solutions(orderBy: stake, orderDirection: desc) {
-        ...SolutionFieldsWithIdea
+        ...SolutionFieldsDetailed
     }
 }
