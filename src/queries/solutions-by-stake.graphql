@@ -1,5 +1,0 @@
-query SolutionsByStake {
-    solutions(orderBy: stake, orderDirection: desc) {
-        ...SolutionFieldsDetailed
-    }
-}
