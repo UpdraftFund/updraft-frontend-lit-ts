@@ -25,6 +25,14 @@ export class Solution {
     };
   }
 
+  async getStake(staker: `0x${string}`): Promise<bigint> {
+    return await readContract(config, {
+      abi,
+      address: staker,
+      functionName: 'stakes',
+    }) as bigint;
+  }
+
   async contributorFee(): Promise<bigint> {
     return await readContract(config, {
       abi,
