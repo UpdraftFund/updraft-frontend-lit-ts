@@ -33,7 +33,8 @@ const connectModal = createAppKit({
   themeVariables: {
    "--w3m-color-mix": "#43C3E9",
    "--w3m-color-mix-strength": 12,
-   "--w3m-accent": "#096394"
+   "--w3m-accent": "#096394",
+   "--w3m-font-family": "'Noto Sans', serif;"
   }
 });
 
