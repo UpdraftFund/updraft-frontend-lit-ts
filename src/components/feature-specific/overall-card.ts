@@ -1,11 +1,8 @@
 import { customElement, property } from "lit/decorators.js";
-import { LitComponent } from "../litComponent";
-import { css, html } from "lit";
-
-
+import { LitElement, html, css } from "lit";
 
 @customElement('app-overall-card')
-export class AppOverallCard extends LitComponent {
+export class AppOverallCard extends LitElement {
   @property({ type: String })
   value: string = '';
 
