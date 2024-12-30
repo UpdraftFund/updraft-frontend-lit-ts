@@ -21,24 +21,27 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/187091561'],
 };
 
-const createConnection = () => {
-  createAppKit({
-    adapters: [wagmiAdapter],
-    networks,
-    metadata,
-    projectId,
-    tokens: updAddresses,
-    themeMode: "light",
-    themeVariables: {
-      "--w3m-color-mix": "#43C3E9",
-      "--w3m-color-mix-strength": 12,
-      "--w3m-accent": "#096394"
-    }
-  });
-};
+// Use the exported `connectModal` to set the theme mode and other actions.
+// See https://docs.reown.com/appkit/javascript/core/actions
+const connectModal = createAppKit({
+  adapters: [wagmiAdapter],
+  networks,
+  metadata,
+  projectId,
+  tokens: updAddresses,
+  themeMode: "light",
+  themeVariables: {
+   "--w3m-color-mix": "#43C3E9",
+   "--w3m-color-mix-strength": 12,
+   "--w3m-accent": "#096394"
+  }
+});
+
+const createConnection = () => { connectModal };
 
 export {
   networks,
   config,
+  connectModal,
   createConnection,
 }
