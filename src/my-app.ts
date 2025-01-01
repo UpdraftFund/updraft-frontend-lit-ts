@@ -9,7 +9,6 @@ import './styles/theme.css';
 import './pages/components-preview';
 import './pages/home';
 import './pages/idea';
-import './components/layout/navbar';
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
@@ -36,7 +35,6 @@ export class MyApp extends LitElement {
 
   render() {
     return html`
-      <app-navbar></app-navbar>
       <app-page>  
         ${this.router.outlet()}
       </app-page>
