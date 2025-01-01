@@ -3,7 +3,7 @@ import { config } from '../web3.ts';
 import abi from './abis/Solution.json';
 
 export type solutionPosition = {
-  feesEarned: bigint;
+  reward: bigint;
   shares: bigint;
 };
 
@@ -13,16 +13,13 @@ export class Solution {
 
   //region Read methods
   async checkPosition(funder: `0x${string}`, positionIndex?: bigint): Promise<solutionPosition> {
-    const output = await readContract(config, {
+    const [reward, shares] = await readContract(config, {
       abi,
       address: this.address,
       functionName: 'checkPosition',
-      args: positionIndex ? [funder, positionIndex] : [funder],
+      args: [funder, positionIndex],
     }) as [bigint, bigint];
-    return {
-      feesEarned: output[0],
-      shares: output[1],
-    };
+    return { reward, shares };
   }
 
   async getStake(staker: `0x${string}`): Promise<bigint> {
