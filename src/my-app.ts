@@ -2,7 +2,8 @@ import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Router } from '@lit-labs/router';
 
-import { theme } from './styles/theme';
+import './styles/reset.css';
+import './styles/theme.css';
 
 import './components/index.ts';
 import './pages/components-preview';
@@ -18,7 +19,6 @@ if (!globalThis.URLPattern) {
 @customElement('my-app')
 export class MyApp extends LitElement {
   static styles = [
-    theme,
     css`
       :host {
         display: flex;

@@ -1,6 +1,5 @@
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { theme } from '../../styles/theme';
 import { LitComponent } from '../litComponent';
 
 export interface TabOption {
@@ -17,7 +16,6 @@ export class AppTabs extends LitComponent {
   activeTab: string = '';
 
   static styles = [
-    theme,
     css`
       :host {
         display: block;

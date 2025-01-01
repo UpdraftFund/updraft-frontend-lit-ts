@@ -1,7 +1,4 @@
-import { css } from 'lit';
-
-export const theme = css`
-  :host {
+:root {
     --white: #ffffff;
 
     --river-blue-200: #E5F2F6;
@@ -33,11 +30,4 @@ export const theme = css`
     --dimond-river-gradient: radial-gradient(129.94% 315.77% at 12.04% 84.51%, #F3F8FB 5.22%, #E5F2F6 56.06%);
     --dimond-radishical-gradient: radial-gradient(129.94% 315.77% at 12.04% 84.51%, #FDF3F4 5.22%, #FCE6E9 56.06%);
     --dimond-golden-gradient: radial-gradient(129.94% 315.77% at 12.04% 84.51%, #FEFCF3 5.22%, #F3F3F3 56.06%);
-  }
-
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-`; 
+ }

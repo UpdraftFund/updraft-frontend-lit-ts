@@ -1,6 +1,5 @@
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { theme } from '../../styles/theme';
 import { LitComponent } from '../litComponent';
 
 @customElement('app-text')
@@ -15,7 +14,6 @@ export class AppText extends LitComponent {
   color: 'primary' | 'secondary' | 'default' = 'default';
 
   static styles = [
-    theme,
     css`
       /* Base styles */
       :host {

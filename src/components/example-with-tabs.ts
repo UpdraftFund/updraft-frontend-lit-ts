@@ -1,7 +1,6 @@
 import { html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 
-import { theme } from '../styles/theme';
 import type { TabOption } from './common/tabs';
 import { LitComponent } from './litComponent';
 
@@ -17,7 +16,6 @@ export class ExampleWithTabs extends LitComponent {
   ];
 
   static styles = [
-    theme,
     css`
       :host {
         display: block;
