@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { Router } from '@lit-labs/router';
 
 import './styles/reset.css';
+import './styles/global.css';
 import './styles/theme.css';
 
 import './components/index.ts';
@@ -18,17 +19,6 @@ if (!globalThis.URLPattern) {
 
 @customElement('my-app')
 export class MyApp extends LitElement {
-  static styles = [
-    css`
-      :host {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        width: 100vw;
-        overflow: hidden;
-      }
-    `
-  ];
 
   private router = new Router(this, [
     {
