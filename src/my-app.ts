@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Router } from '@lit-labs/router';
 
@@ -6,7 +6,7 @@ import './styles/reset.css';
 import './styles/global.css';
 import './styles/theme.css';
 
-import './components/index.ts';
+//import './components/index.ts';
 import './pages/components-preview';
 import './pages/home';
 import './pages/idea';
