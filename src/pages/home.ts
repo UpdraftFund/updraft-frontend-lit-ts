@@ -2,6 +2,8 @@ import { customElement, state } from "lit/decorators.js";
 import { LitComponent } from "../components/litComponent";
 import { css, html } from "lit";
 
+import "../components/common/section-header";
+
 @customElement('app-home-page')
 export class HomePage extends LitComponent {
 

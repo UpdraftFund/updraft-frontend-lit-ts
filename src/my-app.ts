@@ -6,7 +6,6 @@ import './styles/reset.css';
 import './styles/global.css';
 import './styles/theme.css';
 
-//import './components/index.ts';
 import './pages/components-preview';
 import './pages/home';
 import './pages/idea';
