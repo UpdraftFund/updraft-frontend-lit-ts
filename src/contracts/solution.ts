@@ -23,44 +23,44 @@ export class Solution {
   }
 
   async getStake(staker: `0x${string}`): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: staker,
       functionName: 'stakes',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async contributorFee(): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'contributorFee',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async numPositions(funder: `0x${string}`): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'numPositions',
       args: [funder],
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async tokensWithdrawn(): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'tokensWithdrawn',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async totalTokens(): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'totalTokens',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
   //endregion
 

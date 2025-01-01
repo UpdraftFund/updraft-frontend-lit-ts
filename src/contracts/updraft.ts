@@ -15,41 +15,41 @@ export const address = () => {
   return address;
 };
 
-//region Read functions
+//region Read methods
 export const percentScale = async (): Promise<bigint> => {
-  return await readContract(config, {
+  return readContract(config, {
     abi,
     address: address(),
     functionName: 'percentScale',
-  }) as bigint;
+  }) as Promise<bigint>;
 };
 
 export const feeToken = async (): Promise<`0x${string}`> => {
-  return await readContract(config, {
+  return readContract(config, {
     abi,
     address: address(),
     functionName: 'feeToken',
-  }) as `0x${string}`;
+  }) as Promise<`0x${string}`>;
 };
 
 export const minFee = async (): Promise<bigint> => {
-  return await readContract(config, {
+  return readContract(config, {
     abi,
     address: address(),
     functionName: 'minFee',
-  }) as bigint;
+  }) as Promise<bigint>;
 }
 
 export const percentFee = async (): Promise<bigint> => {
-  return await readContract(config, {
+  return readContract(config, {
     abi,
     address: address(),
     functionName: 'percentFee',
-  }) as bigint;
+  }) as Promise<bigint>;
 }
 //endregion
 
-//region Write functions
+//region Write methods
 export const updateProfile = async (profileData: `0x${string}`) => {
   const { request } = await simulateContract(config, {
     abi,
