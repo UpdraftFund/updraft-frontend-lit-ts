@@ -1,4 +1,8 @@
+@import './reset.css';
+@import './theme.css';
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap');
+
 :root {
-  font-family: 'Notoo Sans', sans-serif;
+  font-family: 'Noto Sans', sans-serif;
   color-scheme: light;
 }
