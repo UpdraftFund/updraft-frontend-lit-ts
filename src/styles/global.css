@@ -1,5 +1,5 @@
-@import './reset.css';
-@import './theme.css';
+@import './reset.css';    /* Import reset styles FIRST */
+@import './theme.css';   /* Import theme styles AFTER reset */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap');
 
 :root {
