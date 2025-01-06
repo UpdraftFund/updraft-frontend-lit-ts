@@ -19,6 +19,7 @@ export class MyApp extends LitElement {
       path: '/__components__',
       enter: async () => {
         await import('./pages/components-preview');
+        return true;
       },
       render: () => html`<components-preview />`
     },
@@ -26,6 +27,7 @@ export class MyApp extends LitElement {
       path: '/',
       enter: async () => {
         await import('./pages/home');
+        return true;
       },
       render: () => html`<app-home-page />`
     },
@@ -33,6 +35,7 @@ export class MyApp extends LitElement {
       path: '/idea/:id',
       enter: async () => {
         await import('./pages/idea');
+        return true;
       },
       render: ({ id }) => html`<idea-page .ideaId=${id} />`
     },
