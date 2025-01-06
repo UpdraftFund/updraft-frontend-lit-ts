@@ -17,20 +17,7 @@
     <div id="resultFullText"></div>
 
     <script type="module">
-        import { IdeasFullTextDocument, IdeasNamesDocument, execute } from './.graphclient';  
-
-        document.getElementById('fetchIdeas').addEventListener('click', async () => {
-            try {
-                console.log("Fetching ideas...");
-                const data = await execute(IdeasNamesDocument);
-                const resultDiv = document.getElementById('result');
-                resultDiv.textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                console.error('Error fetching ideas:', error);
-                const resultDiv = document.getElementById('result');
-                resultDiv.textContent = 'Error fetching ideas: ' + error.message;
-            }
-        });
+        import { IdeasFullTextDocument, execute } from './.graphclient';
 
         document.getElementById('fetchIdeasFullText').addEventListener('click', async () => {
             try {

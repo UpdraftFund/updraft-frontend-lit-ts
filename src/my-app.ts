@@ -6,10 +6,6 @@ import './styles/reset.css';
 import './styles/global.css';
 import './styles/theme.css';
 
-import './pages/components-preview';
-import './pages/home';
-import './pages/idea';
-
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
   await import("urlpattern-polyfill");
@@ -21,21 +17,30 @@ export class MyApp extends LitElement {
   private router = new Router(this, [
     {
       path: '/__components__',
+      enter: async () => {
+        await import('./pages/components-preview');
+      },
       render: () => html`<components-preview />`
     },
     {
       path: '/',
+      enter: async () => {
+        await import('./pages/home');
+      },
       render: () => html`<app-home-page />`
     },
     {
       path: '/idea/:id',
+      enter: async () => {
+        await import('./pages/idea');
+      },
       render: ({ id }) => html`<idea-page .ideaId=${id} />`
     },
   ]);
 
   render() {
     return html`
-      <app-page>  
+      <app-page>
         ${this.router.outlet()}
       </app-page>
     `;
