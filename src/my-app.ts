@@ -21,7 +21,7 @@ export class MyApp extends LitElement {
         await import('./pages/components-preview');
         return true;
       },
-      render: () => html`<components-preview />`
+      render: () => html`<components-preview></components-preview>`
     },
     {
       path: '/',
@@ -29,7 +29,7 @@ export class MyApp extends LitElement {
         await import('./pages/home');
         return true;
       },
-      render: () => html`<app-home-page />`
+      render: () => html`<app-home-page></app-home-page>`
     },
     {
       path: '/idea/:id',
@@ -37,7 +37,7 @@ export class MyApp extends LitElement {
         await import('./pages/idea');
         return true;
       },
-      render: ({ id }) => html`<idea-page .ideaId=${id} />`
+      render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`
     },
   ]);
 
