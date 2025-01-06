@@ -1,12 +1,11 @@
 import { customElement, property } from "lit/decorators.js";
-import { LitComponent } from "../components/litComponent";
-import { html } from "lit";
+import { html, LitElement } from "lit";
 import { createRequest } from '@urql/core';
 import { IdeaDocument } from '../../.graphclient';
 import urqlClient from '../urql-client';
 
 @customElement('idea-page')
-export class IdeaPage extends LitComponent {
+export class IdeaPage extends LitElement {
   @property() ideaId?: string;
   @property() data?: object;
   @property() error?: object;
