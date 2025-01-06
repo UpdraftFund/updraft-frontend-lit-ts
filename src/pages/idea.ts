@@ -1,4 +1,4 @@
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
 import { createRequest } from '@urql/core';
 import { IdeaDocument } from '../../.graphclient';
@@ -7,9 +7,9 @@ import urqlClient from '../urql-client';
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
   @property() ideaId?: string;
-  @property() data?: object;
-  @property() error?: object;
-  @property() loading: boolean = false;
+  @state() private data?: object;
+  @state() private error?: object;
+  @state() private loading: boolean = false;
 
   render() {
     return html`
