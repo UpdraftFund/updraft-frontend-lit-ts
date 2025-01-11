@@ -1,14 +1,15 @@
 import {LitElement, html, css} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
-@customElement('app-layout')
-export class AppLayout extends LitElement {
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+
+@customElement('top-bar')
+export class TopBar extends LitElement {
   static styles = css`
-    header {
+    :host {
       background: var(--subtle-background);
       display: flex;
       height: 64px;
-      width: 100vw;
       padding: 0px 24px;
       justify-content: space-between;
       align-items: center;
@@ -20,16 +21,15 @@ export class AppLayout extends LitElement {
   `
   render() {
     return html`
-      <header>
-        <img src="/src/assets/updraft-logo-46.png" alt="Updraft logo" />
-      </header>
+      <img src="/src/assets/updraft-logo-46.png" alt="Updraft logo" />
       <slot></slot>
+      <sl-button pill variant="primary">Connect Wallet</sl-button>
     `;
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'app-layout': AppLayout;
+    'top-bar': TopBar;
   }
 }

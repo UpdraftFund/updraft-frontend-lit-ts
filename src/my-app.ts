@@ -3,10 +3,9 @@ import { customElement } from 'lit/decorators.js';
 import { Router } from '@lit-labs/router';
 
 import './styles/reset.css';
+import '@shoelace-style/shoelace/dist/themes/light.css';
 import './styles/global.css';
 import './styles/theme.css';
-
-import './components/layout/app-layout'
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
@@ -28,15 +27,15 @@ export class MyApp extends LitElement {
     {
       path: '/',
       enter: async () => {
-        await import('./pages/home');
+        await import('./pages/home-page');
         return true;
       },
-      render: () => html`<app-home-page></app-home-page>`
+      render: () => html`<home-page></home-page>`
     },
     {
       path: '/idea/:id',
       enter: async () => {
-        await import('./pages/idea');
+        await import('./pages/idea-page');
         return true;
       },
       render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`
@@ -45,9 +44,7 @@ export class MyApp extends LitElement {
 
   render() {
     return html`
-      <app-layout>
-        ${this.router.outlet()}
-      </app-layout>
+      ${this.router.outlet()}
     `;
   }
 }
