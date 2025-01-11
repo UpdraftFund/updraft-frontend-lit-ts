@@ -1,6 +1,8 @@
 import {LitElement, html, css} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
+import {modal} from '../../web3';
+
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 @customElement('top-bar')
@@ -23,7 +25,7 @@ export class TopBar extends LitElement {
     return html`
       <img src="/src/assets/updraft-logo-46.png" alt="Updraft logo" />
       <slot></slot>
-      <sl-button pill variant="primary">Connect Wallet</sl-button>
+      <sl-button pill variant="primary" @click=${() => modal.open()} >Connect Wallet</sl-button>
     `;
   }
 }
