@@ -6,6 +6,8 @@ import './styles/reset.css';
 import './styles/global.css';
 import './styles/theme.css';
 
+import './components/layout/app-layout'
+
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
   await import("urlpattern-polyfill");
@@ -43,9 +45,9 @@ export class MyApp extends LitElement {
 
   render() {
     return html`
-      <app-page>
+      <app-layout>
         ${this.router.outlet()}
-      </app-page>
+      </app-layout>
     `;
   }
 }
