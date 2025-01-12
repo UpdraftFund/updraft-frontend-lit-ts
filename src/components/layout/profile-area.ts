@@ -37,7 +37,7 @@ export class ProfileArea extends LitElement {
     modal.subscribeAccount(({ isConnected, address }) => {
       this.connected = isConnected;
       this.address = address as `0x${string}`;
-      this.avatar = makeBlockie(address);
+      this.avatar = makeBlockie(address!);
     });
   }
 
