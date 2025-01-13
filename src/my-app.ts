@@ -53,6 +53,7 @@ export class MyApp extends LitElement {
   constructor() {
     super();
     modal.subscribeAccount(({ isConnected, address }) => {
+      // TODO: get and parse updraft profile from address
       this.user = {
         ...this.user,
         connected: isConnected,

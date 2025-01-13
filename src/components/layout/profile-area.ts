@@ -18,10 +18,17 @@ export class ProfileArea extends LitElement {
       align-items: center;
       gap: 12px;
     }
+    .name {
+      display: inline-block; /* Ensures the span respects the width */
+      max-width: 200px;
+      white-space: nowrap; /* Prevent text from wrapping to the next line */
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     img {
       border-radius: 50%;
-      width: 46px;
-      height: 46px;
+      width: 42px;
+      height: 42px;
     }
     sl-icon-button {
       font-size: 2rem;
@@ -37,7 +44,7 @@ export class ProfileArea extends LitElement {
       <sl-dropdown>
         <span slot="trigger" class="trigger-content">
           <img src="${this.user.avatar}" alt="User avatar" />
-          <span>${this.user.address}</span>
+          <span class="name">${this.user.name || this.user.address}</span>
         </span>
 
         <sl-menu>
