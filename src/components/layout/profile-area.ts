@@ -1,13 +1,13 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 
-import makeBlockie from 'ethereum-blockies-base64';
-
 import { modal } from '../../web3';
+import { User, userContext } from '../../user-context';
 
 @customElement('profile-area')
 export class ProfileArea extends LitElement {
@@ -28,27 +28,16 @@ export class ProfileArea extends LitElement {
       color: var(--main-foreground);
     }
   `
-  @state() connected = false;
-  @state() address: `0x${string}` | undefined;
-  @state() avatar: string | undefined;
-
-  constructor() {
-    super();
-    modal.subscribeAccount(({ isConnected, address }) => {
-      this.connected = isConnected;
-      this.address = address as `0x${string}`;
-      this.avatar = makeBlockie(address!);
-    });
-  }
+  @consume({ context: userContext, subscribe: true }) user!: User;
 
   render() {
-    return this.connected ?
+    return this.user.connected ?
     html`
       <sl-icon-button src="/assets/icons/plus-lg.svg"></sl-icon-button>
       <sl-dropdown>
         <span slot="trigger" class="trigger-content">
-          <img src="${this.avatar}" alt="User avatar" />
-          <span>${this.address}</span>
+          <img src="${this.user.avatar}" alt="User avatar" />
+          <span>${this.user.address}</span>
         </span>
 
         <sl-menu>
