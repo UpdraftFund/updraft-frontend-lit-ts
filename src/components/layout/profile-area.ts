@@ -10,7 +10,8 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
 import { modal } from '../../web3';
-import { User, userContext } from '../../user-context';
+import { shortNum } from '../../utils';
+import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } from '../../context';
 
 @customElement('profile-area')
 export class ProfileArea extends LitElement {
@@ -43,12 +44,17 @@ export class ProfileArea extends LitElement {
     }
   `
   @consume({ context: userContext, subscribe: true }) user!: User;
+  @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
+
+  requestBalanceRefresh() {
+    this.dispatchEvent(new RequestBalanceRefresh());
+  }
 
   render() {
     return this.user.connected ?
     html`
       <sl-icon-button src="/assets/icons/plus-lg.svg"></sl-icon-button>
-      <sl-dropdown distance="20" placement="top-end">
+      <sl-dropdown distance="20" placement="top-end" @sl-show="${this.requestBalanceRefresh}")>
         <span slot="trigger" class="trigger-content">
           <img src="${this.user.avatar}" alt="User avatar" />
           <span class="name">${this.user.name || this.user.address}</span>
@@ -61,7 +67,13 @@ export class ProfileArea extends LitElement {
             </span>
             <p class="status">Mainnet</p>
           </sl-menu-item>
-          <sl-menu-item>Buy Gas Tokens</sl-menu-item>
+          <sl-menu-item>
+            <span>
+              <sl-icon src="/assets/icons/lightbulb.svg"></sl-icon>
+              Buy Gas Tokens
+            </span>
+            ${this.balances.ETH && html`<p class="status">${shortNum(this.balances.ETH, 5)} ETH</p>`}
+          </sl-menu-item>
           <sl-menu-item>Swap for UPD</sl-menu-item>
           <sl-menu-item>View Profile</sl-menu-item>
           <sl-menu-item>Activity</sl-menu-item>

@@ -4,14 +4,15 @@ import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
 
 import makeBlockie from 'ethereum-blockies-base64';
+import { getBalance } from '@wagmi/core'
 
 import './styles/reset.css';
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import './styles/global.css';
 import './styles/theme.css';
 
-import { modal } from './web3';
-import { User, userContext } from './user-context';
+import { modal, config } from './web3';
+import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } from './context';
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
@@ -49,6 +50,7 @@ export class MyApp extends LitElement {
   ]);
 
   @provide({ context: userContext }) user: User = { connected: false };
+  @provide({ context: balanceContext }) balances: Balances = {};
 
   constructor() {
     super();
@@ -61,6 +63,17 @@ export class MyApp extends LitElement {
         avatar: !this.user.avatar && address ? makeBlockie(address) : this.user.avatar,
       };
     });
+    this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances());
+  }
+
+  async refreshBalances() {
+    if (this.user.address) {
+      const token = await getBalance(config, { address: this.user.address });
+      this.balances = {
+        ...this.balances,
+        [token.symbol]: token.formatted
+      }
+    }
   }
 
   render() {
