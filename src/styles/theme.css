@@ -2,7 +2,8 @@
   --main-background: #ffffff;
   --subtle-background: #dff5fc;
   --accent: #0b6497;
-  --main-foreground: hsla(0, 0%, 16%, 1)
+  --main-foreground: hsla(0, 0%, 16%, 1);
+  --hint-text: hsla(0, 0%, 43%, 1);
 
   --sl-color-primary-50: rgb(247 250 252);
   --sl-color-primary-100: rgb(228 238 243);
