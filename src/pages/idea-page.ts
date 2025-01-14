@@ -3,6 +3,7 @@ import { html, LitElement } from "lit";
 import { createRequest } from '@urql/core';
 import { IdeaDocument } from '../../.graphclient';
 import urqlClient from '../urql-client';
+import '../components/layout/top-bar'
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -13,6 +14,7 @@ export class IdeaPage extends LitElement {
 
   render() {
     return html`
+      <top-bar></top-bar>
       <div class="idea-page">
         <p>Idea ID: ${this.ideaId}</p>
       </div>

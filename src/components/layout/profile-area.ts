@@ -85,7 +85,7 @@ export class ProfileArea extends LitElement {
   render() {
     return this.user.connected ?
     html`
-      <sl-icon-button src="/assets/icons/plus-lg.svg"></sl-icon-button>
+      <sl-icon-button src="/assets/icons/plus-lg.svg" title="Create Idea"></sl-icon-button>
       <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show="${this.requestBalanceRefresh}">
         <span slot="trigger" class="trigger-content">
           <img src="${this.user.avatar}" alt="User avatar"/>
