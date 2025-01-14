@@ -85,7 +85,7 @@ export class ProfileArea extends LitElement {
   }
 
   render() {
-    return this.user.connected ?
+    return this.user.connected && this.user.address ?
     html`
       <sl-icon-button src="${plusLgIcon}" title="Create Idea"></sl-icon-button>
       <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show="${this.requestBalanceRefresh}">
