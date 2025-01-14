@@ -29,7 +29,8 @@ export class MyApp extends LitElement {
         await import('./pages/components-preview');
         return true;
       },
-      render: () => html`<components-preview></components-preview>`
+      render: () => html`
+        <components-preview></components-preview>`
     },
     {
       path: '/',
@@ -37,7 +38,8 @@ export class MyApp extends LitElement {
         await import('./pages/home-page');
         return true;
       },
-      render: () => html`<home-page></home-page>`
+      render: () => html`
+        <home-page></home-page>`
     },
     {
       path: '/idea/:id',
@@ -45,7 +47,8 @@ export class MyApp extends LitElement {
         await import('./pages/idea-page');
         return true;
       },
-      render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`
+      render: ({ id }) => html`
+        <idea-page .ideaId=${id}></idea-page>`
     },
   ]);
 
@@ -61,6 +64,15 @@ export class MyApp extends LitElement {
         connected: isConnected,
         address: address ? address as `0x${string}` : this.user.address,
         avatar: !this.user.avatar && address ? makeBlockie(address) : this.user.avatar,
+      };
+    });
+    modal.subscribeNetwork(({ caipNetwork }) => {
+      this.user = {
+        ...this.user,
+        network: {
+          name: caipNetwork.name,
+          id: caipNetwork.id,
+        }
       };
     });
     this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances());

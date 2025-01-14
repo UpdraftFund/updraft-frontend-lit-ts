@@ -5,6 +5,10 @@ export type User = {
   address?: `0x${string}`;
   name?: string;
   avatar?: string;
+  network?: {
+    name: string;
+    id: number;
+  }
 }
 
 export type Balances = Record<string, string>;
