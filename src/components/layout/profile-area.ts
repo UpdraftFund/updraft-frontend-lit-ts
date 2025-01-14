@@ -98,7 +98,7 @@ export class ProfileArea extends LitElement {
             <sl-icon slot="prefix" src="${plusLgIcon}"></sl-icon>
             <div>
               <p>Choose Network</p>
-              <p class="status">${this.user.network.name}</p>
+              <p class="status">${this.user.network?.name}</p>
             </div>
           </sl-menu-item>
           <sl-menu-item>

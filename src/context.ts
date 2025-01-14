@@ -6,8 +6,8 @@ export type User = {
   name?: string;
   avatar?: string;
   network?: {
-    name: string;
-    id: number;
+    name?: string;
+    id?: number;
   }
 }
 

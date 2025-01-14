@@ -70,8 +70,8 @@ export class MyApp extends LitElement {
       this.user = {
         ...this.user,
         network: {
-          name: caipNetwork.name,
-          id: caipNetwork.id,
+          name: caipNetwork?.name,
+          id: Number(caipNetwork?.id),
         }
       };
     });
