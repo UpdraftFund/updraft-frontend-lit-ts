@@ -10,6 +10,8 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
+import plusLgIcon from '../../assets/icons/plus-lg.svg';
+
 import { modal } from '../../web3';
 import { shortNum } from '../../utils';
 import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } from '../../context';
@@ -85,7 +87,7 @@ export class ProfileArea extends LitElement {
   render() {
     return this.user.connected ?
     html`
-      <sl-icon-button src="/assets/icons/plus-lg.svg" title="Create Idea"></sl-icon-button>
+      <sl-icon-button src="${plusLgIcon}" title="Create Idea"></sl-icon-button>
       <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show="${this.requestBalanceRefresh}">
         <span slot="trigger" class="trigger-content">
           <img src="${this.user.avatar}" alt="User avatar"/>
@@ -93,14 +95,14 @@ export class ProfileArea extends LitElement {
         </span>
         <sl-menu class="menu">
           <sl-menu-item>
-            <sl-icon slot="prefix" src="/assets/icons/plus-lg.svg"></sl-icon>
+            <sl-icon slot="prefix" src="${plusLgIcon}"></sl-icon>
             <div>
               <p>Choose Network</p>
               <p class="status">Mainnet</p>
             </div>
           </sl-menu-item>
           <sl-menu-item>
-            <sl-icon slot="prefix" src="/assets/icons/plus-lg.svg"></sl-icon>
+            <sl-icon slot="prefix" src="${plusLgIcon}"></sl-icon>
             <div>
               <p>Buy Gas Tokens</p>
               ${this.balances.ETH && html`<p class="status">${shortNum(this.balances.ETH, 5)} ETH</p>`}
