@@ -1,6 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
+
 import './profile-area';
+
+import updraftLogo from '../../assets/updraft-logo-46.png';
 
 @customElement('top-bar')
 export class TopBar extends LitElement {
@@ -13,15 +16,17 @@ export class TopBar extends LitElement {
       justify-content: space-between;
       align-items: center;
     }
+    a {
+      line-height: 0;
+    }
     img {
       border-radius: 50%;
-      cursor: pointer;
     }
   `
   render() {
     return html`
       <a href="/">
-        <img src="/src/assets/updraft-logo-46.png" alt="Updraft logo" title="Updraft Home"/>
+        <img src="${updraftLogo}" alt="Updraft logo" title="Updraft Home"/>
       </a>
       <slot></slot>
       <profile-area></profile-area>
