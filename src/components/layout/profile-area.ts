@@ -118,6 +118,10 @@ export class ProfileArea extends LitElement {
           <span class="name">${this.user.name || this.user.address}</span>
         </span>
         <sl-menu class="menu">
+          <sl-menu-item @click=${this.reconnect}>
+            <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
+            <span>Reconnect</span>
+          </sl-menu-item>
           <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
             <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
             <div>
@@ -125,14 +129,14 @@ export class ProfileArea extends LitElement {
               <p class="status">${this.user.network?.name}</p>
             </div>
           </sl-menu-item>
-          <sl-menu-item>
+          <sl-menu-item @click=${() => modal.open({ view: 'OnRampProviders' })}>
             <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
             <div>
               <p>Buy Gas Tokens</p>
               ${this.balances.ETH && html`<p class="status">${shortNum(this.balances.ETH, 5)} ETH</p>`}
             </div>
           </sl-menu-item>
-          <sl-menu-item>
+          <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any})}>
             <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
             <div>
               <p>Swap for UPD</p>
@@ -142,18 +146,13 @@ export class ProfileArea extends LitElement {
           <sl-menu-item>
             <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
             <div>
-              <p>View Profile</p>
+              <p>My Profile</p>
               <p class="status">${this.user.name || this.user.address}</p>
             </div>
           </sl-menu-item>
-          <sl-menu-item>
+          <sl-menu-item @click=${() => modal.open({ view: 'Account' })}>
             <sl-icon slot="prefix" src="${clockIcon}"></sl-icon>
             <span>Activity</span>
-          </sl-menu-item>
-          <sl-divider></sl-divider>
-          <sl-menu-item @click=${this.reconnect}>
-            <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
-            <span>Reconnect</span>
           </sl-menu-item>
         </sl-menu>
       </sl-dropdown>
