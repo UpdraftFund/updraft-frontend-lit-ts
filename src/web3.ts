@@ -5,14 +5,14 @@ import updAddresses from './contracts/updAddresses.json';
 
 const projectId = 'a259923fc99520ecad30021b33486037';
 
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrumSepolia, arbitrum];
+export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrumSepolia, arbitrum];
 
-const wagmiAdapter = new WagmiAdapter({
+export const adapter = new WagmiAdapter({
   projectId,
   networks,
 });
 
-const config = wagmiAdapter.wagmiConfig;
+export const config = adapter.wagmiConfig;
 
 const metadata = {
   name: 'Updraft',
@@ -23,8 +23,8 @@ const metadata = {
 
 // Use the exported `connectModal` to set the theme mode and other actions.
 // See https://docs.reown.com/appkit/javascript/core/actions
-const modal = createAppKit({
-  adapters: [wagmiAdapter],
+export const modal = createAppKit({
+  adapters: [adapter],
   networks,
   metadata,
   projectId,
@@ -44,11 +44,4 @@ const modal = createAppKit({
   ]
 });
 
-const createConnection = () => { modal };
-
-export {
-  networks,
-  config,
-  modal,
-  createConnection,
-}
+export const createConnection = () => { modal };

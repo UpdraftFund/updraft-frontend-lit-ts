@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
+import { disconnect } from '@wagmi/core';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
@@ -12,7 +13,7 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import plusLgIcon from '../../assets/icons/plus-lg.svg';
 
-import { modal } from '../../web3';
+import { modal, config } from '../../web3';
 import { shortNum } from '../../utils';
 import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } from '../../context';
 
@@ -84,6 +85,14 @@ export class ProfileArea extends LitElement {
     this.dispatchEvent(new RequestBalanceRefresh());
   }
 
+  private async disconnect() {
+    try{
+      await disconnect(config);
+    } finally {
+      modal.open({ view: 'Connect' });
+    }
+  }
+
   render() {
     return this.user.connected && this.user.address ?
     html`
@@ -94,7 +103,7 @@ export class ProfileArea extends LitElement {
           <span class="name">${this.user.name || this.user.address}</span>
         </span>
         <sl-menu class="menu">
-          <sl-menu-item>
+          <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
             <sl-icon slot="prefix" src="${plusLgIcon}"></sl-icon>
             <div>
               <p>Choose Network</p>
@@ -112,7 +121,7 @@ export class ProfileArea extends LitElement {
           <sl-menu-item>View Profile</sl-menu-item>
           <sl-menu-item>Activity</sl-menu-item>
           <sl-divider></sl-divider>
-          <sl-menu-item>Disconnect</sl-menu-item>
+          <sl-menu-item @click=${this.disconnect}>Disconnect</sl-menu-item>
         </sl-menu>
       </sl-dropdown>
     `
