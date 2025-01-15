@@ -12,6 +12,11 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import plusLgIcon from '../../assets/icons/plus-lg.svg';
+import layersIcon from '../../assets/icons/layers.svg';
+import clockIcon from '../../assets/icons/clock.svg';
+import creditCardIcon from '../../assets/icons/credit-card.svg';
+import reconnectIcon from '../../assets/icons/arrow-clockwise.svg';
+import swapIcon from '../../assets/icons/arrow-left-right.svg'
 
 import { modal, config } from '../../web3';
 import { shortNum } from '../../utils';
@@ -32,7 +37,7 @@ export class ProfileArea extends LitElement {
     }
     .name {
       display: inline-block; /* Ensures the span respects the width */
-      max-width: 200px;
+      max-width: 180px;
       white-space: nowrap; /* Prevent text from wrapping to the next line */
       overflow: hidden;
       text-overflow: ellipsis;
@@ -42,6 +47,10 @@ export class ProfileArea extends LitElement {
       border-radius: 50%;
       width: 42px;
       height: 42px;
+    }
+    .menu-avatar {
+      width: 32px;
+      height: 32px;
     }
     sl-icon,
     sl-icon-button {
@@ -55,9 +64,15 @@ export class ProfileArea extends LitElement {
     .status {
       color: var(--hint-text);
       font-size: 0.875rem;
+      display: inline-block; /* Ensures the span respects the width */
+      max-width: 165px;
+      white-space: nowrap; /* Prevent text from wrapping to the next line */
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     sl-menu-item::part(base) {
       padding: 15px 12px 15px 0;
+      gap: 10px;
     }
     sl-menu-item::part(base):hover {
       color: var(--main-foreground);
@@ -85,7 +100,7 @@ export class ProfileArea extends LitElement {
     this.dispatchEvent(new RequestBalanceRefresh());
   }
 
-  private async disconnect() {
+  private async reconnect() {
     try{
       await disconnect(config);
     } finally {
@@ -97,31 +112,49 @@ export class ProfileArea extends LitElement {
     return this.user.connected && this.user.address ?
     html`
       <sl-icon-button src="${plusLgIcon}" title="Create Idea"></sl-icon-button>
-      <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show="${this.requestBalanceRefresh}">
+      <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${this.requestBalanceRefresh}>
         <span slot="trigger" class="trigger-content" title="Profile menu">
           <img src="${this.user.avatar}" alt="User avatar"/>
           <span class="name">${this.user.name || this.user.address}</span>
         </span>
         <sl-menu class="menu">
           <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
-            <sl-icon slot="prefix" src="${plusLgIcon}"></sl-icon>
+            <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
             <div>
               <p>Choose Network</p>
               <p class="status">${this.user.network?.name}</p>
             </div>
           </sl-menu-item>
           <sl-menu-item>
-            <sl-icon slot="prefix" src="${plusLgIcon}"></sl-icon>
+            <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
             <div>
               <p>Buy Gas Tokens</p>
               ${this.balances.ETH && html`<p class="status">${shortNum(this.balances.ETH, 5)} ETH</p>`}
             </div>
           </sl-menu-item>
-          <sl-menu-item>Swap for UPD</sl-menu-item>
-          <sl-menu-item>View Profile</sl-menu-item>
-          <sl-menu-item>Activity</sl-menu-item>
+          <sl-menu-item>
+            <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
+            <div>
+              <p>Swap for UPD</p>
+              ${this.balances.UPD && html`<p class="status">${shortNum(this.balances.UPD, 5)} UPD</p>`}
+            </div>
+          </sl-menu-item>
+          <sl-menu-item>
+            <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
+            <div>
+              <p>View Profile</p>
+              <p class="status">${this.user.name || this.user.address}</p>
+            </div>
+          </sl-menu-item>
+          <sl-menu-item>
+            <sl-icon slot="prefix" src="${clockIcon}"></sl-icon>
+            <span>Activity</span>
+          </sl-menu-item>
           <sl-divider></sl-divider>
-          <sl-menu-item @click=${this.disconnect}>Disconnect</sl-menu-item>
+          <sl-menu-item @click=${this.reconnect}>
+            <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
+            <span>Reconnect</span>
+          </sl-menu-item>
         </sl-menu>
       </sl-dropdown>
     `
