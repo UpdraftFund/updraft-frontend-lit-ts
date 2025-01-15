@@ -1,8 +1,5 @@
 import { toHex, parseUnits } from 'viem';
-import { createConnection } from './web3.ts';
 import * as updraft from './contracts/updraft.ts';
-
-createConnection();
 
 const b1 = document.getElementById("updraft-address-button");
 const e1 = document.getElementById("updraft-address");
@@ -16,8 +13,7 @@ const b2 = document.getElementById("feeToken-button");
 const e2 = document.getElementById("feeToken");
 if (b2 && e2){
   b2.addEventListener("click", async () => {
-    const feeTokenAddress = await updraft.feeToken();
-    e2.textContent = `Fee token address: ${feeTokenAddress}`;
+    e2.textContent = `Fee token address: ${await updraft.feeToken()}`;
   });
 }
 

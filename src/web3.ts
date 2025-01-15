@@ -43,5 +43,3 @@ export const modal = createAppKit({
     "fb6ed96272ec885008e896c6146002048d8dc88c0b7e0e6fa42bcadf052a1569", //enkrypt
   ]
 });
-
-export const createConnection = () => { modal };
