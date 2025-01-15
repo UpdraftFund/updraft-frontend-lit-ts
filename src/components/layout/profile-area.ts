@@ -65,13 +65,13 @@ export class ProfileArea extends LitElement {
       color: var(--hint-text);
       font-size: 0.875rem;
       display: inline-block; /* Ensures the span respects the width */
-      max-width: 165px;
+      max-width: 160px;
       white-space: nowrap; /* Prevent text from wrapping to the next line */
       overflow: hidden;
       text-overflow: ellipsis;
     }
     sl-menu-item::part(base) {
-      padding: 15px 12px 15px 0;
+      padding: 15px 0;
       gap: 10px;
     }
     sl-menu-item::part(base):hover {
