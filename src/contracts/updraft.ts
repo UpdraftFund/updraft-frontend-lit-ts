@@ -98,6 +98,7 @@ export const createIdeaWithProfile = async (
     args: [contributorFee, contribution, ideaData, profileData],
   });
   const hash = await writeContract(config, request);
+  await waitForBlock();
   const receipt = await getTransactionReceipt(config, { hash });
   const ideaAddress = receipt?.logs?.[0]?.topics?.[1];
   if(ideaAddress){
@@ -124,6 +125,7 @@ export const createSolution = async (
     args: [ideaAddress, fundingToken, stake, goal, deadline, contributorFee, solutionData],
   });
   const hash = await writeContract(config, request);
+  await waitForBlock();
   const receipt = await getTransactionReceipt(config, { hash });
   const solutionAddress = receipt?.logs?.[0]?.topics?.[1];
   if(solutionAddress){
@@ -151,6 +153,7 @@ export const createSolutionWithProfile = async (
     args: [ideaAddress, fundingToken, stake, goal, deadline, contributorFee, solutionData, profileData],
   });
   const hash = await writeContract(config, request);
+  await waitForBlock();
   const receipt = await getTransactionReceipt(config, { hash });
   const solutionAddress = receipt?.logs?.[0]?.topics?.[1];
   if(solutionAddress){
