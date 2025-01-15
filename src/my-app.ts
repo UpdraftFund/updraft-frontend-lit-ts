@@ -13,6 +13,7 @@ import './styles/theme.css';
 
 import { modal, config } from './web3';
 import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } from './context';
+import updAddresses from './contracts/updAddresses.json';
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
@@ -67,32 +68,40 @@ export class MyApp extends LitElement {
       };
     });
     modal.subscribeNetwork(({ caipNetwork }) => {
+      // console.log('caipNetwork');
+      // console.dir(caipNetwork);
       this.user = {
         ...this.user,
         network: {
           name: caipNetwork?.name,
-          id: Number(caipNetwork?.id),
+          id: caipNetwork?.caipNetworkId as keyof typeof updAddresses,
         }
       };
+      this.refreshBalances();
     });
     this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances());
   }
 
   async refreshBalances() {
-    if (this.user.address) {
-      const token = await getBalance(config, { address: this.user.address });
+    if (this.user.address && this.user.network?.id) {
+      const gasToken = await getBalance(config, { address: this.user.address });
+      const upd = await getBalance(config, {
+        address: this.user.address,
+        token: updAddresses[this.user.network.id].address as `0x{$string}`,
+      });
       this.balances = {
-        ...this.balances,
-        [token.symbol]: token.formatted
+        gasToken: {
+          symbol: gasToken.symbol,
+          balance: gasToken.formatted,
+        },
+        upd: {
+          balance: upd.formatted,
+        }
       }
     }
   }
 
-  render() {
-    return html`
-      ${this.router.outlet()}
-    `;
-  }
+  render = () => this.router.outlet();
 }
 
 declare global {

@@ -101,7 +101,7 @@ export class ProfileArea extends LitElement {
   }
 
   private async reconnect() {
-    try{
+    try {
       await disconnect(config);
     } finally {
       modal.open({ view: 'Connect' });
@@ -113,10 +113,10 @@ export class ProfileArea extends LitElement {
     html`
       <sl-icon-button src="${plusLgIcon}" title="Create Idea"></sl-icon-button>
       <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${this.requestBalanceRefresh}>
-        <span slot="trigger" class="trigger-content" title="Profile menu">
-          <img src="${this.user.avatar}" alt="User avatar"/>
-          <span class="name">${this.user.name || this.user.address}</span>
-        </span>
+      <span slot="trigger" class="trigger-content" title="Profile menu">
+        <img src="${this.user.avatar}" alt="User avatar"/>
+        <span class="name">${this.user.name || this.user.address}</span>
+      </span>
         <sl-menu class="menu">
           <sl-menu-item @click=${this.reconnect}>
             <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
@@ -133,14 +133,16 @@ export class ProfileArea extends LitElement {
             <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
             <div>
               <p>Buy Gas Tokens</p>
-              ${this.balances.ETH && html`<p class="status">${shortNum(this.balances.ETH, 5)} ETH</p>`}
+              ${this.balances.gasToken && html`
+                <p class="status">${shortNum(this.balances.gasToken.balance, 5)} ${this.balances.gasToken.symbol}</p>
+              `}
             </div>
           </sl-menu-item>
-          <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any})}>
+          <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any })}>
             <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
             <div>
               <p>Swap for UPD</p>
-              ${this.balances.UPD && html`<p class="status">${shortNum(this.balances.UPD, 5)} UPD</p>`}
+              ${this.balances.upd && html`<p class="status">${shortNum(this.balances.upd.balance, 5)} UPD</p>`}
             </div>
           </sl-menu-item>
           <sl-menu-item>
@@ -158,7 +160,7 @@ export class ProfileArea extends LitElement {
       </sl-dropdown>
     `
     : html`
-      <sl-button pill variant="primary" @click=${() => modal.open()} >Connect Wallet</sl-button>
+      <sl-button pill variant="primary" @click=${() => modal.open()}>Connect Wallet</sl-button>
     `;
   }
 }

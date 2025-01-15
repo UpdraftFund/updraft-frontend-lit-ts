@@ -1,5 +1,7 @@
 import { createContext } from '@lit/context'
 
+import updAddresses from './contracts/updAddresses.json';
+
 export type User = {
   connected: boolean;
   address?: `0x${string}`;
@@ -7,11 +9,19 @@ export type User = {
   avatar?: string;
   network?: {
     name?: string;
-    id?: number;
+    id?: keyof typeof updAddresses;
   }
 }
 
-export type Balances = Record<string, string>;
+export type Balances = {
+  gasToken?: {
+    symbol: string;
+    balance: string;
+  },
+  upd?: {
+    balance: string;
+  }
+};
 
 export const userContext = createContext<User>('updraft-user');
 export const balanceContext = createContext<Balances>('balances');
