@@ -15,6 +15,11 @@ export const address = () => {
   return address;
 };
 
+export const waitForBlock = async () => {
+  // TODO: set the timeout based on the block time of the connected chain
+  await new Promise(resolve => setTimeout(resolve, 3000));
+}
+
 //region Read methods
 export const percentScale = async (): Promise<bigint> => {
   return readContract(config, {
@@ -69,6 +74,7 @@ export const createIdea = async (contributorFee: bigint, contribution: bigint, i
     args: [contributorFee, contribution, ideaData],
   });
   const hash = await writeContract(config, request);
+  await waitForBlock();
   const receipt = await getTransactionReceipt(config, { hash });
   const ideaAddress = receipt?.logs?.[0]?.topics?.[1];
   if(ideaAddress){
