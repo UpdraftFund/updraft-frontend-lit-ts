@@ -8,6 +8,9 @@ import '../components/layout/top-bar'
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
   @property() ideaId?: string;
+
+  //TODO: each Idea URL should include a network
+
   @state() private data?: object;
   @state() private error?: object;
   @state() private loading: boolean = false;
