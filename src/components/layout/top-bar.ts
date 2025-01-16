@@ -25,8 +25,8 @@ export class TopBar extends LitElement {
   `
   render() {
     return html`
-      <a href="/">
-        <img src="${updraftLogo}" alt="Updraft logo" title="Updraft Home"/>
+      <a href="/" title="Updraft Home">
+        <img src="${updraftLogo}" alt="Updraft logo"/>
       </a>
       <slot></slot>
       <profile-area></profile-area>

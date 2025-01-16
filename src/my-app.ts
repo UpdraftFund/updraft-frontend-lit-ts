@@ -35,6 +35,7 @@ export class MyApp extends LitElement {
     },
     {
       path: '/',
+      name: 'home',
       enter: async () => {
         await import('./pages/home-page');
         return true;
@@ -50,6 +51,15 @@ export class MyApp extends LitElement {
       },
       render: ({ id }) => html`
         <idea-page .ideaId=${id}></idea-page>`
+    },
+    {
+      path: '/create-idea',
+      enter: async () => {
+        await import('./pages/create-idea');
+        return true;
+      },
+      render: () => html`
+        <create-idea></create-idea>`
     },
   ]);
 

@@ -4,7 +4,6 @@ import { consume } from '@lit/context';
 import { disconnect } from '@wagmi/core';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
 import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
@@ -52,8 +51,7 @@ export class ProfileArea extends LitElement {
       width: 32px;
       height: 32px;
     }
-    sl-icon,
-    sl-icon-button {
+    sl-icon {
       font-size: 2rem;
       color: var(--main-foreground);
     }
@@ -111,7 +109,9 @@ export class ProfileArea extends LitElement {
   render() {
     return this.user.connected && this.user.address ?
     html`
-      <sl-icon-button src="${plusLgIcon}" title="Create Idea"></sl-icon-button>
+      <a href="create-idea" title="Create Idea">
+        <sl-icon src="${plusLgIcon}"></sl-icon>
+      </a>
       <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${this.requestBalanceRefresh}>
       <span slot="trigger" class="trigger-content" title="Profile menu">
         <img src="${this.user.avatar}" alt="User avatar"/>
