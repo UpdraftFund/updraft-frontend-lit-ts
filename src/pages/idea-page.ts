@@ -1,6 +1,5 @@
 import { customElement, property, state } from "lit/decorators.js";
 import { html, LitElement } from "lit";
-import { createRequest } from '@urql/core';
 import { IdeaDocument } from '../../.graphclient';
 import urqlClient from '../urql-client';
 import '../components/layout/top-bar'
@@ -44,9 +43,8 @@ export class IdeaPage extends LitElement {
   async firstUpdated() {
     if (this.ideaId) {
       this.loading = true;
-      const { executeQuery } = urqlClient;
       try {
-        const result = await executeQuery(createRequest(IdeaDocument, { ideaId: this.ideaId }));
+        const result = await urqlClient.query(IdeaDocument, { ideaId: this.ideaId });
         this.data = result.data;
         this.error = result.error;
       } catch (e) {
