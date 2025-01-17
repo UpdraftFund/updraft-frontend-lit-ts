@@ -2,6 +2,7 @@ import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
+import { Task } from '@lit/task';
 
 import makeBlockie from 'ethereum-blockies-base64';
 import { getBalance } from '@wagmi/core'
@@ -35,7 +36,6 @@ export class MyApp extends LitElement {
     },
     {
       path: '/',
-      name: 'home',
       enter: async () => {
         await import('./pages/home-page');
         return true;
@@ -87,29 +87,33 @@ export class MyApp extends LitElement {
           id: caipNetwork?.caipNetworkId as keyof typeof updAddresses,
         }
       };
-      this.refreshBalances();
+      this.refreshBalances.run();
     });
-    this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances());
+    this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances.run());
   }
 
-  async refreshBalances() {
-    if (this.user.address && this.user.network?.id) {
-      const gasToken = await getBalance(config, { address: this.user.address });
-      const upd = await getBalance(config, {
-        address: this.user.address,
-        token: updAddresses[this.user.network.id].address as `0x{$string}`,
-      });
-      this.balances = {
-        gasToken: {
-          symbol: gasToken.symbol,
-          balance: gasToken.formatted,
-        },
-        upd: {
-          balance: upd.formatted,
+  public refreshBalances = new Task(this, {
+    task: async () => {
+      if (this.user.address && this.user.network?.id) {
+        const gasToken = await getBalance(config, { address: this.user.address });
+        const updraftToken = await getBalance(config, {
+          address: this.user.address,
+          token: updAddresses[this.user.network.id]?.address as `0x{$string}`,
+        });
+        this.balances = {
+          gas: {
+            symbol: gasToken.symbol,
+            balance: gasToken.formatted,
+          },
+          updraft: {
+            symbol: updraftToken.symbol,
+            balance: updraftToken.formatted,
+          }
         }
       }
-    }
-  }
+    },
+    autoRun: false,
+  });
 
   render = () => this.router.outlet();
 }

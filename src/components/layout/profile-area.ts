@@ -133,16 +133,18 @@ export class ProfileArea extends LitElement {
             <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
             <div>
               <p>Buy Gas Tokens</p>
-              ${this.balances.gasToken && html`
-                <p class="status">${shortNum(this.balances.gasToken.balance, 5)} ${this.balances.gasToken.symbol}</p>
+              ${this.balances.gas && html`
+                <p class="status">${shortNum(this.balances.gas.balance, 5)} ${this.balances.gas.symbol}</p>
               `}
             </div>
           </sl-menu-item>
           <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any })}>
             <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
             <div>
-              <p>Swap for UPD</p>
-              ${this.balances.upd && html`<p class="status">${shortNum(this.balances.upd.balance, 5)} UPD</p>`}
+              <p>Swap for Updraft Tokens</p>
+              ${this.balances.updraft && html`
+                <p class="status">${shortNum(this.balances.updraft.balance, 5)} ${this.balances.updraft.symbol}</p>
+              `}
             </div>
           </sl-menu-item>
           <sl-menu-item>

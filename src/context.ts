@@ -13,15 +13,7 @@ export type User = {
   }
 }
 
-export type Balances = {
-  gasToken?: {
-    symbol: string;
-    balance: string;
-  },
-  upd?: {
-    balance: string;
-  }
-};
+export type Balances = Record<string, { symbol: string; balance: string }>;
 
 export const userContext = createContext<User>('updraft-user');
 export const balanceContext = createContext<Balances>('balances');
