@@ -141,7 +141,7 @@ export class ProfileArea extends LitElement {
           <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any })}>
             <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
             <div>
-              <p>Swap for Updraft Tokens</p>
+              <p>Swap for UPD</p>
               ${this.balances.updraft && html`
                 <p class="status">${shortNum(this.balances.updraft.balance, 5)} ${this.balances.updraft.symbol}</p>
               `}
