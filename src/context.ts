@@ -6,6 +6,7 @@ export type User = {
   connected: boolean;
   address?: `0x${string}`;
   name?: string;
+  image?: string;
   avatar?: string;
   network?: {
     name?: string;

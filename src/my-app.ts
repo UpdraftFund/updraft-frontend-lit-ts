@@ -70,11 +70,13 @@ export class MyApp extends LitElement {
     super();
     modal.subscribeAccount(({ isConnected, address }) => {
       // TODO: get and parse updraft profile from address
+      if (address){
+        this.user.address = address as `0x${string}`;
+        this.user.avatar = this.user.image || makeBlockie(address);
+      }
       this.user = {
         ...this.user,
         connected: isConnected,
-        address: address ? address as `0x${string}` : this.user.address,
-        avatar: !this.user.avatar && address ? makeBlockie(address) : this.user.avatar,
       };
     });
     modal.subscribeNetwork(({ caipNetwork }) => {
