@@ -4,6 +4,7 @@ import { css, html, LitElement } from "lit";
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 
 import '../components/layout/top-bar'
+import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/label-with-hint.ts'
 
@@ -11,14 +12,6 @@ import '../components/label-with-hint.ts'
 export class CreateIdea extends LitElement {
 
   static styles = css`
-    top-bar span{
-      font-size: 2.25rem;
-      font-weight: 600;
-      margin-left: clamp(0px, calc((100vw - 670px) * 0.5), 266px);
-      white-space: nowrap;
-      color: var(--main-foreground);
-    }
-
     .container {
       display: flex;
       flex: 1 1 auto; /* The container takes the remaining available space */
@@ -44,7 +37,7 @@ export class CreateIdea extends LitElement {
 
   render() {
     return html`
-      <top-bar hide-create-idea-button><span>Create a new Idea</span></top-bar>
+      <top-bar hide-create-idea-button><page-heading>Create a new Idea</page-heading></top-bar>
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
