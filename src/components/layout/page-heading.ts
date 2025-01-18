@@ -11,7 +11,7 @@ export class PageHeading extends LitElement {
     span {
       font-size: 2.25rem;
       font-weight: 600;
-      margin-left: clamp(0px, calc((100vw - 670px) * 0.5), 266px);
+      margin-left: clamp(0px, calc((100vw - 670px) * 0.5), 200px);
       white-space: nowrap;
       color: var(--main-foreground);
     }

@@ -20,8 +20,9 @@ export class LabelWithHint extends LitElement {
 
     .hint {
       font-size: 0.875rem;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
       color: var(--hint-text);
+      padding-left: 1.5rem;
     }
   `;
 

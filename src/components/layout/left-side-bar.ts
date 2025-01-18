@@ -10,8 +10,10 @@ export class LeftSideBar extends LitElement {
       height: 100%;
       background-color: #f4f4f4; /* Light gray placeholder */
       border-right: 1px solid #ccc;
-      padding: 1rem;
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
     }
 
     p {

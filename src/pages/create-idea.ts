@@ -19,19 +19,33 @@ export class CreateIdea extends LitElement {
     }
 
     left-side-bar {
-      flex: 0 0 275px; /* Sidebar width is fixed at 275px */
-      height: 100%;
+      flex: 0 0 274px; /* Sidebar width is fixed */
     }
 
     main {
       flex: 1;
-      padding: 1rem;
       box-sizing: border-box;
     }
 
     form {
       max-width: 400px;
-      margin: 20px auto;
+      margin: 1.5rem 3rem;
+    }
+
+    /* Responsive behavior for smaller screens */
+    @media (max-width: 768px) {
+      left-side-bar {
+        flex: 0 0 0; /* Collapse the sidebar */
+        pointer-events: none; /* Prevent interaction when hidden */
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      form {
+        margin: 1rem;
+      }
     }
   `;
 
