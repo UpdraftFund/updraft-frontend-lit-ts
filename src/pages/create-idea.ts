@@ -12,14 +12,14 @@ import '../components/label-with-hint.ts'
 export class CreateIdea extends LitElement {
 
   static styles = css`
+    left-side-bar {
+      flex: 0 0 274px; /* Sidebar width is fixed */
+    }
+
     .container {
       display: flex;
       flex: 1 1 auto; /* The container takes the remaining available space */
       overflow: hidden;
-    }
-
-    left-side-bar {
-      flex: 0 0 274px; /* Sidebar width is fixed */
     }
 
     main {
