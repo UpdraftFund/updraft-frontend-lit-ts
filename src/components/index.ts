@@ -8,9 +8,6 @@ export * from './common/input';
 export * from './common/textarea';
 export * from './common/section-header';
 
-export * from './layout/navbar';
-export * from './layout/page';
-
 export * from './feature-specific/idea-card';
 export * from './feature-specific/solution-card';
 export * from './feature-specific/overall-card';
