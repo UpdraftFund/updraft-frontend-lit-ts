@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { disconnect } from '@wagmi/core';
 
@@ -23,6 +23,8 @@ import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } fr
 
 @customElement('profile-area')
 export class ProfileArea extends LitElement {
+  @property() hideCreateIdeaButton = false;
+
   static styles = css`
     :host,
     .trigger-content {
@@ -108,62 +110,64 @@ export class ProfileArea extends LitElement {
 
   render() {
     return this.user.connected && this.user.address ?
-    html`
-      <a href="create-idea" title="Create Idea">
-        <sl-icon src="${plusLgIcon}"></sl-icon>
-      </a>
-      <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${this.requestBalanceRefresh}>
-      <span slot="trigger" class="trigger-content" title="Profile menu">
-        <img src="${this.user.avatar}" alt="User avatar"/>
-        <span class="name">${this.user.name || this.user.address}</span>
-      </span>
-        <sl-menu class="menu">
-          <sl-menu-item @click=${this.reconnect}>
-            <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
-            <span>Reconnect</span>
-          </sl-menu-item>
-          <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
-            <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
-            <div>
-              <p>Choose Network</p>
-              <p class="status">${this.user.network?.name}</p>
-            </div>
-          </sl-menu-item>
-          <sl-menu-item @click=${() => modal.open({ view: 'OnRampProviders' })}>
-            <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
-            <div>
-              <p>Buy Gas Tokens</p>
-              ${this.balances.gas && html`
-                <p class="status">${shortNum(this.balances.gas.balance, 5)} ${this.balances.gas.symbol}</p>
-              `}
-            </div>
-          </sl-menu-item>
-          <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any })}>
-            <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
-            <div>
-              <p>Swap for UPD</p>
-              ${this.balances.updraft && html`
-                <p class="status">${shortNum(this.balances.updraft.balance, 5)} ${this.balances.updraft.symbol}</p>
-              `}
-            </div>
-          </sl-menu-item>
-          <sl-menu-item>
-            <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
-            <div>
-              <p>My Profile</p>
-              <p class="status">${this.user.name || this.user.address}</p>
-            </div>
-          </sl-menu-item>
-          <sl-menu-item @click=${() => modal.open({ view: 'Account' })}>
-            <sl-icon slot="prefix" src="${clockIcon}"></sl-icon>
-            <span>Activity</span>
-          </sl-menu-item>
-        </sl-menu>
-      </sl-dropdown>
-    `
-    : html`
-      <sl-button pill variant="primary" @click=${() => modal.open()}>Connect Wallet</sl-button>
-    `;
+      html`
+        ${this.hideCreateIdeaButton ? null : html`
+          <a href="create-idea" title="Create Idea">
+            <sl-icon src="${plusLgIcon}"></sl-icon>
+          </a>
+        `}
+        <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${this.requestBalanceRefresh}>
+          <span slot="trigger" class="trigger-content" title="Profile menu">
+            <img src="${this.user.avatar}" alt="User avatar"/>
+            <span class="name">${this.user.name || this.user.address}</span>
+          </span>
+          <sl-menu class="menu">
+            <sl-menu-item @click=${this.reconnect}>
+              <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
+              <span>Reconnect</span>
+            </sl-menu-item>
+            <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
+              <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
+              <div>
+                <p>Choose Network</p>
+                <p class="status">${this.user.network?.name}</p>
+              </div>
+            </sl-menu-item>
+            <sl-menu-item @click=${() => modal.open({ view: 'OnRampProviders' })}>
+              <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
+              <div>
+                <p>Buy Gas Tokens</p>
+                ${this.balances.gas && html`
+                  <p class="status">${shortNum(this.balances.gas.balance, 5)} ${this.balances.gas.symbol}</p>
+                `}
+              </div>
+            </sl-menu-item>
+            <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any })}>
+              <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
+              <div>
+                <p>Swap for UPD</p>
+                ${this.balances.updraft && html`
+                  <p class="status">${shortNum(this.balances.updraft.balance, 5)} ${this.balances.updraft.symbol}</p>
+                `}
+              </div>
+            </sl-menu-item>
+            <sl-menu-item>
+              <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
+              <div>
+                <p>My Profile</p>
+                <p class="status">${this.user.name || this.user.address}</p>
+              </div>
+            </sl-menu-item>
+            <sl-menu-item @click=${() => modal.open({ view: 'Account' })}>
+              <sl-icon slot="prefix" src="${clockIcon}"></sl-icon>
+              <span>Activity</span>
+            </sl-menu-item>
+          </sl-menu>
+        </sl-dropdown>
+      `
+      : html`
+          <sl-button pill variant="primary" @click=${() => modal.open()}>Connect Wallet</sl-button>
+      `;
   }
 }
 

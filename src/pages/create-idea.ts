@@ -7,12 +7,17 @@ import '../components/layout/top-bar'
 export class CreateIdea extends LitElement {
 
   static styles = css`
+    top-bar span{
+      font-size: 2.25rem;
+      font-weight: 600;
+      margin-left: clamp(0px, calc((100vw - 670px) * 0.5), 266px);
+      white-space: nowrap;
+    }
   `;
 
   render() {
     return html`
-      <top-bar></top-bar>
-      <p>foobar</p>
+      <top-bar hide-create-idea-button><span>Create a new Idea</span></top-bar>
     `;
   }
 }
