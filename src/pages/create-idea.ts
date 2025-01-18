@@ -1,8 +1,11 @@
 import { customElement } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 
+import '@shoelace-style/shoelace/dist/components/input/input.js';
+
 import '../components/layout/top-bar'
 import '../components/layout/left-side-bar.ts'
+import '../components/label-with-hint.ts'
 
 @customElement('create-idea')
 export class CreateIdea extends LitElement {
@@ -36,33 +39,6 @@ export class CreateIdea extends LitElement {
     form {
       max-width: 400px;
       margin: 20px auto;
-      font-family: Arial, sans-serif;
-    }
-
-    label {
-      font-size: 1rem;
-      font-weight: bold;
-      display: block;
-      margin-bottom: 0.2rem;
-    }
-
-    .hint {
-      font-size: 0.875rem;
-      color: gray;
-      margin-bottom: 0.5rem;
-    }
-
-    input[name="name"] {
-      width: 100%;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-
-    input[name="name"]:required {
-      border-color: var(--main-foreground);
     }
   `;
 
@@ -73,9 +49,9 @@ export class CreateIdea extends LitElement {
         <left-side-bar></left-side-bar>
         <main>
           <form>
-            <label for="name">Name</label>
-            <div class="hint">A short name for your idea</div>
-            <input type="text" id="name" name="name" required/>
+            <sl-input name="name" pill required>
+              <label-with-hint slot="label" label="Name*" hint="A short name for your idea"></label-with-hint>
+            </sl-input>
           </form>
         </main>
       </div>

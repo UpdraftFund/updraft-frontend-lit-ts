@@ -26,15 +26,6 @@ export class MyApp extends LitElement {
 
   private router = new Router(this, [
     {
-      path: '/__components__',
-      enter: async () => {
-        await import('./pages/components-preview');
-        return true;
-      },
-      render: () => html`
-        <components-preview></components-preview>`
-    },
-    {
       path: '/',
       enter: async () => {
         await import('./pages/home-page');

@@ -16,4 +16,6 @@
   --sl-color-primary-800: rgb(10 94 142);
   --sl-color-primary-900: rgb(7 67 101);
   --sl-color-primary-950: rgb(5 41 63);
+
+  --sl-input-required-content: unset;
 }
