@@ -6,6 +6,17 @@ import { TransactionReceipt } from 'viem';
 
 import { config } from '../web3';
 
+export class TransactionSuccess extends Event {
+  static readonly type = 'transaction-success';
+
+  constructor(public readonly receipt: TransactionReceipt) {
+    super(TransactionSuccess.type, {
+      bubbles: true,
+      composed: true,
+    });
+  }
+}
+
 @customElement('transaction-watcher')
 export class TransactionWatcher extends LitElement {
   @property({ type: `0x{string}` }) hash?: `0x{string}`;
@@ -21,10 +32,17 @@ export class TransactionWatcher extends LitElement {
           hash,
           timeout,
         });
-        if (this.receipt.status == 'reverted') throw new Error('transaction reverted');
+
+        if (this.receipt.status == 'reverted') {
+          throw new Error('transaction reverted');
+        }
+
+        // Dispatch the custom event when the transaction succeeds
+        this.dispatchEvent(new TransactionSuccess(this.receipt));
+        return this.receipt;
       }
     },
-    () => [this.hash, this.timeout] // React to changes in these dependencies
+    () => [this.hash, this.timeout]
   );
 
   pending() {
@@ -34,11 +52,11 @@ export class TransactionWatcher extends LitElement {
   /** Render the component, handling each task state */
   render() {
     return html`
-        ${this.transactionTask.render({
-          pending: () => html`<p>Waiting for transaction...</p>`,
-          complete: () => html`<p>Transaction succeeded</p>`,
-          error: (error) => html`<p>Error: ${error}</p>`,
-        })}
+      ${this.transactionTask.render({
+        pending: () => html`<p>Waiting for transaction...</p>`,
+        complete: () => html`<p>Transaction succeeded</p>`,
+        error: (error) => html`<p>Error: ${error}</p>`,
+      })}
     `;
   }
 }
