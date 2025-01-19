@@ -1,5 +1,5 @@
 import { customElement } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
+import { css, html } from "lit";
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 
@@ -7,9 +7,10 @@ import '../components/layout/top-bar'
 import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/label-with-hint.ts'
+import { SaveableForm } from "../components/base/saveable-form.ts";
 
 @customElement('create-idea')
-export class CreateIdea extends LitElement {
+export class CreateIdea extends SaveableForm {
 
   static styles = css`
     left-side-bar {
@@ -55,7 +56,7 @@ export class CreateIdea extends LitElement {
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
-          <form>
+          <form name="create-idea">
             <sl-input name="name" pill required>
               <label-with-hint slot="label" label="Name*" hint="A short name for your idea"></label-with-hint>
             </sl-input>
