@@ -16,10 +16,10 @@ export class SaveableForm extends LitElement {
       const formObject: Record<string, string> = {};
 
       for (const [key, value] of formData.entries()) {
-        if (value instanceof File) {
-          console.warn(`saveForm(${this.formName}): Skipping file input: ${key}`);
+        if (typeof value === "string") {
+          formObject[key] = value; // Save the string value (even if it's empty)
         } else {
-          formObject[key] = value;
+          console.warn(`saveForm(${this.formName}): Skipping unsupported input type (${typeof value}) for key: ${key}`);
         }
       }
       localStorage.setItem(`form:${this.formName}`, JSON.stringify(formObject));
@@ -62,8 +62,8 @@ export class SaveableForm extends LitElement {
   }
 
   private handleBlurEvent = (event: Event) => {
-    const target = event.composedPath()[0] as HTMLInputElement | HTMLTextAreaElement | null;
-    if (target && target.name && target.value?.trim()) {
+    const target = event.composedPath()[0] as { name?: string, value?: any };
+    if (target && target.name && typeof target.value === "string") {
       this.saveForm();
     }
   };
