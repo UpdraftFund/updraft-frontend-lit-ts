@@ -18,9 +18,9 @@ export class SaveableForm extends LitElement {
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
           console.warn(`saveForm(${this.formName}): Skipping file input: ${key}`);
-          continue;
+        } else {
+          formObject[key] = value;
         }
-        formObject[key] = value;
       }
       localStorage.setItem(`form:${this.formName}`, JSON.stringify(formObject));
       console.group(`Saved form: ${this.formName}`);
