@@ -37,6 +37,31 @@ export class CreateIdea extends SaveableForm {
       margin: 1.5rem 3rem;
     }
 
+    .deposit-row {
+      display: flex; 
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    .deposit-row > sl-input {
+      flex: 1; /* Makes the input take up available space */
+    }
+
+    .deposit-row > sl-button {
+      flex-shrink: 0; /* Prevents the button from shrinking */
+    }
+
+    sl-input[name="deposit"] {
+      flex: 0 0 auto;
+      width: calc(10ch + var(--sl-input-spacing-medium) * 2);
+      box-sizing: content-box;
+    }
+
+    sl-input[name="deposit"]::part(input) {
+      text-align: right;
+    }
+
     /* Responsive behavior for smaller screens */
     @media (max-width: 768px) {
       left-side-bar {
@@ -95,6 +120,24 @@ export class CreateIdea extends SaveableForm {
                   hint="Enter up to five tags separated by spaces to help people find your idea. Use hyphens for multi-word-tags.">
               </label-with-hint>
             </sl-input>
+            <div class="deposit-container">
+              <label-with-hint
+                  label="Deposit*"
+                  hint="The initial UPD tokens you will deposit. The more you deposit, the more you \
+                        stand to earn from supporters of your idea. As a creator, you can always withdraw your \
+                        full initial deposit minus the anti-spam fee of 1 UPD or 1% (whichever is greater).">
+              </label-with-hint>
+              <div class="deposit-row">
+                <sl-input name="deposit" required></sl-input>
+                <span>UPD</span>
+                <sl-button variant="primary">Get more UPD</sl-button>
+                <div>
+                  <span>Anti-Spam Fee: </span>
+                  <span class="fee">1</span>
+                  <span>UPD</span>
+                </div>
+              </div>
+            </div>
           </form>
         </main>
       </div>
