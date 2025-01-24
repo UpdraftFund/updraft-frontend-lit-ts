@@ -166,7 +166,7 @@ export class ProfileArea extends LitElement {
         </sl-dropdown>
       `
       : html`
-          <sl-button pill variant="primary" @click=${() => modal.open()}>Connect Wallet</sl-button>
+          <sl-button variant="primary" @click=${() => modal.open()}>Connect Wallet</sl-button>
       `;
   }
 }
