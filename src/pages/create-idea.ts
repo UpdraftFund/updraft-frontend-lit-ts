@@ -5,6 +5,7 @@ import { consume } from '@lit/context';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput, SlRange } from '@shoelace-style/shoelace';
 
 import '../components/layout/top-bar'
@@ -18,7 +19,6 @@ import { modal } from '../web3';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
-
   @query('.fee', true) private feeElement!: HTMLElement;
   @query('sl-range', true) private rewardRange!: SlRange;
 
@@ -58,10 +58,6 @@ export class CreateIdea extends SaveableForm {
       margin-top: 0.25rem;
     }
 
-    .deposit-row > sl-input {
-      flex: 1; /* Makes the input take up available space */
-    }
-
     .deposit-row > sl-button {
       flex-shrink: 0; /* Prevents the button from shrinking */
     }
@@ -87,8 +83,8 @@ export class CreateIdea extends SaveableForm {
     }
     
     .range-and-labels {
-      display: flex; /* Use flexbox to align the slider and labels */
-      gap: 1rem; /* Add spacing between labels and slider */
+      display: flex;
+      gap: 1rem;
     }
 
     .left-label, .right-label {
@@ -103,7 +99,7 @@ export class CreateIdea extends SaveableForm {
       --tooltip-offset: 8px;
       width: 100%;
       max-width: 400px;
-      height: 200px;
+      height: 3.5rem;
     }
     
     .reward-container sl-range::part(input) {
@@ -114,15 +110,16 @@ export class CreateIdea extends SaveableForm {
       /* Make tooltip always visible */
       opacity: 1 !important;
       visibility: visible !important;
-
-      /* Style the tooltip text */
+      
       background-color: transparent; /* No background for the tooltip */
-      color: var(--main-foreground); /* Text color */
+      color: var(--main-foreground);
       font-size: 0.875rem;
       font-weight: bold;
     }
 
     .reward-container sl-range::part(tooltip)::after {
+      /* Hide the tooltip arrow */
+      display: none;
       visibility: hidden;
     }
 
@@ -205,6 +202,13 @@ export class CreateIdea extends SaveableForm {
     this.rewardRange.focus();
     this.rewardRange.syncRange();
     this.rewardRange.blur();
+  }
+
+  private nextButtonClick(e: MouseEvent) {
+    if (!this.form.checkValidity()) {
+      e.preventDefault(); // If the form is invalid, prevent the click
+      this.form.reportValidity(); // Show validation messages
+    }
   }
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -290,6 +294,9 @@ export class CreateIdea extends SaveableForm {
                 <span class="right-label">Earn more</span>
               </div>
             </div>
+            <a href="/edit-profile" rel="next">
+              <sl-button variant="primary" @click=${this.nextButtonClick}>Next: Create your Profile</sl-button>
+            </a>
           </form>
         </main>
       </div>

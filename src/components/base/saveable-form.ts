@@ -6,7 +6,7 @@ import { query } from "lit/decorators.js";
  * It organizes data under the `form` namespace in localStorage.
  */
 export class SaveableForm extends LitElement {
-  @query("form", true) form!: HTMLFormElement;
+  @query("form", true) protected form!: HTMLFormElement;
 
   formName: string | null = null;
 
