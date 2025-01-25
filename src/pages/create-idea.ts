@@ -4,7 +4,8 @@ import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
-import type { SlInput } from '@shoelace-style/shoelace';
+import '@shoelace-style/shoelace/dist/components/range/range.js';
+import type { SlInput, SlRange } from '@shoelace-style/shoelace';
 
 import '../components/layout/top-bar'
 import '../components/layout/page-heading.ts'
@@ -16,9 +17,14 @@ import { balanceContext, RequestBalanceRefresh } from '../context';
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
 
-  @query('.fee') private feeElement!: HTMLElement;
+  @query('.fee', true) private feeElement!: HTMLElement;
+  @query('sl-range', true) private rewardRange!: SlRange;
+
   @consume({ context: balanceContext }) userBalances!: Record<string, { symbol: string; balance: string }>;
+
   @state() private depositError: string | null = null;
+
+  private resizeObserver!: ResizeObserver;
 
   static styles = css`
     left-side-bar {
@@ -70,6 +76,52 @@ export class CreateIdea extends SaveableForm {
 
     sl-input[name="deposit"].invalid::part(input) {
       color: red;
+    }
+    
+    .reward-container {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+    
+    .range-and-labels {
+      display: flex; /* Use flexbox to align the slider and labels */
+      gap: 1rem; /* Add spacing between labels and slider */
+    }
+
+    .left-label, .right-label {
+      font-size: 0.92rem;
+      color: var(--main-foreground);
+    }
+    
+    .reward-container sl-range {
+      --track-color-active: var(--accent);
+      --track-color-inactive: var(--control-background);
+      --thumb-size: 22px;
+      --tooltip-offset: 8px;
+      width: 100%;
+      max-width: 400px;
+      height: 200px;
+    }
+    
+    .reward-container sl-range::part(input) {
+      border-radius: 20px;
+    }
+
+    .reward-container sl-range::part(tooltip) {
+      /* Make tooltip always visible */
+      opacity: 1 !important;
+      visibility: visible !important;
+
+      /* Style the tooltip text */
+      background-color: transparent; /* No background for the tooltip */
+      color: var(--main-foreground); /* Text color */
+      font-size: 0.875rem;
+      font-weight: bold;
+    }
+
+    .reward-container sl-range::part(tooltip)::after {
+      visibility: hidden;
     }
 
     .error {
@@ -146,6 +198,29 @@ export class CreateIdea extends SaveableForm {
     }
   }
 
+  private syncRangeTooltip = () => {
+    // Hack to sync the tooltip
+    this.rewardRange.focus();
+    this.rewardRange.syncRange();
+    this.rewardRange.blur();
+  }
+
+  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
+    super.firstUpdated(changedProperties);
+
+    this.rewardRange.tooltipFormatter = (n: number) => `${n}%`;
+    this.rewardRange.defaultValue = 50;
+    this.rewardRange.updateComplete.then(this.syncRangeTooltip);
+
+    this.resizeObserver = new ResizeObserver(this.syncRangeTooltip);
+    this.resizeObserver.observe(this.rewardRange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.resizeObserver?.disconnect();
+  }
+
   render() {
     return html`
       <top-bar hide-create-idea-button>
@@ -197,6 +272,19 @@ export class CreateIdea extends SaveableForm {
                 </div>
               </div>
               ${this.depositError ? html`<div class="error">${this.depositError}</div>` : ''}
+            </div>
+            <div class="reward-container">
+              <label-with-hint
+                  label="Funder Reward"
+                  hint="The % of each contribution that goes to funder rewards. A high funder reward means supporters \
+                        stand to earn more if your idea is popular. A low funder reward means more of their funds are \
+                        available to withdraw if your idea isn’t popular.">
+              </label-with-hint>
+              <div class="range-and-labels">
+                <span class="left-label">Risk less</span>
+                <sl-range name="reward" value="50"></sl-range>
+                <span class="right-label">Earn more</span>
+              </div>
             </div>
           </form>
         </main>
