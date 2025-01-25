@@ -12,7 +12,9 @@ import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/label-with-hint.ts'
 import { SaveableForm } from "../components/base/saveable-form.ts";
+
 import { balanceContext, RequestBalanceRefresh } from '../context';
+import { modal } from '../web3';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
@@ -264,7 +266,9 @@ export class CreateIdea extends SaveableForm {
                     @input=${this.handleDepositInput}>
                 </sl-input>
                 <span>UPD</span>
-                <sl-button variant="primary">Get more UPD</sl-button>
+                <sl-button 
+                    variant="primary"
+                    @click=${() => modal.open({ view: 'Swap' as any })}>Get more UPD</sl-button>
                 <div>
                   <span>Anti-Spam Fee: </span>
                   <span class="fee">1.00</span>
