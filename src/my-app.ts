@@ -52,6 +52,15 @@ export class MyApp extends LitElement {
       render: () => html`
         <create-idea></create-idea>`
     },
+    {
+      path: '/edit-profile',
+      enter: async () => {
+        await import('./pages/edit-profile');
+        return true;
+      },
+      render: () => html`
+        <edit-profile></edit-profile>`
+    },
   ]);
 
   @provide({ context: userContext }) user: User = { connected: false };
