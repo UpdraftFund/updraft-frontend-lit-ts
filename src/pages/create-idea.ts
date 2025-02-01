@@ -211,6 +211,10 @@ export class CreateIdea extends SaveableForm {
     }
   }
 
+  private handleFormSubmit(e: Event) {
+    e.preventDefault(); // Prevent the default form submission when Enter is pressed
+  }
+
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
 
@@ -235,7 +239,7 @@ export class CreateIdea extends SaveableForm {
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
-          <form name="create-idea">
+          <form name="create-idea" @submit=${this.handleFormSubmit}>
             <sl-input name="name" required autocomplete="off">
               <label-with-hint slot="label" label="Name*" hint="A short name for your idea"></label-with-hint>
             </sl-input>

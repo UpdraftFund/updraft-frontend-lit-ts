@@ -106,6 +106,10 @@ export class EditProfile extends SaveableForm {
     imgElement.src = '/src/assets/icons/link-45deg.svg'; // Fallback icon
   }
 
+  private handleFormSubmit(e: Event) {
+    e.preventDefault(); // Prevent the default form submission when Enter is pressed
+  }
+
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
     this.restoreLinks();
@@ -119,7 +123,7 @@ export class EditProfile extends SaveableForm {
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
-          <form name="edit-profile">
+          <form name="edit-profile" @submit=${this.handleFormSubmit}>
             <sl-input name="name" label="Name" required autocomplete="name"></sl-input>
             <sl-input name="team" label="Team" autocomplete="organization"></sl-input>
             <sl-textarea name="about" label="About" resize="auto"></sl-textarea>
@@ -147,6 +151,7 @@ export class EditProfile extends SaveableForm {
                 `
               )}
             </div>
+            <sl-button variant="primary">Submit your Profile</sl-button>
           </form>
         </main>
         <activity-feed></activity-feed>
