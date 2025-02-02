@@ -17,6 +17,17 @@ export class TransactionSuccess extends Event {
   }
 }
 
+export class TransactionError extends Event {
+  static readonly type = 'transaction-error';
+
+  constructor(public readonly error: Error) {
+    super(TransactionError.type, {
+      bubbles: true,
+      composed: true,
+    });
+  }
+}
+
 @customElement('transaction-watcher')
 export class TransactionWatcher extends LitElement {
   @property({ type: `0x{string}` }) hash?: `0x{string}`;
@@ -27,35 +38,56 @@ export class TransactionWatcher extends LitElement {
   transactionTask = new Task(
     this,
     async ([hash, timeout]) => {
+      // If there's a hash and no pending task, wait for the transaction receipt
       if (hash && !this.pending()) {
-        this.receipt = await waitForTransactionReceipt(config, {
-          hash,
-          timeout,
-        });
+        try {
+          this.receipt = await waitForTransactionReceipt(config, {
+            hash,
+            timeout,
+          });
 
-        if (this.receipt.status == 'reverted') {
-          throw new Error('transaction reverted');
+          if (this.receipt.status === 'reverted') {
+            throw new Error('Transaction reverted');
+          }
+
+          this.dispatchEvent(new TransactionSuccess(this.receipt));
+          return this.receipt;
+        } catch (error) {
+          this.dispatchEvent(new TransactionError(error as Error));
+          throw error;
         }
-
-        // Dispatch the custom event when the transaction succeeds
-        this.dispatchEvent(new TransactionSuccess(this.receipt));
-        return this.receipt;
       }
     },
+    // Arguments passed into the task
     () => [this.hash, this.timeout]
   );
+
 
   pending() {
     return this.transactionTask.status === TaskStatus.PENDING;
   }
 
-  /** Render the component, handling each task state */
   render() {
     return html`
       ${this.transactionTask.render({
-        pending: () => html`<p>Waiting for transaction...</p>`,
-        complete: () => html`<p>Transaction succeeded</p>`,
-        error: (error) => html`<p>Error: ${error}</p>`,
+        pending: () => html`
+          <slot name="pending">
+            <p>Waiting for transaction...</p>
+          </slot>
+        `,
+        complete: () => html`
+          <slot name="complete">
+            <p>Transaction succeeded</p>
+          </slot>
+        `,
+        error: (error) => {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          return html`
+            <slot name="error">
+              <p>Error: ${errorMessage}</p>
+            </slot>
+          `;
+        },
       })}
     `;
   }
