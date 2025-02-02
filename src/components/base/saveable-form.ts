@@ -1,6 +1,8 @@
 import { LitElement } from "lit";
 import { query } from "lit/decorators.js";
 
+import Ajv, { JSONSchemaType } from "ajv";
+
 /**
  * SaveableForm provides form saving/loading behavior.
  * It organizes data under the `form` namespace in localStorage.
@@ -78,4 +80,81 @@ export class SaveableForm extends LitElement {
 export function loadForm(formName: string): Record<string, string> | null {
   const formData = localStorage.getItem(`form:${formName}`);
   return formData ? JSON.parse(formData) : null;
+}
+
+/**
+ * Helper function to map form data stored in localStorage into a schema-compliant JSON object.
+ *
+ * @param formName - The name of the form to load data for.
+ * @param schema - A JSON schema matching the data structure.
+ * @param validate - Optional. Whether to validate the data against the schema. Defaults to `false`.
+ * @returns A validated JSON object if validation is successful (or validation is skipped) or `null` if validation fails.
+ */
+export function formToJson<T>(
+  formName: string,
+  schema: JSONSchemaType<T>,
+  validate: boolean = false
+): T {
+  const formData = loadForm(formName);
+
+  if (!formData) {
+    throw new Error(`No data found for form: ${formName}`);
+  }
+
+  const json: Partial<T> = {};
+  const properties = Object.entries(schema.properties || {}) as [string, typeof schema.properties[keyof T]][];
+
+  for (const [key, schemaProperty] of properties) {
+    switch (schemaProperty.type) {
+      case "array":
+        // Case 1: Space-separated array fields
+        if (formData[key] && typeof formData[key] === "string") {
+          json[key as keyof T] = formData[key].split(/\s+/) as unknown as T[keyof T];
+        }
+        // Case 2: Numbered fields aggregated into an array (e.g., "link1", "link2", ...)
+        else {
+          const baseName = key.slice(0, -1); // Extract the singular base name (e.g., "links" -> "link")
+          const regex = new RegExp(`^${baseName}(\\d+)$`);
+
+          const arrayValues = Object.entries(formData)
+            .filter(([formKey]) => regex.test(formKey)) // Check for numbered keys
+            .sort((a, b) => {
+              // Ensure numerical order based on the digit (e.g., link1, link2, ...)
+              const [, aIndex] = a[0].match(regex)!;
+              const [, bIndex] = b[0].match(regex)!;
+              return parseInt(aIndex) - parseInt(bIndex);
+            })
+            .map(([, value]) => value);
+
+          if (arrayValues.length > 0) {
+            json[key as keyof T] = arrayValues as unknown as T[keyof T];
+          }
+        }
+        break;
+
+      case "string":
+      case "number":
+        if (formData[key]) {
+          json[key as keyof T] = formData[key] as unknown as T[keyof T];
+        }
+        break;
+
+      default:
+        throw new Error(`Unsupported schema property type: ${schemaProperty.type}`);
+    }
+  }
+
+  if (validate) {
+    const ajv = new Ajv();
+    const validateSchema = ajv.compile(schema);
+
+    if (!validateSchema(json)) {
+      const errorMessages = validateSchema.errors
+        ?.map((err) => `${err.instancePath} ${err.message}`)
+        .join(", ");
+      throw new Error(`Validation failed for form: ${formName}. Errors: ${errorMessages}`);
+    }
+  }
+
+  return json as T;
 }
