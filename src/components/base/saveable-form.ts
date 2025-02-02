@@ -70,12 +70,12 @@ export class SaveableForm extends LitElement {
 }
 
 /**
- * Utility function to load form data from localStorage by its name.
+ * Helper function to load form data from localStorage by its name.
  *
  * @param formName - The name of the form to load data for.
  * @returns The form data as a Record<string, string> or null if no data exists.
  */
-export function loadFormData(formName: string): Record<string, string> | null {
+export function loadForm(formName: string): Record<string, string> | null {
   const formData = localStorage.getItem(`form:${formName}`);
   return formData ? JSON.parse(formData) : null;
 }

@@ -10,7 +10,7 @@ import '../components/layout/top-bar'
 import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/layout/activity-feed.ts'
-import { SaveableForm } from "../components/base/saveable-form.ts";
+import { SaveableForm, loadForm } from "../components/base/saveable-form.ts";
 
 import { User, userContext } from '../context';
 
@@ -76,9 +76,9 @@ export class EditProfile extends SaveableForm {
   @state() private links: { name: string; value: string }[] = [];
 
   private restoreLinks() {
-    const savedForm = localStorage.getItem(`form:${this.form.name}`);
+    const savedForm = loadForm(this.form.name);
     if (savedForm) {
-      this.links = Object.entries(JSON.parse(savedForm) as Record<string, string>)
+      this.links = Object.entries(savedForm)
         .filter(([key, value]) => key.startsWith('link') && value.trim() !== '')
         .map(([name, value]) => ({ name, value }));
     }
