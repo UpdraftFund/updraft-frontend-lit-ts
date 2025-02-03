@@ -136,11 +136,12 @@ export class EditProfile extends SaveableForm {
       reader.onload = () => {
         const dataURL = reader.result as string;
 
-        // Update the user context with the new image
+        // The user's image is saved locally to this context consumer, not to the context provider.
+        // To persist the image, we need to upload it to the smart contract where the context provider can read it.
         this.user = {
           ...this.user,
           image: dataURL,
-          avatar: dataURL, // Assume the avatar field also uses this
+          avatar: dataURL,
         };
       };
       reader.readAsDataURL(file);
