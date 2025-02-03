@@ -43,7 +43,29 @@ export class EditProfile extends SaveableForm {
       margin: 1.5rem 3rem;
       color: var(--main-foreground);
     }
-    
+
+    .avatar-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .avatar-preview {
+      display: flex;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--sl-color-neutral-200); /* Background color for placeholder */
+    }
+
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Ensures the image fills the container while maintaining aspect ratio */
+    }
+
     .links-section p {
       margin: 0;
     }
@@ -106,6 +128,25 @@ export class EditProfile extends SaveableForm {
     imgElement.src = '/src/assets/icons/link-45deg.svg'; // Fallback icon
   }
 
+  private handleImageUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataURL = reader.result as string;
+
+        // Update the user context with the new image
+        this.user = {
+          ...this.user,
+          image: dataURL,
+          avatar: dataURL, // Assume the avatar field also uses this
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   private handleFormSubmit(e: Event) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
@@ -123,6 +164,12 @@ export class EditProfile extends SaveableForm {
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
+          <div class="avatar-section">
+            <div class="avatar-preview">
+              <img src=${this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
+            </div>
+            <input type="file" accept="image/*" @change=${this.handleImageUpload}>
+          </div>
           <form name="edit-profile" @submit=${this.handleFormSubmit}>
             <sl-input name="name" label="Name" required autocomplete="name"></sl-input>
             <sl-input name="team" label="Team" autocomplete="organization"></sl-input>
