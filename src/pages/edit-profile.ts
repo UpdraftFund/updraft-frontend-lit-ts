@@ -97,6 +97,8 @@ export class EditProfile extends SaveableForm {
 
   @state() private links: { name: string; value: string }[] = [];
 
+  @state() private uploadedImage: string | null = null;
+
   private restoreLinks() {
     const savedForm = loadForm(this.form.name);
     if (savedForm) {
@@ -134,15 +136,7 @@ export class EditProfile extends SaveableForm {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        const dataURL = reader.result as string;
-
-        // The user's image is saved locally to this context consumer, not to the context provider.
-        // To persist the image, we need to upload it to the smart contract where the context provider can read it.
-        this.user = {
-          ...this.user,
-          image: dataURL,
-          avatar: dataURL,
-        };
+        this.uploadedImage = reader.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -167,7 +161,7 @@ export class EditProfile extends SaveableForm {
         <main>
           <div class="avatar-section">
             <div class="avatar-preview">
-              <img src=${this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
+              <img src=${this.uploadedImage || this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
             </div>
             <input type="file" accept="image/*" @change=${this.handleImageUpload}>
           </div>
