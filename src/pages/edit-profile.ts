@@ -6,6 +6,8 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
+import pencilSquare from '../assets/icons/pencil-square.svg';
+
 import '../components/layout/top-bar'
 import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
@@ -44,26 +46,43 @@ export class EditProfile extends SaveableForm {
       color: var(--main-foreground);
     }
 
-    .avatar-section {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 2rem;
+    .avatar {
+      position: relative; /* Needed for the avatar edit button */
+      display: inline-block; /* Shrinks the div to fit the content (image) */
+      width: 64px; /* width of the image */
+      height: 64px; /* height of the image */
     }
 
-    .avatar-preview {
-      display: flex;
-      width: 64px;
-      height: 64px;
+    .avatar img {
+      width: 100%; /* Ensures the image fits exactly into the container */
+      height: 100%; /* Matches the height of the container */
       border-radius: 50%;
-      overflow: hidden;
       background: var(--sl-color-neutral-200); /* Background color for placeholder */
     }
 
-    .avatar-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Ensures the image fills the container while maintaining aspect ratio */
+    .avatar-edit {
+      position: absolute;
+      bottom: -5px;
+      right: -5px;
+      background: var(--main-background);
+      border-radius: 50%;
+      padding: 0.2rem; /* Add padding for better clickability */
+      cursor: pointer;
+      display: flex;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .avatar-edit:hover {
+      background: var(--sl-color-primary-400);
+    }
+
+    .avatar-edit sl-icon {
+      color: var(--main-foreground);
+      background: var(--main-background);
+    }
+    
+    .avatar-edit input {
+      display: none; /* Hide the file input */
     }
 
     .links-section p {
@@ -159,13 +178,14 @@ export class EditProfile extends SaveableForm {
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
-          <div class="avatar-section">
-            <div class="avatar-preview">
-              <img src=${this.uploadedImage || this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
-            </div>
-            <input type="file" accept="image/*" @change=${this.handleImageUpload}>
-          </div>
           <form name="edit-profile" @submit=${this.handleFormSubmit}>
+            <div class="avatar">
+              <img src=${this.uploadedImage || this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
+              <label class="avatar-edit">
+                <input type="file" accept="image/*" @change=${this.handleImageUpload}>
+                <sl-icon src="${pencilSquare}" label="Edit image"></sl-icon>
+              </label>
+            </div>
             <sl-input name="name" label="Name" required autocomplete="name"></sl-input>
             <sl-input name="team" label="Team" autocomplete="organization"></sl-input>
             <sl-textarea name="about" label="About" resize="auto"></sl-textarea>
@@ -174,23 +194,23 @@ export class EditProfile extends SaveableForm {
               <p>Links</p>
               ${this.links.map(
                   (link, index) => html`
-                  <sl-input
-                    class="link-input"
-                    autocomplete="url"
-                    name=${link.name}
-                    value=${link.value}
-                    @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
-                  >
-                    <img
-                      slot="prefix"
-                      src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
-                      @error=${(e: Event) => this.handleImageError(e)}
-                      alt="Logo for ${link.value}"
-                      width="16px"
-                      height="16px"
-                    />
-                  </sl-input>
-                `
+                    <sl-input
+                        class="link-input"
+                        autocomplete="url"
+                        name=${link.name}
+                        value=${link.value}
+                        @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
+                    >
+                      <img
+                          slot="prefix"
+                          src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
+                          @error=${(e: Event) => this.handleImageError(e)}
+                          alt="Logo for ${link.value}"
+                          width="16px"
+                          height="16px"
+                      />
+                    </sl-input>
+                  `
               )}
             </div>
             <sl-button variant="primary">Submit your Profile</sl-button>
