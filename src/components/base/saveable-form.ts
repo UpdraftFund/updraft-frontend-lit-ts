@@ -74,31 +74,41 @@ export class SaveableForm extends LitElement {
 /**
  * Helper function to load form data from localStorage by its name.
  *
- * @param formName - The name of the form to load data for.
+ * @param form - The name of the form to load data for.
  * @returns The form data as a Record<string, string> or null if no data exists.
  */
-export function loadForm(formName: string): Record<string, string> | null {
-  const formData = localStorage.getItem(`form:${formName}`);
+export function loadForm(form: string): Record<string, string> | null {
+  const formData = localStorage.getItem(`form:${form}`);
   return formData ? JSON.parse(formData) : null;
 }
 
 /**
  * Helper function to map form data stored in localStorage into a schema-compliant JSON object.
  *
- * @param formName - The name of the form to load data for.
+ * @param forms - The name of the form (or array of form names) to load data for.
  * @param schema - A JSON schema matching the data structure.
  * @param validate - Optional. Whether to validate the data against the schema. Defaults to `false`.
  * @returns A validated JSON object if validation is successful (or validation is skipped) or `null` if validation fails.
  */
 export function formToJson<T>(
-  formName: string,
+  forms: string | string[], // Updated parameter name
   schema: JSONSchemaType<T>,
   validate: boolean = false
 ): T {
-  const formData = loadForm(formName);
+  // Normalize input to always handle as an array
+  const formNames = Array.isArray(forms) ? forms : [forms];
 
-  if (!formData) {
-    throw new Error(`No data found for form: ${formName}`);
+  // Combined form data
+  const formData: Record<string, string> = {};
+
+  // Load and merge form data from all provided forms
+  for (const formName of formNames) {
+    const currentFormData = loadForm(formName);
+    if (currentFormData) {
+      Object.assign(formData, currentFormData);
+    } else {
+      console.warn(`No data found for form: ${formName}`);
+    }
   }
 
   const json: Partial<T> = {};
@@ -152,9 +162,13 @@ export function formToJson<T>(
       const errorMessages = validateSchema.errors
         ?.map((err) => `${err.instancePath} ${err.message}`)
         .join(", ");
-      throw new Error(`Validation failed for form: ${formName}. Errors: ${errorMessages}`);
+      throw new Error(
+        `Schema: ${schema} validation failed for form(s):` +
+        `${formNames.join(", ")}. Errors: ${errorMessages}`
+      );
     }
   }
 
   return json as T;
 }
+
