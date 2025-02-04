@@ -42,7 +42,7 @@ export class EditProfile extends SaveableForm {
       display: flex;
       flex-direction: column;
       gap: 1.2rem;
-      margin: 1.5rem 3rem;
+      margin: 1rem 3rem;
       color: var(--main-foreground);
     }
 
@@ -99,10 +99,6 @@ export class EditProfile extends SaveableForm {
       left-side-bar {
         flex: 0 0 0; /* Collapse the sidebar */
         pointer-events: none; /* Prevent interaction when hidden */
-      }
-
-      form {
-        margin: 1rem;
       }
     }
 
