@@ -53,6 +53,18 @@ export class EditProfile extends SaveableForm {
       height: 64px; /* height of the image */
     }
 
+    .avatar {
+      background: var(--main-background);
+      border-radius: 50%;
+      padding: 0.2rem;
+      cursor: pointer;
+      display: flex;
+    }
+    
+    .avatar:hover {
+      background: var(--control-background);
+    }
+
     .avatar img {
       width: 100%; /* Ensures the image fits exactly into the container */
       height: 100%; /* Matches the height of the container */
@@ -60,28 +72,18 @@ export class EditProfile extends SaveableForm {
       background: var(--sl-color-neutral-200); /* Background color for placeholder */
     }
 
-    .avatar-edit {
+    .avatar sl-icon {
+      color: var(--main-foreground);
+      background: inherit;
       position: absolute;
-      bottom: -5px;
-      right: -5px;
-      background: var(--main-background);
+      bottom: 0;
+      right: 0;
       border-radius: 50%;
       padding: 0.2rem; /* Add padding for better clickability */
-      cursor: pointer;
-      display: flex;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
     
-    .avatar-edit:hover {
-      background: var(--sl-color-primary-400);
-    }
-
-    .avatar-edit sl-icon {
-      color: var(--main-foreground);
-      background: var(--main-background);
-    }
-    
-    .avatar-edit input {
+    .avatar input {
       display: none; /* Hide the file input */
     }
 
@@ -179,13 +181,11 @@ export class EditProfile extends SaveableForm {
         <left-side-bar></left-side-bar>
         <main>
           <form name="edit-profile" @submit=${this.handleFormSubmit}>
-            <div class="avatar">
+            <label class="avatar">
               <img src=${this.uploadedImage || this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
-              <label class="avatar-edit">
-                <input type="file" accept="image/*" @change=${this.handleImageUpload}>
-                <sl-icon src="${pencilSquare}" label="Edit image"></sl-icon>
-              </label>
-            </div>
+              <input type="file" accept="image/*" @change=${this.handleImageUpload}>
+              <sl-icon src="${pencilSquare}" label="Edit image"></sl-icon>
+            </label>
             <sl-input name="name" label="Name" required autocomplete="name"></sl-input>
             <sl-input name="team" label="Team" autocomplete="organization"></sl-input>
             <sl-textarea name="about" label="About" resize="auto"></sl-textarea>
