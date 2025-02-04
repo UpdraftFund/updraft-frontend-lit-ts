@@ -61,6 +61,15 @@ export class MyApp extends LitElement {
       render: () => html`
         <edit-profile></edit-profile>`
     },
+    {
+      path: '/submit-profile-and-create-:entity',
+      enter: async () => {
+        await import('./pages/edit-profile');
+        return true;
+      },
+      render: ({ entity }) => html`
+        <edit-profile .createEntity=${entity}></edit-profile>`
+    }
   ]);
 
   @provide({ context: userContext }) user: User = { connected: false };

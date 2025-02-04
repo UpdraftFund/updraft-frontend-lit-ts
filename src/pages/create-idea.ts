@@ -298,7 +298,7 @@ export class CreateIdea extends SaveableForm {
                 <span class="right-label">Earn more</span>
               </div>
             </div>
-            <a href="/edit-profile" rel="next">
+            <a href="/submit-profile-and-create-idea" rel="next">
               <sl-button variant="primary" @click=${this.nextButtonClick}>Next: Create your Profile</sl-button>
             </a>
           </form>

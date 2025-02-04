@@ -1,4 +1,4 @@
-import { customElement, state } from "lit/decorators.js";
+import { customElement, state, property } from "lit/decorators.js";
 import { css, html } from "lit";
 import { consume } from "@lit/context";
 
@@ -112,9 +112,10 @@ export class EditProfile extends SaveableForm {
 
   @consume({ context: userContext, subscribe: true }) user!: User;
 
-  @state() private links: { name: string; value: string }[] = [];
+  @property() createEntity: string | undefined;
 
-  @state() private uploadedImage: string | null = null;
+  @state() private links: { name: string; value: string }[] = [];
+  @state() private uploadedImage: string | undefined;
 
   private restoreLinks() {
     const savedForm = loadForm(this.form.name);
@@ -209,7 +210,11 @@ export class EditProfile extends SaveableForm {
                   `
               )}
             </div>
-            <sl-button variant="primary">Submit your Profile</sl-button>
+            <sl-button variant="primary">
+              Submit Profile
+              ${this.createEntity ? 'and Create ' + this.createEntity.charAt(0).toUpperCase()
+                  + this.createEntity.slice(1) : ''}
+            </sl-button>
           </form>
         </main>
         <activity-feed></activity-feed>
