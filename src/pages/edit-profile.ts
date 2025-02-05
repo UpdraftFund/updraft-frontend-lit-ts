@@ -1,6 +1,8 @@
-import { customElement, state, property } from "lit/decorators.js";
+import { customElement, state, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 import { consume } from "@lit/context";
+
+import { parseUnits, toHex } from "viem";
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -12,9 +14,14 @@ import '../components/layout/top-bar'
 import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/layout/activity-feed.ts'
-import { SaveableForm, loadForm } from "../components/base/saveable-form.ts";
+import { TransactionWatcher } from "../components/transaction-watcher.ts";
+import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
 
+import { updraft } from "../contracts/updraft.ts";
 import { User, userContext } from '../context';
+
+import ideaSchema from '../../updraft-schemas/json-schemas/idea-schema.json'
+import profileSchema from '../../updraft-schemas/json-schemas/profile-schema.json'
 
 @customElement('edit-profile')
 export class EditProfile extends SaveableForm {
@@ -112,10 +119,12 @@ export class EditProfile extends SaveableForm {
 
   @consume({ context: userContext, subscribe: true }) user!: User;
 
-  @property() createEntity: string | undefined;
+  @property() entity: string | undefined;
 
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
+
+  @query('transaction-watcher', true) private transactionWatcher!: TransactionWatcher;
 
   private restoreLinks() {
     const savedForm = loadForm(this.form.name);
@@ -164,6 +173,23 @@ export class EditProfile extends SaveableForm {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
 
+  private async handleSubmit() {
+    if(this.entity === 'idea') {
+      const scale = await updraft.read('percentScale') as bigint;
+      const ideaData = formToJson('create-idea', ideaSchema);
+      const profileData = formToJson('edit-profile', profileSchema);
+      const ideaForm = loadForm('create-idea');
+      if(ideaForm){
+        this.transactionWatcher.hash = await updraft.write('createIdeaWithProfile', [
+          BigInt(ideaForm.reward) * scale / 100n,
+          parseUnits(ideaForm.deposit, 18),
+          toHex(JSON.stringify(ideaData)),
+          toHex(JSON.stringify(profileData)),
+        ]);
+      }
+    }
+  }
+
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
     this.restoreLinks();
@@ -210,12 +236,12 @@ export class EditProfile extends SaveableForm {
                   `
               )}
             </div>
-            <sl-button variant="primary">
+            <sl-button variant="primary" @click=${this.handleSubmit()}>
               Submit Profile
-              ${this.createEntity ? 'and Create ' + this.createEntity.charAt(0).toUpperCase()
-                  + this.createEntity.slice(1) : ''}
+              ${this.entity ? 'and Create ' + this.entity.charAt(0).toUpperCase() + this.entity.slice(1) : ''}
             </sl-button>
           </form>
+          <transaction-watcher></transaction-watcher>
         </main>
         <activity-feed></activity-feed>
       </div>
