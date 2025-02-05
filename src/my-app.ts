@@ -68,7 +68,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ entity }) => html`
-        <edit-profile .createEntity=${entity}></edit-profile>`
+        <edit-profile .entity=${entity}></edit-profile>`
     }
   ]);
 
