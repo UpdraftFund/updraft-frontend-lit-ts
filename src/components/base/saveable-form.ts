@@ -1,7 +1,7 @@
 import { LitElement } from "lit";
 import { query } from "lit/decorators.js";
 
-import Ajv, { JSONSchemaType } from "ajv";
+import Ajv from "ajv";
 
 /**
  * SaveableForm provides form saving/loading behavior.
@@ -90,11 +90,11 @@ export function loadForm(form: string): Record<string, string> | null {
  * @param validate - Optional. Whether to validate the data against the schema. Defaults to `false`.
  * @returns A validated JSON object if validation is successful (or validation is skipped) or `null` if validation fails.
  */
-export function formToJson<T>(
+export function formToJson(
   forms: string | string[], // Updated parameter name
-  schema: JSONSchemaType<T>,
+  schema: any,
   validate: boolean = false
-): T {
+): Record<string, unknown>{
   // Normalize input to always handle as an array
   const formNames = Array.isArray(forms) ? forms : [forms];
 
@@ -111,15 +111,15 @@ export function formToJson<T>(
     }
   }
 
-  const json: Partial<T> = {};
-  const properties = Object.entries(schema.properties || {}) as [string, typeof schema.properties[keyof T]][];
+  const json: Record<string, unknown> = {};
+  const properties = Object.entries(schema.properties || {}) as [string, any][];
 
   for (const [key, schemaProperty] of properties) {
     switch (schemaProperty.type) {
       case "array":
         // Case 1: Space-separated array fields
         if (formData[key] && typeof formData[key] === "string") {
-          json[key as keyof T] = formData[key].split(/\s+/) as unknown as T[keyof T];
+          json[key] = formData[key].split(/\s+/);
         }
         // Case 2: Numbered fields aggregated into an array (e.g., "link1", "link2", ...)
         else {
@@ -137,7 +137,7 @@ export function formToJson<T>(
             .map(([, value]) => value);
 
           if (arrayValues.length > 0) {
-            json[key as keyof T] = arrayValues as unknown as T[keyof T];
+            json[key] = arrayValues;
           }
         }
         break;
@@ -145,7 +145,7 @@ export function formToJson<T>(
       case "string":
       case "number":
         if (formData[key]) {
-          json[key as keyof T] = formData[key] as unknown as T[keyof T];
+          json[key] = formData[key];
         }
         break;
 
@@ -169,6 +169,6 @@ export function formToJson<T>(
     }
   }
 
-  return json as T;
+  return json;
 }
 
