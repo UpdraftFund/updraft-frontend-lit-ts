@@ -30,7 +30,7 @@ export class TransactionError extends Event {
 
 @customElement('transaction-watcher')
 export class TransactionWatcher extends LitElement {
-  @property({ type: `0x{string}` }) hash?: `0x{string}`;
+  @property({ type: String }) hash?: `0x${string}`;
   @property({ type: Number }) timeout = 60000; // 60 seconds default
 
   receipt: TransactionReceipt | null = null;
