@@ -72,7 +72,7 @@ export class Solution {
       functionName: 'addStake',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async collectFees(positionIndex?: bigint) {
@@ -82,7 +82,7 @@ export class Solution {
       functionName: 'collectFees',
       args: positionIndex ? [positionIndex] : undefined,
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async contribute(amount: bigint) {
@@ -92,7 +92,7 @@ export class Solution {
       functionName: 'contribute',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async extendGoal(goal: bigint, deadline?: bigint, solutionInfo?: `0x${string}`) {
@@ -109,7 +109,7 @@ export class Solution {
       functionName: 'extendGoal',
       args
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async refund(positionIndex?: bigint) {
@@ -119,7 +119,7 @@ export class Solution {
       functionName: 'refund',
       args: positionIndex ? [positionIndex] : undefined,
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async removeStake(amount: bigint) {
@@ -129,7 +129,7 @@ export class Solution {
       functionName: 'removeStake',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async updateSolution(solutionInfo: `0x${string}`) {
@@ -139,7 +139,7 @@ export class Solution {
       functionName: 'updateSolution',
       args: [solutionInfo],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async withdrawFunds(to: `0x${string}`, amount: bigint) {
@@ -149,7 +149,7 @@ export class Solution {
       functionName: 'withdrawFunds',
       args: [to, amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
   //endregion
 }

@@ -48,7 +48,7 @@ export class Idea {
       functionName: 'contribute',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async withdraw(positionIndex?: bigint) {
@@ -58,7 +58,7 @@ export class Idea {
       functionName: 'withdraw',
       args: positionIndex ? [positionIndex] : undefined,
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
   //endregion
 }
