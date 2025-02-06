@@ -68,6 +68,9 @@ export class TransactionWatcher extends LitElement {
   }
 
   render() {
+    if (!this.hash) {
+      return html``;
+    }
     return html`
       ${this.transactionTask.render({
         pending: () => html`
