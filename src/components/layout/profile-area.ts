@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { disconnect } from '@wagmi/core';
 
@@ -10,12 +10,15 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
+import "../../components/upd-dialog.ts";
+import { UpdDialog } from "../../components/upd-dialog";
+
 import plusLgIcon from '../../assets/icons/plus-lg.svg';
 import layersIcon from '../../assets/icons/layers.svg';
 import clockIcon from '../../assets/icons/clock.svg';
 import creditCardIcon from '../../assets/icons/credit-card.svg';
 import reconnectIcon from '../../assets/icons/arrow-clockwise.svg';
-import swapIcon from '../../assets/icons/arrow-left-right.svg'
+import getUpdIcon from '../../assets/icons/plus-circle.svg'
 
 import { modal, config } from '../../web3';
 import { shortNum } from '../../utils';
@@ -93,6 +96,8 @@ export class ProfileArea extends LitElement {
       box-shadow: -1px 4px 5px 3px rgba(0, 0, 0, 7%);
     }
   `
+  @query('upd-dialog', true) private updDialog!: UpdDialog;
+
   @consume({ context: userContext, subscribe: true }) user!: User;
   @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
 
@@ -142,10 +147,10 @@ export class ProfileArea extends LitElement {
                 `}
               </div>
             </sl-menu-item>
-            <sl-menu-item @click=${() => modal.open({ view: 'Swap' as any })}>
-              <sl-icon slot="prefix" src="${swapIcon}"></sl-icon>
+            <sl-menu-item @click=${() => this.updDialog.show()}>
+              <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
               <div>
-                <p>Swap for UPD</p>
+                <p>Get More UPD</p>
                 ${this.balances.updraft && html`
                   <p class="status">${shortNum(this.balances.updraft.balance, 5)} ${this.balances.updraft.symbol}</p>
                 `}
@@ -164,6 +169,7 @@ export class ProfileArea extends LitElement {
             </sl-menu-item>
           </sl-menu>
         </sl-dropdown>
+        <upd-dialog></upd-dialog>
       `
       : html`
           <sl-button variant="primary" @click=${() => modal.open()}>Connect Wallet</sl-button>
