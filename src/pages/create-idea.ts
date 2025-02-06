@@ -13,14 +13,16 @@ import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/label-with-hint.ts'
 import { SaveableForm } from "../components/base/saveable-form.ts";
+import { UpdDialog } from "../components/upd-dialog.ts";
+import "../components/upd-dialog.ts";
 
 import { balanceContext, RequestBalanceRefresh } from '../context';
-import { modal } from '../web3';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
   @query('.fee', true) private feeElement!: HTMLElement;
   @query('sl-range', true) private rewardRange!: SlRange;
+  @query('upd-dialog', true) private updDialog!: UpdDialog;
 
   @consume({ context: balanceContext }) userBalances!: Record<string, { symbol: string; balance: string }>;
 
@@ -276,7 +278,7 @@ export class CreateIdea extends SaveableForm {
                 <span>UPD</span>
                 <sl-button 
                     variant="primary"
-                    @click=${() => modal.open({ view: 'Swap' as any })}>Get more UPD</sl-button>
+                    @click=${() => this.updDialog.show()}>Get more UPD</sl-button>
                 <div>
                   <span>Anti-Spam Fee: </span>
                   <span class="fee">1.00</span>
@@ -302,6 +304,7 @@ export class CreateIdea extends SaveableForm {
               <sl-button variant="primary" @click=${this.nextButtonClick}>Next: Create your Profile</sl-button>
             </a>
           </form>
+          <upd-dialog></upd-dialog>
         </main>
       </div>
     `;
