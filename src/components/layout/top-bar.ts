@@ -12,6 +12,7 @@ export class TopBar extends LitElement {
   static styles = css`
     :host {
       background: var(--subtle-background);
+      color: var(--main-foreground);
       display: flex;
       height: 64px;
       padding: 0 24px;
