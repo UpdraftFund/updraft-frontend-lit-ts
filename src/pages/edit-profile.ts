@@ -1,24 +1,27 @@
 import { customElement, state, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 import { consume } from "@lit/context";
-
 import { parseUnits, toHex } from "viem";
+
+import pencilSquare from '../assets/icons/pencil-square.svg';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-
-import pencilSquare from '../assets/icons/pencil-square.svg';
-
 import '../components/layout/top-bar'
 import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/layout/activity-feed.ts'
+import "../components/transaction-watcher.ts";
 import { TransactionWatcher } from "../components/transaction-watcher.ts";
-import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
+import "../components/upd-dialog.ts";
+import { UpdDialog } from "../components/upd-dialog";
 
+
+import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
 import { updraft } from "../contracts/updraft.ts";
 import { User, userContext } from '../context';
+import { modal } from '../web3';
 
 import ideaSchema from '../../updraft-schemas/json-schemas/idea-schema.json'
 import profileSchema from '../../updraft-schemas/json-schemas/profile-schema.json'
@@ -124,6 +127,7 @@ export class EditProfile extends SaveableForm {
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
 
+  @query('upd-dialog', true) private updDialog!: UpdDialog;
   @query('transaction-watcher', true) private transactionWatcher!: TransactionWatcher;
 
   private restoreLinks() {
@@ -174,19 +178,28 @@ export class EditProfile extends SaveableForm {
   }
 
   private async handleSubmit() {
-    if(this.entity === 'idea') {
-      const scale = await updraft.read('percentScale') as bigint;
-      const ideaData = formToJson('create-idea', ideaSchema);
-      const profileData = formToJson('edit-profile', profileSchema);
-      const ideaForm = loadForm('create-idea');
-      if(ideaForm){
-        this.transactionWatcher.hash = await updraft.write('createIdeaWithProfile', [
-          BigInt(ideaForm.reward) * scale / 100n,
-          parseUnits(ideaForm.deposit, 18),
-          toHex(JSON.stringify(ideaData)),
-          toHex(JSON.stringify(profileData)),
-        ]);
+    try {
+      if (this.entity === 'idea') {
+        const scale = await updraft.read('percentScale') as bigint;
+        const ideaData = formToJson('create-idea', ideaSchema);
+        const profileData = formToJson('edit-profile', profileSchema);
+        const ideaForm = loadForm('create-idea');
+        if (ideaForm) {
+          this.transactionWatcher.hash = await updraft.write('createIdeaWithProfile', [
+            BigInt(ideaForm.reward) * scale / 100n,
+            parseUnits(ideaForm.deposit, 18),
+            toHex(JSON.stringify(ideaData)),
+            toHex(JSON.stringify(profileData)),
+          ]);
+        }
       }
+    } catch (e: any) {
+      if(e.message.startsWith('connection')){
+        modal.open({ view: "Connect"});
+      } else if (e.message.includes('exceeds balance')){
+        this.updDialog.show();
+      }
+      console.error(e);
     }
   }
 
@@ -236,11 +249,12 @@ export class EditProfile extends SaveableForm {
                   `
               )}
             </div>
-            <sl-button variant="primary" @click=${this.handleSubmit()}>
+            <sl-button variant="primary" @click=${this.handleSubmit}>
               Submit Profile
               ${this.entity ? 'and Create ' + this.entity.charAt(0).toUpperCase() + this.entity.slice(1) : ''}
             </sl-button>
           </form>
+          <upd-dialog></upd-dialog>
           <transaction-watcher></transaction-watcher>
         </main>
         <activity-feed></activity-feed>
