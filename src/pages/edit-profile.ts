@@ -178,6 +178,7 @@ export class EditProfile extends SaveableForm {
   }
 
   private async handleSubmit() {
+    this.transactionWatcher.scrollIntoView();
     try {
       if (this.entity === 'idea') {
         const scale = await updraft.read('percentScale') as bigint;
