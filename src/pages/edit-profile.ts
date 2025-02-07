@@ -1,6 +1,8 @@
 import { customElement, state, property, query } from "lit/decorators.js";
 import { css, html } from "lit";
 import { consume } from "@lit/context";
+import { TaskStatus } from '@lit/task';
+
 import { parseUnits, toHex } from "viem";
 
 import pencilSquare from '../assets/icons/pencil-square.svg';
@@ -15,12 +17,14 @@ import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/layout/activity-feed.ts'
 import "../components/transaction-watcher.ts";
-import { TransactionWatcher } from "../components/transaction-watcher.ts";
 import "../components/upd-dialog.ts";
+import { TransactionWatcher } from "../components/transaction-watcher.ts";
 import { UpdDialog } from "../components/upd-dialog";
-
+import { SlDialog } from "@shoelace-style/shoelace";
 import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
+
 import { updraft } from "../contracts/updraft.ts";
+import { upd } from "../contracts/upd.ts";
 import { User, userContext } from '../context';
 import { modal } from '../web3';
 
@@ -49,6 +53,8 @@ export class EditProfile extends SaveableForm {
       main {
         flex: 1;
         box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
       }
 
       form {
@@ -117,6 +123,11 @@ export class EditProfile extends SaveableForm {
           pointer-events: none; /* Prevent interaction when hidden */
         }
       }
+      
+      transaction-watcher.submit {
+        padding-bottom: 4rem;
+        align-self: center;
+      }
     `];
 
   @consume({ context: userContext, subscribe: true }) user!: User;
@@ -127,7 +138,13 @@ export class EditProfile extends SaveableForm {
   @state() private uploadedImage: string | undefined;
 
   @query('upd-dialog', true) private updDialog!: UpdDialog;
-  @query('transaction-watcher', true) private transactionWatcher!: TransactionWatcher;
+  @query('transaction-watcher.submit', true) private submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true) private approveTransaction!: TransactionWatcher;
+  @query('sl-dialog', true) private approveDialog!: SlDialog;
+
+  private handleInput() {
+    this.submitTransaction.reset();
+  };
 
   private restoreLinks() {
     const savedForm = loadForm(this.form.name);
@@ -177,31 +194,37 @@ export class EditProfile extends SaveableForm {
   }
 
   private async handleSubmit() {
-    this.transactionWatcher.scrollIntoView();
-    try {
-      if (this.entity === 'idea') {
-        const scale = await updraft.read('percentScale') as bigint;
-        const ideaData = formToJson('create-idea', ideaSchema);
-        const profileData = formToJson('edit-profile', profileSchema);
-        const ideaForm = loadForm('create-idea');
-        if (ideaForm) {
-          this.transactionWatcher.hash = await updraft.write('createIdeaWithProfile', [
-            BigInt(ideaForm.reward) * scale / 100n,
-            parseUnits(ideaForm.deposit, 18),
-            toHex(JSON.stringify(ideaData)),
-            toHex(JSON.stringify(profileData)),
+    // Don't allow overlapping transactions
+    if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
+      try {
+        if (this.entity === 'idea') {
+          const scale = await updraft.read('percentScale') as bigint;
+          const ideaData = formToJson('create-idea', ideaSchema);
+          const profileData = formToJson('edit-profile', profileSchema);
+          const ideaForm = loadForm('create-idea');
+          if (ideaForm) {
+            this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
+              BigInt(ideaForm.reward) * scale / 100n,
+              parseUnits(ideaForm.deposit, 18),
+              toHex(JSON.stringify(ideaData)),
+              toHex(JSON.stringify(profileData)),
+            ]);
+          }
+        }
+      } catch (e: any) {
+        if (e.message.startsWith('connection')) {
+          modal.open({ view: "Connect" });
+        } else if (e.message.includes('exceeds balance')) {
+          this.updDialog.show();
+        } else if (e.message.includes('exceeds allowance')) {
+          this.approveTransaction.reset();
+          this.approveDialog.show();
+          this.approveTransaction.hash = await upd.write('approve', [
+            updraft.address, parseUnits('1', 29)
           ]);
         }
+        console.error(e);
       }
-    } catch (e: any) {
-      if(e.message.startsWith('connection')){
-        modal.open({ view: "Connect"});
-      } else if (e.message.includes('exceeds balance')){
-        this.updDialog.show();
-      } else if (e.message.includes('exceeds allowance')){
-
-      }
-      console.error(e);
     }
   }
 
@@ -218,7 +241,7 @@ export class EditProfile extends SaveableForm {
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
-          <form name="edit-profile" @submit=${this.handleFormSubmit}>
+          <form name="edit-profile" @submit=${this.handleFormSubmit} @input=${this.handleInput}>
             <label class="avatar">
               <img src=${this.uploadedImage || this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
               <input type="file" accept="image/*" @change=${this.handleImageUpload}>
@@ -260,9 +283,9 @@ export class EditProfile extends SaveableForm {
           <sl-dialog label="Set Allowance">
             <p>Before you can submit your profile,
                you need to sign a transaction to allow Updraft to spend your UPD tokens.</p>
-            <p>Please sign the next transaction to continue.</p>
+            <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
           </sl-dialog>
-          <transaction-watcher></transaction-watcher>
+          <transaction-watcher class="submit"></transaction-watcher>
         </main>
         <activity-feed></activity-feed>
       </div>
