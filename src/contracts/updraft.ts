@@ -5,9 +5,9 @@ import updraftAddresses from './updraftAddresses.json';
 import abi from './abis/Updraft.json';
 import { Contract } from "./contract.ts";
 
-type AddressMap = {
+interface AddressMap {
   [chainName: string]: `0x${string}`;
-};
+}
 
 const addresses: AddressMap = updraftAddresses as AddressMap;
 
