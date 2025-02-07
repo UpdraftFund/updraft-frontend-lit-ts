@@ -13,33 +13,30 @@ export class Idea {
 
   //region Read methods
   async checkPosition(funder: `0x${string}`, positionIndex?: bigint): Promise<ideaPosition> {
-    const output = await readContract(config, {
+    const [tokens, shares] = await readContract(config, {
       abi,
       address: this.address,
       functionName: 'checkPosition',
-      args: positionIndex ? [funder, positionIndex] : [funder],
+      args: [funder, positionIndex],
     }) as [bigint, bigint];
-    return {
-      tokens: output[0],
-      shares: output[1],
-    };
+    return { tokens, shares };
   }
 
   async contributorFee(): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'contributorFee',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async numPositions(funder: `0x${string}`): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'numPositions',
       args: [funder],
-    }) as bigint;
+    }) as Promise<bigint>;
   }
   //endregion
 
@@ -51,7 +48,7 @@ export class Idea {
       functionName: 'contribute',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async withdraw(positionIndex?: bigint) {
@@ -61,7 +58,7 @@ export class Idea {
       functionName: 'withdraw',
       args: positionIndex ? [positionIndex] : undefined,
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
   //endregion
 }

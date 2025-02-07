@@ -1,0 +1,21 @@
+query IdeasByTag(
+    $first: Int = 5,
+    $skip: Int = 0,
+    $tag: String!,
+    $detailed: Boolean = false
+) {
+    ideas(
+        first: $first,
+        skip: $skip,
+        where: { tags_contains: [$tag] },
+        orderBy: shares,
+        orderDirection: desc
+    ) {
+        ... @skip(if: $detailed) {
+            ...IdeaFields
+        }
+        ... @include(if: $detailed) {
+            ...IdeaFieldsDetailed
+        }
+    }
+}

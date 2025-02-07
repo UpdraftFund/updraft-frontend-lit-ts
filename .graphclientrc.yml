@@ -1,0 +1,8 @@
+# .graphclientrc.yml
+sources:
+  - name: updraft
+    handler:
+      graphql:
+        endpoint: https://api.studio.thegraph.com/query/94944/updraft/version/latest
+documents:
+  - './src/queries/*.graphql'

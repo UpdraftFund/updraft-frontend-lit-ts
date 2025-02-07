@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Graphclient output
+/.graphclient/
+
+tmp.txt

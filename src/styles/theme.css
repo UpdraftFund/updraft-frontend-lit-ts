@@ -1,0 +1,25 @@
+:root {
+  --main-background: #ffffff;
+  --subtle-background: #dff5fc;
+  --accent: #0b6497;
+  --main-foreground: hsla(0, 0%, 16%, 1);
+  --hint-text: hsla(0, 0%, 43%, 1);
+  --control-background: #ACE9FB;
+
+  --sl-input-border-color: hsla(194, 84%, 63%, 1);
+
+  --sl-color-primary-50: rgb(247 250 252);
+  --sl-color-primary-100: rgb(228 238 243);
+  --sl-color-primary-200: rgb(207 225 235);
+  --sl-color-primary-300: rgb(185 210 225);
+  --sl-color-primary-400: rgb(154 191 212);
+  --sl-color-primary-500: rgb(115 166 195);
+  --sl-color-primary-600: var(--accent);
+  --sl-color-primary-700: rgb(34 114 161);
+  --sl-color-primary-800: rgb(10 94 142);
+  --sl-color-primary-900: rgb(7 67 101);
+  --sl-color-primary-950: rgb(5 41 63);
+
+  --sl-input-border-radius-medium: 20px;
+  --sl-input-required-content: unset;
+}

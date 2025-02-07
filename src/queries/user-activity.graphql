@@ -1,0 +1,38 @@
+query UserActivity($first: Int = 4, $skip: Int = 0, $userId: String!) {
+    ideasFunded: ideaContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder: $userId },
+        orderBy: createdTime,
+        orderDirection: desc
+    ) {
+        idea {
+            ...IdeaFields
+            creator {
+                id
+            }
+        }
+        contribution
+    }
+    solutionsFunded: solutionContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder: $userId },
+        orderBy: createdTime,
+        orderDirection: desc
+    ) {
+        solution {
+            ...SolutionFields
+        }
+        contribution
+    }
+    solutionsDrafted: solutions(
+        first: $first,
+        skip: $skip,
+        where: { drafter: $userId },
+        orderBy: startTime,
+        orderDirection: desc
+    ) {
+        ...SolutionFields
+    }
+}

@@ -3,7 +3,7 @@ import { config } from '../web3.ts';
 import abi from './abis/Solution.json';
 
 export type solutionPosition = {
-  feesEarned: bigint;
+  reward: bigint;
   shares: bigint;
 };
 
@@ -13,49 +13,54 @@ export class Solution {
 
   //region Read methods
   async checkPosition(funder: `0x${string}`, positionIndex?: bigint): Promise<solutionPosition> {
-    const output = await readContract(config, {
+    const [reward, shares] = await readContract(config, {
       abi,
       address: this.address,
       functionName: 'checkPosition',
-      args: positionIndex ? [funder, positionIndex] : [funder],
+      args: [funder, positionIndex],
     }) as [bigint, bigint];
-    return {
-      feesEarned: output[0],
-      shares: output[1],
-    };
+    return { reward, shares };
+  }
+
+  async getStake(staker: `0x${string}`): Promise<bigint> {
+    return readContract(config, {
+      abi,
+      address: staker,
+      functionName: 'stakes',
+    }) as Promise<bigint>;
   }
 
   async contributorFee(): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'contributorFee',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async numPositions(funder: `0x${string}`): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'numPositions',
       args: [funder],
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async tokensWithdrawn(): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'tokensWithdrawn',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
 
   async totalTokens(): Promise<bigint> {
-    return await readContract(config, {
+    return readContract(config, {
       abi,
       address: this.address,
       functionName: 'totalTokens',
-    }) as bigint;
+    }) as Promise<bigint>;
   }
   //endregion
 
@@ -67,7 +72,7 @@ export class Solution {
       functionName: 'addStake',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async collectFees(positionIndex?: bigint) {
@@ -77,7 +82,7 @@ export class Solution {
       functionName: 'collectFees',
       args: positionIndex ? [positionIndex] : undefined,
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async contribute(amount: bigint) {
@@ -87,7 +92,7 @@ export class Solution {
       functionName: 'contribute',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async extendGoal(goal: bigint, deadline?: bigint, solutionInfo?: `0x${string}`) {
@@ -104,7 +109,7 @@ export class Solution {
       functionName: 'extendGoal',
       args
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async refund(positionIndex?: bigint) {
@@ -114,7 +119,7 @@ export class Solution {
       functionName: 'refund',
       args: positionIndex ? [positionIndex] : undefined,
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async removeStake(amount: bigint) {
@@ -124,7 +129,7 @@ export class Solution {
       functionName: 'removeStake',
       args: [amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async updateSolution(solutionInfo: `0x${string}`) {
@@ -134,7 +139,7 @@ export class Solution {
       functionName: 'updateSolution',
       args: [solutionInfo],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
 
   async withdrawFunds(to: `0x${string}`, amount: bigint) {
@@ -144,7 +149,7 @@ export class Solution {
       functionName: 'withdrawFunds',
       args: [to, amount],
     });
-    await writeContract(config, request);
+    return writeContract(config, request);
   }
   //endregion
 }

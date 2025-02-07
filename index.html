@@ -2,50 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="src/assets/icons/updraft-icon.png" />
+    <link rel="icon" type="image/png" href="/assets/updraft-icon.png"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Updraft</title>
-    <link rel="stylesheet" href="src/index.css" />
+    <meta name="description" content="Get paid to crowdfund and work on public goods." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   </head>
   <body>
-    <table><tr><td><appkit-button /></td><td><appkit-network-button /></td></tr></table>
-
-    <button id="updraft-address-button">Updraft address</button>
-    <p id="updraft-address">Updraft address:</p>
-
-    <button id="feeToken-button">Fee token</button>
-    <p id="feeToken">Fee token address:</p>
-
-    <label for="profile">Profile Data (JSON):</label><br>
-    <textarea id="profile" rows="6" cols="40">
-{
-  "name": "Test Person"
-}
-    </textarea><br>
-    <button id="updateProfile-button">Update Profile</button>
-    <p>-----------------------</p>
-    <form id="idea-form">
-      <div>
-        <label for="contributor-fee">Contributor Fee (%):</label>
-        <input type="number" id="contributor-fee" name="contributorFee" value="10"/>
-      </div>
-      <div>
-        <label for="contribution">Contribution (UPD):</label>
-        <input type="number" id="contribution" name="contribution" value="100"/>
-      </div>
-      <div>
-        <label for="idea-data">Idea Data (JSON):</label><br>
-        <textarea id="idea-data" name="ideaData" rows="5" cols="50">
-{
-  "name": "Test Idea",
-  "description": "A test idea."
-}
-        </textarea>
-      </div>
-      <button type="submit">Create Idea</button>
-    </form>
-    <p>Idea contract created at address:</p><p id="idea-address"></p>
-
-    <script type="module" src="src/main.ts"></script>
+    <my-app></my-app>
+    <script type="module" src="/src/my-app.ts"></script>
   </body>
 </html>

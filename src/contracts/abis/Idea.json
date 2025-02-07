@@ -33,6 +33,11 @@
   },
   {
     "inputs": [],
+    "name": "ContributorFeeOverOneHundredPercent",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "NotOnlyPosition",
     "type": "error"
   },

@@ -1,0 +1,13 @@
+query IdeasByFunders($first: Int = 4, $skip: Int = 0, $funders: [String!]) {
+    ideaContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder_in: $funders },
+        orderBy: createdTime,
+        orderDirection: desc
+    ) {
+        idea {
+            ...IdeaFieldsDetailed
+        }
+    }
+}

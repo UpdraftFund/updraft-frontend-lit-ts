@@ -1,0 +1,10 @@
+:root {
+  font-family: 'Noto Sans', sans-serif;
+  color-scheme: light;
+
+  --sl-font-sans: 'Noto Sans', sans-serif;
+  --sl-spacing-medium: 1.25rem;
+  --sl-font-weight-semibold: 400;
+  --sl-button-font-size-medium: 1rem;
+  --sl-input-height-medium: 39px;
+}

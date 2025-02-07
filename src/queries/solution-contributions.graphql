@@ -1,0 +1,15 @@
+query SolutionContributions($first: Int = 5, $skip: Int = 0, $solutionId: String!) {
+    solutionContributions(
+        first: $first,
+        skip: $skip,
+        where: { solution: $solutionId },
+        orderBy: contribution,
+        orderDirection: desc
+    ) {
+        funder {
+            id
+            profile
+        }
+        contribution
+    }
+}

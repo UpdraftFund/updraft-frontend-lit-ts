@@ -42,6 +42,11 @@
   },
   {
     "inputs": [],
+    "name": "ContributorFeeOverOneHundredPercent",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "GoalFailed",
     "type": "error"
   },

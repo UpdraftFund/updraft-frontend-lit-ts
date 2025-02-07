@@ -1,0 +1,33 @@
+query IdeasByTags(
+    $first: Int = 5,
+    $skip: Int = 0,
+    $tag1: String!,
+    $tag2: String!, # if tag2 isn't used, repeat the value of tag1
+    $tag3: String!, # if tag3 isn't used, repeat the value of tag1
+    $tag4: String!, # if tag4 isn't used, repeat the value of tag1
+    $tag5: String!, # if tag5 isn't used, repeat the value of tag1
+    $detailed: Boolean = false
+) {
+    ideas(
+        first: $first,
+        skip: $skip,
+        where: {
+            or: [
+                { tags_contains: [$tag1] }
+                { tags_contains: [$tag2] }
+                { tags_contains: [$tag3] }
+                { tags_contains: [$tag4] }
+                { tags_contains: [$tag5] }
+            ]
+        },
+        orderBy: shares,
+        orderDirection: desc
+    ) {
+        ... @skip(if: $detailed) {
+            ...IdeaFields
+        }
+        ... @include(if: $detailed) {
+            ...IdeaFieldsDetailed
+        }
+    }
+}

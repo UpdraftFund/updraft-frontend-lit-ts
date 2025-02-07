@@ -1,0 +1,15 @@
+query IdeaContributions($first: Int = 5, $skip: Int = 0, $ideaId: String!) {
+    ideaContributions(
+        first: $first,
+        skip: $skip,
+        where: { idea: $ideaId },
+        orderBy: contribution,
+        orderDirection: desc
+    ) {
+        funder {
+            id
+            profile
+        }
+        contribution
+    }
+}

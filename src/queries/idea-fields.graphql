@@ -1,0 +1,8 @@
+fragment IdeaFields on Idea {
+    id
+    name
+    description
+    shares
+    startTime
+    funderReward
+}

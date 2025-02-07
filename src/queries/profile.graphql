@@ -1,0 +1,5 @@
+query Profile($userId: ID!) {
+    user(id: $userId) {
+        profile
+    }
+}
