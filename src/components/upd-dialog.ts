@@ -4,6 +4,8 @@ import { consume } from "@lit/context";
 
 import calculator from "../assets/icons/calculator.svg"
 
+import { dialogStyles } from '../styles/dialog-styles.ts';
+
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -13,32 +15,18 @@ import { balanceContext, Balances, RequestBalanceRefresh } from "../context.ts";
 
 @customElement('upd-dialog')
 export class UpdDialog extends LitElement {
-  static styles = css`
-    sl-dialog::part(panel) {
-      border-radius: 15px;
-      color: var(--main-foreground);
-      background-color: var(--main-background);
-    }
-    
-    sl-dialog::part(title) {
-      font-weight: bold;
-      font-size: 1.5rem;
-    }
-    
+  static styles = [
+    dialogStyles,
+    css`
     .label{
       margin: 0;
     }
-    
-    sl-dialog::part(body) {
-      padding-top: 0;
-    }
-
     .check-balance {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
-  `
+  `];
 
   @query('sl-dialog') dialog!: SlDialog;
 

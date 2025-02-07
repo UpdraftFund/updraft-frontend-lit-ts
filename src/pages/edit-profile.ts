@@ -5,6 +5,8 @@ import { parseUnits, toHex } from "viem";
 
 import pencilSquare from '../assets/icons/pencil-square.svg';
 
+import { dialogStyles } from '../styles/dialog-styles.ts';
+
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -17,7 +19,6 @@ import { TransactionWatcher } from "../components/transaction-watcher.ts";
 import "../components/upd-dialog.ts";
 import { UpdDialog } from "../components/upd-dialog";
 
-
 import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
 import { updraft } from "../contracts/updraft.ts";
 import { User, userContext } from '../context';
@@ -28,97 +29,95 @@ import profileSchema from '../../updraft-schemas/json-schemas/profile-schema.jso
 
 @customElement('edit-profile')
 export class EditProfile extends SaveableForm {
-  static styles = css`
-    left-side-bar {
-      flex: 0 0 274px; /* Sidebar width is fixed */
-    }
-    
-    activity-feed {
-      flex: 0 0 789px; /* Activity feed width is fixed */
-    }
-
-    .container {
-      display: flex;
-      flex: 1 1 auto; /* The container takes the remaining available space */
-      overflow: hidden;
-    }
-
-    main {
-      flex: 1;
-      box-sizing: border-box;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-      margin: 1rem 3rem;
-      color: var(--main-foreground);
-    }
-
-    .avatar {
-      position: relative; /* Needed for the avatar edit button */
-      display: inline-block; /* Shrinks the div to fit the content (image) */
-      width: 64px; /* width of the image */
-      height: 64px; /* height of the image */
-    }
-
-    .avatar {
-      background: var(--main-background);
-      border-radius: 50%;
-      padding: 0.2rem;
-      cursor: pointer;
-      display: flex;
-    }
-    
-    .avatar:hover {
-      background: var(--control-background);
-    }
-
-    .avatar img {
-      width: 100%; /* Ensures the image fits exactly into the container */
-      height: 100%; /* Matches the height of the container */
-      border-radius: 50%;
-      background: var(--sl-color-neutral-200); /* Background color for placeholder */
-    }
-
-    .avatar sl-icon {
-      color: var(--main-foreground);
-      background: inherit;
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      border-radius: 50%;
-      padding: 0.2rem; /* Add padding for better clickability */
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-    
-    .avatar input {
-      display: none; /* Hide the file input */
-    }
-
-    .links-section p {
-      margin: 0;
-    }
-    
-    .links-section .link-input {
-      margin-top: 0.5rem;
-    }
-    
-    @media (max-width: 1415px) {
+  static styles = [
+    dialogStyles,
+    css`
       left-side-bar {
-        flex: 0 0 0; /* Collapse the sidebar */
-        pointer-events: none; /* Prevent interaction when hidden */
+        flex: 0 0 274px; /* Sidebar width is fixed */
       }
-    }
 
-    @media (max-width: 1078px) {
       activity-feed {
-        flex: 0 0 0; /* Collapse the sidebar */
-        pointer-events: none; /* Prevent interaction when hidden */
+        flex: 0 0 789px; /* Activity feed width is fixed */
       }
-    }
-  `;
+
+      .container {
+        display: flex;
+        flex: 1 1 auto; /* The container takes the remaining available space */
+        overflow: hidden;
+      }
+
+      main {
+        flex: 1;
+        box-sizing: border-box;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        margin: 1rem 3rem;
+        color: var(--main-foreground);
+      }
+
+      .avatar {
+        position: relative; /* Needed for the avatar edit button */
+        background: var(--main-background);
+        border-radius: 50%;
+        width: 64px;
+        height: 64px;
+        padding: 0.2rem;
+        cursor: pointer;
+        display: flex;
+      }
+
+      .avatar:hover {
+        background: var(--control-background);
+      }
+
+      .avatar img {
+        width: 100%; /* Ensures the image fits exactly into the container */
+        height: 100%; /* Matches the height of the container */
+        border-radius: 50%;
+        background: var(--sl-color-neutral-200); /* Background color for placeholder */
+      }
+
+      .avatar sl-icon {
+        color: var(--main-foreground);
+        background: inherit;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        border-radius: 50%;
+        padding: 0.2rem; /* Add padding for better clickability */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .avatar input {
+        display: none; /* Hide the file input */
+      }
+
+      .links-section p {
+        margin: 0;
+      }
+
+      .links-section .link-input {
+        margin-top: 0.5rem;
+      }
+
+      @media (max-width: 1415px) {
+        left-side-bar {
+          flex: 0 0 0; /* Collapse the sidebar */
+          pointer-events: none; /* Prevent interaction when hidden */
+        }
+      }
+
+      @media (max-width: 1078px) {
+        activity-feed {
+          flex: 0 0 0; /* Collapse the sidebar */
+          pointer-events: none; /* Prevent interaction when hidden */
+        }
+      }
+    `];
 
   @consume({ context: userContext, subscribe: true }) user!: User;
 
@@ -199,6 +198,8 @@ export class EditProfile extends SaveableForm {
         modal.open({ view: "Connect"});
       } else if (e.message.includes('exceeds balance')){
         this.updDialog.show();
+      } else if (e.message.includes('exceeds allowance')){
+
       }
       console.error(e);
     }
@@ -256,6 +257,11 @@ export class EditProfile extends SaveableForm {
             </sl-button>
           </form>
           <upd-dialog></upd-dialog>
+          <sl-dialog label="Set Allowance">
+            <p>Before you can submit your profile,
+               you need to sign a transaction to allow Updraft to spend your UPD tokens.</p>
+            <p>Please sign the next transaction to continue.</p>
+          </sl-dialog>
           <transaction-watcher></transaction-watcher>
         </main>
         <activity-feed></activity-feed>
