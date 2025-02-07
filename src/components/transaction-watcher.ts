@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { Task, TaskStatus } from '@lit/task';
+import { initialState, Task, TaskStatus } from '@lit/task';
 import { waitForTransactionReceipt } from '@wagmi/core';
 import { TransactionReceipt } from 'viem';
 
@@ -38,38 +38,43 @@ export class TransactionWatcher extends LitElement {
   transactionTask = new Task(
     this,
     async ([hash, timeout]) => {
-      // If there's a hash and no pending task, wait for the transaction receipt
-      if (hash && !this.pending()) {
-        try {
-          this.receipt = await waitForTransactionReceipt(config, {
-            hash,
-            timeout,
-          });
+      // If there's no valid transaction hash, return `initialState`
+      if (!hash) {
+        return initialState;
+      }
 
-          if (this.receipt.status === 'reverted') {
-            throw new Error('Transaction reverted');
-          }
+      try {
+        this.receipt = await waitForTransactionReceipt(config, {
+          hash,
+          timeout,
+        });
 
-          this.dispatchEvent(new TransactionSuccess(this.receipt));
-          return this.receipt;
-        } catch (error) {
-          this.dispatchEvent(new TransactionError(error as Error));
-          throw error;
+        if (this.receipt.status === 'reverted') {
+          throw new Error('Transaction reverted');
         }
+
+        this.dispatchEvent(new TransactionSuccess(this.receipt));
+        return this.receipt;
+      } catch (error) {
+        this.dispatchEvent(new TransactionError(error as Error));
+        throw error;
       }
     },
     // Arguments passed into the task
     () => [this.hash, this.timeout]
   );
 
-
-  pending() {
-    return this.transactionTask.status === TaskStatus.PENDING;
+  /**
+   * Resets the task to its `INITIAL` state and clears the hash.
+   */
+  reset() {
+    this.hash = undefined;
+    this.transactionTask.run([this.hash, this.timeout]); // Reset task to INITIAL
   }
 
   render() {
-    if (!this.hash) {
-      return html``;
+    if(this.transactionTask.status !== TaskStatus.INITIAL){
+      this.scrollIntoView(false);
     }
     return html`
       ${this.transactionTask.render({
