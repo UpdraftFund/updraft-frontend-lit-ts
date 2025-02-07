@@ -11,11 +11,10 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import "../../components/upd-dialog.ts";
-import { UpdDialog } from "../../components/upd-dialog";
+import { UpdDialog } from "../upd-dialog.ts";
 
 import plusLgIcon from '../../assets/icons/plus-lg.svg';
 import layersIcon from '../../assets/icons/layers.svg';
-import clockIcon from '../../assets/icons/clock.svg';
 import creditCardIcon from '../../assets/icons/credit-card.svg';
 import reconnectIcon from '../../assets/icons/arrow-clockwise.svg';
 import getUpdIcon from '../../assets/icons/plus-circle.svg'
@@ -162,10 +161,6 @@ export class ProfileArea extends LitElement {
                 <p>My Profile</p>
                 <p class="status">${this.user.name || this.user.address}</p>
               </div>
-            </sl-menu-item>
-            <sl-menu-item @click=${() => modal.open({ view: 'Account' })}>
-              <sl-icon slot="prefix" src="${clockIcon}"></sl-icon>
-              <span>Activity</span>
             </sl-menu-item>
           </sl-menu>
         </sl-dropdown>
