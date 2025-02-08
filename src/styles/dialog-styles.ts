@@ -18,5 +18,8 @@ export const dialogStyles = css`
 
   sl-dialog [slot="label"] {
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 `;
