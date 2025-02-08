@@ -3,7 +3,7 @@ import { css, html } from "lit";
 import { consume } from "@lit/context";
 import { TaskStatus } from '@lit/task';
 
-import { parseUnits, toHex } from "viem";
+import { parseUnits, toHex, trim } from "viem";
 
 import pencilSquare from '../assets/icons/pencil-square.svg';
 
@@ -18,8 +18,10 @@ import '../components/layout/left-side-bar.ts'
 import '../components/layout/activity-feed.ts'
 import "../components/transaction-watcher.ts";
 import "../components/upd-dialog.ts";
-import { TransactionWatcher } from "../components/transaction-watcher.ts";
+import "../components/share-dialog.ts"
+import { TransactionWatcher, TransactionSuccess } from "../components/transaction-watcher.ts";
 import { UpdDialog } from "../components/upd-dialog";
+import { ShareDialog } from "../components/share-dialog";
 import { SlDialog } from "@shoelace-style/shoelace";
 import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
 
@@ -141,6 +143,13 @@ export class EditProfile extends SaveableForm {
   @query('transaction-watcher.submit', true) private submitTransaction!: TransactionWatcher;
   @query('transaction-watcher.approve', true) private approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) private approveDialog!: SlDialog;
+  @query('share-dialog', true) private shareDialog!: ShareDialog;
+
+  private get capitalizedEntity() {
+    if (this.entity) {
+      return this.entity.charAt(0).toUpperCase() + this.entity.slice(1);
+    }
+  }
 
   private handleInput() {
     this.submitTransaction.reset();
@@ -209,6 +218,7 @@ export class EditProfile extends SaveableForm {
               toHex(JSON.stringify(ideaData)),
               toHex(JSON.stringify(profileData)),
             ]);
+            this.shareDialog.topic = ideaData.name as string;
           }
         }
       } catch (e: any) {
@@ -224,6 +234,22 @@ export class EditProfile extends SaveableForm {
           ]);
         }
         console.error(e);
+      }
+    }
+  }
+
+  private async handleSubmitSuccess(t: TransactionSuccess) {
+    if(this.entity) {
+      const address = t.receipt?.logs?.[0]?.topics?.[1];
+      if (address) {
+        if(this.entity === 'idea') {
+          this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
+          this.shareDialog.action = 'created an Idea';
+        } else {
+          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}`;
+          this.shareDialog.action = 'created a Solution';
+        }
+        this.shareDialog.show();
       }
     }
   }
@@ -276,7 +302,7 @@ export class EditProfile extends SaveableForm {
             </div>
             <sl-button variant="primary" @click=${this.handleSubmit}>
               Submit Profile
-              ${this.entity ? 'and Create ' + this.entity.charAt(0).toUpperCase() + this.entity.slice(1) : ''}
+              ${this.entity ? 'and Create ' + this.capitalizedEntity : ''}
             </sl-button>
           </form>
           <upd-dialog></upd-dialog>
@@ -285,7 +311,8 @@ export class EditProfile extends SaveableForm {
                you need to sign a transaction to allow Updraft to spend your UPD tokens.</p>
             <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
           </sl-dialog>
-          <transaction-watcher class="submit"></transaction-watcher>
+          <share-dialog></share-dialog>
+          <transaction-watcher class="submit" @transaction-success=${this.handleSubmitSuccess}></transaction-watcher>
         </main>
         <activity-feed></activity-feed>
       </div>
