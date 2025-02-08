@@ -18,9 +18,6 @@ export class UpdDialog extends LitElement {
   static styles = [
     dialogStyles,
     css`
-    .label{
-      margin: 0;
-    }
     .check-balance {
       display: flex;
       align-items: center;
@@ -43,8 +40,7 @@ export class UpdDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog>
-        <p slot="label" class="label">Get more UPD</p>
+      <sl-dialog label="Get more UPD">
         <span class="check-balance">
           <p>You have <span class="balance">${this.balances?.updraft?.balance || '0'}</span> UPD</p>
           <sl-button pill @click=${this.handleRefreshBalance} variant="primary" size="small">
