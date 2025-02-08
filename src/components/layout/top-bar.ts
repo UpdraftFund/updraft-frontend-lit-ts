@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 
 import './profile-area';
 
-import updraftLogo from '../../assets/updraft-logo-46.png';
+import updraftLogo from '../../assets/images/updraft-logo-46.png';
 
 @customElement('top-bar')
 export class TopBar extends LitElement {
