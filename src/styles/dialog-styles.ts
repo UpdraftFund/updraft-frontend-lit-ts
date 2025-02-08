@@ -15,4 +15,8 @@ export const dialogStyles = css`
   sl-dialog::part(body) {
     padding-top: 0;
   }
+
+  sl-dialog [slot="label"] {
+    margin: 0;
+  }
 `;
