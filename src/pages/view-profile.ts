@@ -128,11 +128,15 @@ export class ViewProfile extends LitElement {
   private readonly profile = new Task(this, {
     task: async () => {
       if (this.address) {
+        let result;
         try {
-          const result = await urqlClient.query(ProfileDocument, { userId: this.address });
-          return JSON.parse(fromHex(result.data as `0x${string}`, 'string'));
+          result = await urqlClient.query(ProfileDocument, { userId: this.address });
+          if(result.data?.user?.profile) {
+            return JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
+          }
         } catch (error) {
           console.error('Error fetching profile:', error);
+          console.dir(result);
         }
       }
     },
