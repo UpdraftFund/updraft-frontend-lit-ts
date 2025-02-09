@@ -119,7 +119,7 @@ export class ProfileArea extends LitElement {
     return this.user.connected && this.user.address ?
       html`
         ${this.hideCreateIdeaButton ? null : html`
-          <a href="create-idea" title="Create Idea">
+          <a href="/create-idea" title="Create Idea">
             <sl-icon src="${plusLgIcon}"></sl-icon>
           </a>
         `}
@@ -158,7 +158,7 @@ export class ProfileArea extends LitElement {
                 `}
               </div>
             </sl-menu-item>
-            <a href="profile/${this.user.address}" title="My Profile">
+            <a href="/profile/${this.user.address}" title="My Profile">
               <sl-menu-item>
                 <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
                 <div>
