@@ -84,6 +84,9 @@ export class ProfileArea extends LitElement {
       color: var(--main-foreground);
       background-color: var(--main-background);
     }
+    a {
+      text-decoration: none;
+    }
     sl-dropdown::part(panel),
     sl-menu {
       border-radius: 15px 0 15px 15px;
@@ -155,13 +158,15 @@ export class ProfileArea extends LitElement {
                 `}
               </div>
             </sl-menu-item>
-            <sl-menu-item>
-              <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
-              <div>
-                <p>My Profile</p>
-                <p class="status">${this.user.name || this.user.address}</p>
-              </div>
-            </sl-menu-item>
+            <a href="profile/${this.user.address}" title="My Profile">
+              <sl-menu-item>
+                <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
+                <div>
+                  <p>My Profile</p>
+                  <p class="status">${this.user.name || this.user.address}</p>
+                </div>
+              </sl-menu-item>
+            </a>
           </sl-menu>
         </sl-dropdown>
         <upd-dialog></upd-dialog>
