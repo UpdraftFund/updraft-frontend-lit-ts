@@ -50,7 +50,7 @@ export class UpdDialog extends LitElement {
         </span>
         <h3>How to get UPD</h3>
         <ul>
-          <li><a href="https://discord.gg/mQJ58MY6Nz" target="_blank" rel="noopener">
+          <li><a href="https://discord.gg/mQJ58MY6Nz" target="_blank">
             Get free UPD from our discord
           </a></li>
       </sl-dialog>
