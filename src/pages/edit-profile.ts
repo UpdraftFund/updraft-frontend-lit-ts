@@ -73,6 +73,7 @@ export class EditProfile extends SaveableForm {
         border-radius: 50%;
         width: 64px;
         height: 64px;
+        aspect-ratio: 1/1;
         padding: 0.2rem;
         cursor: pointer;
         display: flex;
