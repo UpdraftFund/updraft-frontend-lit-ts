@@ -75,6 +75,20 @@ export class ViewProfile extends LitElement {
       margin-top: 1rem;
     }
 
+    .address {
+      display: inline-block; /* Ensures the span respects the width */
+      max-width: 145px;
+      white-space: nowrap; /* Prevent text from wrapping to the next line */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 300;
+      color: var(--subtle-text);
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
     .profile-info h3 {
       margin: 0;
       font-size: 1.5rem;
@@ -157,7 +171,10 @@ export class ViewProfile extends LitElement {
                     <img src="${value?.image || makeBlockie(this.address)}" alt="Profile avatar">
                   </div>
                   <div>
-                    <h3>${value?.name || 'Anonymous'}</h3>
+                    ${value?.name ? html`
+                      <h3>${value.name}</h3>
+                    ` : ''}
+                    <span class="address">${this.address}</span>
                     ${value?.team ? html`
                       <p class="team">${value.team}</p>
                     ` : ''}
@@ -181,7 +198,7 @@ export class ViewProfile extends LitElement {
                 ${value?.links?.length ? html`
                   <div class="links-section">
                     <h4 class="section-heading">Links</h4>
-                    ${value.links.map((link: string)  => html`
+                    ${value.links.map((link: string) => html`
                       <p><a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a></p>
                     `)}
                   </div>
