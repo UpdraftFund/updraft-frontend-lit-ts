@@ -47,13 +47,13 @@ export class ViewProfile extends LitElement {
       border-radius: 50%;
       width: 64px;
       height: 64px;
+      aspect-ratio: 1/1;
     }
 
     .avatar img {
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: var(--sl-color-neutral-200);
     }
 
     .profile-header {
@@ -65,6 +65,12 @@ export class ViewProfile extends LitElement {
     .profile-info {
       margin-top: 1rem;
     }
+    
+    .name {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
 
     .address {
       display: inline-block; /* Ensures the span respects the width */
@@ -75,6 +81,11 @@ export class ViewProfile extends LitElement {
       font-weight: 300;
       color: var(--subtle-text);
       font-size: 0.8rem;
+    }
+    
+    .team {
+      margin: 0;
+      line-height: 1;
     }
 
     .profile-info h3 {
@@ -123,7 +134,7 @@ export class ViewProfile extends LitElement {
       }
     }
 
-    @media (max-width: 1078px) {
+    @media (max-width: 1090px) {
       activity-feed {
         flex: 0 0 0;
         pointer-events: none;
@@ -200,7 +211,7 @@ export class ViewProfile extends LitElement {
                 </div>
                 <div>
                   ${value?.name ? html`
-                    <h3>${value.name}</h3>
+                    <h1 class="name">${value.name}</h1>
                   ` : ''}
                   <span class="address">${this.address}</span>
                   ${value?.team ? html`
