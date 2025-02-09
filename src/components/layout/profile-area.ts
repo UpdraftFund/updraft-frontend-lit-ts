@@ -64,7 +64,7 @@ export class ProfileArea extends LitElement {
       line-height: normal;
     }
     .status {
-      color: var(--hint-text);
+      color: var(--subtle-text);
       font-size: 0.875rem;
       display: inline-block; /* Ensures the span respects the width */
       max-width: 160px;

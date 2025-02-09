@@ -21,7 +21,7 @@ export class LabelWithHint extends LitElement {
     .hint {
       font-size: 0.875rem;
       margin-bottom: 0.3rem;
-      color: var(--hint-text);
+      color: var(--subtle-text);
       padding-left: 1.5rem;
     }
   `;
