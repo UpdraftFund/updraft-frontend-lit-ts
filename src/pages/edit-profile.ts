@@ -318,5 +318,10 @@ export class EditProfile extends SaveableForm {
       </div>
     `
   }
+}
 
+declare global {
+  interface HTMLElementTagNameMap {
+    'edit-profile': EditProfile;
+  }
 }
