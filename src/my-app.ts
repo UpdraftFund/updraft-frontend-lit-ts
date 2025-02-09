@@ -69,7 +69,16 @@ export class MyApp extends LitElement {
       },
       render: ({ entity }) => html`
         <edit-profile .entity=${entity}></edit-profile>`
-    }
+    },
+    {
+      path: '/profile/:address',
+      enter: async () => {
+        await import('./pages/view-profile');
+        return true;
+      },
+      render: ({ address }) => html`
+        <view-profile .address=${address}></view-profile>`
+    },
   ]);
 
   @provide({ context: userContext }) user: User = { connected: false };
