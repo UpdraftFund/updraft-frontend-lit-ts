@@ -3,10 +3,8 @@ import { css, html, LitElement } from "lit";
 import { consume } from "@lit/context";
 import { Task } from '@lit/task';
 
+import { fromHex } from "viem";
 import makeBlockie from 'ethereum-blockies-base64';
-import urqlClient from '../urql-client';
-
-import { User, userContext } from '../context';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '../components/layout/top-bar'
@@ -14,16 +12,10 @@ import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/layout/activity-feed.ts'
 
-import { ProfileDocument } from '../../.graphclient';
+import urqlClient from '../urql-client';
+import { User, userContext } from '../context';
 
-interface Profile {
-  name?: string;
-  team?: string;
-  links?: string[];
-  image?: string;
-  about?: string;
-  news?: string;
-}
+import { ProfileDocument } from '../../.graphclient';
 
 @customElement('view-profile')
 export class ViewProfile extends LitElement {
@@ -133,85 +125,66 @@ export class ViewProfile extends LitElement {
   @state()
   user?: User;
 
-  @state()
-  private profile?: Profile;
-
-  private fetchProfile = new Task(this, {
+  private readonly profile = new Task(this, {
     task: async () => {
       if (this.address) {
         try {
-          const { data } = await urqlClient.query(ProfileDocument, { userId: this.address });
-          if (data?.user?.profile) {
-            const fullProfile = JSON.parse(data.user.profile);
-            // Extract only the fields we know about from the schema
-            this.profile = {
-              name: fullProfile.name,
-              team: fullProfile.team,
-              links: fullProfile.links,
-              image: fullProfile.image,
-              about: fullProfile.about,
-              news: fullProfile.news
-            };
-          }
+          const result = await urqlClient.query(ProfileDocument, { userId: this.address });
+          return JSON.parse(fromHex(result.data as `0x${string}`, 'string'));
         } catch (error) {
           console.error('Error fetching profile:', error);
         }
       }
     },
-    args: () => [this.address]
+    args: () => [this.address] as const
   });
 
-  async updated(changedProperties: Map<string, any>) {
-    if (changedProperties.has('address')) {
-      this.fetchProfile.run();
-    }
-  }
-
   render() {
-    const avatarSrc = this.profile?.image || makeBlockie(this.address);
-
     return html`
       <top-bar></top-bar>
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
-          <page-heading>Profile</page-heading>
-          <div class="profile-content">
-            <div class="profile-header">
-              <div class="avatar">
-                <img src="${avatarSrc}" alt="Profile avatar">
-              </div>
-              <div>
-                <h3>${this.profile?.name || 'Anonymous'}</h3>
-                ${this.profile?.team ? html`
-                  <p class="team">${this.profile.team}</p>
+          ${this.profile.render({
+            complete: (value) => html`
+              <div class="profile-content">
+                <div class="profile-header">
+                  <div class="avatar">
+                    <img src="${value?.image || makeBlockie(this.address)}" alt="Profile avatar">
+                  </div>
+                  <div>
+                    <h3>${value?.name || 'Anonymous'}</h3>
+                    ${value?.team ? html`
+                      <p class="team">${value.team}</p>
+                    ` : ''}
+                  </div>
+                </div>
+
+                ${value?.about ? html`
+                  <div class="about-section">
+                    <h4 class="section-heading">About</h4>
+                    <p>${value.about}</p>
+                  </div>
+                ` : ''}
+
+                ${value?.news ? html`
+                  <div class="news-section">
+                    <h4 class="section-heading">Latest Updates</h4>
+                    <p>${value.news}</p>
+                  </div>
+                ` : ''}
+
+                ${value?.links?.length ? html`
+                  <div class="links-section">
+                    <h4 class="section-heading">Links</h4>
+                    ${value.links.map((link: string)  => html`
+                      <p><a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a></p>
+                    `)}
+                  </div>
                 ` : ''}
               </div>
-            </div>
-
-            ${this.profile?.about ? html`
-              <div class="about-section">
-                <h4 class="section-heading">About</h4>
-                <p>${this.profile.about}</p>
-              </div>
-            ` : ''}
-
-            ${this.profile?.news ? html`
-              <div class="news-section">
-                <h4 class="section-heading">Latest Updates</h4>
-                <p>${this.profile.news}</p>
-              </div>
-            ` : ''}
-
-            ${this.profile?.links?.length ? html`
-              <div class="links-section">
-                <h4 class="section-heading">Links</h4>
-                ${this.profile.links.map(link => html`
-                  <p><a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a></p>
-                `)}
-              </div>
-            ` : ''}
-          </div>
+            `
+          })}
         </main>
         <activity-feed></activity-feed>
       </div>
