@@ -1,6 +1,7 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { consume } from '@lit/context';
+import { SignalWatcher, html } from "@lit-labs/signals";
 import { disconnect } from '@wagmi/core';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -10,7 +11,7 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
-import "../../components/upd-dialog.ts";
+import "../upd-dialog.ts";
 import { UpdDialog } from "../upd-dialog.ts";
 
 import plusLgIcon from '../../assets/icons/plus-lg.svg';
@@ -21,10 +22,10 @@ import getUpdIcon from '../../assets/icons/plus-circle.svg'
 
 import { modal, config } from '../../web3';
 import { shortNum } from '../../utils';
-import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } from '../../context';
+import { user, Connection, connectionContext, Balances, balanceContext, RequestBalanceRefresh } from '../../context';
 
 @customElement('profile-area')
-export class ProfileArea extends LitElement {
+export class ProfileArea extends SignalWatcher(LitElement) {
   @property() hideCreateIdeaButton = false;
 
   static styles = css`
@@ -64,7 +65,7 @@ export class ProfileArea extends LitElement {
       line-height: normal;
     }
     .status {
-      color: var(--hint-text);
+      color: var(--subtle-text);
       font-size: 0.875rem;
       display: inline-block; /* Ensures the span respects the width */
       max-width: 160px;
@@ -84,6 +85,9 @@ export class ProfileArea extends LitElement {
       color: var(--main-foreground);
       background-color: var(--main-background);
     }
+    a {
+      text-decoration: none;
+    }
     sl-dropdown::part(panel),
     sl-menu {
       border-radius: 15px 0 15px 15px;
@@ -97,7 +101,7 @@ export class ProfileArea extends LitElement {
   `
   @query('upd-dialog', true) private updDialog!: UpdDialog;
 
-  @consume({ context: userContext, subscribe: true }) user!: User;
+  @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
   @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
 
   requestBalanceRefresh() {
@@ -113,17 +117,17 @@ export class ProfileArea extends LitElement {
   }
 
   render() {
-    return this.user.connected && this.user.address ?
+    return this.connection.connected && this.connection.address ?
       html`
         ${this.hideCreateIdeaButton ? null : html`
-          <a href="create-idea" title="Create Idea">
+          <a href="/create-idea" title="Create Idea">
             <sl-icon src="${plusLgIcon}"></sl-icon>
           </a>
         `}
         <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${this.requestBalanceRefresh}>
           <span slot="trigger" class="trigger-content" title="Profile menu">
-            <img src="${this.user.avatar}" alt="User avatar"/>
-            <span class="name">${this.user.name || this.user.address}</span>
+            <img src="${user.get().avatar}" alt="User avatar"/>
+            <span class="name">${user.get().name}</span>
           </span>
           <sl-menu class="menu">
             <sl-menu-item @click=${this.reconnect}>
@@ -134,7 +138,7 @@ export class ProfileArea extends LitElement {
               <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
               <div>
                 <p>Choose Network</p>
-                <p class="status">${this.user.network?.name}</p>
+                <p class="status">${this.connection.network?.name}</p>
               </div>
             </sl-menu-item>
             <sl-menu-item @click=${() => modal.open({ view: 'OnRampProviders' })}>
@@ -155,13 +159,15 @@ export class ProfileArea extends LitElement {
                 `}
               </div>
             </sl-menu-item>
-            <sl-menu-item>
-              <img slot="prefix" class="menu-avatar" src="${this.user.avatar}" alt="User avatar"/>
-              <div>
-                <p>My Profile</p>
-                <p class="status">${this.user.name || this.user.address}</p>
-              </div>
-            </sl-menu-item>
+            <a href="/profile/${this.connection.address}" title="My Profile">
+              <sl-menu-item>
+                <img slot="prefix" class="menu-avatar" src="${user.get().avatar}" alt="User avatar"/>
+                <div>
+                  <p>My Profile</p>
+                  <p class="status">${user.get().name}</p>
+                </div>
+              </sl-menu-item>
+            </a>
           </sl-menu>
         </sl-dropdown>
         <upd-dialog></upd-dialog>
