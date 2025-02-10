@@ -82,11 +82,6 @@ export class ViewProfile extends LitElement {
       color: var(--subtle-text);
       font-size: 0.8rem;
     }
-    
-    .team {
-      margin: 0;
-      line-height: 1;
-    }
 
     .profile-info h3 {
       margin: 0;
@@ -204,43 +199,46 @@ export class ViewProfile extends LitElement {
         <left-side-bar></left-side-bar>
         <main>
           ${this.profile.render({
-            complete: (value) => html`
-              <div class="profile-header">
-                <div class="avatar">
-                  <img src="${value?.image || makeBlockie(this.address)}" alt="Profile avatar">
+            complete: (value) => {
+              const { name, team, image, about, news, links } = value || {};
+              return html`
+                <div class="profile-header">
+                  <div class="avatar">
+                    <img src="${image || makeBlockie(this.address)}" alt="Profile avatar">
+                  </div>
+                  <div>
+                    ${name || team ? html`
+                      <h1 class="name">${name || team}</h1>
+                    ` : ''}
+                    <span class="address">${this.address}</span>
+                    ${name && team ? html`
+                      <div class="team">${team}</div>
+                    ` : ''}
+                  </div>
                 </div>
-                <div>
-                  ${value?.name ? html`
-                    <h1 class="name">${value.name}</h1>
-                  ` : ''}
-                  <span class="address">${this.address}</span>
-                  ${value?.team ? html`
-                    <p class="team">${value.team}</p>
-                  ` : ''}
-                </div>
-              </div>
 
-              ${value?.about ? html`
-                <div class="about-section">
-                  <h4 class="section-heading">About</h4>
-                  <p>${value.about}</p>
-                </div>
-              ` : ''}
+                ${about ? html`
+                  <div class="about-section">
+                    <h4 class="section-heading">About</h4>
+                    <p>${about}</p>
+                  </div>
+                ` : ''}
 
-              ${value?.news ? html`
-                <div class="news-section">
-                  <h4 class="section-heading">Latest Updates</h4>
-                  <p>${value.news}</p>
-                </div>
-              ` : ''}
+                ${news ? html`
+                  <div class="news-section">
+                    <h4 class="section-heading">Latest Updates</h4>
+                    <p>${news}</p>
+                  </div>
+                ` : ''}
 
-              ${value?.links?.length ? html`
-                <div class="links-section">
-                  <h4 class="section-heading">Links</h4>
-                  ${value.links.map((link: string) => this.createLink(link))}
-                </div>
-              ` : ''}
-            `
+                ${links?.length ? html`
+                  <div class="links-section">
+                    <h4 class="section-heading">Links</h4>
+                    ${links.map((link: string) => this.createLink(link))}
+                  </div>
+                ` : ''}
+              `
+            }
           })}
         </main>
         <activity-feed></activity-feed>
