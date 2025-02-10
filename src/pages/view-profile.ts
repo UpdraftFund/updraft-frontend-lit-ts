@@ -43,6 +43,7 @@ export class ViewProfile extends LitElement {
       gap: 1rem;
       padding: 1rem 2rem;
       color: var(--main-foreground);
+      max-width: 554px;
     }
 
     .profile-header {
@@ -68,7 +69,7 @@ export class ViewProfile extends LitElement {
     .name {
       margin: 0;
       font-size: 1.3rem;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .address {
@@ -83,18 +84,24 @@ export class ViewProfile extends LitElement {
 
     .team {
       font-size: 0.9rem;
+      margin-top: 0.5rem;
     }
     
     sl-button {
       max-width: 158px;
     }
 
-    .section-heading {
+    .section h2 {
       font-size: 1.2rem;
       margin-bottom: 0.5rem;
+      font-weight: 600
+    }
+    
+    .section p {
+      margin-bottom: 0;
     }
 
-    .links-section {
+    .links {
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -218,22 +225,22 @@ export class ViewProfile extends LitElement {
                 ${this.profileButton}
 
                 ${about ? html`
-                  <div class="about-section">
-                    <h4 class="section-heading">About</h4>
+                  <div class="about section">
+                    <h2>About</h2>
                     <p>${about}</p>
                   </div>
                 ` : ''}
 
                 ${news ? html`
-                  <div class="news-section">
-                    <h4 class="section-heading">Latest Updates</h4>
+                  <div class="news section">
+                    <h2>Latest Updates</h2>
                     <p>${news}</p>
                   </div>
                 ` : ''}
 
                 ${links?.length ? html`
-                  <div class="links-section">
-                    <h4 class="section-heading">Links</h4>
+                  <div class="links section">
+                    <h2>Links</h2>
                     ${links.map((link: string) => this.createLink(link))}
                   </div>
                 ` : ''}
