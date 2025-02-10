@@ -1,4 +1,4 @@
-import { customElement, state, property } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { consume } from "@lit/context";
 import { Task } from '@lit/task';
@@ -7,6 +7,7 @@ import { fromHex } from "viem";
 import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '../components/layout/top-bar'
 import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
@@ -63,7 +64,7 @@ export class ViewProfile extends LitElement {
       height: 100%;
       border-radius: 50%;
     }
-    
+
     .name {
       margin: 0;
       font-size: 1.3rem;
@@ -71,7 +72,6 @@ export class ViewProfile extends LitElement {
     }
 
     .address {
-      display: inline-block; /* Ensures the span respects the width */
       max-width: 158px;
       white-space: nowrap; /* Prevent text from wrapping to the next line */
       overflow: hidden;
@@ -80,16 +80,20 @@ export class ViewProfile extends LitElement {
       color: var(--subtle-text);
       font-size: 0.9rem;
     }
-    
+
     .team {
       font-size: 0.9rem;
+    }
+    
+    sl-button {
+      max-width: 158px;
     }
 
     .section-heading {
       font-size: 1.2rem;
       margin-bottom: 0.5rem;
     }
-    
+
     .links-section {
       display: flex;
       flex-direction: column;
@@ -125,11 +129,9 @@ export class ViewProfile extends LitElement {
     }
   `;
 
-  @property()
-  address!: string;
+  @property() address!: string;
 
-  @consume({ context: userContext })
-  @state() user?: User;
+  @consume({ context: userContext, subscribe: true }) user!: User;
 
   private readonly profile = new Task(this, {
     task: async () => {
@@ -149,6 +151,18 @@ export class ViewProfile extends LitElement {
     args: () => [this.address] as const
   });
 
+  private get profileButton() {
+    if (this.address === this.user?.address) {
+      return html`
+        <sl-button variant="primary" href="/edit-profile">Edit profile</sl-button>
+      `
+    } else {
+      return html`
+        <sl-button variant="primary">Follow</sl-button>
+      `
+    }
+  }
+
   private createLink(link: string) {
     let url;
     try {
@@ -162,16 +176,16 @@ export class ViewProfile extends LitElement {
     }
     const pathname = url.pathname.replace(/^\/+/, ''); // strip leading slashes
     return html`
-        <a class="link" href="${url.href}" target="_blank">
-          <img
-              src=${`https://www.google.com/s2/favicons?domain=${link}&sz=16`}
-              @error=${(e: Event) => this.handleImageError(e)}
-              alt="Logo for ${link}"
-              width="16px"
-              height="16px"
-          />
-          <span>${pathname || url.host}</span>
-        </a>
+      <a class="link" href="${url.href}" target="_blank">
+        <img
+            src=${`https://www.google.com/s2/favicons?domain=${link}&sz=16`}
+            @error=${(e: Event) => this.handleImageError(e)}
+            alt="Logo for ${link}"
+            width="16px"
+            height="16px"
+        />
+        <span>${pathname || url.host}</span>
+      </a>
     `;
   }
 
@@ -205,10 +219,12 @@ export class ViewProfile extends LitElement {
                   </div>
                 </div>
 
-                ${about || 1 ? html`
+                ${this.profileButton}
+
+                ${about ? html`
                   <div class="about-section">
                     <h4 class="section-heading">About</h4>
-                    <p>I'm a guy.</p>
+                    <p>${about}</p>
                   </div>
                 ` : ''}
 
