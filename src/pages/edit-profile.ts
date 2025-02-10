@@ -202,18 +202,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleSubmit() {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
+      const profileData = {
+        ...formToJson('edit-profile', profileSchema),
+      } as any;
+      if (this.uploadedImage) {
+        profileData.image = this.uploadedImage;
+      }
+      user.set({
+        name: profileData.name || profileData.team,
+        image: this.uploadedImage || user.get().image,
+        avatar: this.uploadedImage || user.get().avatar,
+      });
       try {
-        const profileData = {
-          ...formToJson('edit-profile', profileSchema),
-        } as any;
-        if (this.uploadedImage) {
-          profileData.image = this.uploadedImage;
-        }
-        user.set({
-          name: profileData.name || profileData.team,
-          image: this.uploadedImage || user.get().image,
-          avatar: this.uploadedImage || user.get().avatar,
-        });
         if (this.entity === 'idea') {
           const scale = await updraft.read('percentScale') as bigint;
           const ideaData = formToJson('create-idea', ideaSchema);
@@ -227,6 +227,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             ]);
             this.shareDialog.topic = ideaData.name as string;
           }
+        } else {
+          this.submitTransaction.hash = await updraft.write('updateProfile', [toHex(JSON.stringify(profileData))]);
         }
       } catch (e: any) {
         if (e.message.startsWith('connection')) {
