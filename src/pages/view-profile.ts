@@ -13,7 +13,7 @@ import '../components/layout/page-heading.ts'
 import '../components/layout/left-side-bar.ts'
 import '../components/layout/activity-feed.ts'
 
-import { User, userContext } from '../context';
+import { Connection, connectionContext } from '../context';
 
 import urqlClient from '../urql-client';
 import { ProfileDocument } from '../../.graphclient';
@@ -84,9 +84,8 @@ export class ViewProfile extends LitElement {
 
     .team {
       font-size: 0.9rem;
-      margin-top: 0.5rem;
     }
-    
+
     sl-button {
       max-width: 158px;
     }
@@ -96,7 +95,7 @@ export class ViewProfile extends LitElement {
       margin-bottom: 0.5rem;
       font-weight: 600
     }
-    
+
     .section p {
       margin-bottom: 0;
     }
@@ -137,21 +136,14 @@ export class ViewProfile extends LitElement {
   `;
 
   @property() address!: string;
-
-  @consume({ context: userContext, subscribe: true }) user!: User;
+  @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
 
   private readonly profile = new Task(this, {
     task: async () => {
       if (this.address) {
-        let result;
-        try {
-          result = await urqlClient.query(ProfileDocument, { userId: this.address });
-          if (result.data?.user?.profile) {
-            return JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
-          }
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-          console.dir(result);
+        const result = await urqlClient.query(ProfileDocument, { userId: this.address });
+        if (result.data?.user?.profile) {
+          return JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
         }
       }
     },
@@ -159,7 +151,7 @@ export class ViewProfile extends LitElement {
   });
 
   private get profileButton() {
-    if (this.address === this.user?.address) {
+    if (this.address === this.connection.address) {
       return html`
         <sl-button variant="primary" href="/edit-profile">Edit profile</sl-button>
       `

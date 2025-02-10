@@ -13,8 +13,11 @@ import './styles/global.css';
 import './styles/theme.css';
 
 import { modal, config } from './web3';
-import { User, userContext, Balances, balanceContext, RequestBalanceRefresh } from './context';
+import { user, Connection, connectionContext, Balances, balanceContext, RequestBalanceRefresh } from './context';
 import updAddresses from './contracts/updAddresses.json';
+import urqlClient from './urql-client';
+import { ProfileDocument } from '../.graphclient';
+import { fromHex } from "viem";
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
@@ -81,30 +84,36 @@ export class MyApp extends LitElement {
     },
   ]);
 
-  @provide({ context: userContext }) user: User = { connected: false };
+  @provide({ context: connectionContext }) connection: Connection = { connected: false };
   @provide({ context: balanceContext }) balances: Balances = {};
 
   constructor() {
     super();
-    modal.subscribeAccount(({ isConnected, address }) => {
-      // TODO: get and parse updraft profile from address
-      if (address){
-        this.user.address = address as `0x${string}`;
-        this.user.avatar = this.user.image || makeBlockie(address);
+    modal.subscribeAccount(async ({ isConnected, address }) => {
+      if (address) {
+        this.connection.address = address as `0x${string}`;
+        const result = await urqlClient.query(ProfileDocument, { userId: address });
+        let profile = {} as { name: string, team: string, image: string };
+        if (result.data?.user?.profile) {
+          profile = JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
+        }
+        user.set({
+          name: profile.name || profile.team || address,
+          image: profile.image,
+          avatar: profile.image || makeBlockie(address),
+        });
       }
-      this.user = {
-        ...this.user,
+      this.connection = {
+        ...this.connection,
         connected: isConnected,
       };
     });
     modal.subscribeNetwork(({ caipNetwork }) => {
-      // console.log('caipNetwork');
-      // console.dir(caipNetwork);
-      this.user = {
-        ...this.user,
+      this.connection = {
+        ...this.connection,
         network: {
-          name: caipNetwork?.name,
-          id: caipNetwork?.caipNetworkId as keyof typeof updAddresses,
+          name: caipNetwork!.name,
+          id: caipNetwork!.caipNetworkId as keyof typeof updAddresses,
         }
       };
       this.refreshBalances.run();
@@ -114,11 +123,11 @@ export class MyApp extends LitElement {
 
   public refreshBalances = new Task(this, {
     task: async () => {
-      if (this.user.address && this.user.network?.id) {
-        const gasToken = await getBalance(config, { address: this.user.address });
+      if (this.connection.address && this.connection.network?.id) {
+        const gasToken = await getBalance(config, { address: this.connection.address });
         const updraftToken = await getBalance(config, {
-          address: this.user.address,
-          token: updAddresses[this.user.network.id]?.address as `0x{$string}`,
+          address: this.connection.address,
+          token: updAddresses[this.connection.network.id]?.address as `0x{$string}`,
         });
         this.balances = {
           gas: {

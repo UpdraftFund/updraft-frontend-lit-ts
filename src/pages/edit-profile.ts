@@ -1,8 +1,7 @@
 import { customElement, state, property, query } from "lit/decorators.js";
-import { css, html } from "lit";
-import { consume } from "@lit/context";
+import { css } from "lit";
 import { TaskStatus } from '@lit/task';
-
+import { SignalWatcher, html } from "@lit-labs/signals";
 import { parseUnits, toHex, trim } from "viem";
 
 import pencilSquare from '../assets/icons/pencil-square.svg';
@@ -27,14 +26,14 @@ import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-
 
 import { updraft } from "../contracts/updraft.ts";
 import { upd } from "../contracts/upd.ts";
-import { User, userContext } from '../context';
+import { user } from '../context';
 import { modal } from '../web3';
 
 import ideaSchema from '../../updraft-schemas/json-schemas/idea-schema.json'
 import profileSchema from '../../updraft-schemas/json-schemas/profile-schema.json'
 
 @customElement('edit-profile')
-export class EditProfile extends SaveableForm {
+export class EditProfile extends SignalWatcher(SaveableForm) {
   static styles = [
     dialogStyles,
     css`
@@ -84,13 +83,12 @@ export class EditProfile extends SaveableForm {
       }
 
       .avatar img {
-        width: 100%; /* Ensures the image fits exactly into the container */
-        height: 100%; /* Matches the height of the container */
+        width: 100%;
+        height: 100%;
         border-radius: 50%;
-        background: var(--sl-color-neutral-200); /* Background color for placeholder */
       }
 
-      .avatar sl-icon {
+      .avatar .edit-icon {
         color: var(--main-foreground);
         background: inherit;
         position: absolute;
@@ -126,14 +124,12 @@ export class EditProfile extends SaveableForm {
           pointer-events: none; /* Prevent interaction when hidden */
         }
       }
-      
+
       transaction-watcher.submit {
         padding-bottom: 4rem;
         align-self: center;
       }
     `];
-
-  @consume({ context: userContext, subscribe: true }) user!: User;
 
   @property() entity: string | undefined;
 
@@ -207,10 +203,20 @@ export class EditProfile extends SaveableForm {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
       try {
+        const profileData = {
+          ...formToJson('edit-profile', profileSchema),
+        } as any;
+        if (this.uploadedImage) {
+          profileData.image = this.uploadedImage;
+        }
+        user.set({
+          name: profileData.name || profileData.team,
+          image: this.uploadedImage || user.get().image,
+          avatar: this.uploadedImage || user.get().avatar,
+        });
         if (this.entity === 'idea') {
           const scale = await updraft.read('percentScale') as bigint;
           const ideaData = formToJson('create-idea', ideaSchema);
-          const profileData = formToJson('edit-profile', profileSchema);
           const ideaForm = loadForm('create-idea');
           if (ideaForm) {
             this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
@@ -240,10 +246,10 @@ export class EditProfile extends SaveableForm {
   }
 
   private async handleSubmitSuccess(t: TransactionSuccess) {
-    if(this.entity) {
+    if (this.entity) {
       const address = t.receipt?.logs?.[0]?.topics?.[1];
       if (address) {
-        if(this.entity === 'idea') {
+        if (this.entity === 'idea') {
           this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
           this.shareDialog.action = 'created an Idea';
         } else {
@@ -270,9 +276,9 @@ export class EditProfile extends SaveableForm {
         <main>
           <form name="edit-profile" @submit=${this.handleFormSubmit} @input=${this.handleInput}>
             <label class="avatar">
-              <img src=${this.uploadedImage || this.user.avatar || '/src/assets/icons/person-circle.svg'} alt="Avatar">
+              <img src=${this.uploadedImage || user.get().avatar} alt="User avatar">
               <input type="file" accept="image/*" @change=${this.handleImageUpload}>
-              <sl-icon src="${pencilSquare}" label="Edit image"></sl-icon>
+              <sl-icon class="edit-icon" src="${pencilSquare}" label="Edit image"></sl-icon>
             </label>
             <sl-input name="name" label="Name" required autocomplete="name"></sl-input>
             <sl-input name="team" label="Team" autocomplete="organization"></sl-input>
@@ -309,7 +315,7 @@ export class EditProfile extends SaveableForm {
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
             <p>Before you can submit your profile,
-               you need to sign a transaction to allow Updraft to spend your UPD tokens.</p>
+              you need to sign a transaction to allow Updraft to spend your UPD tokens.</p>
             <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
           </sl-dialog>
           <share-dialog></share-dialog>

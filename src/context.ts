@@ -1,8 +1,9 @@
 import { createContext } from '@lit/context'
+import { signal } from '@lit-labs/signals';
 
 import updAddresses from './contracts/updAddresses.json';
 
-export type User = {
+export type Connection = {
   connected: boolean;
   address?: `0x${string}`;
   name?: string;
@@ -13,10 +14,11 @@ export type User = {
     id?: keyof typeof updAddresses;
   }
 }
-
+export type User = { name: string, image?: string, avatar: string };
 export type Balances = Record<string, { symbol: string; balance: string }>;
 
-export const userContext = createContext<User>('updraft-user');
+export const user = signal({} as User);
+export const connectionContext = createContext<Connection>('connection');
 export const balanceContext = createContext<Balances>('balances');
 
 export class RequestBalanceRefresh extends Event {
