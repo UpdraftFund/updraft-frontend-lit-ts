@@ -39,8 +39,16 @@ export class ViewProfile extends LitElement {
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      gap: 1rem;
       padding: 1rem 2rem;
       color: var(--main-foreground);
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
 
     .avatar {
@@ -55,46 +63,26 @@ export class ViewProfile extends LitElement {
       height: 100%;
       border-radius: 50%;
     }
-
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .profile-info {
-      margin-top: 1rem;
-    }
     
     .name {
       margin: 0;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: 600;
     }
 
     .address {
       display: inline-block; /* Ensures the span respects the width */
-      max-width: 145px;
+      max-width: 158px;
       white-space: nowrap; /* Prevent text from wrapping to the next line */
       overflow: hidden;
       text-overflow: ellipsis;
       font-weight: 300;
       color: var(--subtle-text);
-      font-size: 0.8rem;
+      font-size: 0.9rem;
     }
-
-    .profile-info h3 {
-      margin: 0;
-      font-size: 1.5rem;
-    }
-
-    .profile-info .team {
-      color: var(--sl-color-neutral-500);
-      margin: 0.5rem 0;
-    }
-
-    .about-section, .news-section, .links-section {
-      margin-top: 1.5rem;
+    
+    .team {
+      font-size: 0.9rem;
     }
 
     .section-heading {
@@ -210,17 +198,17 @@ export class ViewProfile extends LitElement {
                     ${name || team ? html`
                       <h1 class="name">${name || team}</h1>
                     ` : ''}
-                    <span class="address">${this.address}</span>
+                    <div class="address">${this.address}</div>
                     ${name && team ? html`
                       <div class="team">${team}</div>
                     ` : ''}
                   </div>
                 </div>
 
-                ${about ? html`
+                ${about || 1 ? html`
                   <div class="about-section">
                     <h4 class="section-heading">About</h4>
-                    <p>${about}</p>
+                    <p>I'm a guy.</p>
                   </div>
                 ` : ''}
 
