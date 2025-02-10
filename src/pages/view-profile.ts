@@ -209,13 +209,9 @@ export class ViewProfile extends LitElement {
                     <img src="${image || makeBlockie(this.address)}" alt="Profile avatar">
                   </div>
                   <div>
-                    ${name || team ? html`
-                      <h1 class="name">${name || team}</h1>
-                    ` : ''}
+                    ${name || team ? html`<h1 class="name">${name || team}</h1>` : ''}
                     <div class="address">${this.address}</div>
-                    ${name && team ? html`
-                      <div class="team">${team}</div>
-                    ` : ''}
+                    ${name && team ? html`<div class="team">${team}</div>` : ''}
                   </div>
                 </div>
 
