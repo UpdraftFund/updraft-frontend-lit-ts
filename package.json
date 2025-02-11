@@ -8,8 +8,7 @@
     "tsc": "tsc",
     "build": "yarn build-graph && yarn tsc && vite build",
     "preview": "vite preview",
-    "build-graph": "graphclient build",
-    "prepare": "husky install"
+    "build-graph": "graphclient build"
   },
   "dependencies": {
     "@graphprotocol/client-urql": "^2.0.7",
