@@ -1,58 +1,61 @@
-import { customElement, property, state } from "lit/decorators.js";
-import { html, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { html, css, LitElement } from "lit";
 import { IdeaDocument } from '../../.graphclient';
 import urqlClient from '../urql-client';
 import '../components/layout/top-bar'
+import { Task } from "@lit/task";
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
-  @property() ideaId?: string;
+  static styles = css`
+    .container {
+      display: flex;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    left-side-bar {
+      flex: 0 0 274px;
+    }
+
+    activity-feed {
+      flex: 0 0 789px;
+    }
+
+    main {
+      flex: 1;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem 2rem;
+      color: var(--main-foreground);
+      max-width: 554px;
+    }
+  `;
+
+  @property() ideaId!: string;
 
   //TODO: each Idea URL should include a network
+  //@property() network: string;
 
-  @state() private data?: object;
-  @state() private error?: object;
-  @state() private loading: boolean = false;
+  private readonly idea = new Task(this, {
+    task: async ([ideaId]) => {
+        const result = await urqlClient.query(IdeaDocument, { ideaId });
+        return result.data?.idea;
+    },
+    args: () => [this.ideaId] as const
+  });
 
   render() {
     return html`
       <top-bar></top-bar>
-      <div class="idea-page">
-        <p>Idea ID: ${this.ideaId}</p>
-      </div>
-      <p>${this.loading ? 'Loading...' : 'You can find the result below...'}</p>
-      <fieldset>
-        ${this.data
-          ? html`<form>
-              <label>Data</label>
-              <br />
-              <textarea readOnly rows="25" cols="80">${JSON.stringify(this.data, null, 2)}</textarea>
-            </form>`
-          : ''}
-        ${this.error
-          ? html`<form>
-              <label>Error</label>
-              <br />
-              <textarea readOnly rows="25" cols="80">${JSON.stringify(this.error, null, 2)}</textarea>
-            </form>`
-          : ''}
-      </fieldset>
+      ${this.idea.render({
+        complete: (value) => {
+          return JSON.stringify(value, null, 2);
+        }
+      })}
     `;
-  }
-
-  async firstUpdated() {
-    if (this.ideaId) {
-      this.loading = true;
-      try {
-        const result = await urqlClient.query(IdeaDocument, { ideaId: this.ideaId });
-        this.data = result.data;
-        this.error = result.error;
-      } catch (e) {
-        this.error = e as object;
-      } finally {
-        this.loading = false;
-      }
-    }
   }
 }
 

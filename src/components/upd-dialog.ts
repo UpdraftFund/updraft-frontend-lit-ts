@@ -2,16 +2,17 @@ import { customElement, query } from "lit/decorators.js";
 import { css, html, LitElement } from "lit";
 import { consume } from "@lit/context";
 
-import calculator from "../assets/icons/calculator.svg"
+import calculator from "@icons/calculator.svg"
 
-import { dialogStyles } from '../styles/dialog-styles.ts';
+import { dialogStyles } from '@styles/dialog-styles.ts';
 
 import "@shoelace-style/shoelace/dist/components/button/button.js";
 import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import { SlDialog } from "@shoelace-style/shoelace";
 
-import { balanceContext, Balances, RequestBalanceRefresh } from "../context.ts";
+import { balanceContext, RequestBalanceRefresh } from "@/context.ts";
+import { Balances } from "@/types";
 
 @customElement('upd-dialog')
 export class UpdDialog extends LitElement {

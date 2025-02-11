@@ -4,20 +4,20 @@ import { TaskStatus } from '@lit/task';
 import { SignalWatcher, html } from "@lit-labs/signals";
 import { parseUnits, toHex, trim } from "viem";
 
-import pencilSquare from '../assets/icons/pencil-square.svg';
+import pencilSquare from '@icons/pencil-square.svg';
 
-import { dialogStyles } from '../styles/dialog-styles.ts';
+import { dialogStyles } from '@styles/dialog-styles.ts';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '../components/layout/top-bar'
-import '../components/layout/page-heading.ts'
-import '../components/layout/left-side-bar.ts'
-import '../components/layout/activity-feed.ts'
-import "../components/transaction-watcher.ts";
-import "../components/upd-dialog.ts";
-import "../components/share-dialog.ts"
+import '@layout/top-bar'
+import '@layout/page-heading'
+import '@layout/left-side-bar'
+import '@layout/activity-feed'
+import "@components/transaction-watcher";
+import "@components/upd-dialog";
+import "@components/share-dialog"
 import { TransactionWatcher, TransactionSuccess } from "../components/transaction-watcher.ts";
 import { UpdDialog } from "../components/upd-dialog";
 import { ShareDialog } from "../components/share-dialog";

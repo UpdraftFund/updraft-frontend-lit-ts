@@ -3,21 +3,23 @@ import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
 import { Task } from '@lit/task';
-
-import makeBlockie from 'ethereum-blockies-base64';
 import { getBalance } from '@wagmi/core'
+import { fromHex } from "viem";
+import makeBlockie from 'ethereum-blockies-base64';
 
-import './styles/reset.css';
 import '@shoelace-style/shoelace/dist/themes/light.css';
+import './styles/reset.css';
 import './styles/global.css';
 import './styles/theme.css';
 
-import { modal, config } from './web3';
-import { user, Connection, connectionContext, Balances, balanceContext, RequestBalanceRefresh } from './context';
-import updAddresses from './contracts/updAddresses.json';
-import urqlClient from './urql-client';
-import { ProfileDocument } from '../.graphclient';
-import { fromHex } from "viem";
+import { modal, config } from '@/web3';
+import updAddresses from '@/contracts/updAddresses.json';
+
+import { user, connectionContext, balanceContext, RequestBalanceRefresh } from '@/context';
+import { Connection, Balances } from '@/types';
+
+import urqlClient from '@/urql-client';
+import { ProfileDocument } from '@gql';
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {

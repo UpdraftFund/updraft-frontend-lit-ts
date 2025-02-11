@@ -10,19 +10,20 @@ import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
+import "@components/upd-dialog.ts";
+import { UpdDialog } from "@components/upd-dialog.ts";
 
-import "../upd-dialog.ts";
-import { UpdDialog } from "../upd-dialog.ts";
+import plusLgIcon from '@icons/plus-lg.svg';
+import layersIcon from '@icons/layers.svg';
+import creditCardIcon from '@icons/credit-card.svg';
+import reconnectIcon from '@icons/arrow-clockwise.svg';
+import getUpdIcon from '@icons/plus-circle.svg'
 
-import plusLgIcon from '../../assets/icons/plus-lg.svg';
-import layersIcon from '../../assets/icons/layers.svg';
-import creditCardIcon from '../../assets/icons/credit-card.svg';
-import reconnectIcon from '../../assets/icons/arrow-clockwise.svg';
-import getUpdIcon from '../../assets/icons/plus-circle.svg'
+import { modal, config } from '@/web3';
+import { shortNum } from '@/utils';
+import { user, connectionContext, balanceContext, RequestBalanceRefresh } from '@/context';
 
-import { modal, config } from '../../web3';
-import { shortNum } from '../../utils';
-import { user, Connection, connectionContext, Balances, balanceContext, RequestBalanceRefresh } from '../../context';
+import { Connection, Balances } from '@/types';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {
