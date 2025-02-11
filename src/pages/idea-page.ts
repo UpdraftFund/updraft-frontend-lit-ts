@@ -91,7 +91,7 @@ export class IdeaPage extends LitElement {
             complete: (idea: Idea) => {
               const { startTime, funderReward, shares, creator, tags } = idea;
               return html`
-                <h2>${idea.name}</h2>
+                <h2>Idea: ${idea.name}</h2>
                 <a href="/profile/${creator.id}"><p>by ${idea.creator.profile.name || creator.id}</p></a>
                 <span>${startTime}</span>
                 <span>${funderReward}</span>
