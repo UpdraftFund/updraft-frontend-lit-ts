@@ -1,9 +1,9 @@
-import { customElement, property } from "lit/decorators.js";
-import { html, css, LitElement } from "lit";
-import { IdeaDocument } from '../../.graphclient';
-import urqlClient from '../urql-client';
-import '../components/layout/top-bar'
-import { Task } from "@lit/task";
+import { customElement, property } from 'lit/decorators.js';
+import { html, css, LitElement } from 'lit';
+import { IdeaDocument } from '@gql';
+import urqlClient from '@/urql-client';
+import '@layout/top-bar'
+import { Task } from '@lit/task';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {

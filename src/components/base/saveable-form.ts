@@ -1,7 +1,7 @@
-import { LitElement } from "lit";
-import { query } from "lit/decorators.js";
+import { LitElement } from 'lit';
+import { query } from 'lit/decorators.js';
 
-import Ajv from "ajv";
+import Ajv from 'ajv';
 
 /**
  * SaveableForm provides form saving/loading behavior.
@@ -161,10 +161,10 @@ export function formToJson(
     if (!validateSchema(json)) {
       const errorMessages = validateSchema.errors
         ?.map((err) => `${err.instancePath} ${err.message}`)
-        .join(", ");
+        .join(', ');
       throw new Error(
         `Schema: ${schema} validation failed for form(s):` +
-        `${formNames.join(", ")}. Errors: ${errorMessages}`
+        `${formNames.join(', ')}. Errors: ${errorMessages}`
       );
     }
   }

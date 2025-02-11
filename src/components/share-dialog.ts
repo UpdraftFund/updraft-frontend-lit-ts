@@ -1,20 +1,20 @@
-import { customElement, property, query } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
+import { customElement, property, query } from 'lit/decorators.js';
+import { css, html, LitElement } from 'lit';
 
-import { dialogStyles } from '../styles/dialog-styles.ts';
+import { dialogStyles } from '@styles/dialog-styles';
 
-import linkIcon from '../assets/icons/link-45deg.svg';
-import xIcon from '../assets/icons/twitter-x.svg';
-import warpcastIcon from '../assets/icons/farcaster.svg';
-import share from '../assets/icons/share.svg';
-import shareThisImage from '../assets/images/share-this-140.png';
+import linkIcon from '@icons/link-45deg.svg';
+import xIcon from '@icons/twitter-x.svg';
+import warpcastIcon from '@icons/farcaster.svg';
+import share from '@icons/share.svg';
+import shareThisImage from '@assets/images/share-this-140.png';
 
-import "@shoelace-style/shoelace/dist/components/button/button.js";
-import "@shoelace-style/shoelace/dist/components/dialog/dialog.js";
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import "@shoelace-style/shoelace/dist/components/tooltip/tooltip.js";
-import { SlDialog } from "@shoelace-style/shoelace";
-import { SlTooltip } from "@shoelace-style/shoelace";
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
+import { SlDialog } from '@shoelace-style/shoelace';
+import { SlTooltip } from '@shoelace-style/shoelace';
 
 @customElement('share-dialog')
 export class ShareDialog extends LitElement {

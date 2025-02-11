@@ -4,13 +4,13 @@ import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
 import { Task } from '@lit/task';
 import { getBalance } from '@wagmi/core'
-import { fromHex } from "viem";
+import { fromHex } from 'viem';
 import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/themes/light.css';
-import './styles/reset.css';
-import './styles/global.css';
-import './styles/theme.css';
+import '@styles/reset.css';
+import '@styles/global.css';
+import '@styles/theme.css';
 
 import { modal, config } from '@/web3';
 import updAddresses from '@/contracts/updAddresses.json';
@@ -23,7 +23,7 @@ import { ProfileDocument } from '@gql';
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
-  await import("urlpattern-polyfill");
+  await import('urlpattern-polyfill');
 }
 
 @customElement('my-app')

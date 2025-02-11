@@ -1,9 +1,9 @@
 import { Abi } from 'abitype';
 
-import { config } from '../web3.ts';
+import { config } from '@/web3';
 import updAddresses from './updAddresses.json';
 import abi from './abis/UPDToken.json';
-import { Contract } from "./contract.ts";
+import { Contract } from "./contract";
 
 interface AddressMap {
   [key: `eip155:${number}`]: {

@@ -1,4 +1,4 @@
-import updAddresses from "@contracts/updAddresses.json";
+import updAddresses from '@contracts/updAddresses.json';
 
 export type Connection = {
   connected: boolean;

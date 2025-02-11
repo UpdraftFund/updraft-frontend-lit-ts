@@ -1,12 +1,12 @@
-import { customElement, state, property, query } from "lit/decorators.js";
-import { css } from "lit";
+import { customElement, state, property, query } from 'lit/decorators.js';
+import { css } from 'lit';
 import { TaskStatus } from '@lit/task';
-import { SignalWatcher, html } from "@lit-labs/signals";
-import { parseUnits, toHex, trim } from "viem";
+import { SignalWatcher, html } from '@lit-labs/signals';
+import { parseUnits, toHex, trim } from 'viem';
 
 import pencilSquare from '@icons/pencil-square.svg';
 
-import { dialogStyles } from '@styles/dialog-styles.ts';
+import { dialogStyles } from '@styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -15,22 +15,22 @@ import '@layout/top-bar'
 import '@layout/page-heading'
 import '@layout/left-side-bar'
 import '@layout/activity-feed'
-import "@components/transaction-watcher";
-import "@components/upd-dialog";
-import "@components/share-dialog"
-import { TransactionWatcher, TransactionSuccess } from "../components/transaction-watcher.ts";
-import { UpdDialog } from "../components/upd-dialog";
-import { ShareDialog } from "../components/share-dialog";
-import { SlDialog } from "@shoelace-style/shoelace";
-import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
+import '@components/transaction-watcher';
+import '@components/upd-dialog';
+import '@components/share-dialog'
+import { TransactionWatcher, TransactionSuccess } from '@components/transaction-watcher';
+import { UpdDialog } from '@components/upd-dialog';
+import { ShareDialog } from '@components/share-dialog';
+import { SlDialog } from '@shoelace-style/shoelace';
+import { SaveableForm, loadForm, formToJson } from '@components/base/saveable-form';
 
-import { updraft } from "../contracts/updraft.ts";
-import { upd } from "../contracts/upd.ts";
-import { user } from '../context';
-import { modal } from '../web3';
+import { updraft } from '@contracts/updraft';
+import { upd } from '@contracts/upd';
+import { user } from '@/context';
+import { modal } from '@/web3';
 
-import ideaSchema from '../../updraft-schemas/json-schemas/idea-schema.json'
-import profileSchema from '../../updraft-schemas/json-schemas/profile-schema.json'
+import ideaSchema from '@schemas/idea-schema.json'
+import profileSchema from '@schemas/profile-schema.json'
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {

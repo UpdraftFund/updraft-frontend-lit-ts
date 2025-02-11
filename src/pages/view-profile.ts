@@ -1,9 +1,9 @@
-import { customElement, property } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
-import { consume } from "@lit/context";
+import { customElement, property } from 'lit/decorators.js';
+import { css, html, LitElement } from 'lit';
+import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
-import { fromHex } from "viem";
+import { fromHex } from 'viem';
 import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
@@ -16,7 +16,7 @@ import '@layout/activity-feed';
 import { connectionContext } from '@/context';
 import { Connection } from '@/types';
 
-import urqlClient from '../urql-client';
+import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
 
 @customElement('view-profile')

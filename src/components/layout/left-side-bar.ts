@@ -1,5 +1,5 @@
-import { customElement } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
+import { customElement } from 'lit/decorators.js';
+import { css, html, LitElement } from 'lit';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends LitElement {

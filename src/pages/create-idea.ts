@@ -1,5 +1,5 @@
-import { customElement, query, state } from "lit/decorators.js";
-import { css, html } from "lit";
+import { customElement, query, state } from 'lit/decorators.js';
+import { css, html } from 'lit';
 import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -8,15 +8,15 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput, SlRange } from '@shoelace-style/shoelace';
 
-import '../components/layout/top-bar'
-import '../components/layout/page-heading.ts'
-import '../components/layout/left-side-bar.ts'
-import '../components/label-with-hint.ts'
-import { SaveableForm } from "../components/base/saveable-form.ts";
-import { UpdDialog } from "../components/upd-dialog.ts";
-import "../components/upd-dialog.ts";
+import '@layout/top-bar'
+import '@layout/page-heading'
+import '@layout/left-side-bar'
+import '@components/label-with-hint'
+import '@components/upd-dialog';
+import { UpdDialog } from '@components/upd-dialog';
+import { SaveableForm } from '@components/base/saveable-form';
 
-import { balanceContext, RequestBalanceRefresh } from '../context';
+import { balanceContext, RequestBalanceRefresh } from '@/context';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {

@@ -1,7 +1,7 @@
 import { createAppKit } from '@reown/appkit';
 import { AppKitNetwork, arbitrumSepolia, arbitrum } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import updAddresses from './contracts/updAddresses.json';
+import updAddresses from '@contracts/updAddresses.json';
 
 const projectId = 'a259923fc99520ecad30021b33486037';
 

@@ -1,5 +1,5 @@
 import { readContract, simulateContract, writeContract } from '@wagmi/core';
-import { config } from '../web3.ts';
+import { config } from '@/web3';
 import abi from './abis/Solution.json';
 
 export type solutionPosition = {
