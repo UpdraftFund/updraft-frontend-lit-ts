@@ -1,9 +1,9 @@
 import { createContext } from '@lit/context'
 import { signal } from '@lit-labs/signals';
 
-import { User, Connection, Balances } from '@/types';
+import { CurrentUser, Connection, Balances } from '@/types';
 
-export const user = signal({} as User);
+export const user = signal({} as CurrentUser);
 export const connectionContext = createContext<Connection>('connection');
 export const balanceContext = createContext<Balances>('balances');
 

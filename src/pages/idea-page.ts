@@ -36,7 +36,7 @@ export class IdeaPage extends LitElement {
 
   @property() ideaId!: string;
 
-  //TODO: each Idea URL should include a network
+  //TODO: each url should include a network
   //@property() network: string;
 
   private readonly idea = new Task(this, {
