@@ -1,6 +1,11 @@
 import { customElement, property } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
 import { Task } from '@lit/task';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
 
 import '@layout/top-bar';
 import '@layout/left-side-bar';
@@ -9,6 +14,7 @@ import '@components/page-specific/idea-side-bar';
 import urqlClient from '@/urql-client';
 import { IdeaDocument } from '@gql';
 import { Idea } from '@/types';
+import { fromHex } from "viem";
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -90,10 +96,12 @@ export class IdeaPage extends LitElement {
           ${this.idea.render({
             complete: (idea: Idea) => {
               const { startTime, funderReward, shares, creator, tags } = idea;
+              const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
+              const date = dayjs(startTime * 1000);
               return html`
                 <h2>Idea: ${idea.name}</h2>
-                <a href="/profile/${creator.id}"><p>by ${idea.creator.profile.name || creator.id}</p></a>
-                <span>${startTime}</span>
+                <a href="/profile/${creator.id}"><p>by ${profile.name || creator.id}</p></a>
+                <span>Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
                 <span>${funderReward}</span>
                 <span>${shares}</span>
                 ${tags ? html`
