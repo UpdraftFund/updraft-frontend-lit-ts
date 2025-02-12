@@ -8,7 +8,7 @@ import Ajv from 'ajv';
  * It organizes data under the `form` namespace in localStorage.
  */
 export class SaveableForm extends LitElement {
-  @query("form", true) protected form!: HTMLFormElement;
+  @query("form", true) form!: HTMLFormElement;
 
   formName: string | null = null;
 

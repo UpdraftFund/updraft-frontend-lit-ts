@@ -27,9 +27,7 @@ export class UpdDialog extends LitElement {
   `];
 
   @query('sl-dialog') dialog!: SlDialog;
-
   @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
-
 
   private handleRefreshBalance() {
     this.dispatchEvent(new RequestBalanceRefresh());

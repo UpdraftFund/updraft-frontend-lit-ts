@@ -100,7 +100,7 @@ export class ProfileArea extends SignalWatcher(LitElement) {
       box-shadow: -1px 4px 5px 3px rgba(0, 0, 0, 7%);
     }
   `
-  @query('upd-dialog', true) private updDialog!: UpdDialog;
+  @query('upd-dialog', true) updDialog!: UpdDialog;
 
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
   @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
