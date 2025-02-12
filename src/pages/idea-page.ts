@@ -1,21 +1,30 @@
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
+import { consume } from "@lit/context";
 import { Task } from '@lit/task';
-import { fromHex } from "viem";
+import { fromHex, formatUnits } from "viem";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
+
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
+
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/input/input.js';
+import type { SlInput } from "@shoelace-style/shoelace";
 
 import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@components/page-specific/idea-side-bar';
+import '@components/upd-dialog';
+import { UpdDialog } from "@components/upd-dialog.ts";
 
 import urqlClient from '@/urql-client';
 import { IdeaDocument } from '@gql';
-import { Idea } from '@/types';
 import { IdeaContract } from '@contracts/idea';
+import { balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
+import { UpdraftSettings, Balances, Idea } from "@/types";
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -39,16 +48,26 @@ export class IdeaPage extends LitElement {
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: .2rem;
       padding: .5rem 1rem;
       color: var(--main-foreground);
       background: var(--main-background);
     }
-    
+
     .heading {
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      font-size: 1.9rem;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+    .created {
+      font-size: 0.9rem;
+      margin-top: 0.4rem;
+    }
+
+    .description {
+      font-size: 1rem;
+      margin-bottom: 1rem;
     }
 
     .tags {
@@ -78,22 +97,37 @@ export class IdeaPage extends LitElement {
         pointer-events: none;
       }
     }
-
   `;
 
-  @property() ideaId!: `0x${string}`;
+  @query('upd-dialog', true) updDialog!: UpdDialog;
 
+  @state() private depositError: string | null = null;
+  @state() private antiSpamFee: string | null = null;
+  @state() private needUpd: boolean = false;
+
+  @consume({ context: balanceContext, subscribe: true }) userBalances!: Balances;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+
+  @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
-  //@property() network: string;
+  //@property() network!: string;
+
+  private minFee = 1; // 1 UPD
+  private percentFee = 1; // 1%
 
   private readonly idea = new Task(this, {
     task: async ([ideaId]) => {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
+      const ideaContract = new IdeaContract(ideaId);
+      const percentScaleBigInt = await ideaContract.read('percentScale') as bigint;
+      const percentScale = Number(percentScaleBigInt);
+      const percentFee= await ideaContract.read('percentFee') as bigint;
+      const minFee = await ideaContract.read('minFee') as bigint;
+      this.percentFee = Number(percentFee) / percentScale;
+      this.minFee = Number(formatUnits(minFee, 18));
       if (ideaData) {
-        const ideaContract = new IdeaContract(ideaId);
-        const percentScale = await ideaContract.read('percentScale') as bigint || 1000000n;
-        ideaData.funderReward = BigInt(ideaData.funderReward) * 100n / percentScale;
+        ideaData.funderReward = Number(ideaData.funderReward) / percentScale;
         return ideaData as Idea;
       } else {
         throw new Error(`Idea ${ideaId} not found.`);
@@ -101,6 +135,48 @@ export class IdeaPage extends LitElement {
     },
     args: () => [this.ideaId] as const
   });
+
+  private handleSupportFocus() {
+    this.dispatchEvent(new RequestBalanceRefresh());
+  }
+
+  private handleSupportInput(e: Event) {
+    const input = e.target as SlInput;
+    const value = Number(input.value);
+    const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
+    this.needUpd = false;
+
+    if (isNaN(value)) {
+      this.depositError = 'Enter a number';
+    } else if (value <= 1) {
+      this.depositError = 'Deposit must be more than 1 UPD to cover fees';
+    } else if (value > userBalance) {
+      this.depositError = `You have ${userBalance} UPD`;
+      this.needUpd = true;
+    } else {
+      this.depositError = null;
+    }
+
+    if (this.depositError) {
+      input.style.setProperty('--sl-input-focus-ring-color', 'red');
+      input.classList.add('invalid');
+    } else {
+      input.style.removeProperty('--sl-input-focus-ring-color');
+      input.classList.remove('invalid');
+    }
+
+    let fee;
+    if (isNaN(value)) {
+      fee = this.minFee;
+    } else {
+      fee = Math.max(this.minFee, value * this.percentFee);
+    }
+    this.antiSpamFee = fee.toFixed(2);
+  }
+
+  private handleSupportClick() {
+
+  }
 
   render() {
     return html`
@@ -116,15 +192,39 @@ export class IdeaPage extends LitElement {
               return html`
                 <h1 class="heading">Idea: ${idea.name}</h1>
                 <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
-                <span>Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
-                <span>${funderReward}% reward</span>
+                <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
+                <span>${funderReward * 100}% reward</span>
                 <span>${shares} fire</span>
+                <div class="support">
+                  <sl-input
+                      name="support"
+                      required
+                      autocomplete="off"
+                      @focus=${this.handleSupportFocus}
+                      @input=${this.handleSupportInput}>
+                  </sl-input>
+                  <span>UPD</span>
+                  ${this.needUpd ? html`
+                    <sl-button
+                        variant="primary"
+                        @click=${() => this.updDialog.show()}>Get more UPD
+                    </sl-button>
+                  ` : html`
+                    <sl-button variant="primary" @click=${this.handleSupportClick}>
+                      Support this Idea
+                    </sl-button>
+                  `}
+                  ${this.antiSpamFee ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>` : ''}
+                </div>
+                ${this.depositError ? html`
+                  <div class="error">${this.depositError}</div>` : ''}
                 <p>${description}</p>
                 ${tags ? html`
                   <div class="tags">
                     ${tags.map((tag) => html`<span class="tag">${tag}</span>`)}
                   </div>
                 ` : ''}
+                <upd-dialog></upd-dialog>
               `
             }
           })}
