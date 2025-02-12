@@ -2,7 +2,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
 import { consume } from "@lit/context";
 import { Task } from '@lit/task';
-import { fromHex, formatUnits } from "viem";
+import { fromHex, formatUnits, parseUnits } from "viem";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
@@ -12,19 +12,24 @@ dayjs.extend(utc);
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
-import type { SlInput } from "@shoelace-style/shoelace";
+import { SlDialog, SlInput } from "@shoelace-style/shoelace";
 
 import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@components/page-specific/idea-side-bar';
 import '@components/upd-dialog';
+import '@components/share-dialog';
 import { UpdDialog } from "@components/upd-dialog.ts";
+import { ShareDialog } from "@components/share-dialog.ts";
+import { TransactionWatcher } from "@components/transaction-watcher.ts";
 
 import urqlClient from '@/urql-client';
 import { IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
+import { Upd } from "@contracts/upd";
 import { balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
 import { UpdraftSettings, Balances, Idea } from "@/types";
+import { modal } from "@/web3.ts";
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -53,20 +58,20 @@ export class IdeaPage extends LitElement {
       color: var(--main-foreground);
       background: var(--main-background);
     }
-    
+
     .support {
       display: flex;
       align-items: center;
       gap: 1rem;
       margin-top: 0.25rem;
     }
-    
+
     .support sl-input {
       flex: 0 0 auto;
       width: calc(10ch + var(--sl-input-spacing-medium) * 2);
       box-sizing: content-box;
     }
-    
+
     .support sl-input::part(input) {
       text-align: right;
     }
@@ -126,10 +131,15 @@ export class IdeaPage extends LitElement {
     }
   `;
 
+  @query('form', true) form!: HTMLFormElement;
+  @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('upd-dialog', true) updDialog!: UpdDialog;
+  @query('transaction-watcher.submit', true) submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true) approveTransaction!: TransactionWatcher;
+  @query('sl-dialog', true) approveDialog!: SlDialog;
 
   @state() private depositError: string | null = null;
-  @state() private antiSpamFee: string | null = null;
+  @state() private antiSpamFee: string = '1'; // 1 UPD
   @state() private needUpd: boolean = false;
 
   @consume({ context: balanceContext, subscribe: true }) userBalances!: Balances;
@@ -149,7 +159,7 @@ export class IdeaPage extends LitElement {
       const ideaContract = new IdeaContract(ideaId);
       const percentScaleBigInt = await ideaContract.read('percentScale') as bigint;
       const percentScale = Number(percentScaleBigInt);
-      const percentFee= await ideaContract.read('percentFee') as bigint;
+      const percentFee = await ideaContract.read('percentFee') as bigint;
       const minFee = await ideaContract.read('minFee') as bigint;
       this.percentFee = Number(percentFee) / percentScale;
       this.minFee = Number(formatUnits(minFee, 18));
@@ -199,6 +209,39 @@ export class IdeaPage extends LitElement {
     this.antiSpamFee = fee.toFixed(2);
   }
 
+  private async handleSubmit(e: Event) {
+    e.preventDefault();
+    if (this.form.checkValidity()) {
+      const formData = new FormData(this.form);
+      const support = parseUnits(formData.get('support') as string, 18);
+      const total = support + parseUnits(this.antiSpamFee, 18);
+      try {
+        const idea = new IdeaContract(this.ideaId);
+        this.submitTransaction.hash = await idea.write('contribute', [support]);
+      } catch (e: any) {
+        if (e.message.startsWith('connection')) {
+          modal.open({ view: "Connect" });
+        } else if (e.message.includes('exceeds balance')) {
+          this.updDialog.show();
+        } else if (e.message.includes('exceeds allowance')) {
+          this.approveTransaction.reset();
+          this.approveDialog.show();
+          const upd = new Upd(this.updraftSettings.updAddress);
+          this.approveTransaction.hash = await upd.write('approve', [this.ideaId, total]);
+        }
+        console.error(e);
+      }
+    } else {
+      this.form.reportValidity(); // Show validation messages
+    }
+  }
+
+  private async handleTransactionSuccess() {
+    this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
+    this.shareDialog.action = 'supported an Idea';
+    this.shareDialog.show();
+  }
+
   render() {
     return html`
       <top-bar></top-bar>
@@ -216,7 +259,7 @@ export class IdeaPage extends LitElement {
                 <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
                 <span>${funderReward * 100}% reward</span>
                 <span>${shares} fire</span>
-                <form>
+                <form @submit=${this.handleSubmit}>
                   <div class="support">
                     <sl-input
                         name="support"
@@ -247,10 +290,18 @@ export class IdeaPage extends LitElement {
                     ${tags.map((tag) => html`<span class="tag">${tag}</span>`)}
                   </div>
                 ` : ''}
-                <upd-dialog></upd-dialog>
+                <share-dialog .topic=${idea.name}></share-dialog>
               `
             }
           })}
+          <upd-dialog></upd-dialog>
+          <sl-dialog label="Set Allowance">
+            <p>Before you can support this Idea,
+              you need to sign a transaction to allow the Idea contract to spend your UPD tokens.</p>
+            <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
+          </sl-dialog>
+          <transaction-watcher class="submit" @transaction-success=${this.handleTransactionSuccess}>
+          </transaction-watcher>
         </main>
         <idea-side-bar></idea-side-bar>
       </div>
