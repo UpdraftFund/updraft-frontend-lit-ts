@@ -1,7 +1,6 @@
 import { createAppKit } from '@reown/appkit';
 import { AppKitNetwork, arbitrumSepolia, arbitrum } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import updAddresses from '@contracts/updAddresses.json';
 
 const projectId = 'a259923fc99520ecad30021b33486037';
 
@@ -28,7 +27,6 @@ export const modal = createAppKit({
   networks,
   metadata,
   projectId,
-  tokens: updAddresses,
   themeMode: "light",
   themeVariables: {
    "--w3m-accent": "var(--accent);",

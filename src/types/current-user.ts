@@ -1,5 +1,3 @@
-import updAddresses from '@contracts/updAddresses.json';
-
 export type CurrentUser = {
   name: string,
   image?: string,
@@ -11,7 +9,6 @@ export type Connection = {
   address?: `0x${string}`;
   network?: {
     name?: string;
-    id?: keyof typeof updAddresses;
   }
 }
 

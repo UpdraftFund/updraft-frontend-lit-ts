@@ -2,6 +2,7 @@ import { customElement, state, property, query } from 'lit/decorators.js';
 import { css } from 'lit';
 import { TaskStatus } from '@lit/task';
 import { SignalWatcher, html } from '@lit-labs/signals';
+import { consume } from "@lit/context";
 import { parseUnits, toHex, trim } from 'viem';
 
 import pencilSquare from '@icons/pencil-square.svg';
@@ -25,8 +26,9 @@ import { SlDialog } from '@shoelace-style/shoelace';
 import { SaveableForm, loadForm, formToJson } from '@components/base/saveable-form';
 
 import { updraft } from '@contracts/updraft';
-import { upd } from '@contracts/upd';
-import { user } from '@/context';
+import { Upd } from '@contracts/upd';
+import { user, updraftSettings } from '@/context';
+import { UpdraftSettings } from "@/types";
 import { modal } from '@/web3';
 
 import ideaSchema from '@schemas/idea-schema.json'
@@ -136,11 +138,13 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
 
-  @query('upd-dialog', true) private updDialog!: UpdDialog;
-  @query('transaction-watcher.submit', true) private submitTransaction!: TransactionWatcher;
-  @query('transaction-watcher.approve', true) private approveTransaction!: TransactionWatcher;
-  @query('sl-dialog', true) private approveDialog!: SlDialog;
-  @query('share-dialog', true) private shareDialog!: ShareDialog;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+
+  @query('upd-dialog', true) updDialog!: UpdDialog;
+  @query('transaction-watcher.submit', true) submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true) approveTransaction!: TransactionWatcher;
+  @query('sl-dialog', true) approveDialog!: SlDialog;
+  @query('share-dialog', true) shareDialog!: ShareDialog;
 
   private get capitalizedEntity() {
     if (this.entity) {
@@ -215,12 +219,11 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       });
       try {
         if (this.entity === 'idea') {
-          const scale = await updraft.read('percentScale') as bigint;
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
           if (ideaForm) {
             this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
-              BigInt(ideaForm.reward) * scale / 100n,
+              BigInt(Number(ideaForm.reward) * this.updraftSettings.percentScale / 100),
               parseUnits(ideaForm.deposit, 18),
               toHex(JSON.stringify(ideaData)),
               toHex(JSON.stringify(profileData)),
@@ -238,6 +241,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         } else if (e.message.includes('exceeds allowance')) {
           this.approveTransaction.reset();
           this.approveDialog.show();
+          const upd = new Upd(this.updraftSettings.updAddress);
           this.approveTransaction.hash = await upd.write('approve', [
             updraft.address, parseUnits('1', 29)
           ]);

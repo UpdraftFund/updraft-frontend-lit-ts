@@ -16,17 +16,19 @@ import '@components/upd-dialog';
 import { UpdDialog } from '@components/upd-dialog';
 import { SaveableForm } from '@components/base/saveable-form';
 
-import { balanceContext, RequestBalanceRefresh } from '@/context';
+import { balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
+import { UpdraftSettings, Balances } from "@/types";
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
-  @query('.fee', true) private feeElement!: HTMLElement;
-  @query('sl-range', true) private rewardRange!: SlRange;
-  @query('upd-dialog', true) private updDialog!: UpdDialog;
+  @query('sl-range', true) rewardRange!: SlRange;
+  @query('upd-dialog', true) updDialog!: UpdDialog;
 
-  @consume({ context: balanceContext }) userBalances!: Record<string, { symbol: string; balance: string }>;
+  @consume({ context: balanceContext, subscribe: true }) userBalances!: Balances;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
 
   @state() private depositError: string | null = null;
+  @state() private antiSpamFee: string | null = null;
 
   private resizeObserver!: ResizeObserver;
 
@@ -54,7 +56,7 @@ export class CreateIdea extends SaveableForm {
     }
 
     .deposit-row {
-      display: flex; 
+      display: flex;
       align-items: center;
       gap: 1rem;
       margin-top: 0.25rem;
@@ -77,13 +79,13 @@ export class CreateIdea extends SaveableForm {
     sl-input[name="deposit"].invalid::part(input) {
       color: red;
     }
-    
+
     .reward-container {
       display: flex;
       flex-direction: column;
       gap: 2.5rem;
     }
-    
+
     .range-and-labels {
       display: flex;
       gap: 1rem;
@@ -93,7 +95,7 @@ export class CreateIdea extends SaveableForm {
       font-size: 0.92rem;
       color: var(--main-foreground);
     }
-    
+
     .reward-container sl-range {
       --track-color-active: var(--accent);
       --track-color-inactive: var(--control-background);
@@ -103,7 +105,7 @@ export class CreateIdea extends SaveableForm {
       max-width: 400px;
       height: 3.5rem;
     }
-    
+
     .reward-container sl-range::part(input) {
       border-radius: 20px;
     }
@@ -112,7 +114,7 @@ export class CreateIdea extends SaveableForm {
       /* Make tooltip always visible */
       opacity: 1 !important;
       visibility: visible !important;
-      
+
       background-color: transparent; /* No background for the tooltip */
       color: var(--main-foreground);
       font-size: 0.875rem;
@@ -168,8 +170,8 @@ export class CreateIdea extends SaveableForm {
 
   private handleDepositInput(e: Event) {
     const input = e.target as SlInput;
-    const value = parseFloat(input.value);
-    const userBalance = parseFloat(this.userBalances?.updraft?.balance || '0');
+    const value = Number(input.value);
+    const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
@@ -189,14 +191,13 @@ export class CreateIdea extends SaveableForm {
       input.classList.remove('invalid');
     }
 
-    if (this.feeElement) {
-      if (!isNaN(value)) {
-        const fee = Math.max(1, value * 0.01);
-        this.feeElement.textContent = fee.toFixed(2);
-      } else {
-        this.feeElement.textContent = '1.00';
-      }
+    let fee;
+    if (isNaN(value)) {
+      fee = this.updraftSettings.minFee;
+    } else {
+      fee = Math.max(this.updraftSettings.minFee, value * this.updraftSettings.percentFee);
     }
+    this.antiSpamFee = fee.toFixed(2);
   }
 
   private syncRangeTooltip = () => {
@@ -276,14 +277,11 @@ export class CreateIdea extends SaveableForm {
                     @input=${this.handleDepositInput}>
                 </sl-input>
                 <span>UPD</span>
-                <sl-button 
+                <sl-button
                     variant="primary"
-                    @click=${() => this.updDialog.show()}>Get more UPD</sl-button>
-                <div>
-                  <span>Anti-Spam Fee: </span>
-                  <span class="fee">1.00</span>
-                  <span>UPD</span>
-                </div>
+                    @click=${() => this.updDialog.show()}>Get more UPD
+                </sl-button>
+                ${this.antiSpamFee ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>` : ''}
               </div>
               ${this.depositError ? html`<div class="error">${this.depositError}</div>` : ''}
             </div>
