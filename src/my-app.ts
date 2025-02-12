@@ -3,25 +3,27 @@ import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
 import { Task } from '@lit/task';
-
-import makeBlockie from 'ethereum-blockies-base64';
 import { getBalance } from '@wagmi/core'
+import { formatUnits, fromHex } from 'viem';
+import makeBlockie from 'ethereum-blockies-base64';
 
-import './styles/reset.css';
 import '@shoelace-style/shoelace/dist/themes/light.css';
-import './styles/global.css';
-import './styles/theme.css';
+import '@styles/reset.css';
+import '@styles/global.css';
+import '@styles/theme.css';
 
-import { modal, config } from './web3';
-import { user, Connection, connectionContext, Balances, balanceContext, RequestBalanceRefresh } from './context';
-import updAddresses from './contracts/updAddresses.json';
-import urqlClient from './urql-client';
-import { ProfileDocument } from '../.graphclient';
-import { fromHex } from "viem";
+import { modal, config } from '@/web3';
+
+import { user, connectionContext, balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
+import { Connection, Balances, UpdraftSettings } from '@/types';
+
+import urqlClient from '@/urql-client';
+import { ProfileDocument } from '@gql';
+import { updraft } from "@contracts/updraft.ts";
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
-  await import("urlpattern-polyfill");
+  await import('urlpattern-polyfill');
 }
 
 @customElement('my-app')
@@ -86,9 +88,11 @@ export class MyApp extends LitElement {
 
   @provide({ context: connectionContext }) connection: Connection = { connected: false };
   @provide({ context: balanceContext }) balances: Balances = {};
+  @provide({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
 
   constructor() {
     super();
+
     modal.subscribeAccount(async ({ isConnected, address }) => {
       if (address) {
         this.connection.address = address as `0x${string}`;
@@ -108,26 +112,28 @@ export class MyApp extends LitElement {
         connected: isConnected,
       };
     });
+
     modal.subscribeNetwork(({ caipNetwork }) => {
       this.connection = {
         ...this.connection,
         network: {
           name: caipNetwork!.name,
-          id: caipNetwork!.caipNetworkId as keyof typeof updAddresses,
         }
       };
-      this.refreshBalances.run();
+      this.getUpdraftSettings.run().then(() =>
+        this.refreshBalances.run());
     });
+
     this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances.run());
   }
 
   public refreshBalances = new Task(this, {
     task: async () => {
-      if (this.connection.address && this.connection.network?.id) {
+      if (this.connection.address) {
         const gasToken = await getBalance(config, { address: this.connection.address });
         const updraftToken = await getBalance(config, {
           address: this.connection.address,
-          token: updAddresses[this.connection.network.id]?.address as `0x{$string}`,
+          token: this.updraftSettings.updAddress,
         });
         this.balances = {
           gas: {
@@ -140,6 +146,23 @@ export class MyApp extends LitElement {
           }
         }
       }
+    },
+    autoRun: false,
+  });
+
+  public getUpdraftSettings = new Task(this, {
+    task: async () => {
+      const percentScaleBigInt = await updraft.read('percentScale') as bigint;
+      const minFee = await updraft.read('minFee') as bigint;
+      const percentFee = await updraft.read('percentFee') as bigint;
+      const percentScale = Number(percentScaleBigInt);
+      const updAddress = await updraft.read('feeToken') as `0x${string}`;
+      this.updraftSettings = {
+        percentScale,
+        updAddress,
+        percentFee: Number(percentFee) / percentScale,
+        minFee: Number(formatUnits(minFee, 18)),
+      };
     },
     autoRun: false,
   });

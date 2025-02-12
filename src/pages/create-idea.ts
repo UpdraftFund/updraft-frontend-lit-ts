@@ -1,5 +1,5 @@
-import { customElement, query, state } from "lit/decorators.js";
-import { css, html } from "lit";
+import { customElement, query, state } from 'lit/decorators.js';
+import { css, html } from 'lit';
 import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -8,25 +8,27 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput, SlRange } from '@shoelace-style/shoelace';
 
-import '../components/layout/top-bar'
-import '../components/layout/page-heading.ts'
-import '../components/layout/left-side-bar.ts'
-import '../components/label-with-hint.ts'
-import { SaveableForm } from "../components/base/saveable-form.ts";
-import { UpdDialog } from "../components/upd-dialog.ts";
-import "../components/upd-dialog.ts";
+import '@layout/top-bar'
+import '@layout/page-heading'
+import '@layout/left-side-bar'
+import '@components/label-with-hint'
+import '@components/upd-dialog';
+import { UpdDialog } from '@components/upd-dialog';
+import { SaveableForm } from '@components/base/saveable-form';
 
-import { balanceContext, RequestBalanceRefresh } from '../context';
+import { balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
+import { UpdraftSettings, Balances } from "@/types";
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
-  @query('.fee', true) private feeElement!: HTMLElement;
-  @query('sl-range', true) private rewardRange!: SlRange;
-  @query('upd-dialog', true) private updDialog!: UpdDialog;
+  @query('sl-range', true) rewardRange!: SlRange;
+  @query('upd-dialog', true) updDialog!: UpdDialog;
 
-  @consume({ context: balanceContext }) userBalances!: Record<string, { symbol: string; balance: string }>;
+  @consume({ context: balanceContext, subscribe: true }) userBalances!: Balances;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
 
   @state() private depositError: string | null = null;
+  @state() private antiSpamFee: string | null = null;
 
   private resizeObserver!: ResizeObserver;
 
@@ -54,7 +56,7 @@ export class CreateIdea extends SaveableForm {
     }
 
     .deposit-row {
-      display: flex; 
+      display: flex;
       align-items: center;
       gap: 1rem;
       margin-top: 0.25rem;
@@ -74,16 +76,16 @@ export class CreateIdea extends SaveableForm {
       text-align: right;
     }
 
-    sl-input[name="deposit"].invalid::part(input) {
-      color: red;
+    sl-input[name="deposit"].invalid {
+      --sl-input-focus-ring-color: red;
     }
-    
+
     .reward-container {
       display: flex;
       flex-direction: column;
       gap: 2.5rem;
     }
-    
+
     .range-and-labels {
       display: flex;
       gap: 1rem;
@@ -93,7 +95,7 @@ export class CreateIdea extends SaveableForm {
       font-size: 0.92rem;
       color: var(--main-foreground);
     }
-    
+
     .reward-container sl-range {
       --track-color-active: var(--accent);
       --track-color-inactive: var(--control-background);
@@ -103,7 +105,7 @@ export class CreateIdea extends SaveableForm {
       max-width: 400px;
       height: 3.5rem;
     }
-    
+
     .reward-container sl-range::part(input) {
       border-radius: 20px;
     }
@@ -112,7 +114,7 @@ export class CreateIdea extends SaveableForm {
       /* Make tooltip always visible */
       opacity: 1 !important;
       visibility: visible !important;
-      
+
       background-color: transparent; /* No background for the tooltip */
       color: var(--main-foreground);
       font-size: 0.875rem;
@@ -127,7 +129,8 @@ export class CreateIdea extends SaveableForm {
 
     .error {
       color: red;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
+      padding-top: 0.25rem;
     }
 
     /* Responsive behavior for smaller screens */
@@ -168,13 +171,14 @@ export class CreateIdea extends SaveableForm {
 
   private handleDepositInput(e: Event) {
     const input = e.target as SlInput;
-    const value = parseFloat(input.value);
-    const userBalance = parseFloat(this.userBalances?.updraft?.balance || '0');
+    const value = Number(input.value);
+    const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
+    const minFee = this.updraftSettings.minFee;
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
-    } else if (value <= 1) {
-      this.depositError = 'Deposit must be more than 1 UPD to cover fees';
+    } else if (value <= minFee) {
+      this.depositError = `Deposit must be more than ${minFee} UPD to cover fees`;
     } else if (value > userBalance) {
       this.depositError = `You have ${userBalance} UPD`;
     } else {
@@ -182,21 +186,18 @@ export class CreateIdea extends SaveableForm {
     }
 
     if (this.depositError) {
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
       input.classList.add('invalid');
     } else {
-      input.style.removeProperty('--sl-input-focus-ring-color');
       input.classList.remove('invalid');
     }
 
-    if (this.feeElement) {
-      if (!isNaN(value)) {
-        const fee = Math.max(1, value * 0.01);
-        this.feeElement.textContent = fee.toFixed(2);
-      } else {
-        this.feeElement.textContent = '1.00';
-      }
+    let fee;
+    if (isNaN(value)) {
+      fee = minFee;
+    } else {
+      fee = Math.max(minFee, value * this.updraftSettings.percentFee);
     }
+    this.antiSpamFee = fee.toFixed(2);
   }
 
   private syncRangeTooltip = () => {
@@ -276,14 +277,11 @@ export class CreateIdea extends SaveableForm {
                     @input=${this.handleDepositInput}>
                 </sl-input>
                 <span>UPD</span>
-                <sl-button 
+                <sl-button
                     variant="primary"
-                    @click=${() => this.updDialog.show()}>Get more UPD</sl-button>
-                <div>
-                  <span>Anti-Spam Fee: </span>
-                  <span class="fee">1.00</span>
-                  <span>UPD</span>
-                </div>
+                    @click=${() => this.updDialog.show()}>Get more UPD
+                </sl-button>
+                ${this.antiSpamFee ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>` : ''}
               </div>
               ${this.depositError ? html`<div class="error">${this.depositError}</div>` : ''}
             </div>

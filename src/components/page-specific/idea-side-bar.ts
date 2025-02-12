@@ -1,8 +1,8 @@
 import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 
-@customElement('left-side-bar')
-export class LeftSideBar extends LitElement {
+@customElement('idea-side-bar')
+export class IdeaSideBar extends LitElement {
   static styles = css`
     :host {
       display: block;
@@ -26,13 +26,13 @@ export class LeftSideBar extends LitElement {
 
   render() {
     return html`
-      <p>Left Sidebar Placeholder</p>
+      <p>Idea Sidebar Placeholder</p>
     `;
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'left-side-bar': LeftSideBar;
+    'idea-side-bar': IdeaSideBar;
   }
 }

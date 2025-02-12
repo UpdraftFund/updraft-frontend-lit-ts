@@ -1,36 +1,38 @@
-import { customElement, state, property, query } from "lit/decorators.js";
-import { css } from "lit";
+import { customElement, state, property, query } from 'lit/decorators.js';
+import { css } from 'lit';
 import { TaskStatus } from '@lit/task';
-import { SignalWatcher, html } from "@lit-labs/signals";
-import { parseUnits, toHex, trim } from "viem";
+import { SignalWatcher, html } from '@lit-labs/signals';
+import { consume } from "@lit/context";
+import { parseUnits, toHex, trim } from 'viem';
 
-import pencilSquare from '../assets/icons/pencil-square.svg';
+import pencilSquare from '@icons/pencil-square.svg';
 
-import { dialogStyles } from '../styles/dialog-styles.ts';
+import { dialogStyles } from '@styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '../components/layout/top-bar'
-import '../components/layout/page-heading.ts'
-import '../components/layout/left-side-bar.ts'
-import '../components/layout/activity-feed.ts'
-import "../components/transaction-watcher.ts";
-import "../components/upd-dialog.ts";
-import "../components/share-dialog.ts"
-import { TransactionWatcher, TransactionSuccess } from "../components/transaction-watcher.ts";
-import { UpdDialog } from "../components/upd-dialog";
-import { ShareDialog } from "../components/share-dialog";
-import { SlDialog } from "@shoelace-style/shoelace";
-import { SaveableForm, loadForm, formToJson } from "../components/base/saveable-form.ts";
+import '@layout/top-bar'
+import '@layout/page-heading'
+import '@layout/left-side-bar'
+import '@layout/activity-feed'
+import '@components/transaction-watcher';
+import '@components/upd-dialog';
+import '@components/share-dialog'
+import { TransactionWatcher, TransactionSuccess } from '@components/transaction-watcher';
+import { UpdDialog } from '@components/upd-dialog';
+import { ShareDialog } from '@components/share-dialog';
+import { SlDialog } from '@shoelace-style/shoelace';
+import { SaveableForm, loadForm, formToJson } from '@components/base/saveable-form';
 
-import { updraft } from "../contracts/updraft.ts";
-import { upd } from "../contracts/upd.ts";
-import { user } from '../context';
-import { modal } from '../web3';
+import { updraft } from '@contracts/updraft';
+import { Upd } from '@contracts/upd';
+import { user, updraftSettings } from '@/context';
+import { UpdraftSettings } from "@/types";
+import { modal } from '@/web3';
 
-import ideaSchema from '../../updraft-schemas/json-schemas/idea-schema.json'
-import profileSchema from '../../updraft-schemas/json-schemas/profile-schema.json'
+import ideaSchema from '@schemas/idea-schema.json'
+import profileSchema from '@schemas/profile-schema.json'
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -136,11 +138,13 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
 
-  @query('upd-dialog', true) private updDialog!: UpdDialog;
-  @query('transaction-watcher.submit', true) private submitTransaction!: TransactionWatcher;
-  @query('transaction-watcher.approve', true) private approveTransaction!: TransactionWatcher;
-  @query('sl-dialog', true) private approveDialog!: SlDialog;
-  @query('share-dialog', true) private shareDialog!: ShareDialog;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+
+  @query('upd-dialog', true) updDialog!: UpdDialog;
+  @query('transaction-watcher.submit', true) submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true) approveTransaction!: TransactionWatcher;
+  @query('sl-dialog', true) approveDialog!: SlDialog;
+  @query('share-dialog', true) shareDialog!: ShareDialog;
 
   private get capitalizedEntity() {
     if (this.entity) {
@@ -215,12 +219,11 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       });
       try {
         if (this.entity === 'idea') {
-          const scale = await updraft.read('percentScale') as bigint;
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
           if (ideaForm) {
             this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
-              BigInt(ideaForm.reward) * scale / 100n,
+              BigInt(Number(ideaForm.reward) * this.updraftSettings.percentScale / 100),
               parseUnits(ideaForm.deposit, 18),
               toHex(JSON.stringify(ideaData)),
               toHex(JSON.stringify(profileData)),
@@ -238,6 +241,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         } else if (e.message.includes('exceeds allowance')) {
           this.approveTransaction.reset();
           this.approveDialog.show();
+          const upd = new Upd(this.updraftSettings.updAddress);
           this.approveTransaction.hash = await upd.write('approve', [
             updraft.address, parseUnits('1', 29)
           ]);

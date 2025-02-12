@@ -7,8 +7,9 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
 
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
@@ -20,6 +21,20 @@
     "noUncheckedSideEffectImports": true,
 
     "sourceMap": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@layout/*": ["src/components/layout/*"],
+      "@styles/*": ["src/styles/*"],
+      "@assets/*": ["src/assets/*"],
+      "@icons/*": ["src/assets/icons/*"],
+      "@pages/*": ["src/pages/*"],
+      "@schemas/*": ["updraft-schemas/json-schemas/*"],
+      "@contracts/*": ["src/contracts/*"],
+      "@gql": [".graphclient"]
+    }
   },
   "include": ["src"]
 }

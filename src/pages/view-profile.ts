@@ -1,22 +1,23 @@
-import { customElement, property } from "lit/decorators.js";
-import { css, html, LitElement } from "lit";
-import { consume } from "@lit/context";
+import { customElement, property } from 'lit/decorators.js';
+import { css, html, LitElement } from 'lit';
+import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
-import { fromHex } from "viem";
+import { fromHex } from 'viem';
 import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '../components/layout/top-bar'
-import '../components/layout/page-heading.ts'
-import '../components/layout/left-side-bar.ts'
-import '../components/layout/activity-feed.ts'
+import '@layout/top-bar';
+import '@layout/page-heading';
+import '@layout/left-side-bar';
+import '@layout/activity-feed';
 
-import { Connection, connectionContext } from '../context';
+import { connectionContext } from '@/context';
+import { Connection } from '@/types';
 
-import urqlClient from '../urql-client';
-import { ProfileDocument } from '../../.graphclient';
+import urqlClient from '@/urql-client';
+import { ProfileDocument } from '@gql';
 
 @customElement('view-profile')
 export class ViewProfile extends LitElement {
@@ -79,7 +80,7 @@ export class ViewProfile extends LitElement {
       text-overflow: ellipsis;
       font-weight: 300;
       color: var(--subtle-text);
-      font-size: 0.9rem;
+      font-size: 0.8rem;
     }
 
     .team {
@@ -139,12 +140,10 @@ export class ViewProfile extends LitElement {
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
 
   private readonly profile = new Task(this, {
-    task: async () => {
-      if (this.address) {
-        const result = await urqlClient.query(ProfileDocument, { userId: this.address });
-        if (result.data?.user?.profile) {
-          return JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
-        }
+    task: async ([userId]) => {
+      const result = await urqlClient.query(ProfileDocument, { userId });
+      if (result.data?.user?.profile) {
+        return JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
       }
     },
     args: () => [this.address] as const
@@ -210,7 +209,8 @@ export class ViewProfile extends LitElement {
                   <div>
                     ${name || team ? html`<h1 class="name">${name || team}</h1>` : ''}
                     <div class="address">${this.address}</div>
-                    ${name && team ? html`<div class="team">${team}</div>` : ''}
+                    ${name && team ? html`
+                      <div class="team">${team}</div>` : ''}
                   </div>
                 </div>
 
