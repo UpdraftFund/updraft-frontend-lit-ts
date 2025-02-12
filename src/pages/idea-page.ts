@@ -10,6 +10,8 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
+import { dialogStyles } from "@styles/dialog-styles";
+
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import { SlDialog, SlInput } from "@shoelace-style/shoelace";
@@ -34,103 +36,109 @@ import { modal } from "@/web3.ts";
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
-  static styles = css`
-    .container {
-      display: flex;
-      flex: 1 1 auto;
-      overflow: hidden;
-    }
+  static styles = [
+    dialogStyles,
+    css`
+      .container {
+        display: flex;
+        flex: 1 1 auto;
+        overflow: hidden;
+      }
 
-    left-side-bar {
-      flex: 0 0 274px;
-    }
-
-    idea-side-bar {
-      flex: 0 0 300px;
-    }
-
-    main {
-      flex: 1;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: .2rem;
-      padding: .5rem 1rem;
-      color: var(--main-foreground);
-      background: var(--main-background);
-    }
-
-    .support {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 0.25rem;
-    }
-
-    .support sl-input {
-      flex: 0 0 auto;
-      width: calc(10ch + var(--sl-input-spacing-medium) * 2);
-      box-sizing: content-box;
-    }
-
-    .support sl-input::part(input) {
-      text-align: right;
-    }
-
-    sl-input[name="support"].invalid {
-      --sl-input-focus-ring-color: red;
-    }
-
-    .error {
-      color: red;
-      font-size: 0.8rem;
-      padding-top: 0.25rem;
-    }
-
-    .heading {
-      font-size: 1.9rem;
-      font-weight: 500;
-      margin-bottom: 0;
-    }
-
-    .created {
-      font-size: 0.9rem;
-      margin-top: 0.4rem;
-    }
-
-    .description {
-      font-size: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .tags {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      background: var(--sl-color-neutral-100);
-      padding: 0.25rem 0.75rem;
-      border-radius: 1rem;
-      font-size: 0.875rem;
-      color: var(--sl-color-neutral-700);
-    }
-
-    @media (max-width: 1415px) {
       left-side-bar {
-        flex: 0 0 0;
-        pointer-events: none;
+        flex: 0 0 274px;
       }
-    }
 
-    @media (max-width: 1130px) {
       idea-side-bar {
-        flex: 0 0 0;
-        pointer-events: none;
+        flex: 0 0 300px;
       }
-    }
-  `;
+
+      main {
+        flex: 1;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+        padding: .5rem 1rem;
+        color: var(--main-foreground);
+        background: var(--main-background);
+      }
+
+      .support {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 0.25rem;
+      }
+
+      .support sl-input {
+        flex: 0 0 auto;
+        width: calc(10ch + var(--sl-input-spacing-medium) * 2);
+        box-sizing: content-box;
+      }
+
+      .support sl-input::part(input) {
+        text-align: right;
+      }
+
+      sl-input[name="support"].invalid {
+        --sl-input-focus-ring-color: red;
+      }
+
+      .error {
+        color: red;
+        font-size: 0.8rem;
+        padding-top: 0.25rem;
+      }
+
+      .heading {
+        font-size: 1.9rem;
+        font-weight: 500;
+        margin-bottom: 0;
+      }
+
+      .created {
+        font-size: 0.9rem;
+        margin-top: 0.4rem;
+      }
+
+      .description {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .tags {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .tag {
+        background: var(--sl-color-neutral-100);
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        color: var(--sl-color-neutral-700);
+      }
+
+      sl-dialog::part(body) {
+        padding-top: 0;
+      }
+
+      @media (max-width: 1415px) {
+        left-side-bar {
+          flex: 0 0 0;
+          pointer-events: none;
+        }
+      }
+
+      @media (max-width: 1130px) {
+        idea-side-bar {
+          flex: 0 0 0;
+          pointer-events: none;
+        }
+      }
+    `];
 
   @query('form', true) form!: HTMLFormElement;
   @query('share-dialog', true) shareDialog!: ShareDialog;
@@ -240,6 +248,7 @@ export class IdeaPage extends LitElement {
   private async handleTransactionSuccess() {
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.shareDialog.action = 'supported an Idea';
+    this.approveDialog.hide();
     this.shareDialog.show();
   }
 
