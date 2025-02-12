@@ -76,8 +76,8 @@ export class CreateIdea extends SaveableForm {
       text-align: right;
     }
 
-    sl-input[name="deposit"].invalid::part(input) {
-      color: red;
+    sl-input[name="deposit"].invalid {
+      --sl-input-focus-ring-color: red;
     }
 
     .reward-container {
@@ -129,7 +129,7 @@ export class CreateIdea extends SaveableForm {
 
     .error {
       color: red;
-      font-size: 0.75rem;
+      font-size: 0.8rem;
     }
 
     /* Responsive behavior for smaller screens */
@@ -184,10 +184,8 @@ export class CreateIdea extends SaveableForm {
     }
 
     if (this.depositError) {
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
       input.classList.add('invalid');
     } else {
-      input.style.removeProperty('--sl-input-focus-ring-color');
       input.classList.remove('invalid');
     }
 

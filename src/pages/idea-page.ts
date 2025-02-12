@@ -53,6 +53,32 @@ export class IdeaPage extends LitElement {
       color: var(--main-foreground);
       background: var(--main-background);
     }
+    
+    .support {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.25rem;
+    }
+    
+    .support sl-input {
+      flex: 0 0 auto;
+      width: calc(10ch + var(--sl-input-spacing-medium) * 2);
+      box-sizing: content-box;
+    }
+    
+    .support sl-input::part(input) {
+      text-align: right;
+    }
+
+    sl-input[name="support"].invalid {
+      --sl-input-focus-ring-color: red;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.8rem;
+    }
 
     .heading {
       font-size: 1.9rem;
@@ -158,10 +184,8 @@ export class IdeaPage extends LitElement {
     }
 
     if (this.depositError) {
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
       input.classList.add('invalid');
     } else {
-      input.style.removeProperty('--sl-input-focus-ring-color');
       input.classList.remove('invalid');
     }
 
@@ -172,10 +196,6 @@ export class IdeaPage extends LitElement {
       fee = Math.max(this.minFee, value * this.percentFee);
     }
     this.antiSpamFee = fee.toFixed(2);
-  }
-
-  private handleSupportClick() {
-
   }
 
   render() {
@@ -195,29 +215,31 @@ export class IdeaPage extends LitElement {
                 <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
                 <span>${funderReward * 100}% reward</span>
                 <span>${shares} fire</span>
-                <div class="support">
-                  <sl-input
-                      name="support"
-                      required
-                      autocomplete="off"
-                      @focus=${this.handleSupportFocus}
-                      @input=${this.handleSupportInput}>
-                  </sl-input>
-                  <span>UPD</span>
-                  ${this.needUpd ? html`
-                    <sl-button
-                        variant="primary"
-                        @click=${() => this.updDialog.show()}>Get more UPD
-                    </sl-button>
-                  ` : html`
-                    <sl-button variant="primary" @click=${this.handleSupportClick}>
-                      Support this Idea
-                    </sl-button>
-                  `}
-                  ${this.antiSpamFee ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>` : ''}
-                </div>
-                ${this.depositError ? html`
-                  <div class="error">${this.depositError}</div>` : ''}
+                <form>
+                  <div class="support">
+                    <sl-input
+                        name="support"
+                        required
+                        autocomplete="off"
+                        @focus=${this.handleSupportFocus}
+                        @input=${this.handleSupportInput}>
+                    </sl-input>
+                    <span>UPD</span>
+                    ${this.needUpd ? html`
+                      <sl-button
+                          variant="primary"
+                          @click=${() => this.updDialog.show()}>Get more UPD
+                      </sl-button>
+                    ` : html`
+                      <sl-button variant="primary" type="submit">
+                        Support this Idea
+                      </sl-button>
+                    `}
+                    ${this.antiSpamFee ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>` : ''}
+                  </div>
+                  ${this.depositError ? html`
+                    <div class="error">${this.depositError}</div>` : ''}
+                </form>
                 <p>${description}</p>
                 ${tags ? html`
                   <div class="tags">
