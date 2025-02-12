@@ -78,6 +78,7 @@ export class IdeaPage extends LitElement {
     .error {
       color: red;
       font-size: 0.8rem;
+      padding-top: 0.25rem;
     }
 
     .heading {
@@ -174,8 +175,8 @@ export class IdeaPage extends LitElement {
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
-    } else if (value <= 1) {
-      this.depositError = 'Deposit must be more than 1 UPD to cover fees';
+    } else if (value <= this.minFee) {
+      this.depositError = `Deposit must be more than ${this.minFee} UPD to cover fees`;
     } else if (value > userBalance) {
       this.depositError = `You have ${userBalance} UPD`;
       this.needUpd = true;

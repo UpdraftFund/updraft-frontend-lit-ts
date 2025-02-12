@@ -130,6 +130,7 @@ export class CreateIdea extends SaveableForm {
     .error {
       color: red;
       font-size: 0.8rem;
+      padding-top: 0.25rem;
     }
 
     /* Responsive behavior for smaller screens */
@@ -172,11 +173,12 @@ export class CreateIdea extends SaveableForm {
     const input = e.target as SlInput;
     const value = Number(input.value);
     const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
+    const minFee = this.updraftSettings.minFee;
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
-    } else if (value <= 1) {
-      this.depositError = 'Deposit must be more than 1 UPD to cover fees';
+    } else if (value <= minFee) {
+      this.depositError = `Deposit must be more than ${minFee} UPD to cover fees`;
     } else if (value > userBalance) {
       this.depositError = `You have ${userBalance} UPD`;
     } else {
@@ -191,9 +193,9 @@ export class CreateIdea extends SaveableForm {
 
     let fee;
     if (isNaN(value)) {
-      fee = this.updraftSettings.minFee;
+      fee = minFee;
     } else {
-      fee = Math.max(this.updraftSettings.minFee, value * this.updraftSettings.percentFee);
+      fee = Math.max(minFee, value * this.updraftSettings.percentFee);
     }
     this.antiSpamFee = fee.toFixed(2);
   }
