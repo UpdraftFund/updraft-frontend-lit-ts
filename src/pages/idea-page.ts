@@ -19,6 +19,7 @@ import '@layout/left-side-bar';
 import '@components/page-specific/idea-side-bar';
 import '@components/upd-dialog';
 import '@components/share-dialog';
+import '@components/transaction-watcher';
 import { UpdDialog } from "@components/upd-dialog.ts";
 import { ShareDialog } from "@components/share-dialog.ts";
 import { TransactionWatcher } from "@components/transaction-watcher.ts";
