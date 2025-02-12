@@ -44,6 +44,12 @@ export class IdeaPage extends LitElement {
       color: var(--main-foreground);
       background: var(--main-background);
     }
+    
+    .heading {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
 
     .tags {
       display: flex;
@@ -80,16 +86,15 @@ export class IdeaPage extends LitElement {
   //TODO: each url should include a network
   //@property() network: string;
 
-  private percentScale: bigint = 1000000n;
-
   private readonly idea = new Task(this, {
     task: async ([ideaId]) => {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
       if (ideaData) {
         const ideaContract = new IdeaContract(ideaId);
-        this.percentScale = await ideaContract.read('percentScale') as bigint;
-        return ideaData;
+        const percentScale = await ideaContract.read('percentScale') as bigint || 1000000n;
+        ideaData.funderReward = BigInt(ideaData.funderReward) * 100n / percentScale;
+        return ideaData as Idea;
       } else {
         throw new Error(`Idea ${ideaId} not found.`);
       }
@@ -105,15 +110,16 @@ export class IdeaPage extends LitElement {
         <main>
           ${this.idea.render({
             complete: (idea: Idea) => {
-              const { startTime, funderReward, shares, creator, tags } = idea;
+              const { startTime, funderReward, shares, creator, tags, description } = idea;
               const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
               const date = dayjs(startTime * 1000);
               return html`
-                <h1>Idea: ${idea.name}</h1>
-                <a href="/profile/${creator.id}"><p>by ${profile.name || creator.id}</p></a>
+                <h1 class="heading">Idea: ${idea.name}</h1>
+                <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
                 <span>Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
-                <span>${((BigInt(funderReward) * 100n) / this.percentScale).toString()}% reward</span>
+                <span>${funderReward}% reward</span>
                 <span>${shares} fire</span>
+                <p>${description}</p>
                 ${tags ? html`
                   <div class="tags">
                     ${tags.map((tag) => html`<span class="tag">${tag}</span>`)}
