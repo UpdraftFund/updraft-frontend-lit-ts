@@ -10,10 +10,14 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
+import gift from '@icons/gift.svg';
+import fire from '@icons/fire.svg';
+
 import { dialogStyles } from "@styles/dialog-styles";
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import { SlDialog, SlInput } from "@shoelace-style/shoelace";
 
 import '@layout/top-bar';
@@ -33,6 +37,7 @@ import { Upd } from "@contracts/upd";
 import { balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
 import { UpdraftSettings, Balances, Idea } from "@/types";
 import { modal } from "@/web3.ts";
+import { shortNum } from "@/utils.ts";
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -100,6 +105,26 @@ export class IdeaPage extends LitElement {
       .created {
         font-size: 0.9rem;
         margin-top: 0.4rem;
+      }
+      
+      .reward-fire {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      
+      .reward-fire span {
+        display: flex;
+        gap: .3rem;
+      }
+      
+      .reward sl-icon{
+        padding-top: .1rem;
+      }
+      
+      .fire {
+        align-items: center;
       }
 
       .description {
@@ -263,12 +288,15 @@ export class IdeaPage extends LitElement {
               const { startTime, funderReward, shares, creator, tags, description } = idea;
               const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
               const date = dayjs(startTime * 1000);
+              const interest = shortNum(formatUnits(shares, 18));
               return html`
                 <h1 class="heading">Idea: ${idea.name}</h1>
                 <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
                 <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
-                <span>${funderReward * 100}% reward</span>
-                <span>${shares} fire</span>
+                <div class="reward-fire">
+                  <span class="reward"><sl-icon src=${gift}></sl-icon>${funderReward * 100}% funder reward</span>
+                  <span class="fire"><sl-icon src=${fire}></sl-icon>${interest}</span>
+                </div>
                 <form @submit=${this.handleSubmit}>
                   <div class="support">
                     <sl-input
