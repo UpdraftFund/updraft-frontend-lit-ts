@@ -120,7 +120,7 @@ export class IdeaPage extends LitElement {
       }
       
       .reward sl-icon{
-        padding-top: .1rem;
+        padding-top: 2px; // align the box part of the gift with the text
       }
       
       .fire {
