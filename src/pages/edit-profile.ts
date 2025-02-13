@@ -146,12 +146,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
 
-  private get capitalizedEntity() {
-    if (this.entity) {
-      return this.entity.charAt(0).toUpperCase() + this.entity.slice(1);
-    }
-  }
-
   private handleInput() {
     this.submitTransaction.reset();
   };
@@ -315,7 +309,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             </div>
             <sl-button variant="primary" @click=${this.handleSubmit}>
               Submit Profile
-              ${this.entity ? 'and Create ' + this.capitalizedEntity : ''}
+              ${this.entity ? 'and Create ' + capitalize(this.entity) : ''}
             </sl-button>
           </form>
           <upd-dialog></upd-dialog>
@@ -331,6 +325,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       </div>
     `
   }
+}
+
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 declare global {
