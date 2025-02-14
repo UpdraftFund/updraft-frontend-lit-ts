@@ -14,7 +14,7 @@ export class LeftSideBar extends LitElement {
     }
 
     section-heading {
-      color: var(--section);
+      color: var(--section-heading);
       padding: 0 1rem;
     }
   `;
