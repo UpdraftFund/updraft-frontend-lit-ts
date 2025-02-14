@@ -5,6 +5,8 @@
   --main-foreground: hsla(0, 0%, 16%, 1);
   --subtle-text: hsla(0, 0%, 43%, 1);
   --control-background: #ACE9FB;
+  --section: #939393;
+  --layout-divider: #d9d9d9;
 
   --sl-input-border-color: hsla(194, 84%, 63%, 1);
 
