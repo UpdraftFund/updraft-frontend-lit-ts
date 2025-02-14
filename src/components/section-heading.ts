@@ -10,7 +10,7 @@ export class SectionHeading extends LitElement {
 
     hr {
       height: 1px; 
-      background-color: currentColor; /* Line color */
+      background-color: var(--layout-divider); /* Line color */
       border: none;
     }
 
