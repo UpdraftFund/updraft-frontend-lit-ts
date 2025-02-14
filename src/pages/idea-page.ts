@@ -185,20 +185,20 @@ export class IdeaPage extends LitElement {
 
   private minFee = 1; // 1 UPD
   private percentFee = 1; // 1%
+  private percentScale = 1000000;
 
   private readonly idea = new Task(this, {
     task: async ([ideaId]) => {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
       const ideaContract = new IdeaContract(ideaId);
-      const percentScaleBigInt = await ideaContract.read('percentScale') as bigint;
-      const percentScale = Number(percentScaleBigInt);
+      const percentScale = await ideaContract.read('percentScale') as bigint;
       const percentFee = await ideaContract.read('percentFee') as bigint;
       const minFee = await ideaContract.read('minFee') as bigint;
-      this.percentFee = Number(percentFee) / percentScale;
+      this.percentScale = Number(percentScale);
+      this.percentFee = Number(percentFee) / this.percentScale;
       this.minFee = Number(formatUnits(minFee, 18));
       if (ideaData) {
-        ideaData.funderReward = Number(ideaData.funderReward) / percentScale;
         return ideaData as Idea;
       } else {
         throw new Error(`Idea ${ideaId} not found.`);
@@ -294,7 +294,8 @@ export class IdeaPage extends LitElement {
                 <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
                 <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
                 <div class="reward-fire">
-                  <span class="reward"><sl-icon src=${gift}></sl-icon>${funderReward * 100}% funder reward</span>
+                  <span class="reward"><sl-icon src=${gift}></sl-icon>
+                    ${funderReward * 100 / this.percentScale}% funder reward</span>
                   <span class="fire"><sl-icon src=${fire}></sl-icon>${interest}</span>
                 </div>
                 <form @submit=${this.handleSubmit}>
