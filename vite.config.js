@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import path from 'path';
+import { resolve } from 'path';
 
 export default defineConfig({
   build: {
@@ -8,16 +8,16 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@layout': path.resolve(__dirname, './src/components/layout'),
-      '@styles': path.resolve(__dirname, './src/styles'),
-      '@assets': path.resolve(__dirname, './src/assets'),
-      '@icons': path.resolve(__dirname, './src/assets/icons'),
-      '@pages': path.resolve(__dirname, './src/pages'),
-      '@schemas': path.resolve(__dirname, './updraft-schemas/json-schemas'),
-      '@contracts': path.resolve(__dirname, './src/contracts'),
-      '@gql': path.resolve(__dirname, './.graphclient')
+      '@': resolve(__dirname, 'src'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@layout': resolve(__dirname, 'src/components/layout'),
+      '@styles': resolve(__dirname, 'src/styles'),
+      '@assets': resolve(__dirname, 'src/assets'),
+      '@icons': resolve(__dirname, 'src/assets/icons'),
+      '@pages': resolve(__dirname, 'src/pages'),
+      '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
+      '@contracts': resolve(__dirname, 'src/contracts'),
+      '@gql': resolve(__dirname, '.graphclient')
     }
   }
 });
