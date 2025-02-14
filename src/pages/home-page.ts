@@ -1,8 +1,8 @@
 import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 
-import '@layout/top-bar'
-import '@layout/left-side-bar'
+import '@layout/top-bar';
+import '@layout/left-side-bar';
 
 @customElement('home-page')
 export class HomePage extends LitElement {
@@ -34,7 +34,7 @@ export class HomePage extends LitElement {
     return html`
       <top-bar></top-bar>
       <div class="container">
-        <left-side-bar></left-side-bar>
+        <left-side-bar location="home"></left-side-bar>
         <main></main>
     `;
   }

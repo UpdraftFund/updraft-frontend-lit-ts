@@ -1,11 +1,11 @@
 import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 
-import '@layout/top-bar'
-import '@layout/left-side-bar'
+import '@layout/top-bar';
+import '@layout/left-side-bar';
 
-@customElement('home-page')
-export class HomePage extends LitElement {
+@customElement('discover-page')
+export class DiscoverPage extends LitElement {
 
   static styles = css`
     .container {
@@ -34,7 +34,7 @@ export class HomePage extends LitElement {
     return html`
       <top-bar></top-bar>
       <div class="container">
-        <left-side-bar></left-side-bar>
+        <left-side-bar location="discover"></left-side-bar>
         <main></main>
     `;
   }
@@ -42,6 +42,6 @@ export class HomePage extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'home-page': HomePage;
+    'discover-page': DiscoverPage;
   }
 }
