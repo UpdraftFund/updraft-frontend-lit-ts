@@ -14,13 +14,6 @@ import { shortNum } from "@/utils.ts";
 
 @customElement('idea-card-small')
 export class IdeaCardSmall extends LitElement {
-  @property() id!: `0x${string}`;
-  @property() name!: string;
-  @property() description: string | undefined;
-  @property() shares!: number;
-  @property() funderReward!: number;
-  @property() startTime!: number;
-
   static styles = css`
     :host {
       display: inline-block;
@@ -62,6 +55,13 @@ export class IdeaCardSmall extends LitElement {
       font-size: 0.8rem;
     }
   `;
+
+  @property() id!: `0x${string}`;
+  @property() name!: string;
+  @property() description: string | undefined;
+  @property() shares!: number;
+  @property() funderReward!: number;
+  @property() startTime!: number;
 
   render() {
     const date = dayjs(this.startTime * 1000);
