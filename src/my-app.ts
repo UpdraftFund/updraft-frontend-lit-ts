@@ -40,6 +40,15 @@ export class MyApp extends LitElement {
         <home-page></home-page>`
     },
     {
+      path: '/discover',
+      enter: async () => {
+        await import('./pages/discover-page');
+        return true;
+      },
+      render: () => html`
+        <discover-page></discover-page>`
+    },
+    {
       path: '/idea/:id',
       enter: async () => {
         await import('./pages/idea-page');
