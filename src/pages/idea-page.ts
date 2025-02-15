@@ -6,6 +6,7 @@ import { fromHex, formatUnits, parseUnits } from "viem";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
+
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
@@ -105,23 +106,23 @@ export class IdeaPage extends LitElement {
         font-size: 0.9rem;
         margin-top: 0.4rem;
       }
-      
+
       .reward-fire {
         display: flex;
         align-items: center;
         gap: 1rem;
         margin: 1rem 0;
       }
-      
+
       .reward-fire span {
         display: flex;
         gap: .3rem;
       }
-      
-      .reward sl-icon{
+
+      .reward sl-icon {
         padding-top: 2px; // align the box part of the gift with the text
       }
-      
+
       .fire {
         align-items: center;
       }
@@ -162,7 +163,8 @@ export class IdeaPage extends LitElement {
           pointer-events: none;
         }
       }
-    `];
+    `
+  ];
 
   @query('form', true) form!: HTMLFormElement;
   @query('share-dialog', true) shareDialog!: ShareDialog;
@@ -182,21 +184,10 @@ export class IdeaPage extends LitElement {
   //TODO: each url should include a network
   //@property() network!: string;
 
-  private minFee = 1; // 1 UPD
-  private percentFee = 1; // 1%
-  private percentScale = 1000000;
-
   private readonly idea = new Task(this, {
     task: async ([ideaId]) => {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
-      const ideaContract = new IdeaContract(ideaId);
-      const percentScale = await ideaContract.read('percentScale') as bigint;
-      const percentFee = await ideaContract.read('percentFee') as bigint;
-      const minFee = await ideaContract.read('minFee') as bigint;
-      this.percentScale = Number(percentScale);
-      this.percentFee = Number(percentFee) / this.percentScale;
-      this.minFee = Number(formatUnits(minFee, 18));
       if (ideaData) {
         return ideaData as Idea;
       } else {
@@ -218,8 +209,8 @@ export class IdeaPage extends LitElement {
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
-    } else if (value <= this.minFee) {
-      this.depositError = `Deposit must be more than ${this.minFee} UPD to cover fees`;
+    } else if (value <= this.updraftSettings.minFee) {
+      this.depositError = `Deposit must be more than ${this.updraftSettings.minFee} UPD to cover fees`;
     } else if (value > userBalance) {
       this.depositError = `You have ${userBalance} UPD`;
       this.needUpd = true;
@@ -235,9 +226,9 @@ export class IdeaPage extends LitElement {
 
     let fee;
     if (isNaN(value)) {
-      fee = this.minFee;
+      fee = this.updraftSettings.minFee;
     } else {
-      fee = Math.max(this.minFee, value * this.percentFee);
+      fee = Math.max(this.updraftSettings.minFee, value * this.updraftSettings.percentFee);
     }
     this.antiSpamFee = fee.toFixed(2);
   }
@@ -294,7 +285,7 @@ export class IdeaPage extends LitElement {
                 <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
                 <div class="reward-fire">
                   <span class="reward"><sl-icon src=${gift}></sl-icon>
-                    ${funderReward * 100 / this.percentScale}% funder reward</span>
+                    ${funderReward * 100 / this.updraftSettings.percentScale}% funder reward</span>
                   <span class="fire"><sl-icon src=${fire}></sl-icon>${interest}</span>
                 </div>
                 <form @submit=${this.handleSubmit}>
