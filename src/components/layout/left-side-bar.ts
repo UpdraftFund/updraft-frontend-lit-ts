@@ -20,20 +20,32 @@ export class LeftSideBar extends LitElement {
     nav ul {
       list-style: none;
     }
+    
+    nav ul li {
+      margin-bottom: 1rem;
+    }
 
     nav a {
       text-decoration: none;
       color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
     }
 
     nav a.active {
       color: var(--accent);
-      font-weight: bold;
+      background: var(--subtle-background);
     }
 
     nav a:hover {
       text-decoration: underline;
       color: var(--accent);
+    }
+    
+    sl-icon {
+      font-size: 24px;
     }
 
     section-heading {
@@ -57,6 +69,7 @@ export class LeftSideBar extends LitElement {
         </ul>
       </nav>
       <section-heading>My Ideas</section-heading>
+      <section-heading>My Solutions</section-heading>
     `;
   }
 }
