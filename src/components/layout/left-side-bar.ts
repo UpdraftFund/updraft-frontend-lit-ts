@@ -31,7 +31,7 @@ export class LeftSideBar extends LitElement {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
 
     nav a.active {
