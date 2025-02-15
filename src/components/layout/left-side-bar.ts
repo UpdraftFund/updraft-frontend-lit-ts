@@ -1,5 +1,8 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
+import { consume } from "@lit/context";
+import { Task } from '@lit/task';
+import { formatUnits } from "viem";
 
 import compass from '@icons/compass.svg';
 import house from '@icons/house.svg';
@@ -7,6 +10,11 @@ import house from '@icons/house.svg';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@components/section-heading';
 import '@components/idea-card-small';
+
+import { connectionContext, updraftSettings } from "@/context.ts";
+import { Connection, UpdraftSettings } from "@/types";
+import urqlClient from "@/urql-client.ts";
+import { IdeasByFunderDocument } from "@gql";
 
 @customElement('left-side-bar')
 export class LeftSideBar extends LitElement {
@@ -18,7 +26,7 @@ export class LeftSideBar extends LitElement {
       overflow: hidden;
       padding: 0 1rem;
     }
-    
+
     nav ul {
       list-style: none;
       padding: 0;
@@ -43,7 +51,7 @@ export class LeftSideBar extends LitElement {
       text-decoration: underline;
       color: var(--accent);
     }
-    
+
     sl-icon {
       font-size: 24px;
     }
@@ -52,19 +60,32 @@ export class LeftSideBar extends LitElement {
       color: var(--section-heading);
       padding: 0 1rem;
     }
-    
+
     .my-ideas {
       padding: 1rem 1.4rem 0;
       box-sizing: border-box;
     }
-    
+
     idea-card-small {
       width: 100%
     }
-    
+
   `;
 
-  @property({reflect: true}) location: string | null = null;
+  private readonly ideaContributions = new Task(this, {
+    task: async ([funder]) => {
+      if (funder) {
+        const result = await urqlClient.query(IdeasByFunderDocument, { funder });
+        return result.data?.ideaContributions;
+      }
+    },
+    args: () => [this.connection.address] as const
+  });
+
+  @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+
+  @property({ reflect: true }) location: string | null = null;
 
   render() {
     return html`
@@ -82,14 +103,18 @@ export class LeftSideBar extends LitElement {
       </nav>
       <section-heading>My Ideas</section-heading>
       <div class="my-ideas">
-        <idea-card-small
-            .startTime=${1646099200}
-            .funderReward=${50.2432}
-            .name= ${'My Idea'}
-            .description= ${'My idea description'}
-            .id=${'0x1234567890123456789012345678901234567890'}
-            .shares=${7845325}
-        ></idea-card-small>
+        ${this.ideaContributions.render({
+          complete: (ics) => ics?.map(ic => html`
+            <idea-card-small
+                .startTime=${ic.idea.startTime}
+                .funderReward=${ic.idea.funderReward * 100 / this.updraftSettings.percentScale}
+                .name=${ic.idea.name}
+                .description=${ic.idea.description}
+                .id=${ic.idea.id}
+                .shares=${formatUnits(ic.idea.shares, 18)}
+            ></idea-card-small>
+          `)
+        })}
       </div>
       <section-heading>My Solutions</section-heading>
     `;
