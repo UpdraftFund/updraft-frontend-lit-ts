@@ -20,10 +20,6 @@ export class LeftSideBar extends LitElement {
     nav ul {
       list-style: none;
     }
-    
-    nav ul li {
-      margin-bottom: 1rem;
-    }
 
     nav a {
       text-decoration: none;
@@ -32,6 +28,7 @@ export class LeftSideBar extends LitElement {
       align-items: center;
       gap: 0.5rem;
       font-size: 1rem;
+      padding: .75rem;
     }
 
     nav a.active {
