@@ -20,6 +20,17 @@ export class IdeaCardSmall extends LitElement {
       color: var(--main-foreground);
     }
 
+    a {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    a:hover h3 {
+      text-decoration: underline;
+      color: var(--accent);
+    }
+
     hr {
       height: 1px;
       background-color: var(--layout-divider); /* Line color */
@@ -66,14 +77,22 @@ export class IdeaCardSmall extends LitElement {
   render() {
     const date = dayjs(this.startTime * 1000);
     return html`
-      <hr>
-      <h3>${this.name}</h3>
-      ${this.description ? html`<p>${this.description}</p>` : '' }
-      <ul class="info-row">
-        <li><sl-icon src=${seedling}></sl-icon><span>${date.fromNow()}</span></li>
-        <li><sl-icon src=${gift}></sl-icon><span>${this.funderReward.toFixed(0)}%</span></li>
-        <li><sl-icon src=${fire}></sl-icon><span>${shortNum(this.shares)}</span></li>
-      </ul>
+      <a href="/idea/${this.id}"}>
+        <hr>
+        <h3>${this.name}</h3>
+        ${this.description ? html`<p>${this.description}</p>` : ''}
+        <ul class="info-row">
+          <li>
+            <sl-icon src=${seedling}></sl-icon>
+            <span>${date.fromNow()}</span></li>
+          <li>
+            <sl-icon src=${gift}></sl-icon>
+            <span>${this.funderReward.toFixed(0)}%</span></li>
+          <li>
+            <sl-icon src=${fire}></sl-icon>
+            <span>${shortNum(this.shares)}</span></li>
+        </ul>
+      </a>
     `;
   }
 }
