@@ -19,6 +19,7 @@ export class TopBar extends LitElement {
       justify-content: space-between;
       align-items: center;
       gap: 24px;
+      overflow: clip;
     }
     a {
       line-height: 0;
