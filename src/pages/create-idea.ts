@@ -136,8 +136,10 @@ export class CreateIdea extends SaveableForm {
     /* Responsive behavior for smaller screens */
     @media (max-width: 768px) {
       left-side-bar {
-        flex: 0 0 0; /* Collapse the sidebar */
-        pointer-events: none; /* Prevent interaction when hidden */
+        flex: 0 0 0;
+        pointer-events: none;
+        padding: 0;
+        border: none;
       }
 
       .container {

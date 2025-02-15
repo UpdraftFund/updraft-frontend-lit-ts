@@ -115,8 +115,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
       @media (max-width: 1415px) {
         left-side-bar {
-          flex: 0 0 0; /* Collapse the sidebar */
-          pointer-events: none; /* Prevent interaction when hidden */
+          flex: 0 0 0;
+          pointer-events: none;
+          padding: 0;
+          border: none;
         }
       }
 

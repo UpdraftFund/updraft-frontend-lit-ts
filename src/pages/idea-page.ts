@@ -154,6 +154,8 @@ export class IdeaPage extends LitElement {
         left-side-bar {
           flex: 0 0 0;
           pointer-events: none;
+          padding: 0;
+          border: none;
         }
       }
 
