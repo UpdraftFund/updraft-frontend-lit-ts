@@ -6,6 +6,7 @@ import house from '@icons/house.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@components/section-heading';
+import '@components/idea-card-small';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends LitElement {
@@ -49,6 +50,16 @@ export class LeftSideBar extends LitElement {
       color: var(--section-heading);
       padding: 0 1rem;
     }
+    
+    .my-ideas {
+      padding-top: 1rem;
+      align-self: center;
+    }
+    
+    idea-card-small {
+      width: 240px;
+    }
+    
   `;
 
   @property({reflect: true}) location: string | null = null;
@@ -58,14 +69,26 @@ export class LeftSideBar extends LitElement {
       <nav>
         <ul>
           <li><a href="/" class=${this.location === 'home' ? 'active' : ''}>
-            <sl-icon src=${house}></sl-icon>Home
+            <sl-icon src=${house}></sl-icon>
+            Home
           </a></li>
           <li><a href="/discover" class=${this.location === 'discover' ? 'active' : ''}>
-            <sl-icon src=${compass}></sl-icon>Discover
+            <sl-icon src=${compass}></sl-icon>
+            Discover
           </a></li>
         </ul>
       </nav>
       <section-heading>My Ideas</section-heading>
+      <div class="my-ideas">
+        <idea-card-small
+            .startTime=${1646099200}
+            .funderReward=${50.2432}
+            .name= ${'My Idea'}
+            .description= ${'My idea description'}
+            .id=${'0x1234567890123456789012345678901234567890'}
+            .shares=${7845325}
+        ></idea-card-small>
+      </div>
       <section-heading>My Solutions</section-heading>
     `;
   }
