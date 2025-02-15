@@ -16,10 +16,12 @@ export class LeftSideBar extends LitElement {
       flex-direction: column;
       border-right: 3px solid var(--layout-divider);
       overflow: hidden;
+      padding: 0 1rem;
     }
     
     nav ul {
       list-style: none;
+      padding: 0;
     }
 
     nav a {
@@ -52,12 +54,12 @@ export class LeftSideBar extends LitElement {
     }
     
     .my-ideas {
-      padding-top: 1rem;
-      align-self: center;
+      padding: 1rem 1.4rem 0;
+      box-sizing: border-box;
     }
     
     idea-card-small {
-      width: 240px;
+      width: 100%
     }
     
   `;

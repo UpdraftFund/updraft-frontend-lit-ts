@@ -24,6 +24,25 @@ export class IdeaCardSmall extends LitElement {
   static styles = css`
     :host {
       display: inline-block;
+      color: var(--main-foreground);
+    }
+
+    hr {
+      height: 1px;
+      background-color: var(--layout-divider); /* Line color */
+      border: none;
+    }
+    
+    h3 {
+      margin-top: 0;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+    
+    p {
+      margin-top: .5rem;
+      font-size: .75rem;
+      color: var(--subtle-text);
     }
     
     .info-row {
@@ -40,7 +59,7 @@ export class IdeaCardSmall extends LitElement {
     }
     
     .info-row span {
-      font-size: 0.875rem;
+      font-size: 0.8rem;
     }
   `;
 
