@@ -4,6 +4,7 @@ import { css, html, LitElement } from 'lit';
 import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
+import '@components/search-bar';
 
 @customElement('home-page')
 export class HomePage extends LitElement {
@@ -41,7 +42,7 @@ export class HomePage extends LitElement {
 
   render() {
     return html`
-      <top-bar></top-bar>
+      <top-bar><search-bar></search-bar></top-bar>
       <div class="container">
         <left-side-bar location="home"></left-side-bar>
         <main></main>
