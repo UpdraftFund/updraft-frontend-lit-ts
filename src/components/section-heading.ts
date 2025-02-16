@@ -13,7 +13,6 @@ export class SectionHeading extends LitElement {
       background-color: var(--layout-divider); /* Line color */
       border: none;
     }
-
   `
 
   render() {
