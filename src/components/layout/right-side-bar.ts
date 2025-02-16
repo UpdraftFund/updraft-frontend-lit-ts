@@ -22,10 +22,19 @@ import { Idea, TagCount } from "@/types";
 export class RightSideBar extends LitElement {
   static styles = css`
     :host {
-      display: block;
       width: 100%;
       height: 100%;
-      background-color: #f4f4f4; /* Light gray placeholder */
+      background-color: var(--subtle-background);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .section {
+      background-color: var(--main-background);
+      padding: 1rem;
+      border-radius: 20px;
     }
 
     .hot-ideas {
@@ -107,18 +116,19 @@ export class RightSideBar extends LitElement {
 
   render() {
     return html`
-      <section-heading>Hot Ideas</section-heading>
-      <div class="hot-ideas">
+      <div class="section">
+        <section-heading>Hot Ideas</section-heading>
         ${this.hotIdeas?.map(idea => html`
-        <idea-card-small .idea=${idea}></idea-card-small>
-      `)}
+          <idea-card-small .idea=${idea}></idea-card-small>
+        `)}
       </div>
-
-      <section-heading>Top Tags</section-heading>
-      <div class="tags-container">
-        ${this.topTags?.map(tag => html`
-        <a href="/discover?tag=${tag.id}" class="tag">#${tag.id} (${tag.count})</a>
-      `)}
+      <div class="section">
+        <section-heading>Top Tags</section-heading>
+        <div class="tags-container">
+          ${this.topTags?.map(tag => html`
+            <a href="/discover?tag=${tag.id}" class="tag">#${tag.id} (${tag.count})</a>
+          `)}
+        </div>
       </div>
     `
   }
