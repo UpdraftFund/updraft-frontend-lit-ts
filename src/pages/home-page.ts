@@ -17,8 +17,7 @@ export class HomePage extends LitElement {
     }
 
     left-side-bar {
-      flex: 0 0 274px;
-      background: var(--main-background);
+      flex: 0 0 300px;
     }
     
     main {
@@ -29,7 +28,7 @@ export class HomePage extends LitElement {
       gap: .2rem;
       padding: .5rem 1rem;
       color: var(--main-foreground);
-      border-radius: 0 25px 0 0;
+      border-radius: 25px 25px 0 0;
       background: var(--main-background);
     }
     

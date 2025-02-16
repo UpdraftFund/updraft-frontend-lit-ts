@@ -22,7 +22,9 @@ export class LeftSideBar extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
-      border-right: 3px solid var(--layout-divider);
+      background: var(--main-background);
+      border-radius: 25px 25px 0 0;
+      border-right: 3px solid var(--subtle-background);
       overflow: hidden;
       padding: 0 1rem;
     }
