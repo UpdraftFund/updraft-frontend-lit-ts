@@ -1,4 +1,4 @@
-query IdeasByShares($first: Int = 4, $skip: Int = 0, $detailed: Boolean = false) {
+query IdeasByShares($first: Int = 4, $skip: Int = 0, $detailed: Boolean = false) @live(interval: 5000) {
     ideas(first: $first, skip: $skip, orderBy: shares, orderDirection: desc) {
         ... @skip(if: $detailed) {
             ...IdeaFields
