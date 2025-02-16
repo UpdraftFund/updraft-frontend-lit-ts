@@ -2,7 +2,6 @@ import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { consume } from "@lit/context";
 import { Task } from '@lit/task';
-import { formatUnits } from "viem";
 
 import compass from '@icons/compass.svg';
 import house from '@icons/house.svg';
@@ -11,8 +10,9 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@components/section-heading';
 import '@components/idea-card-small';
 
-import { connectionContext, updraftSettings } from "@/context.ts";
-import { Connection, UpdraftSettings } from "@/types";
+import { connectionContext } from '@/context.ts';
+import { Connection } from "@/types";
+
 import urqlClient from "@/urql-client.ts";
 import { IdeasByFunderDocument } from "@gql";
 
@@ -83,7 +83,6 @@ export class LeftSideBar extends LitElement {
   });
 
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
-  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
 
   @property({ reflect: true }) location: string | null = null;
 
@@ -105,14 +104,7 @@ export class LeftSideBar extends LitElement {
       <div class="my-ideas">
         ${this.ideaContributions.render({
           complete: (ics) => ics?.map(ic => html`
-            <idea-card-small
-                .startTime=${ic.idea.startTime}
-                .funderReward=${ic.idea.funderReward * 100 / this.updraftSettings.percentScale}
-                .name=${ic.idea.name}
-                .description=${ic.idea.description}
-                .id=${ic.idea.id}
-                .shares=${formatUnits(ic.idea.shares, 18)}
-            ></idea-card-small>
+            <idea-card-small .idea=${ic.idea}></idea-card-small>
           `)
         })}
       </div>
