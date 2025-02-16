@@ -8,8 +8,9 @@ import { css, html, LitElement } from 'lit';
 import { consume } from "@lit/context";
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@components/section-heading';
 import '@components/idea-card-small';
+
+import fire from '@icons/fire.svg';
 
 import { updraftSettings } from "@/context.ts";
 import { UpdraftSettings } from "@/types";
@@ -24,6 +25,7 @@ export class RightSideBar extends LitElement {
     :host {
       width: 100%;
       height: 100%;
+      color: var(--main-foreground);
       background-color: var(--subtle-background);
       padding: 1rem;
       display: flex;
@@ -37,8 +39,10 @@ export class RightSideBar extends LitElement {
       border-radius: 20px;
     }
 
-    .hot-ideas {
-      padding: 1rem 0;
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 500;
     }
 
     .tags-container {
@@ -117,16 +121,16 @@ export class RightSideBar extends LitElement {
   render() {
     return html`
       <div class="section">
-        <section-heading>Hot Ideas</section-heading>
+        <h2>Hot Ideas <sl-icon src=${fire}></sl-icon></h2>
         ${this.hotIdeas?.map(idea => html`
           <idea-card-small .idea=${idea}></idea-card-small>
         `)}
       </div>
       <div class="section">
-        <section-heading>Top Tags</section-heading>
+        <h2>Top Tags</h2>
         <div class="tags-container">
           ${this.topTags?.map(tag => html`
-            <a href="/discover?tag=${tag.id}" class="tag">#${tag.id} (${tag.count})</a>
+            <a href="/discover?tag=${tag.id}" class="tag">${tag.id}</a>
           `)}
         </div>
       </div>
