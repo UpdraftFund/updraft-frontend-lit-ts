@@ -8,6 +8,7 @@ import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@components/search-bar';
+import '@components/idea-card-small';
 
 import { connectionContext } from '@/context.ts';
 import { Connection, Idea, Solution, IdeaContribution } from "@/types";
@@ -150,12 +151,21 @@ export class DiscoverPage extends LitElement {
           ${this.results.render({
             complete: ( result ) => {
               if (result) {
-                const data = result.data?.[result.entity] || [];
+                const data = result.data?.[result.entity] || [] as ResultType[];
                 return html`
-                  ${data.map((idea: ResultType) => html`
-                    <idea-card .idea=${idea}></idea-card>
-                  `)}
-                `
+                  ${data.map((item: ResultType) => {
+                    switch (result.entity) {
+                      case 'ideas':
+                        return html`<idea-card-small .idea=${item}></idea-card-small>`;
+                      case 'solutions':
+                        return html`<solution-card .solution=${item}></solution-card>`;
+                      case 'ideaContributions':
+                        return html`<contribution-card .contribution=${item}></contribution-card>`;
+                      default:
+                        return html`<p>Unknown item type</p>`;
+                    }
+                  })}
+                `;
               }
             }
           })}
