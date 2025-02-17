@@ -10,7 +10,7 @@ import Ajv from 'ajv';
 export class SaveableForm extends LitElement {
   @query("form", true) form!: HTMLFormElement;
 
-  formName: string | null = null;
+  formName?: string;
 
   protected saveForm = () => {
     if (this.formName) {
@@ -59,7 +59,7 @@ export class SaveableForm extends LitElement {
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
-    this.formName = this.form?.name || null;
+    this.formName = this.form?.name;
     this.restoreForm();
   }
 

@@ -85,7 +85,7 @@ export class LeftSideBar extends LitElement {
 
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
 
-  @property({ reflect: true }) location: string | null = null;
+  @property({ reflect: true }) location?: string;
 
   render() {
     return html`

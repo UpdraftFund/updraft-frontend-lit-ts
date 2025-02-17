@@ -28,7 +28,7 @@ export class CreateIdea extends SaveableForm {
   @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
 
   @state() private depositError: string | null = null;
-  @state() private antiSpamFee: string | null = null;
+  @state() private antiSpamFee?: string;
 
   private resizeObserver!: ResizeObserver;
 
