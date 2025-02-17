@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 
 import search from '@icons/search.svg';
 
@@ -15,16 +15,20 @@ export class SearchBar extends LitElement {
       max-width: 450px;
     }
     
-    sl-input {
+    form {
       flex: 1;
     }
   `;
 
+  @property({ type: String, reflect: true }) value = '';
+
   render() {
     return html`
-      <sl-input type="search">
-        <sl-icon slot="prefix" src=${search}></sl-icon>
-      </sl-input>
+      <form action="/discover">
+        <sl-input type="search" name="search" value=${this.value}>
+          <sl-icon slot="prefix" src=${search}></sl-icon>
+        </sl-input>
+      </form>
     `;
   }
 }

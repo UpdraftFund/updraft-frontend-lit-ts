@@ -1,4 +1,4 @@
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 
 import '@layout/top-bar';
@@ -42,18 +42,25 @@ export class DiscoverPage extends LitElement {
     }
   `;
 
+  @property() tab: string | null = null;
+  @property() search: string | null = null;
+
+  private handleTab(e: any) {
+    this.tab = e.detail.name;
+  }
+
   render() {
     return html`
       <top-bar>
         <span class="search-tabs">
-          <sl-tab-group>
-            <sl-tab slot="nav">Hot Ideas</sl-tab>
-            <sl-tab slot="nav">New Ideas</sl-tab>
-            <sl-tab slot="nav">Deadline</sl-tab>
-            <sl-tab slot="nav">Followed</sl-tab>
-            <sl-tab slot="nav">Search</sl-tab>
+          <sl-tab-group @sl-tab-show=${this.handleTab}>
+            <sl-tab slot="nav" panel="hot-ideas" .active=${this.tab === 'hot-ideas'}>Hot Ideas</sl-tab>
+            <sl-tab slot="nav" panel="new-ideas" .active=${this.tab === 'new-ideas'}>New Ideas</sl-tab>
+            <sl-tab slot="nav" panel="deadline" .active=${this.tab === 'deadline'}>Deadline</sl-tab>
+            <sl-tab slot="nav" panel="followed" .active=${this.tab === 'followed'}>Followed</sl-tab>
+            <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}>Search</sl-tab>
           </sl-tab-group>
-          <search-bar></search-bar>
+          <search-bar value=${this.search}></search-bar>
         </span>
       </top-bar>
       <div class="container">

@@ -45,8 +45,12 @@ export class MyApp extends LitElement {
         await import('./pages/discover-page');
         return true;
       },
-      render: () => html`
-        <discover-page></discover-page>`
+      render: () => {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('q');
+        const tab = params.get('tab') || q ? 'search' : null;
+        return html`<discover-page .search=${q} .tab=${tab}></discover-page>`
+      }
     },
     {
       path: '/idea/:id',

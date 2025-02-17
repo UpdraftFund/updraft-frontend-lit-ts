@@ -130,7 +130,7 @@ export class RightSideBar extends LitElement {
         <h2>Top Tags</h2>
         <div class="tags-container">
           ${this.topTags?.map(tag => html`
-            <a href="/discover?search=[${tag.id}]" class="tag">${tag.id}</a>
+            <a href="/discover?q=[${tag.id}]" class="tag">${tag.id}</a>
           `)}
         </div>
       </div>
