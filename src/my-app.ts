@@ -48,7 +48,7 @@ export class MyApp extends LitElement {
       render: () => {
         const params = new URLSearchParams(window.location.search);
         const search = params.get('search');
-        const tab = params.get('tab') || search ? 'search' : null;
+        const tab = params.get('tab') || (search ? 'search' : null);
         return html`<discover-page .search=${search} .tab=${tab}></discover-page>`
       }
     },
