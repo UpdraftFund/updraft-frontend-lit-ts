@@ -11,14 +11,13 @@ export class SearchBar extends LitElement {
   static styles = css`
     :host {
       display: flex;
-      justify-content: center;
-      width: 100%;
+      flex: 1;
+      max-width: 450px;
     }
     
     sl-input {
-      width: 100%;
-      max-width: 450px;
-    } 
+      flex: 1;
+    }
   `;
 
   render() {

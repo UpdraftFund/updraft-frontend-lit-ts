@@ -10,9 +10,14 @@ import '@components/search-bar';
 export class HomePage extends LitElement {
 
   static styles = css`
+
+    search-bar {
+      margin: 0 auto;
+    }
+
     .container {
       display: flex;
-      flex: 1 1 0%;
+      flex: 1;
       overflow: hidden;
       background: linear-gradient(to bottom, var(--subtle-background), var(--main-background));
     }
@@ -20,7 +25,7 @@ export class HomePage extends LitElement {
     left-side-bar {
       flex: 0 0 300px;
     }
-    
+
     main {
       flex: 1;
       box-sizing: border-box;
@@ -32,7 +37,7 @@ export class HomePage extends LitElement {
       border-radius: 25px 25px 0 0;
       background: var(--main-background);
     }
-    
+
     right-side-bar {
       flex: 0 0 300px;
       border-radius: 0 0 0 25px;
