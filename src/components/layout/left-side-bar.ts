@@ -95,7 +95,7 @@ export class LeftSideBar extends LitElement {
             <sl-icon src=${house}></sl-icon>
             Home
           </a></li>
-          <li><a href="/discover" class=${this.location === 'discover' ? 'active' : ''}>
+          <li><a href="/discover?tab=hot-ideas" class=${this.location === 'discover' ? 'active' : ''}>
             <sl-icon src=${compass}></sl-icon>
             Discover
           </a></li>
