@@ -39,7 +39,7 @@ export class CreateIdea extends SaveableForm {
 
     .container {
       display: flex;
-      flex: 1 1 auto; /* The container takes the remaining available space */
+      flex: auto; /* The container takes the remaining available space */
       overflow: hidden;
     }
 
@@ -67,7 +67,7 @@ export class CreateIdea extends SaveableForm {
     }
 
     sl-input[name="deposit"] {
-      flex: 0 0 auto;
+      flex: none;
       width: calc(10ch + var(--sl-input-spacing-medium) * 2);
       box-sizing: content-box;
     }

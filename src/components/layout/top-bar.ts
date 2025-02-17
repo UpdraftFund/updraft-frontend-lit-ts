@@ -30,7 +30,6 @@ export class TopBar extends LitElement {
     slot {
       flex: 1;
       display: flex;
-      justify-content: flex-start;
     }
   `
   render() {

@@ -49,7 +49,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
       .container {
         display: flex;
-        flex: 1 1 auto; /* The container takes the remaining available space */
+        flex: auto; /* The container takes the remaining available space */
         overflow: hidden;
       }
 

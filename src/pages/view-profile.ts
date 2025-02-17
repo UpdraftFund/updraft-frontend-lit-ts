@@ -24,7 +24,7 @@ export class ViewProfile extends LitElement {
   static styles = css`
     .container {
       display: flex;
-      flex: 1 1 auto;
+      flex: auto;
       overflow: hidden;
     }
 

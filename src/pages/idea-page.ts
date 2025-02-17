@@ -46,7 +46,7 @@ export class IdeaPage extends LitElement {
     css`
       .container {
         display: flex;
-        flex: 1 1 auto;
+        flex: auto;
         overflow: hidden;
       }
 
@@ -77,7 +77,7 @@ export class IdeaPage extends LitElement {
       }
 
       .support sl-input {
-        flex: 0 0 auto;
+        flex: none;
         width: calc(10ch + var(--sl-input-spacing-medium) * 2);
         box-sizing: content-box;
       }
