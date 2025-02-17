@@ -71,7 +71,6 @@ export class LeftSideBar extends LitElement {
     idea-card-small {
       width: 100%
     }
-
   `;
 
   private readonly ideaContributions = new Task(this, {
