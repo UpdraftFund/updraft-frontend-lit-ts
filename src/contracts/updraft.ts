@@ -9,7 +9,7 @@ interface AddressMap {
   [chainName: string]: `0x${string}`;
 }
 
-const addresses: AddressMap = updraftAddresses as AddressMap;
+const addresses = updraftAddresses as AddressMap;
 
 class Updraft extends Contract {
   constructor() {
