@@ -1,7 +1,7 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { consume } from "@lit/context";
 import { Task } from '@lit/task';
+import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
@@ -10,7 +10,7 @@ import '@layout/left-side-bar';
 import '@components/search-bar';
 
 import { connectionContext } from '@/context.ts';
-import { Connection, Idea, Solution } from "@/types";
+import { Connection, Idea, Solution, IdeaContribution } from "@/types";
 
 import urqlClient from "@/urql-client.ts";
 import {
@@ -23,6 +23,7 @@ import {
 } from "@gql";
 
 type QueryType = 'hot-ideas' | 'new-ideas' | 'deadline' | 'followed' | 'search' | 'tags';
+type ResultType = Idea[] | Solution[] | IdeaContribution[];
 
 @customElement('discover-page')
 export class DiscoverPage extends LitElement {
@@ -92,7 +93,7 @@ export class DiscoverPage extends LitElement {
     }
   };
 
-  private readonly resultEntities = {
+  private readonly resultEntities : Record<QueryType, string> = {
     'hot-ideas': 'ideas',
     'new-ideas': 'ideas',
     'deadline': 'solutions',
@@ -102,16 +103,19 @@ export class DiscoverPage extends LitElement {
   }
 
   private readonly results = new Task(this, {
-    task: async ([tab]): Promise<any | void> => {
+    task: async ([tab, search]) : Promise<{ data: any, entity: string } | undefined>=> {
       let queryType = tab;
-      if (queryType === 'search' && this.search?.startsWith('[')){
+      if (queryType === 'search' && search?.startsWith('[')){
         queryType = 'tags';
       }
       const query = queryType && this.queries[queryType];
       if (query) {
         const variables = this.variables[queryType!]?.() || {};
         const result = await urqlClient.query(query, variables);
-        return result.data;
+        return {
+          data: result.data,
+          entity: this.resultEntities[queryType!],
+        }
       }
     },
     args: () => [this.tab, this.search] as const
@@ -119,11 +123,11 @@ export class DiscoverPage extends LitElement {
 
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
 
-  @property() tab: QueryType | null = null;
-  @property() search: string | null = null;
+  @property() tab?: QueryType;
+  @property() search?: string;
 
   private handleTab(e: any) {
-    this.tab = e.detail.name;
+    this.tab = e?.detail?.name;
   }
 
   render() {
@@ -144,13 +148,15 @@ export class DiscoverPage extends LitElement {
         <left-side-bar location="discover"></left-side-bar>
         <main>
           ${this.results.render({
-            complete: (data) => {
-              const result = data?.[this.resultEntities[this.tab!]] || [];
-              return html`
-                ${result.map((idea: Idea | Solution) => html`
-                  <idea-card .idea=${idea}></idea-card>
-                `)}
-              `
+            complete: ( result ) => {
+              if (result) {
+                const data = result.data?.[result.entity] || [];
+                return html`
+                  ${data.map((idea: ResultType) => html`
+                    <idea-card .idea=${idea}></idea-card>
+                  `)}
+                `
+              }
             }
           })}
         </main>
