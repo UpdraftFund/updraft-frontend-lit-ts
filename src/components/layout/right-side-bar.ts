@@ -9,6 +9,7 @@ import { consume } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@components/idea-card-small';
 
 import fire from '@icons/fire.svg';
@@ -75,7 +76,7 @@ export class RightSideBar extends SignalWatcher(LitElement) {
 
     .tag:hover {
       background-color: var(--accent);
-      color: white;
+      color: var(--sl-color-neutral-0);
     }
 
     .edit-button {
@@ -93,14 +94,15 @@ export class RightSideBar extends SignalWatcher(LitElement) {
       gap: 0.25rem;
     }
 
-    .remove-button {
-      --sl-font-size-medium: 0.875rem;
-      color: red;
-      padding: 0;
+    .tag-with-remove:hover .remove-button,
+    .tag-with-remove .remove-button::part(base):hover {
+      color: var(--sl-color-neutral-0);
     }
 
-    .remove-button::part(base):hover {
-      color: deeppink;
+    .remove-button {
+      --sl-font-size-medium: 0.875rem;
+      color: var(--sl-color-danger-900);
+      padding: 0;
     }
 
     .wiggle {
