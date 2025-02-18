@@ -132,7 +132,7 @@ export class RightSideBar extends SignalWatcher(LitElement) {
 
   @state() private hotIdeas?: Idea[];
   @state() private topTags?: TagCount[];
-  @state() private isEditMode = false;
+  @state() private editMode = false;
 
   @queryAll('.watched-tags .tag') watchedTags!: NodeListOf<HTMLElement>;
   @query('.watched-tags') watchedTagsSection!: HTMLElement;
@@ -157,15 +157,17 @@ export class RightSideBar extends SignalWatcher(LitElement) {
     this.unsubTopTags = topTagsSub.unsubscribe;
   }
 
-  private handleFocusOut = (e: FocusEvent) => {
-    if (!this.watchedTagsSection.contains(e.relatedTarget as Node)) {
-      this.isEditMode = false;
+  private handleClickOutsideEditArea = (e: MouseEvent) => {
+    if (this.editMode) {
+      if (!this.watchedTagsSection.contains(e.target as Node)) {
+        this.editMode = false;
+      }
     }
-  };
+  }
 
-  private handleGearClick() {
-    this.isEditMode = !this.isEditMode;
-    if (this.isEditMode) {
+  private handleEditClick() {
+    this.editMode = !this.editMode;
+    if (this.editMode) {
       this.watchedTags.forEach(tag => {
         tag.classList.add('wiggle');
         setTimeout(() => tag.classList.remove('wiggle'), 300);
@@ -186,6 +188,7 @@ export class RightSideBar extends SignalWatcher(LitElement) {
     super.connectedCallback();
     this.subscribe();
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    document.addEventListener('click', this.handleClickOutsideEditArea);
   }
 
   disconnectedCallback() {
@@ -193,6 +196,7 @@ export class RightSideBar extends SignalWatcher(LitElement) {
     this.unsubHotIdeas?.();
     this.unsubTopTags?.();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    document.removeEventListener('click', this.handleClickOutsideEditArea);
   }
 
   render() {
@@ -216,23 +220,22 @@ export class RightSideBar extends SignalWatcher(LitElement) {
         </div>
       </div>
       <div
-          class="section watched-tags ${this.isEditMode ? 'edit-mode' : ''}"
-          @focusout=${this.handleFocusOut}
-          tabindex="-1"
+          class="section watched-tags ${this.editMode ? 'edit-mode' : ''}"
+          @click=${(e: Event) => e.stopPropagation()}
       >
         <h2>Watched Tags</h2>
         <sl-icon-button
             class="edit-button"
             src=${pencilSquare}
             label="Edit watched tags"
-            @click=${this.handleGearClick}
+            @click=${this.handleEditClick}
         ></sl-icon-button>
         <div class="tags-container">
           ${watchedTags.get()?.map(tag => html`
             <div class="tag-with-remove">
               <a href="/discover?search=[${tag}]" class="tag">
                 ${tag}
-                ${this.isEditMode ? html`
+                ${this.editMode ? html`
                   <sl-icon-button
                       class="remove-button"
                       src=${xCircle}
