@@ -65,6 +65,23 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       border-radius: 25px 25px 0 0;
       background: var(--main-background);
     }
+    
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .tag {
+      font-weight: 500;
+      font-size: 1.3rem;
+    }
+    
+    .tag-with-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
     right-side-bar {
       flex: 0 0 300px;
@@ -154,15 +171,15 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
             this.tags,
             (tag) => tag,
             (tag) => html`
-              <div class="tag-item">
-                <span>[${tag}]</span>
+              <span class="tag-with-button">
+                <span class="tag">${tag}</span>
                 <sl-button pill size="small"
                            @click=${() => watchTag(tag)}
                            ?disabled=${watchedTags.get().includes(tag)}
                 >
                   ${watchedTags.get().includes(tag) ? 'Watched' : 'Watch Tag'}
                 </sl-button>
-              </div>
+              </span>
             `
         )}
       </div>
