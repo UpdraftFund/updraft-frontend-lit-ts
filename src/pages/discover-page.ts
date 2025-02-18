@@ -2,16 +2,20 @@ import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
+import { SignalWatcher } from '@lit-labs/signals';
+import { repeat } from 'lit/directives/repeat.js';
 
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+
 import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 import '@components/search-bar';
 import '@components/idea-card-small';
 
-import { connectionContext } from '@/context.ts';
+import { connectionContext, watchedTags, watchTag } from '@/context.ts';
 import { Connection, Idea, Solution, IdeaContribution } from "@/types";
 
 import urqlClient from "@/urql-client.ts";
@@ -28,7 +32,7 @@ type QueryType = 'hot-ideas' | 'new-ideas' | 'deadline' | 'followed' | 'search' 
 type ResultType = Idea[] | Solution[] | IdeaContribution[];
 
 @customElement('discover-page')
-export class DiscoverPage extends LitElement {
+export class DiscoverPage extends SignalWatcher(LitElement) {
 
   static styles = css`
 
@@ -90,20 +94,20 @@ export class DiscoverPage extends LitElement {
     }),
     'tags': () => {
       const tagMatches = this.search?.match(/\[.*?\]/g) || [];
-      const tags = tagMatches.map(tag => tag.replace(/[\[\]]/g, ''))
+      this.tags = tagMatches.map(tag => tag.replace(/[\[\]]/g, ''))
         .slice(0, 5); // only get up to 5 matches
-      const defaultTag = tags[0] || '';
+      const defaultTag = this.tags[0] || '';
       return {
-        tag1: tags[0] || defaultTag,
-        tag2: tags[1] || defaultTag,
-        tag3: tags[2] || defaultTag,
-        tag4: tags[3] || defaultTag,
-        tag5: tags[4] || defaultTag
+        tag1: this.tags[0] || defaultTag,
+        tag2: this.tags[1] || defaultTag,
+        tag3: this.tags[2] || defaultTag,
+        tag4: this.tags[3] || defaultTag,
+        tag5: this.tags[4] || defaultTag
       };
     }
   };
 
-  private readonly resultEntities : Record<QueryType, string> = {
+  private readonly resultEntities: Record<QueryType, string> = {
     'hot-ideas': 'ideas',
     'new-ideas': 'ideas',
     'deadline': 'solutions',
@@ -113,18 +117,18 @@ export class DiscoverPage extends LitElement {
   }
 
   private readonly results = new Task(this, {
-    task: async ([tab, search]) : Promise<{ data: any, entity: string } | undefined>=> {
-      let queryType = tab;
-      if (queryType === 'search' && search?.startsWith('[')){
-        queryType = 'tags';
+    task: async ([tab, search]): Promise<{ data: any, entity: string } | undefined> => {
+      this.queryType = tab;
+      if (this.queryType === 'search' && search?.startsWith('[')) {
+        this.queryType = 'tags';
       }
-      const query = queryType && this.queries[queryType];
+      const query = this.queryType && this.queries[this.queryType];
       if (query) {
-        const variables = this.variables[queryType!]?.() || {};
+        const variables = this.variables[this.queryType!]?.() || {};
         const result = await urqlClient.query(query, variables);
         return {
           data: result.data,
-          entity: this.resultEntities[queryType!],
+          entity: this.resultEntities[this.queryType!],
         }
       }
     },
@@ -136,8 +140,33 @@ export class DiscoverPage extends LitElement {
   @property() tab?: QueryType;
   @property() search?: string;
 
+  private queryType?: QueryType;
+  private tags: string[] = [];
+
   private handleTab(e: any) {
     this.tab = e?.detail?.name;
+  }
+
+  private renderTagList() {
+    return html`
+      <div class="tag-list">
+        ${repeat(
+            this.tags,
+            (tag) => tag,
+            (tag) => html`
+              <div class="tag-item">
+                <span>[${tag}]</span>
+                <sl-button pill size="small"
+                           @click=${() => watchTag(tag)}
+                           ?disabled=${watchedTags.get().includes(tag)}
+                >
+                  ${watchedTags.get().includes(tag) ? 'Watched' : 'Watch Tag'}
+                </sl-button>
+              </div>
+            `
+        )}
+      </div>
+    `;
   }
 
   render() {
@@ -158,18 +187,22 @@ export class DiscoverPage extends LitElement {
         <left-side-bar location="discover"></left-side-bar>
         <main>
           ${this.results.render({
-            complete: ( result ) => {
+            complete: (result) => {
               if (result) {
                 const data = result.data?.[result.entity] || [] as ResultType[];
                 return html`
+                  ${this.queryType === 'tags' ? this.renderTagList() : ''}
                   ${data.map((item: ResultType) => {
                     switch (result.entity) {
                       case 'ideas':
-                        return html`<idea-card-small .idea=${item}></idea-card-small>`;
+                        return html`
+                          <idea-card-small .idea=${item}></idea-card-small>`;
                       case 'solutions':
-                        return html`<solution-card .solution=${item}></solution-card>`;
+                        return html`
+                          <solution-card .solution=${item}></solution-card>`;
                       case 'ideaContributions':
-                        return html`<contribution-card .contribution=${item}></contribution-card>`;
+                        return html`
+                          <contribution-card .contribution=${item}></contribution-card>`;
                       default:
                         return html`<p>Unknown item type</p>`;
                     }
