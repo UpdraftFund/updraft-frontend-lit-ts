@@ -7,6 +7,7 @@ import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@layout/top-bar';
 import '@layout/left-side-bar';
+import '@layout/right-side-bar';
 import '@components/search-bar';
 import '@components/idea-card-small';
 
@@ -42,6 +43,7 @@ export class DiscoverPage extends LitElement {
       display: flex;
       flex: auto;
       overflow: hidden;
+      background: linear-gradient(to bottom, var(--subtle-background), var(--main-background));
     }
 
     left-side-bar {
@@ -56,7 +58,14 @@ export class DiscoverPage extends LitElement {
       gap: .2rem;
       padding: .5rem 1rem;
       color: var(--main-foreground);
+      border-radius: 25px 25px 0 0;
       background: var(--main-background);
+    }
+
+    right-side-bar {
+      flex: 0 0 300px;
+      border-radius: 0 0 0 25px;
+      background: var(--subtle-background);
     }
   `;
 
@@ -170,6 +179,7 @@ export class DiscoverPage extends LitElement {
             }
           })}
         </main>
+        <right-side-bar></right-side-bar>
     `;
   }
 }

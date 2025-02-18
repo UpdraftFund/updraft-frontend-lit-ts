@@ -3,7 +3,7 @@
  * https://www.figma.com/design/lfPeBM41v53XQZLkYRUt5h/Updraft?node-id=920-7089&m=dev
  ***/
 
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { consume } from "@lit/context";
 
@@ -72,10 +72,13 @@ export class RightSideBar extends LitElement {
     }
   `
 
+  @property({ type: Boolean, reflect: true, attribute: 'show-hot-ideas' }) showHotIdeas = false;
+
   @consume({ context: updraftSettings, subscribe: true }) updraftSettings! : UpdraftSettings;
 
   @state() private hotIdeas?: Idea[];
   @state() private topTags?: TagCount[];
+
   private unsubHotIdeas?: () => void;
   private unsubTopTags?: () => void;
 
@@ -83,10 +86,12 @@ export class RightSideBar extends LitElement {
     this.unsubHotIdeas?.();
     this.unsubTopTags?.();
 
-    const hotIdeasSub = urqlClient.query(IdeasBySharesDocument, {}).subscribe(result => {
-      this.hotIdeas = result.data?.ideas as Idea[];
-    });
-    this.unsubHotIdeas = hotIdeasSub.unsubscribe;
+    if(this.showHotIdeas) {
+      const hotIdeasSub = urqlClient.query(IdeasBySharesDocument, {}).subscribe(result => {
+        this.hotIdeas = result.data?.ideas as Idea[];
+      });
+      this.unsubHotIdeas = hotIdeasSub.unsubscribe;
+    }
 
     const topTagsSub = urqlClient.query(TopTagsDocument, {}).subscribe(result => {
       this.topTags = result.data?.tagCounts as TagCount[];
@@ -120,12 +125,14 @@ export class RightSideBar extends LitElement {
 
   render() {
     return html`
+      ${this.showHotIdeas ? html`
       <div class="section">
         <h2>Hot Ideas <sl-icon src=${fire}></sl-icon></h2>
         ${this.hotIdeas?.map(idea => html`
           <idea-card-small .idea=${idea}></idea-card-small>
         `)}
       </div>
+      ` : ''}
       <div class="section">
         <h2>Top Tags</h2>
         <div class="tags-container">
@@ -133,6 +140,10 @@ export class RightSideBar extends LitElement {
             <a href="/discover?search=[${tag.id}]" class="tag">${tag.id}</a>
           `)}
         </div>
+      </div>
+      <div class="section">
+        <h2>Watched Tags</h2>
+        <div class="tags-container"></div>
       </div>
     `
   }

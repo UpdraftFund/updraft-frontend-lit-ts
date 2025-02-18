@@ -51,7 +51,7 @@ export class HomePage extends LitElement {
       <div class="container">
         <left-side-bar location="home"></left-side-bar>
         <main></main>
-        <right-side-bar></right-side-bar>
+        <right-side-bar show-hot-ideas></right-side-bar>
       </div>
     `;
   }
