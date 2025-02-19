@@ -65,18 +65,18 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       border-radius: 25px 25px 0 0;
       background: var(--main-background);
     }
-    
+
     .tag-list {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
     }
-    
+
     .tag {
       font-weight: 500;
       font-size: 1.3rem;
     }
-    
+
     .tag-with-button {
       display: flex;
       align-items: center;
@@ -210,8 +210,12 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                 return html`
                   ${this.queryType === 'tags' ? this.renderTagList() : ''}
                   ${data.map((item: ResultType) => {
+                    //TODO: we should use idea-card-large when it exists, not idea-card-small
                     switch (result.entity) {
                       case 'ideas':
+                        return html`
+                          <idea-card-small .idea=${item}></idea-card-small>`;
+                      case 'ideaSearch':
                         return html`
                           <idea-card-small .idea=${item}></idea-card-small>`;
                       case 'solutions':
@@ -219,9 +223,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                           <solution-card .solution=${item}></solution-card>`;
                       case 'ideaContributions':
                         return html`
-                          <contribution-card .contribution=${item}></contribution-card>`;
-                      default:
-                        return html`<p>Unknown item type</p>`;
+                          <idea-card-large .idea=${(item as unknown as IdeaContribution).idea}></idea-card-large>`;
                     }
                   })}
                 `;
