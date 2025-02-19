@@ -134,16 +134,23 @@ export class IdeaPage extends LitElement {
 
       .tags {
         display: flex;
-        gap: 0.5rem;
         flex-wrap: wrap;
+        gap: 0.5rem;
       }
 
       .tag {
-        background: var(--sl-color-neutral-100);
+        display: inline-block;
         padding: 0.25rem 0.75rem;
+        background-color: var(--subtle-background);
         border-radius: 1rem;
         font-size: 0.875rem;
-        color: var(--sl-color-neutral-700);
+        text-decoration: none;
+        color: var(--main-foreground);
+      }
+
+      .tag:hover {
+        background-color: var(--accent);
+        color: var(--sl-color-neutral-0);
       }
 
       sl-dialog::part(body) {
@@ -318,7 +325,9 @@ export class IdeaPage extends LitElement {
                 <p>${description}</p>
                 ${tags ? html`
                   <div class="tags">
-                    ${tags.map((tag) => html`<span class="tag">${tag}</span>`)}
+                    ${tags.map((tag) => html`
+                      <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
+                    `)}
                   </div>
                 ` : ''}
                 <share-dialog .topic=${idea.name}></share-dialog>
