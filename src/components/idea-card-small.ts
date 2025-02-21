@@ -73,7 +73,7 @@ export class IdeaCardSmall extends LitElement {
   `;
 
   @property() idea!: Idea;
-  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+  @consume({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
 
   private get displayFunderReward(): number {
     return this.idea.funderReward * 100 / this.updraftSettings.percentScale;

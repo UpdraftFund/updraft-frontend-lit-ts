@@ -5,7 +5,6 @@
 
 import { customElement, state, property, query, queryAll } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { consume } from "@lit/context";
 import { SignalWatcher } from "@lit-labs/signals";
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -16,8 +15,7 @@ import fire from '@icons/fire.svg';
 import xCircle from '@icons/x-circle.svg';
 import pencilSquare from '@icons/pencil-square.svg';
 
-import { updraftSettings, watchedTags, unwatchTag } from "@/context.ts";
-import { UpdraftSettings } from "@/types";
+import { watchedTags, unwatchTag } from "@/context.ts";
 
 import urqlClient from "@/urql-client.ts";
 import { TopTagsDocument, IdeasBySharesDocument } from "@gql";
@@ -127,8 +125,6 @@ export class RightSideBar extends SignalWatcher(LitElement) {
   `
 
   @property({ type: Boolean, reflect: true, attribute: 'show-hot-ideas' }) showHotIdeas = false;
-
-  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
 
   @state() private hotIdeas?: Idea[];
   @state() private topTags?: TagCount[];
