@@ -271,7 +271,6 @@ export class IdeaPage extends LitElement {
 
   private async handleTransactionSuccess() {
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
-    this.shareDialog.action = 'supported an Idea';
     this.approveDialog.hide();
     this.shareDialog.show();
   }
@@ -330,7 +329,7 @@ export class IdeaPage extends LitElement {
                     `)}
                   </div>
                 ` : ''}
-                <share-dialog .topic=${idea.name}></share-dialog>
+                <share-dialog action="supported an Idea" .topic=${idea.name}></share-dialog>
               `
             }
           })}
