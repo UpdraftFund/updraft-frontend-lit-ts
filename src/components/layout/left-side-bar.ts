@@ -14,7 +14,7 @@ import { connectionContext } from '@/context.ts';
 import { Connection } from "@/types";
 
 import urqlClient from "@/urql-client.ts";
-import { IdeasByFunderDocument } from "@gql";
+import { IdeasByFunderDocument, SolutionsByFunderOrDrafterDocument } from "@gql";
 
 @customElement('left-side-bar')
 export class LeftSideBar extends LitElement {
@@ -83,6 +83,16 @@ export class LeftSideBar extends LitElement {
     args: () => [this.connection.address] as const
   });
 
+  private readonly solutionContributions = new Task(this, {
+    task: async ([funder]) => {
+      if (funder) {
+        const result = await urqlClient.query(SolutionsByFunderOrDrafterDocument, { user: funder });
+        return result.data?.solutionContributions;
+      }
+    },
+    args: () => [this.connection.address] as const
+  });
+
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
 
   @property({ reflect: true }) location?: string;
@@ -104,12 +114,19 @@ export class LeftSideBar extends LitElement {
       <section-heading>My Ideas</section-heading>
       <div class="my-ideas">
         ${this.ideaContributions.render({
-          complete: (ics) => ics?.map(ic => html`
+      complete: (ics) => ics?.map(ic => html`
             <idea-card-small .idea=${ic.idea}></idea-card-small>
           `)
-        })}
+    })}
       </div>
       <section-heading>My Solutions</section-heading>
+      <div class="my-solutions">
+        ${this.solutionContributions.render({
+        complete: (ics) => ics?.map(ic => html`
+            <solution-card-small .solution=${ic.solution}></solution-card-small>
+          `)
+    })}
+      </div>
     `;
   }
 }
