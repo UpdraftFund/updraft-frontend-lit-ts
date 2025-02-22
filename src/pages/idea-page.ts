@@ -136,6 +136,7 @@ export class IdeaPage extends LitElement {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
+        margin-bottom: 1rem;
       }
 
       .tag {
@@ -282,12 +283,12 @@ export class IdeaPage extends LitElement {
         <left-side-bar></left-side-bar>
         <main>
           ${this.idea.render({
-            complete: (idea: Idea) => {
-              const { startTime, funderReward, shares, creator, tags, description } = idea;
-              const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
-              const date = dayjs(startTime * 1000);
-              const interest = shortNum(formatUnits(shares, 18));
-              return html`
+      complete: (idea: Idea) => {
+        const { startTime, funderReward, shares, creator, tags, description } = idea;
+        const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
+        const date = dayjs(startTime * 1000);
+        const interest = shortNum(formatUnits(shares, 18));
+        return html`
                 <h1 class="heading">Idea: ${idea.name}</h1>
                 <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
                 <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
@@ -329,10 +330,14 @@ export class IdeaPage extends LitElement {
                     `)}
                   </div>
                 ` : ''}
+                <a href="/create-solution/${this.ideaId}" rel="next">
+                  <sl-button variant="primary">Add Solution</sl-button>
+                </a>
+
                 <share-dialog action="supported an Idea" .topic=${idea.name}></share-dialog>
               `
-            }
-          })}
+      }
+    })}
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
             <p>Before you can support this Idea,
