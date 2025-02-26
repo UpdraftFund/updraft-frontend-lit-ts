@@ -252,7 +252,7 @@ export class CreateIdea extends SaveableForm {
               <label-with-hint
                   slot="label"
                   label="Description"
-                  hint="How do you want to make your community, your project or the world better?"
+                  hint="How do you want to make your community, your project or the world better?">
               </label-with-hint>
             </sl-textarea>
             <sl-input name="tags" @sl-input=${this.handleTagsInput}>

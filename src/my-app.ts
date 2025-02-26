@@ -97,6 +97,21 @@ export class MyApp extends LitElement {
       render: ({ address }) => html`
         <view-profile .address=${address}></view-profile>`
     },
+    {
+      path: '/create-solution/:ideaId',
+      enter: async () => {
+        await import('./pages/create-solution');
+        return true;
+      },
+      render: ({ ideaId }) => {
+        if (!ideaId) {
+          return html`
+            <div>No idea id</div>`
+        }
+        return html`
+          <create-solution .ideaId=${ideaId}></create-solution>`
+      }
+    },
   ]);
 
   @provide({ context: connectionContext }) connection: Connection = { connected: false };
