@@ -13,7 +13,7 @@ import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 import '@components/search-bar';
-import '@components/idea-card-small';
+import '@components/idea-card-large';
 
 import { connectionContext, watchedTags, watchTag } from '@/context.ts';
 import { Connection, Idea, Solution, IdeaContribution } from "@/types";
@@ -100,7 +100,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   } as const;
 
   private readonly variables = {
-    'hot-ideas': () => ({}),
+    'hot-ideas': () => ({ detailed: true }),
     'new-ideas': () => ({}),
     'deadline': () => ({}),
     'followed': () => ({
@@ -210,14 +210,13 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                 return html`
                   ${this.queryType === 'tags' ? this.renderTagList() : ''}
                   ${data.map((item: ResultType) => {
-                    //TODO: we should use idea-card-large when it exists, not idea-card-small
                     switch (result.entity) {
                       case 'ideas':
                         return html`
-                          <idea-card-small .idea=${item}></idea-card-small>`;
+                          <idea-card-large .idea=${item}></idea-card-large>`;
                       case 'ideaSearch':
                         return html`
-                          <idea-card-small .idea=${item}></idea-card-small>`;
+                          <idea-card-large .idea=${item}></idea-card-large>`;
                       case 'solutions':
                         return html`
                           <solution-card .solution=${item}></solution-card>`;
