@@ -119,7 +119,8 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         tag2: this.tags[1] || defaultTag,
         tag3: this.tags[2] || defaultTag,
         tag4: this.tags[3] || defaultTag,
-        tag5: this.tags[4] || defaultTag
+        tag5: this.tags[4] || defaultTag,
+        detailed: true,
       };
     }
   };
