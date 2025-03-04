@@ -27,7 +27,7 @@ import { SaveableForm, loadForm, formToJson } from '@components/base/saveable-fo
 
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
-import { user, updraftSettings } from '@/context';
+import { user, updraftSettings, defaultFunderReward } from '@/context';
 import { UpdraftSettings } from "@/types";
 import { modal } from '@/web3';
 
@@ -219,7 +219,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           const ideaForm = loadForm('create-idea');
           if (ideaForm) {
             this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
-              BigInt(Number(ideaForm.reward) * this.updraftSettings.percentScale / 100),
+              BigInt(defaultFunderReward),
               parseUnits(ideaForm.deposit, 18),
               toHex(JSON.stringify(ideaData)),
               toHex(JSON.stringify(profileData)),
