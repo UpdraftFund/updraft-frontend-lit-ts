@@ -3,6 +3,8 @@ import { signal } from '@lit-labs/signals';
 
 import { CurrentUser, Connection, Balances, UpdraftSettings } from '@/types';
 
+export const defaultFunderReward = 500000;
+
 export const user = signal({} as CurrentUser);
 
 const storedTags = JSON.parse(localStorage.getItem('watchedTags') || '[]');

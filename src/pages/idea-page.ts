@@ -34,7 +34,7 @@ import urqlClient from '@/urql-client';
 import { IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from "@contracts/upd";
-import { balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
+import { balanceContext, defaultFunderReward, RequestBalanceRefresh, updraftSettings } from '@/context';
 import { UpdraftSettings, Balances, Idea } from "@/types";
 import { modal } from "@/web3.ts";
 import { shortNum } from "@/utils.ts";
@@ -283,18 +283,26 @@ export class IdeaPage extends LitElement {
         <left-side-bar></left-side-bar>
         <main>
           ${this.idea.render({
-      complete: (idea: Idea) => {
-        const { startTime, funderReward, shares, creator, tags, description } = idea;
-        const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
-        const date = dayjs(startTime * 1000);
-        const interest = shortNum(formatUnits(shares, 18));
-        return html`
+            complete: (idea: Idea) => {
+              const { startTime, funderReward, shares, creator, tags, description } = idea;
+              let pctFunderReward;
+              if (funderReward != defaultFunderReward && this.updraftSettings) {
+                pctFunderReward = funderReward * 100 / this.updraftSettings.percentScale;
+              }
+              const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
+              const date = dayjs(startTime * 1000);
+              const interest = shortNum(formatUnits(shares, 18));
+              return html`
                 <h1 class="heading">Idea: ${idea.name}</h1>
                 <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
                 <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
                 <div class="reward-fire">
-                  <span class="reward"><sl-icon src=${gift}></sl-icon>
-                    ${funderReward * 100 / this.updraftSettings.percentScale}% funder reward</span>
+                  ${pctFunderReward ? html`
+                    <span class="reward">
+                      <sl-icon src=${gift}></sl-icon>
+                      ${pctFunderReward.toFixed(0)}% funder reward
+                    </span>
+                  ` : ''}
                   <span class="fire"><sl-icon src=${fire}></sl-icon>${interest}</span>
                 </div>
                 <form @submit=${this.handleSubmit}>
@@ -336,8 +344,8 @@ export class IdeaPage extends LitElement {
 
                 <share-dialog action="supported an Idea" .topic=${idea.name}></share-dialog>
               `
-      }
-    })}
+            }
+          })}
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
             <p>Before you can support this Idea,

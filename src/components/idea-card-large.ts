@@ -12,7 +12,7 @@ import fire from '@icons/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
-import { updraftSettings } from '@/context.ts';
+import { defaultFunderReward, updraftSettings } from '@/context.ts';
 import { Idea, UpdraftSettings } from '@/types';
 
 import { shortNum } from "@/utils.ts";
@@ -54,7 +54,7 @@ export class IdeaCardLarge extends LitElement {
   render() {
     const { startTime, funderReward, shares, creator, tags, description, id, name } = this.idea;
     let pctFunderReward;
-    if (this.updraftSettings) {
+    if (funderReward != defaultFunderReward && this.updraftSettings) {
       pctFunderReward = funderReward * 100 / this.updraftSettings.percentScale;
     }
     const interest = shortNum(formatUnits(shares, 18));
