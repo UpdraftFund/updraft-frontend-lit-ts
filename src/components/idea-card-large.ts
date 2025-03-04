@@ -49,11 +49,14 @@ export class IdeaCardLarge extends LitElement {
   `
 
   @property() idea!: Idea;
-  @consume({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings?: UpdraftSettings;
 
   render() {
     const { startTime, funderReward, shares, creator, tags, description, id, name } = this.idea;
-    const pctFunderReward = funderReward * 100 / this.updraftSettings.percentScale;
+    let pctFunderReward;
+    if (this.updraftSettings) {
+      pctFunderReward = funderReward * 100 / this.updraftSettings.percentScale;
+    }
     const interest = shortNum(formatUnits(shares, 18));
     const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
     const date = dayjs(startTime * 1000);
@@ -68,12 +71,16 @@ export class IdeaCardLarge extends LitElement {
             <sl-icon src=${seedling}></sl-icon>
             <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
           </li>
-          <li>
-            <sl-icon src=${gift}></sl-icon>
-            <span>${pctFunderReward.toFixed(0)}% funder reward</span></li>
+          ${pctFunderReward ? html`
+            <li>
+              <sl-icon src=${gift}></sl-icon>
+              <span>${pctFunderReward.toFixed(0)}% funder reward</span>
+            </li>
+          ` : ''}
           <li>
             <sl-icon src=${fire}></sl-icon>
-            <span>${interest}</span></li>
+            <span>${interest}</span>
+          </li>
         </ul>
         ${description ? html`<p>${description}</p>` : ''}
       </a>

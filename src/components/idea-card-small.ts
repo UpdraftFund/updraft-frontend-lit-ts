@@ -73,33 +73,36 @@ export class IdeaCardSmall extends LitElement {
   `;
 
   @property() idea!: Idea;
-  @consume({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
-
-  private get displayFunderReward(): number {
-    return this.idea.funderReward * 100 / this.updraftSettings.percentScale;
-  }
-
-  private get displayShares(): string {
-    return shortNum(formatUnits(this.idea.shares, 18));
-  }
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings?: UpdraftSettings;
 
   render() {
-    const date = dayjs(this.idea.startTime * 1000);
+    const { startTime, funderReward, shares, description, id, name } = this.idea;
+    let pctFunderReward;
+    if (this.updraftSettings) {
+      pctFunderReward = funderReward * 100 / this.updraftSettings.percentScale;
+    }
+    const interest = shortNum(formatUnits(shares, 18));
+    const date = dayjs(startTime * 1000);
     return html`
-      <a href="/idea/${this.idea.id}"}>
+      <a href="/idea/${id}">
         <hr>
-        <h3>${this.idea.name}</h3>
-        ${this.idea.description ? html`<p>${this.idea.description}</p>` : ''}
+        <h3>${name}</h3>
+        ${description ? html`<p>${description}</p>` : ''}
         <ul class="info-row">
           <li>
             <sl-icon src=${seedling}></sl-icon>
-            <span>${date.fromNow()}</span></li>
-          <li>
-            <sl-icon src=${gift}></sl-icon>
-            <span>${this.displayFunderReward.toFixed(0)}%</span></li>
+            <span>${date.fromNow()}</span>
+          </li>
+          ${pctFunderReward ? html`
+            <li>
+              <sl-icon src=${gift}></sl-icon>
+              <span>${pctFunderReward.toFixed(0)}%</span>
+            </li>
+          ` : ''}
           <li>
             <sl-icon src=${fire}></sl-icon>
-            <span>${this.displayShares}</span></li>
+            <span>${interest}</span>
+          </li>
         </ul>
       </a>
     `;
