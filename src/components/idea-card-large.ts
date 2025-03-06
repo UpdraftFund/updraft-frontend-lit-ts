@@ -35,7 +35,6 @@ export class IdeaCardLarge extends LitElement {
     }
 
     .idea a:hover {
-      text-decoration: underline;
       color: var(--accent);
     }
 
