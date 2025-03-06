@@ -25,6 +25,33 @@ export class IdeaCardLarge extends LitElement {
       color: var(--main-foreground);
     }
     
+    h3 {
+      margin-bottom: 0rem;
+    }
+    
+   .idea a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .idea a:hover {
+      text-decoration: underline;
+      color: var(--accent);
+    }
+
+    .info-row {
+      display: flex;
+      gap: 1rem; 
+      padding: 0;
+      margin: 0;
+    }
+
+    .info-row li {
+      list-style: none;
+      display: flex;
+      align-items: center;
+    }
+    
     .tags {
       display: flex;
       flex-wrap: wrap;
@@ -61,11 +88,11 @@ export class IdeaCardLarge extends LitElement {
     const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
     const date = dayjs(startTime * 1000);
     return html`
-      <a href="/idea/${id}">
-        <h3>${name}</h3>
-      </a>
-      <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
-      <a href="/idea/${id}">
+      <div class="idea">
+        <a href="/idea/${id}">
+          <h3>${name}</h3>
+        </a>
+        <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
         <ul class="info-row">
           <li>
             <sl-icon src=${seedling}></sl-icon>
@@ -82,8 +109,10 @@ export class IdeaCardLarge extends LitElement {
             <span>${interest}</span>
           </li>
         </ul>
-        ${description ? html`<p>${description}</p>` : ''}
-      </a>
+        <a href="/idea/${id}">
+          ${description ? html`<p>${description}</p>` : ''}
+        </a>
+      </div>
       ${tags ? html`
         <div class="tags">
           ${tags.map((tag) => html`
