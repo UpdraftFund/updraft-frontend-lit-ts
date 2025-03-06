@@ -155,7 +155,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
 
-  @property() tab: QueryType='hot-ideas';
+  @property() tab?: QueryType;
   @property() search?: string;
 
   private queryType?: QueryType;
@@ -196,7 +196,11 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   private setTabFromUrl = () => {
     const urlParams = new URLSearchParams(window.location.search);
-    this.tab = urlParams.get('tab') as QueryType || 'hot-ideas';
+    this.search = urlParams.get('search') || undefined;
+    this.tab = urlParams.get('tab') as QueryType || undefined;
+    if(this.search && !this.tab) {
+      this.tab = 'search';
+    }
   }
 
   connectedCallback() {
