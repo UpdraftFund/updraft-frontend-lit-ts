@@ -155,15 +155,11 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
 
-  @property() tab?: QueryType;
+  @property() tab: QueryType='hot-ideas';
   @property() search?: string;
 
   private queryType?: QueryType;
   private tags: string[] = [];
-
-  private handleTab(e: any) {
-    this.tab = e?.detail?.name;
-  }
 
   private renderTagList() {
     return html`
@@ -185,6 +181,33 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         )}
       </div>
     `;
+  }
+
+  private handleTab(e: any) {
+    this.tab = e?.detail?.name;
+    if(this.tab) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', this.tab);
+      if (window.location.href !== url.toString()) { // don't push the same URL twice
+        window.history.pushState({}, '', url.toString());
+      }
+    }
+  }
+
+  private setTabFromUrl = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    this.tab = urlParams.get('tab') as QueryType || 'hot-ideas';
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.setTabFromUrl();
+    window.addEventListener('popstate', this.setTabFromUrl);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('popstate', this.setTabFromUrl);
+    super.disconnectedCallback();
   }
 
   render() {
