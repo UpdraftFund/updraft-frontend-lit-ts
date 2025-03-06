@@ -1,7 +1,7 @@
 ## Getting started.
 
 1. `git clone` the project and `cd` into it.
-   1. `git submodule init`
+2. `git submodule init` to install the submodles.
 3. `yarn install` to install the dependencies.
 4. `yarn build-graph` to build the subgraph
 5. `yarn dev` to deploy the test site to your browser. Any changes you do will be hotloaded and immediately visible in your browser.
