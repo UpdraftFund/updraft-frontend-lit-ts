@@ -1,8 +1,8 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
-import { consume } from "@lit/context";
+import { consume } from '@lit/context';
 import { Task } from '@lit/task';
-import { fromHex, formatUnits, parseUnits } from "viem";
+import { fromHex, formatUnits, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
@@ -13,31 +13,36 @@ dayjs.extend(utc);
 import gift from '@icons/gift.svg';
 import fire from '@icons/fire.svg';
 
-import { dialogStyles } from "@styles/dialog-styles";
+import { dialogStyles } from '@styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import { SlDialog, SlInput } from "@shoelace-style/shoelace";
+import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 import '@layout/top-bar';
 import '@layout/left-side-bar';
-import '@components/page-specific/idea-side-bar';
+import '@/components/page-specific/idea/side-bar';
 import '@components/upd-dialog';
 import '@components/share-dialog';
 import '@components/transaction-watcher';
-import { UpdDialog } from "@components/upd-dialog.ts";
-import { ShareDialog } from "@components/share-dialog.ts";
-import { TransactionWatcher } from "@components/transaction-watcher.ts";
+import { UpdDialog } from '@components/upd-dialog.ts';
+import { ShareDialog } from '@components/share-dialog.ts';
+import { TransactionWatcher } from '@components/transaction-watcher.ts';
 
 import urqlClient from '@/urql-client';
 import { IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
-import { Upd } from "@contracts/upd";
-import { balanceContext, defaultFunderReward, RequestBalanceRefresh, updraftSettings } from '@/context';
-import { UpdraftSettings, Balances, Idea } from "@/types";
-import { modal } from "@/web3.ts";
-import { shortNum } from "@/utils.ts";
+import { Upd } from '@contracts/upd';
+import {
+  balanceContext,
+  defaultFunderReward,
+  RequestBalanceRefresh,
+  updraftSettings,
+} from '@/context';
+import { UpdraftSettings, Balances, Idea } from '@/types';
+import { modal } from '@/web3.ts';
+import { shortNum } from '@/utils.ts';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -63,8 +68,8 @@ export class IdeaPage extends LitElement {
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        gap: .2rem;
-        padding: .5rem 1rem;
+        gap: 0.2rem;
+        padding: 0.5rem 1rem;
         color: var(--main-foreground);
         background: var(--main-background);
       }
@@ -86,7 +91,7 @@ export class IdeaPage extends LitElement {
         text-align: right;
       }
 
-      sl-input[name="support"].invalid {
+      sl-input[name='support'].invalid {
         --sl-input-focus-ring-color: red;
       }
 
@@ -116,7 +121,7 @@ export class IdeaPage extends LitElement {
 
       .reward-fire span {
         display: flex;
-        gap: .3rem;
+        gap: 0.3rem;
       }
 
       .reward sl-icon {
@@ -173,22 +178,26 @@ export class IdeaPage extends LitElement {
           pointer-events: none;
         }
       }
-    `
+    `,
   ];
 
   @query('form', true) form!: HTMLFormElement;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('upd-dialog', true) updDialog!: UpdDialog;
-  @query('transaction-watcher.submit', true) submitTransaction!: TransactionWatcher;
-  @query('transaction-watcher.approve', true) approveTransaction!: TransactionWatcher;
+  @query('transaction-watcher.submit', true)
+  submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true)
+  approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
 
   @state() private depositError: string | null = null;
   @state() private antiSpamFee: string = '1'; // 1 UPD
   @state() private needUpd: boolean = false;
 
-  @consume({ context: balanceContext, subscribe: true }) userBalances!: Balances;
-  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+  @consume({ context: balanceContext, subscribe: true })
+  userBalances!: Balances;
+  @consume({ context: updraftSettings, subscribe: true })
+  updraftSettings!: UpdraftSettings;
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
@@ -204,7 +213,7 @@ export class IdeaPage extends LitElement {
         throw new Error(`Idea ${ideaId} not found.`);
       }
     },
-    args: () => [this.ideaId] as const
+    args: () => [this.ideaId] as const,
   });
 
   private handleSupportFocus() {
@@ -214,7 +223,9 @@ export class IdeaPage extends LitElement {
   private handleSupportInput(e: Event) {
     const input = e.target as SlInput;
     const value = Number(input.value);
-    const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
+    const userBalance = Number(
+      this.userBalances?.updraft?.balance || 'Infinity'
+    );
     this.needUpd = false;
 
     if (isNaN(value)) {
@@ -238,7 +249,10 @@ export class IdeaPage extends LitElement {
     if (isNaN(value)) {
       fee = this.updraftSettings.minFee;
     } else {
-      fee = Math.max(this.updraftSettings.minFee, value * this.updraftSettings.percentFee);
+      fee = Math.max(
+        this.updraftSettings.minFee,
+        value * this.updraftSettings.percentFee
+      );
     }
     this.antiSpamFee = fee.toFixed(2);
   }
@@ -254,14 +268,17 @@ export class IdeaPage extends LitElement {
         this.submitTransaction.hash = await idea.write('contribute', [support]);
       } catch (e: any) {
         if (e.message.startsWith('connection')) {
-          modal.open({ view: "Connect" });
+          modal.open({ view: 'Connect' });
         } else if (e.message.includes('exceeds balance')) {
           this.updDialog.show();
         } else if (e.message.includes('exceeds allowance')) {
           this.approveTransaction.reset();
           this.approveDialog.show();
           const upd = new Upd(this.updraftSettings.updAddress);
-          this.approveTransaction.hash = await upd.write('approve', [this.ideaId, total]);
+          this.approveTransaction.hash = await upd.write('approve', [
+            this.ideaId,
+            total,
+          ]);
         }
         console.error(e);
       }
@@ -284,82 +301,126 @@ export class IdeaPage extends LitElement {
         <main>
           ${this.idea.render({
             complete: (idea: Idea) => {
-              const { startTime, funderReward, shares, creator, tags, description } = idea;
+              const {
+                startTime,
+                funderReward,
+                shares,
+                creator,
+                tags,
+                description,
+              } = idea;
               let pctFunderReward;
               if (funderReward != defaultFunderReward && this.updraftSettings) {
-                pctFunderReward = funderReward * 100 / this.updraftSettings.percentScale;
+                pctFunderReward =
+                  (funderReward * 100) / this.updraftSettings.percentScale;
               }
-              const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
+              const profile = JSON.parse(
+                fromHex(creator.profile as `0x${string}`, 'string')
+              );
               const date = dayjs(startTime * 1000);
               const interest = shortNum(formatUnits(shares, 18));
               return html`
                 <h1 class="heading">Idea: ${idea.name}</h1>
-                <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
-                <span class="created">Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span>
+                <a href="/profile/${creator.id}"
+                  >by ${profile.name || creator.id}</a
+                >
+                <span class="created"
+                  >Created ${date.format('MMM D, YYYY [at] h:mm A UTC')}
+                  (${date.fromNow()})</span
+                >
                 <div class="reward-fire">
-                  ${pctFunderReward ? html`
-                    <span class="reward">
-                      <sl-icon src=${gift}></sl-icon>
-                      ${pctFunderReward.toFixed(0)}% funder reward
-                    </span>
-                  ` : ''}
-                  <span class="fire"><sl-icon src=${fire}></sl-icon>${interest}</span>
+                  ${pctFunderReward
+                    ? html`
+                        <span class="reward">
+                          <sl-icon src=${gift}></sl-icon>
+                          ${pctFunderReward.toFixed(0)}% funder reward
+                        </span>
+                      `
+                    : ''}
+                  <span class="fire"
+                    ><sl-icon src=${fire}></sl-icon>${interest}</span
+                  >
                 </div>
                 <form @submit=${this.handleSubmit}>
                   <div class="support">
                     <sl-input
-                        name="support"
-                        required
-                        autocomplete="off"
-                        @focus=${this.handleSupportFocus}
-                        @input=${this.handleSupportInput}>
+                      name="support"
+                      required
+                      autocomplete="off"
+                      @focus=${this.handleSupportFocus}
+                      @input=${this.handleSupportInput}
+                    >
                     </sl-input>
                     <span>UPD</span>
-                    ${this.needUpd ? html`
-                      <sl-button
-                          variant="primary"
-                          @click=${() => this.updDialog.show()}>Get more UPD
-                      </sl-button>
-                    ` : html`
-                      <sl-button variant="primary" type="submit">
-                        Support this Idea
-                      </sl-button>
-                    `}
-                    ${this.antiSpamFee ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>` : ''}
+                    ${this.needUpd
+                      ? html`
+                          <sl-button
+                            variant="primary"
+                            @click=${() => this.updDialog.show()}
+                            >Get more UPD
+                          </sl-button>
+                        `
+                      : html`
+                          <sl-button variant="primary" type="submit">
+                            Support this Idea
+                          </sl-button>
+                        `}
+                    ${this.antiSpamFee
+                      ? html`<span
+                          >Anti-Spam Fee: ${this.antiSpamFee} UPD</span
+                        >`
+                      : ''}
                   </div>
-                  ${this.depositError ? html`
-                    <div class="error">${this.depositError}</div>` : ''}
+                  ${this.depositError
+                    ? html` <div class="error">${this.depositError}</div>`
+                    : ''}
                 </form>
                 <p>${description}</p>
-                ${tags ? html`
-                  <div class="tags">
-                    ${tags.map((tag) => html`
-                      <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                    `)}
-                  </div>
-                ` : ''}
+                ${tags
+                  ? html`
+                      <div class="tags">
+                        ${tags.map(
+                          (tag) => html`
+                            <a href="/discover?search=[${tag}]" class="tag"
+                              >${tag}</a
+                            >
+                          `
+                        )}
+                      </div>
+                    `
+                  : ''}
                 <a href="/create-solution/${this.ideaId}" rel="next">
                   <sl-button variant="primary">Add Solution</sl-button>
                 </a>
 
-                <share-dialog action="supported an Idea" .topic=${idea.name}></share-dialog>
-              `
-            }
+                <share-dialog
+                  action="supported an Idea"
+                  .topic=${idea.name}
+                ></share-dialog>
+              `;
+            },
           })}
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
-            <p>Before you can support this Idea,
-              you need to sign a transaction to allow the Idea contract to spend your UPD tokens.</p>
-            <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
+            <p>
+              Before you can support this Idea, you need to sign a transaction
+              to allow the Idea contract to spend your UPD tokens.
+            </p>
+            <transaction-watcher
+              class="approve"
+              @transaction-success=${this.handleSubmit}
+            ></transaction-watcher>
           </sl-dialog>
-          <transaction-watcher class="submit" @transaction-success=${this.handleTransactionSuccess}>
+          <transaction-watcher
+            class="submit"
+            @transaction-success=${this.handleTransactionSuccess}
+          >
           </transaction-watcher>
         </main>
         <idea-side-bar></idea-side-bar>
       </div>
     `;
   }
-
 }
 
 declare global {

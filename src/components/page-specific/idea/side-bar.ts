@@ -25,9 +25,7 @@ export class IdeaSideBar extends LitElement {
   `;
 
   render() {
-    return html`
-      <p>Idea Sidebar Placeholder</p>
-    `;
+    return html` <p>Idea Sidebar Placeholder</p> `;
   }
 }
 
