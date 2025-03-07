@@ -3,7 +3,7 @@ import { signal } from '@lit-labs/signals';
 
 import { CurrentUser, Connection, Balances, UpdraftSettings } from '@/types';
 
-export const defaultFunderReward = 500000;
+export const defaultFunderReward = 250000; // 25% assuming the percent scale set on the Updraft contract is 1,000,000
 
 export const user = signal({} as CurrentUser);
 
