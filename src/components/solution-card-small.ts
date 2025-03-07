@@ -1,8 +1,7 @@
-
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { consume } from "@lit/context";
-import { formatUnits } from "viem";
+import { consume } from '@lit/context';
+import { formatUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -16,7 +15,7 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import { updraftSettings } from '@/context.ts';
 import { Solution, UpdraftSettings } from '@/types';
 
-import { shortNum } from "@/utils.ts";
+import { shortNum } from '@/utils.ts';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends LitElement {
@@ -42,32 +41,32 @@ export class SolutionCardSmall extends LitElement {
       background-color: var(--layout-divider); /* Line color */
       border: none;
     }
-    
+
     h3 {
       margin-top: 0;
-      font-size: .9rem;
+      font-size: 0.9rem;
       font-weight: 700;
     }
-    
+
     p {
-      margin-top: .5rem;
-      font-size: .75rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
       color: var(--subtle-text);
     }
-    
+
     .info-row {
       display: flex;
       justify-content: space-between;
       list-style: none;
       padding: 0;
     }
-    
+
     .info-row li {
       display: flex;
       align-items: center;
       gap: 2px;
     }
-    
+
     .info-row span {
       font-size: 0.8rem;
     }
@@ -77,7 +76,9 @@ export class SolutionCardSmall extends LitElement {
   @consume({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
 
   private get displayFunderReward(): number {
-    return this.solution.funderReward * 100 / this.updraftSettings.percentScale;
+    return (
+      (this.solution.funderReward * 100) / this.updraftSettings.percentScale
+    );
   }
 
   private get displayShares(): string {
@@ -88,18 +89,21 @@ export class SolutionCardSmall extends LitElement {
     const date = dayjs(this.solution.startTime * 1000);
     return html`
       <a href="/solution/${this.solution.id}">
-        <hr>
+        <hr />
         <h3>${this.solution.drafter.profile}</h3>
         <ul class="info-row">
           <li>
             <sl-icon src=${seedling}></sl-icon>
-            <span>${date.fromNow()}</span></li>
+            <span>${date.fromNow()}</span>
+          </li>
           <li>
             <sl-icon src=${gift}></sl-icon>
-            <span>${this.displayFunderReward.toFixed(0)}%</span></li>
+            <span>${this.displayFunderReward.toFixed(0)}%</span>
+          </li>
           <li>
             <sl-icon src=${fire}></sl-icon>
-            <span>${this.displayShares}</span></li>
+            <span>${this.displayShares}</span>
+          </li>
         </ul>
       </a>
     `;

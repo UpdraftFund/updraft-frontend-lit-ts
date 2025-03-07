@@ -8,7 +8,7 @@ import Ajv from 'ajv';
  * It organizes data under the `form` namespace in localStorage.
  */
 export class SaveableForm extends LitElement {
-  @query("form", true) form!: HTMLFormElement;
+  @query('form', true) form!: HTMLFormElement;
 
   formName?: string;
 
@@ -18,10 +18,14 @@ export class SaveableForm extends LitElement {
       const formObject: Record<string, string> = {};
 
       for (const [key, value] of formData) {
-        if (typeof value === "string") {
+        if (typeof value === 'string') {
           formObject[key] = value; // Save the string value (even if it's empty)
         } else {
-          console.warn(`saveForm(${this.formName}): Skipping unsupported input type (${typeof value}) for key: ${key}`);
+          console.warn(
+            `saveForm(${
+              this.formName
+            }): Skipping unsupported input type (${typeof value}) for key: ${key}`
+          );
         }
       }
       localStorage.setItem(`form:${this.formName}`, JSON.stringify(formObject));
@@ -29,7 +33,7 @@ export class SaveableForm extends LitElement {
       console.dir(formObject);
       console.groupEnd();
     }
-  }
+  };
 
   protected restoreForm = () => {
     if (this.formName) {
@@ -43,18 +47,18 @@ export class SaveableForm extends LitElement {
         }
       }
     }
-  }
+  };
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener("blur", this.handleBlurEvent);
-    this.addEventListener("mousedown", this.saveForm);
+    this.addEventListener('blur', this.handleBlurEvent);
+    this.addEventListener('mousedown', this.saveForm);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener("blur", this.handleBlurEvent);
-    this.removeEventListener("mousedown", this.saveForm);
+    this.removeEventListener('blur', this.handleBlurEvent);
+    this.removeEventListener('mousedown', this.saveForm);
   }
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -64,8 +68,8 @@ export class SaveableForm extends LitElement {
   }
 
   private handleBlurEvent = (event: Event) => {
-    const target = event.composedPath()[0] as { name?: string, value?: any };
-    if (target && target.name && typeof target.value === "string") {
+    const target = event.composedPath()[0] as { name?: string; value?: any };
+    if (target && target.name && typeof target.value === 'string') {
       this.saveForm();
     }
   };
@@ -94,7 +98,7 @@ export function formToJson(
   forms: string | string[], // Updated parameter name
   schema: any,
   validate: boolean = false
-): Record<string, unknown>{
+): Record<string, unknown> {
   // Normalize input to always handle as an array
   const formNames = Array.isArray(forms) ? forms : [forms];
 
@@ -116,9 +120,9 @@ export function formToJson(
 
   for (const [key, schemaProperty] of properties) {
     switch (schemaProperty.type) {
-      case "array":
+      case 'array':
         // Case 1: Space-separated array fields
-        if (formData[key] && typeof formData[key] === "string") {
+        if (formData[key] && typeof formData[key] === 'string') {
           json[key] = formData[key].split(/\s+/);
         }
         // Case 2: Numbered fields aggregated into an array (e.g., "link1", "link2", ...)
@@ -142,15 +146,17 @@ export function formToJson(
         }
         break;
 
-      case "string":
-      case "number":
+      case 'string':
+      case 'number':
         if (formData[key]) {
           json[key] = formData[key];
         }
         break;
 
       default:
-        throw new Error(`Unsupported schema property type: ${schemaProperty.type}`);
+        throw new Error(
+          `Unsupported schema property type: ${schemaProperty.type}`
+        );
     }
   }
 
@@ -164,11 +170,10 @@ export function formToJson(
         .join(', ');
       throw new Error(
         `Schema: ${schema} validation failed for form(s):` +
-        `${formNames.join(', ')}. Errors: ${errorMessages}`
+          `${formNames.join(', ')}. Errors: ${errorMessages}`
       );
     }
   }
 
   return json;
 }
-

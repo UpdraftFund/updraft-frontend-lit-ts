@@ -6,17 +6,17 @@ export const dialogStyles = css`
     color: var(--main-foreground);
     background-color: var(--main-background);
   }
-  
+
   sl-dialog::part(title) {
     font-weight: bold;
     font-size: 1.5rem;
   }
-  
+
   sl-dialog::part(body) {
     padding-top: 0;
   }
 
-  sl-dialog [slot="label"] {
+  sl-dialog [slot='label'] {
     margin: 0;
     display: flex;
     align-items: center;

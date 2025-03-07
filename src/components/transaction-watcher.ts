@@ -73,7 +73,7 @@ export class TransactionWatcher extends LitElement {
   }
 
   render() {
-    if(this.transactionTask.status !== TaskStatus.INITIAL){
+    if (this.transactionTask.status !== TaskStatus.INITIAL) {
       this.scrollIntoView(false);
     }
     return html`
@@ -92,7 +92,8 @@ export class TransactionWatcher extends LitElement {
           </slot>
         `,
         error: (error) => {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           return html`
             <slot name="error">
               <p>Error: ${errorMessage}</p>

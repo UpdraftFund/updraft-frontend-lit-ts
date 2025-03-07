@@ -17,4 +17,4 @@ export const shortNum = function (n: string | number, p = 3, e = p - 3) {
   }
   ans = ans.replace(/\.0+(\D|$)/, '$1');
   return ans.replace(/(\.\d*?)0+(\D|$)/, '$1$2');
-}
+};

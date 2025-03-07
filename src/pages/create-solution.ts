@@ -1,17 +1,27 @@
-import { formToJson, loadForm, SaveableForm } from "@/components/base/saveable-form";
-import { customElement, property, query, state } from "lit/decorators.js";
-import { html, css } from "lit";
+import {
+  formToJson,
+  loadForm,
+  SaveableForm,
+} from '@/components/base/saveable-form';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { html, css } from 'lit';
 import { parseUnits, toHex } from 'viem';
 import dayjs from 'dayjs';
 import { TaskStatus } from '@lit/task';
 
+import {
+  balanceContext,
+  RequestBalanceRefresh,
+  updraftSettings,
+} from '@/context';
+import { consume } from '@lit/context';
 
-import { balanceContext, RequestBalanceRefresh, updraftSettings } from "@/context";
-import { consume } from "@lit/context";
-
-import { TransactionSuccess, TransactionWatcher } from "@/components/transaction-watcher";
-import { ShareDialog } from "@/components/share-dialog";
-import { UpdDialog } from "@components/upd-dialog";
+import {
+  TransactionSuccess,
+  TransactionWatcher,
+} from '@/components/transaction-watcher';
+import { ShareDialog } from '@/components/share-dialog';
+import { UpdDialog } from '@components/upd-dialog';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -19,24 +29,24 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
 
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
-import { dialogStyles } from "@/styles/dialog-styles";
+import { dialogStyles } from '@/styles/dialog-styles';
 
-import '@layout/top-bar'
-import '@layout/page-heading'
-import '@layout/left-side-bar'
-import '@layout/activity-feed'
+import '@layout/top-bar';
+import '@layout/page-heading';
+import '@layout/left-side-bar';
+import '@layout/activity-feed';
 import '@components/transaction-watcher';
 import '@components/upd-dialog';
-import '@components/share-dialog'
-import '@components/label-with-hint'
+import '@components/share-dialog';
+import '@components/label-with-hint';
 
-import solutionSchema from '@schemas/solution-schema.json'
-import { updraft } from "@/contracts/updraft";
-import { Upd } from "@/contracts/upd";
+import solutionSchema from '@schemas/solution-schema.json';
+import { updraft } from '@/contracts/updraft';
+import { Upd } from '@/contracts/upd';
 
-import { UpdraftSettings } from "@/types";
-import { Balances } from "@/types";
-import { modal } from "@/web3";
+import { UpdraftSettings } from '@/types';
+import { Balances } from '@/types';
+import { modal } from '@/web3';
 
 @customElement('create-solution')
 export class CreateSolution extends SaveableForm {
@@ -44,13 +54,17 @@ export class CreateSolution extends SaveableForm {
 
   @query('sl-range', true) rewardRange!: SlRange;
   @query('upd-dialog', true) updDialog!: UpdDialog;
-  @query('transaction-watcher.submit', true) submitTransaction!: TransactionWatcher;
-  @query('transaction-watcher.approve', true) approveTransaction!: TransactionWatcher;
+  @query('transaction-watcher.submit', true)
+  submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true)
+  approveTransaction!: TransactionWatcher;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
 
-  @consume({ context: balanceContext, subscribe: true }) userBalances!: Balances;
-  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+  @consume({ context: balanceContext, subscribe: true })
+  userBalances!: Balances;
+  @consume({ context: updraftSettings, subscribe: true })
+  updraftSettings!: UpdraftSettings;
 
   @state() private depositError: string | null = null;
   @state() private antiSpamFee?: string;
@@ -110,7 +124,8 @@ export class CreateSolution extends SaveableForm {
         gap: 1rem;
       }
 
-      .left-label, .right-label {
+      .left-label,
+      .right-label {
         font-size: 0.92rem;
         color: var(--main-foreground);
       }
@@ -152,17 +167,17 @@ export class CreateSolution extends SaveableForm {
         padding-top: 0.25rem;
       }
 
-      sl-input[name="deposit"] {
+      sl-input[name='deposit'] {
         flex: none;
         width: calc(10ch + var(--sl-input-spacing-medium) * 2);
         box-sizing: content-box;
       }
 
-      sl-input[name="deposit"]::part(input) {
+      sl-input[name='deposit']::part(input) {
         text-align: right;
       }
 
-      sl-input[name="deposit"].invalid {
+      sl-input[name='deposit'].invalid {
         --sl-input-focus-ring-color: red;
       }
 
@@ -183,7 +198,7 @@ export class CreateSolution extends SaveableForm {
           margin: 1rem;
         }
       }
-      
+
       @media (max-width: 1078px) {
         activity-feed {
           flex: 0 0 0; /* Collapse the sidebar */
@@ -200,7 +215,9 @@ export class CreateSolution extends SaveableForm {
   private handleDepositInput(e: Event) {
     const input = e.target as SlInput;
     const value = Number(input.value);
-    const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
+    const userBalance = Number(
+      this.userBalances?.updraft?.balance || 'Infinity'
+    );
     const minFee = this.updraftSettings.minFee;
 
     if (isNaN(value)) {
@@ -233,7 +250,7 @@ export class CreateSolution extends SaveableForm {
     this.rewardRange.focus();
     this.rewardRange.syncRange();
     this.rewardRange.blur();
-  }
+  };
 
   private handleFormSubmit(e: Event) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
@@ -251,14 +268,18 @@ export class CreateSolution extends SaveableForm {
             parseUnits(solutionForm['deposit'], 18),
             parseUnits(solutionForm['goal'], 18),
             dayjs(solutionForm['deadline']).unix(),
-            BigInt(Number(solutionForm['reward']) * this.updraftSettings.percentScale / 100),
+            BigInt(
+              (Number(solutionForm['reward']) *
+                this.updraftSettings.percentScale) /
+                100
+            ),
             toHex(JSON.stringify(solution)),
           ]);
           this.shareDialog.topic = solution.name as string;
         }
       } catch (e: any) {
         if (e.message.startsWith('connection')) {
-          modal.open({ view: "Connect" });
+          modal.open({ view: 'Connect' });
         } else if (e.message.includes('exceeds balance')) {
           this.updDialog.show();
         } else if (e.message.includes('exceeds allowance')) {
@@ -266,7 +287,8 @@ export class CreateSolution extends SaveableForm {
           this.approveDialog.show();
           const upd = new Upd(this.updraftSettings.updAddress);
           this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address, parseUnits('1', 29)
+            updraft.address,
+            parseUnits('1', 29),
           ]);
         }
         console.error(e);
@@ -305,56 +327,80 @@ export class CreateSolution extends SaveableForm {
           <h1 class="idea-name">Idea: ${this.ideaId}</h1>
           <form name="create-solution" @submit=${this.handleFormSubmit}>
             <sl-input name="name" required autocomplete="off">
-              <label-with-hint slot="label" label="Name*" hint="A short name for your solution"></label-with-hint>
+              <label-with-hint
+                slot="label"
+                label="Name*"
+                hint="A short name for your solution"
+              ></label-with-hint>
             </sl-input>
-            
+
             <sl-textarea name="description" resize="auto">
-              <label-with-hint slot="label" label="Description" hint="A description of your solution"></label-with-hint>
+              <label-with-hint
+                slot="label"
+                label="Description"
+                hint="A description of your solution"
+              ></label-with-hint>
             </sl-textarea>
 
             <sl-input name="funding-token" required autocomplete="off">
-              <label-with-hint slot="label" label="Funding Token*" hint="The address of the token you want to use to fund your solution"></label-with-hint>
+              <label-with-hint
+                slot="label"
+                label="Funding Token*"
+                hint="The address of the token you want to use to fund your solution"
+              ></label-with-hint>
             </sl-input>
 
             <div class="deposit-container">
               <label-with-hint
-                  label="Deposit*"
-                  hint="The initial UPD tokens you will deposit. The more you deposit, the more you \
-                        stand to earn from supporters of your idea. As a creator, you can always withdraw your \
-                        full initial deposit minus the anti-spam fee of 1 UPD or 1% (whichever is greater).">
+                label="Deposit*"
+                hint="The initial UPD tokens you will deposit. The more you deposit, the more you                         stand to earn from supporters of your idea. As a creator, you can always withdraw your                         full initial deposit minus the anti-spam fee of 1 UPD or 1% (whichever is greater)."
+              >
               </label-with-hint>
               <div class="deposit-row">
                 <sl-input
-                    name="deposit"
-                    required
-                    autocomplete="off"
-                    @focus=${this.handleDepositFocus}
-                    @input=${this.handleDepositInput}>
+                  name="deposit"
+                  required
+                  autocomplete="off"
+                  @focus=${this.handleDepositFocus}
+                  @input=${this.handleDepositInput}
+                >
                 </sl-input>
                 <span>UPD</span>
                 <sl-button
-                    variant="primary"
-                    @click=${() => this.updDialog.show()}>Get more UPD
+                  variant="primary"
+                  @click=${() => this.updDialog.show()}
+                  >Get more UPD
                 </sl-button>
-                ${this.antiSpamFee ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>` : ''}
+                ${this.antiSpamFee
+                  ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
+                  : ''}
               </div>
-              ${this.depositError ? html`<div class="error">${this.depositError}</div>` : ''}
+              ${this.depositError
+                ? html` <div class="error">${this.depositError}</div>`
+                : ''}
             </div>
 
             <sl-input name="goal" required autocomplete="off">
-              <label-with-hint slot="label" label="Goal*" hint="The amount of funding you want to raise"></label-with-hint>
+              <label-with-hint
+                slot="label"
+                label="Goal*"
+                hint="The amount of funding you want to raise"
+              ></label-with-hint>
             </sl-input>
 
             <sl-input name="deadline" required autocomplete="off">
-              <label-with-hint slot="label" label="Deadline*" hint="The deadline for your solution Format: YYYY-MM-DDTHH:MM:SS.000+00:00 Example: 2025-03-01T00:00:00.000+00:00"></label-with-hint>
+              <label-with-hint
+                slot="label"
+                label="Deadline*"
+                hint="The deadline for your solution Format: YYYY-MM-DDTHH:MM:SS.000+00:00 Example: 2025-03-01T00:00:00.000+00:00"
+              ></label-with-hint>
             </sl-input>
-            
+
             <div class="reward-container">
               <label-with-hint
-                  label="Contributor Fee"
-                  hint="The % of each contribution that goes to contributors. A high contributor fee means contributors \
-                        stand to earn more if your solution is popular. A low contributor fee means more of their funds are \
-                        available to withdraw if your solution isn’t popular.">
+                label="Contributor Fee"
+                hint="The % of each contribution that goes to contributors. A high contributor fee means contributors                         stand to earn more if your solution is popular. A low contributor fee means more of their funds are                         available to withdraw if your solution isn’t popular."
+              >
               </label-with-hint>
               <div class="range-and-labels">
                 <span class="left-label">Risk less</span>
@@ -363,15 +409,24 @@ export class CreateSolution extends SaveableForm {
               </div>
             </div>
 
-            <sl-button variant="primary" @click=${this.handleSubmit}>Submit Solution</sl-button>
-
+            <sl-button variant="primary" @click=${this.handleSubmit}
+              >Submit Solution</sl-button
+            >
           </form>
           <sl-dialog label="Set Allowance">
-            <p>Before you can submit your solution,
-              you need to sign a transaction to allow Updraft to spend your UPD tokens.</p>
-            <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
+            <p>
+              Before you can submit your solution, you need to sign a
+              transaction to allow Updraft to spend your UPD tokens.
+            </p>
+            <transaction-watcher
+              class="approve"
+              @transaction-success=${this.handleSubmit}
+            ></transaction-watcher>
           </sl-dialog>
-          <transaction-watcher class="submit" @transaction-success=${this.handleSubmitSuccess}></transaction-watcher>
+          <transaction-watcher
+            class="submit"
+            @transaction-success=${this.handleSubmitSuccess}
+          ></transaction-watcher>
           <upd-dialog></upd-dialog>
           <share-dialog></share-dialog>
         </main>

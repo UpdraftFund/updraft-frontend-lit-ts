@@ -25,9 +25,7 @@ export class ActivityFeed extends LitElement {
   `;
 
   render() {
-    return html`
-      <p>Activity Feed Placeholder</p>
-    `;
+    return html` <p>Activity Feed Placeholder</p> `;
   }
 }
 

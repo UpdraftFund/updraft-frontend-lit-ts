@@ -2,7 +2,7 @@ import { customElement, state, property, query } from 'lit/decorators.js';
 import { css } from 'lit';
 import { TaskStatus } from '@lit/task';
 import { SignalWatcher, html } from '@lit-labs/signals';
-import { consume } from "@lit/context";
+import { consume } from '@lit/context';
 import { parseUnits, toHex, trim } from 'viem';
 
 import pencilSquare from '@icons/pencil-square.svg';
@@ -12,27 +12,34 @@ import { dialogStyles } from '@styles/dialog-styles';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@layout/top-bar'
-import '@layout/page-heading'
-import '@layout/left-side-bar'
-import '@layout/activity-feed'
+import '@layout/top-bar';
+import '@layout/page-heading';
+import '@layout/left-side-bar';
+import '@layout/activity-feed';
 import '@components/transaction-watcher';
 import '@components/upd-dialog';
-import '@components/share-dialog'
-import { TransactionWatcher, TransactionSuccess } from '@components/transaction-watcher';
+import '@components/share-dialog';
+import {
+  TransactionWatcher,
+  TransactionSuccess,
+} from '@components/transaction-watcher';
 import { UpdDialog } from '@components/upd-dialog';
 import { ShareDialog } from '@components/share-dialog';
 import { SlDialog } from '@shoelace-style/shoelace';
-import { SaveableForm, loadForm, formToJson } from '@components/base/saveable-form';
+import {
+  SaveableForm,
+  loadForm,
+  formToJson,
+} from '@components/base/saveable-form';
 
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
 import { user, updraftSettings, defaultFunderReward } from '@/context';
-import { UpdraftSettings } from "@/types";
+import { UpdraftSettings } from '@/types';
 import { modal } from '@/web3';
 
-import ideaSchema from '@schemas/idea-schema.json'
-import profileSchema from '@schemas/profile-schema.json'
+import ideaSchema from '@schemas/idea-schema.json';
+import profileSchema from '@schemas/profile-schema.json';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -133,24 +140,28 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         padding-bottom: 4rem;
         align-self: center;
       }
-    `];
+    `,
+  ];
 
   @property() entity: string | undefined;
 
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
 
-  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+  @consume({ context: updraftSettings, subscribe: true })
+  updraftSettings!: UpdraftSettings;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
-  @query('transaction-watcher.submit', true) submitTransaction!: TransactionWatcher;
-  @query('transaction-watcher.approve', true) approveTransaction!: TransactionWatcher;
+  @query('transaction-watcher.submit', true)
+  submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true)
+  approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
 
   private handleInput() {
     this.submitTransaction.reset();
-  };
+  }
 
   private restoreLinks() {
     const savedForm = loadForm(this.form.name);
@@ -163,7 +174,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   }
 
   private addEmptyLink() {
-    this.links = [...this.links, { name: `link${this.links.length + 1}`, value: '' }];
+    this.links = [
+      ...this.links,
+      { name: `link${this.links.length + 1}`, value: '' },
+    ];
   }
 
   private handleLinkInput(event: InputEvent, index: number) {
@@ -218,20 +232,25 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
           if (ideaForm) {
-            this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
-              BigInt(defaultFunderReward),
-              parseUnits(ideaForm.deposit, 18),
-              toHex(JSON.stringify(ideaData)),
-              toHex(JSON.stringify(profileData)),
-            ]);
+            this.submitTransaction.hash = await updraft.write(
+              'createIdeaWithProfile',
+              [
+                BigInt(defaultFunderReward),
+                parseUnits(ideaForm.deposit, 18),
+                toHex(JSON.stringify(ideaData)),
+                toHex(JSON.stringify(profileData)),
+              ]
+            );
             this.shareDialog.topic = ideaData.name as string;
           }
         } else {
-          this.submitTransaction.hash = await updraft.write('updateProfile', [toHex(JSON.stringify(profileData))]);
+          this.submitTransaction.hash = await updraft.write('updateProfile', [
+            toHex(JSON.stringify(profileData)),
+          ]);
         }
       } catch (e: any) {
         if (e.message.startsWith('connection')) {
-          modal.open({ view: "Connect" });
+          modal.open({ view: 'Connect' });
         } else if (e.message.includes('exceeds balance')) {
           this.updDialog.show();
         } else if (e.message.includes('exceeds allowance')) {
@@ -239,7 +258,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           this.approveDialog.show();
           const upd = new Upd(this.updraftSettings.updAddress);
           this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address, parseUnits('1', 29)
+            updraft.address,
+            parseUnits('1', 29),
           ]);
         }
         console.error(e);
@@ -252,10 +272,14 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       const address = t.receipt?.logs?.[0]?.topics?.[1];
       if (address) {
         if (this.entity === 'idea') {
-          this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
+          this.shareDialog.url = `${window.location.origin}/idea/${trim(
+            address
+          )}`;
           this.shareDialog.action = 'created an Idea';
         } else {
-          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}`;
+          this.shareDialog.url = `${window.location.origin}/solution/${trim(
+            address
+          )}`;
           this.shareDialog.action = 'created a Solution';
         }
         this.shareDialog.show();
@@ -276,37 +300,63 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       <div class="container">
         <left-side-bar></left-side-bar>
         <main>
-          <form name="edit-profile" @submit=${this.handleFormSubmit} @input=${this.handleInput}>
+          <form
+            name="edit-profile"
+            @submit=${this.handleFormSubmit}
+            @input=${this.handleInput}
+          >
             <label class="avatar">
-              <img src=${this.uploadedImage || user.get().avatar} alt="User avatar">
-              <input type="file" accept="image/*" @change=${this.handleImageUpload}>
-              <sl-icon class="edit-icon" src="${pencilSquare}" label="Edit image"></sl-icon>
+              <img
+                src=${this.uploadedImage || user.get().avatar}
+                alt="User avatar"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                @change=${this.handleImageUpload}
+              />
+              <sl-icon
+                class="edit-icon"
+                src="${pencilSquare}"
+                label="Edit image"
+              ></sl-icon>
             </label>
-            <sl-input name="name" label="Name" required autocomplete="name"></sl-input>
-            <sl-input name="team" label="Team" autocomplete="organization"></sl-input>
+            <sl-input
+              name="name"
+              label="Name"
+              required
+              autocomplete="name"
+            ></sl-input>
+            <sl-input
+              name="team"
+              label="Team"
+              autocomplete="organization"
+            ></sl-input>
             <sl-textarea name="about" label="About" resize="auto"></sl-textarea>
             <sl-textarea name="news" label="News" resize="auto"></sl-textarea>
             <div class="links-section">
               <p>Links</p>
               ${this.links.map(
-                  (link, index) => html`
-                    <sl-input
-                        class="link-input"
-                        autocomplete="url"
-                        name=${link.name}
-                        value=${link.value}
-                        @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
-                    >
-                      <img
-                          slot="prefix"
-                          src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
-                          @error=${(e: Event) => this.handleImageError(e)}
-                          alt="Logo for ${link.value}"
-                          width="16px"
-                          height="16px"
-                      />
-                    </sl-input>
-                  `
+                (link, index) => html`
+                  <sl-input
+                    class="link-input"
+                    autocomplete="url"
+                    name=${link.name}
+                    value=${link.value}
+                    @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
+                  >
+                    <img
+                      slot="prefix"
+                      src=${`https://www.google.com/s2/favicons?domain=${
+                        link.value || '.'
+                      }&sz=16`}
+                      @error=${(e: Event) => this.handleImageError(e)}
+                      alt="Logo for ${link.value}"
+                      width="16px"
+                      height="16px"
+                    />
+                  </sl-input>
+                `
               )}
             </div>
             <sl-button variant="primary" @click=${this.handleSubmit}>
@@ -316,16 +366,24 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           </form>
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
-            <p>Before you can submit your profile,
-              you need to sign a transaction to allow Updraft to spend your UPD tokens.</p>
-            <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
+            <p>
+              Before you can submit your profile, you need to sign a transaction
+              to allow Updraft to spend your UPD tokens.
+            </p>
+            <transaction-watcher
+              class="approve"
+              @transaction-success=${this.handleSubmit}
+            ></transaction-watcher>
           </sl-dialog>
           <share-dialog></share-dialog>
-          <transaction-watcher class="submit" @transaction-success=${this.handleSubmitSuccess}></transaction-watcher>
+          <transaction-watcher
+            class="submit"
+            @transaction-success=${this.handleSubmitSuccess}
+          ></transaction-watcher>
         </main>
         <activity-feed></activity-feed>
       </div>
-    `
+    `;
   }
 }
 

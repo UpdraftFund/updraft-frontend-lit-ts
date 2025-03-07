@@ -1,10 +1,17 @@
 import { createAppKit } from '@reown/appkit';
-import { AppKitNetwork, arbitrumSepolia, arbitrum } from '@reown/appkit/networks';
+import {
+  AppKitNetwork,
+  arbitrumSepolia,
+  arbitrum,
+} from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 
 const projectId = 'a259923fc99520ecad30021b33486037';
 
-export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrumSepolia, arbitrum];
+export const networks: [AppKitNetwork, ...AppKitNetwork[]] = [
+  arbitrumSepolia,
+  arbitrum,
+];
 
 export const adapter = new WagmiAdapter({
   projectId,
@@ -27,17 +34,17 @@ export const modal = createAppKit({
   networks,
   metadata,
   projectId,
-  themeMode: "light",
+  themeMode: 'light',
   themeVariables: {
-   "--w3m-accent": "var(--accent);",
-   "--w3m-font-family": "'Noto Sans', sans-serif;",
-   "--w3m-color-mix": "var(--accent);",
-   "--w3m-color-mix-strength": 12,
+    '--w3m-accent': 'var(--accent);',
+    '--w3m-font-family': "'Noto Sans', sans-serif;",
+    '--w3m-color-mix': 'var(--accent);',
+    '--w3m-color-mix-strength': 12,
   },
   features: {
-    analytics: true
+    analytics: true,
   },
   includeWalletIds: [
-    "fb6ed96272ec885008e896c6146002048d8dc88c0b7e0e6fa42bcadf052a1569", //enkrypt
-  ]
+    'fb6ed96272ec885008e896c6146002048d8dc88c0b7e0e6fa42bcadf052a1569', //enkrypt
+  ],
 });

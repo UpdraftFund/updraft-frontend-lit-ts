@@ -18,7 +18,7 @@ export class PageHeading extends LitElement {
   `;
 
   render() {
-    return html`<span><slot></slot></span>`;
+    return html` <span><slot></slot></span>`;
   }
 }
 

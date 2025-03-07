@@ -1,6 +1,6 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { consume } from "@lit/context";
+import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
 import compass from '@icons/compass.svg';
@@ -11,10 +11,13 @@ import '@components/section-heading';
 import '@components/idea-card-small';
 
 import { connectionContext } from '@/context.ts';
-import { Connection } from "@/types";
+import { Connection } from '@/types';
 
-import urqlClient from "@/urql-client.ts";
-import { IdeasByFunderDocument, SolutionsByFunderOrDrafterDocument } from "@gql";
+import urqlClient from '@/urql-client.ts';
+import {
+  IdeasByFunderDocument,
+  SolutionsByFunderOrDrafterDocument,
+} from '@gql';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends LitElement {
@@ -41,7 +44,7 @@ export class LeftSideBar extends LitElement {
       align-items: center;
       gap: 0.5rem;
       font-size: 1rem;
-      padding: .75rem;
+      padding: 0.75rem;
     }
 
     nav a.active {
@@ -69,31 +72,37 @@ export class LeftSideBar extends LitElement {
     }
 
     idea-card-small {
-      width: 100%
+      width: 100%;
     }
   `;
 
   private readonly ideaContributions = new Task(this, {
     task: async ([funder]) => {
       if (funder) {
-        const result = await urqlClient.query(IdeasByFunderDocument, { funder });
+        const result = await urqlClient.query(IdeasByFunderDocument, {
+          funder,
+        });
         return result.data?.ideaContributions;
       }
     },
-    args: () => [this.connection.address] as const
+    args: () => [this.connection.address] as const,
   });
 
   private readonly solutionContributions = new Task(this, {
     task: async ([funder]) => {
       if (funder) {
-        const result = await urqlClient.query(SolutionsByFunderOrDrafterDocument, { user: funder });
+        const result = await urqlClient.query(
+          SolutionsByFunderOrDrafterDocument,
+          { user: funder }
+        );
         return result.data?.solutionContributions;
       }
     },
-    args: () => [this.connection.address] as const
+    args: () => [this.connection.address] as const,
   });
 
-  @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
+  @consume({ context: connectionContext, subscribe: true })
+  connection!: Connection;
 
   @property({ reflect: true }) location?: string;
 
@@ -101,31 +110,46 @@ export class LeftSideBar extends LitElement {
     return html`
       <nav>
         <ul>
-          <li><a href="/" class=${this.location === 'home' ? 'active' : ''}>
-            <sl-icon src=${house}></sl-icon>
-            Home
-          </a></li>
-          <li><a href="/discover?tab=hot-ideas" class=${this.location === 'discover' ? 'active' : ''}>
-            <sl-icon src=${compass}></sl-icon>
-            Discover
-          </a></li>
+          <li>
+            <a href="/" class=${this.location === 'home' ? 'active' : ''}>
+              <sl-icon src=${house}></sl-icon>
+              Home
+            </a>
+          </li>
+          <li>
+            <a
+              href="/discover?tab=hot-ideas"
+              class=${this.location === 'discover' ? 'active' : ''}
+            >
+              <sl-icon src=${compass}></sl-icon>
+              Discover
+            </a>
+          </li>
         </ul>
       </nav>
       <section-heading>My Ideas</section-heading>
       <div class="my-ideas">
         ${this.ideaContributions.render({
-      complete: (ics) => ics?.map(ic => html`
-            <idea-card-small .idea=${ic.idea}></idea-card-small>
-          `)
-    })}
+          complete: (ics) =>
+            ics?.map(
+              (ic) => html`
+                <idea-card-small .idea=${ic.idea}></idea-card-small>
+              `
+            ),
+        })}
       </div>
       <section-heading>My Solutions</section-heading>
       <div class="my-solutions">
         ${this.solutionContributions.render({
-        complete: (ics) => ics?.map(ic => html`
-            <solution-card-small .solution=${ic.solution}></solution-card-small>
-          `)
-    })}
+          complete: (ics) =>
+            ics?.map(
+              (ic) => html`
+                <solution-card-small
+                  .solution=${ic.solution}
+                ></solution-card-small>
+              `
+            ),
+        })}
       </div>
     `;
   }

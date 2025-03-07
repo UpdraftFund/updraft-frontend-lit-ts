@@ -94,7 +94,7 @@ export class ViewProfile extends LitElement {
     .section h2 {
       font-size: 1.2rem;
       margin-bottom: 0.5rem;
-      font-weight: 600
+      font-weight: 600;
     }
 
     .section p {
@@ -139,27 +139,30 @@ export class ViewProfile extends LitElement {
   `;
 
   @property() address!: string;
-  @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
+  @consume({ context: connectionContext, subscribe: true })
+  connection!: Connection;
 
   private readonly profile = new Task(this, {
     task: async ([userId]) => {
       const result = await urqlClient.query(ProfileDocument, { userId });
       if (result.data?.user?.profile) {
-        return JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
+        return JSON.parse(
+          fromHex(result.data.user.profile as `0x${string}`, 'string')
+        );
       }
     },
-    args: () => [this.address] as const
+    args: () => [this.address] as const,
   });
 
   private get profileButton() {
     if (this.address === this.connection.address) {
       return html`
-        <sl-button variant="primary" href="/edit-profile">Edit profile</sl-button>
-      `
+        <sl-button variant="primary" href="/edit-profile"
+          >Edit profile</sl-button
+        >
+      `;
     } else {
-      return html`
-        <sl-button variant="primary">Follow</sl-button>
-      `
+      return html` <sl-button variant="primary">Follow</sl-button> `;
     }
   }
 
@@ -178,11 +181,11 @@ export class ViewProfile extends LitElement {
     return html`
       <a class="link" href="${url.href}" target="_blank">
         <img
-            src=${`https://www.google.com/s2/favicons?domain=${link}&sz=16`}
-            @error=${(e: Event) => this.handleImageError(e)}
-            alt="Logo for ${link}"
-            width="16px"
-            height="16px"
+          src=${`https://www.google.com/s2/favicons?domain=${link}&sz=16`}
+          @error=${(e: Event) => this.handleImageError(e)}
+          alt="Logo for ${link}"
+          width="16px"
+          height="16px"
         />
         <span>${pathname || url.host}</span>
       </a>
@@ -206,40 +209,49 @@ export class ViewProfile extends LitElement {
               return html`
                 <div class="profile-header">
                   <div class="avatar">
-                    <img src="${image || makeBlockie(this.address)}" alt="Profile avatar">
+                    <img
+                      src="${image || makeBlockie(this.address)}"
+                      alt="Profile avatar"
+                    />
                   </div>
                   <div>
-                    ${name || team ? html`<h1 class="name">${name || team}</h1>` : ''}
+                    ${name || team
+                      ? html` <h1 class="name">${name || team}</h1>`
+                      : ''}
                     <div class="address">${this.address}</div>
-                    ${name && team ? html`
-                      <div class="team">${team}</div>` : ''}
+                    ${name && team
+                      ? html` <div class="team">${team}</div>`
+                      : ''}
                   </div>
                 </div>
 
                 ${this.profileButton}
-
-                ${about ? html`
-                  <div class="about section">
-                    <h2>About</h2>
-                    <p>${about}</p>
-                  </div>
-                ` : ''}
-
-                ${news ? html`
-                  <div class="news section">
-                    <h2>Latest Updates</h2>
-                    <p>${news}</p>
-                  </div>
-                ` : ''}
-
-                ${links?.length ? html`
-                  <div class="links section">
-                    <h2>Links</h2>
-                    ${links.map((link: string) => this.createLink(link))}
-                  </div>
-                ` : ''}
-              `
-            }
+                ${about
+                  ? html`
+                      <div class="about section">
+                        <h2>About</h2>
+                        <p>${about}</p>
+                      </div>
+                    `
+                  : ''}
+                ${news
+                  ? html`
+                      <div class="news section">
+                        <h2>Latest Updates</h2>
+                        <p>${news}</p>
+                      </div>
+                    `
+                  : ''}
+                ${links?.length
+                  ? html`
+                      <div class="links section">
+                        <h2>Links</h2>
+                        ${links.map((link: string) => this.createLink(link))}
+                      </div>
+                    `
+                  : ''}
+              `;
+            },
           })}
         </main>
         <activity-feed></activity-feed>

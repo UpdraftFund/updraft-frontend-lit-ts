@@ -42,13 +42,13 @@ export class ShareDialog extends LitElement {
         flex-wrap: nowrap;
         gap: 0.5rem;
       }
-      
+
       img {
         border-radius: 15px;
         border: 5px solid var(--control-background);
       }
-
-    `];
+    `,
+  ];
 
   @query('sl-dialog') dialog!: SlDialog;
   @query('sl-tooltip.clipboard') clipboardTip!: SlTooltip;
@@ -75,7 +75,7 @@ export class ShareDialog extends LitElement {
   }
 
   private get messageHtml() {
-    return html`<b>You ${this.action}:</b> ${this.topic}`;
+    return html` <b>You ${this.action}:</b> ${this.topic}`;
   }
 
   private get shareMessage() {

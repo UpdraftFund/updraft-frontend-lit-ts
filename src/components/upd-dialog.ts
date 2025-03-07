@@ -2,7 +2,7 @@ import { customElement, query } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { consume } from '@lit/context';
 
-import calculator from '@icons/calculator.svg'
+import calculator from '@icons/calculator.svg';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
@@ -19,12 +19,13 @@ export class UpdDialog extends LitElement {
   static styles = [
     dialogStyles,
     css`
-    .check-balance {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-  `];
+      .check-balance {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+    `,
+  ];
 
   @query('sl-dialog') dialog!: SlDialog;
   @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
@@ -41,8 +42,12 @@ export class UpdDialog extends LitElement {
     return html`
       <sl-dialog label="Get more UPD">
         <span class="check-balance">
-          <p>You have <span class="balance">${this.balances?.updraft?.balance || '0'}</span> UPD</p>
-          <sl-button pill @click=${this.handleRefreshBalance} variant="primary" size="small">
+          <p>You have <span class="balance">${
+            this.balances?.updraft?.balance || '0'
+          }</span> UPD</p>
+          <sl-button pill @click=${
+            this.handleRefreshBalance
+          } variant="primary" size="small">
             <sl-icon slot="prefix" class="calculator-icon" src=${calculator}/></sl-icon>
             Recheck Balance
           </sl-button>

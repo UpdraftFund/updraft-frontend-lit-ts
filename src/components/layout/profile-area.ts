@@ -1,7 +1,7 @@
 import { LitElement, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import { SignalWatcher, html } from "@lit-labs/signals";
+import { SignalWatcher, html } from '@lit-labs/signals';
 import { disconnect } from '@wagmi/core';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -17,11 +17,16 @@ import plusLgIcon from '@icons/plus-lg.svg';
 import layersIcon from '@icons/layers.svg';
 import creditCardIcon from '@icons/credit-card.svg';
 import reconnectIcon from '@icons/arrow-clockwise.svg';
-import getUpdIcon from '@icons/plus-circle.svg'
+import getUpdIcon from '@icons/plus-circle.svg';
 
 import { modal, config } from '@/web3';
 import { shortNum } from '@/utils';
-import { user, connectionContext, balanceContext, RequestBalanceRefresh } from '@/context';
+import {
+  user,
+  connectionContext,
+  balanceContext,
+  RequestBalanceRefresh,
+} from '@/context';
 
 import { Connection, Balances } from '@/types';
 
@@ -99,10 +104,11 @@ export class ProfileArea extends SignalWatcher(LitElement) {
       padding-top: 12px;
       box-shadow: -1px 4px 5px 3px rgba(0, 0, 0, 7%);
     }
-  `
+  `;
   @query('upd-dialog', true) updDialog!: UpdDialog;
 
-  @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
+  @consume({ context: connectionContext, subscribe: true })
+  connection!: Connection;
   @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
 
   requestBalanceRefresh() {
@@ -118,64 +124,88 @@ export class ProfileArea extends SignalWatcher(LitElement) {
   }
 
   render() {
-    return this.connection.connected && this.connection.address ?
-      html`
-        ${this.hideCreateIdeaButton ? null : html`
-          <a href="/create-idea" title="Create Idea">
-            <sl-icon src="${plusLgIcon}"></sl-icon>
-          </a>
-        `}
-        <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${this.requestBalanceRefresh}>
-          <span slot="trigger" class="trigger-content" title="Profile menu">
-            <img src="${user.get().avatar}" alt="User avatar"/>
-            <span class="name">${user.get().name}</span>
-          </span>
-          <sl-menu class="menu">
-            <sl-menu-item @click=${this.reconnect}>
-              <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
-              <span>Reconnect</span>
-            </sl-menu-item>
-            <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
-              <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
-              <div>
-                <p>Choose Network</p>
-                <p class="status">${this.connection.network?.name}</p>
-              </div>
-            </sl-menu-item>
-            <sl-menu-item @click=${() => modal.open({ view: 'OnRampProviders' })}>
-              <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
-              <div>
-                <p>Buy Gas Tokens</p>
-                ${this.balances.gas && html`
-                  <p class="status">${shortNum(this.balances.gas.balance, 5)} ${this.balances.gas.symbol}</p>
-                `}
-              </div>
-            </sl-menu-item>
-            <sl-menu-item @click=${() => this.updDialog.show()}>
-              <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
-              <div>
-                <p>Get More UPD</p>
-                ${this.balances.updraft && html`
-                  <p class="status">${shortNum(this.balances.updraft.balance, 5)} ${this.balances.updraft.symbol}</p>
-                `}
-              </div>
-            </sl-menu-item>
-            <a href="/profile/${this.connection.address}" title="My Profile">
-              <sl-menu-item>
-                <img slot="prefix" class="menu-avatar" src="${user.get().avatar}" alt="User avatar"/>
+    return this.connection.connected && this.connection.address
+      ? html`
+          ${this.hideCreateIdeaButton
+            ? null
+            : html`
+                <a href="/create-idea" title="Create Idea">
+                  <sl-icon src="${plusLgIcon}"></sl-icon>
+                </a>
+              `}
+          <sl-dropdown
+            distance="12"
+            skidding="22"
+            placement="top-end"
+            @sl-show=${this.requestBalanceRefresh}
+          >
+            <span slot="trigger" class="trigger-content" title="Profile menu">
+              <img src="${user.get().avatar}" alt="User avatar" />
+              <span class="name">${user.get().name}</span>
+            </span>
+            <sl-menu class="menu">
+              <sl-menu-item @click=${this.reconnect}>
+                <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
+                <span>Reconnect</span>
+              </sl-menu-item>
+              <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
+                <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
                 <div>
-                  <p>My Profile</p>
-                  <p class="status">${user.get().name}</p>
+                  <p>Choose Network</p>
+                  <p class="status">${this.connection.network?.name}</p>
                 </div>
               </sl-menu-item>
-            </a>
-          </sl-menu>
-        </sl-dropdown>
-        <upd-dialog></upd-dialog>
-      `
+              <sl-menu-item
+                @click=${() => modal.open({ view: 'OnRampProviders' })}
+              >
+                <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
+                <div>
+                  <p>Buy Gas Tokens</p>
+                  ${this.balances.gas &&
+                  html`
+                    <p class="status">
+                      ${shortNum(this.balances.gas.balance, 5)}
+                      ${this.balances.gas.symbol}
+                    </p>
+                  `}
+                </div>
+              </sl-menu-item>
+              <sl-menu-item @click=${() => this.updDialog.show()}>
+                <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
+                <div>
+                  <p>Get More UPD</p>
+                  ${this.balances.updraft &&
+                  html`
+                    <p class="status">
+                      ${shortNum(this.balances.updraft.balance, 5)}
+                      ${this.balances.updraft.symbol}
+                    </p>
+                  `}
+                </div>
+              </sl-menu-item>
+              <a href="/profile/${this.connection.address}" title="My Profile">
+                <sl-menu-item>
+                  <img
+                    slot="prefix"
+                    class="menu-avatar"
+                    src="${user.get().avatar}"
+                    alt="User avatar"
+                  />
+                  <div>
+                    <p>My Profile</p>
+                    <p class="status">${user.get().name}</p>
+                  </div>
+                </sl-menu-item>
+              </a>
+            </sl-menu>
+          </sl-dropdown>
+          <upd-dialog></upd-dialog>
+        `
       : html`
-          <sl-button variant="primary" @click=${() => modal.open()}>Connect Wallet</sl-button>
-      `;
+          <sl-button variant="primary" @click=${() => modal.open()}
+            >Connect Wallet</sl-button
+          >
+        `;
   }
 }
 

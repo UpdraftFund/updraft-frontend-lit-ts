@@ -14,7 +14,7 @@ export class SearchBar extends LitElement {
       flex: 1;
       max-width: 450px;
     }
-    
+
     form {
       flex: 1;
     }

@@ -366,7 +366,7 @@ export class IdeaPage extends LitElement {
                           </sl-button>
                         `}
                     ${this.antiSpamFee
-                      ? html`<span
+                      ? html` <span
                           >Anti-Spam Fee: ${this.antiSpamFee} UPD</span
                         >`
                       : ''}

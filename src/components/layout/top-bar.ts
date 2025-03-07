@@ -7,7 +7,12 @@ import updraftLogo from '@assets/images/updraft-logo-46.png';
 
 @customElement('top-bar')
 export class TopBar extends LitElement {
-  @property({ type: Boolean, attribute: 'hide-create-idea-button', reflect: true }) hideCreateIdeaButton = false;
+  @property({
+    type: Boolean,
+    attribute: 'hide-create-idea-button',
+    reflect: true,
+  })
+  hideCreateIdeaButton = false;
 
   static styles = css`
     :host {
@@ -31,14 +36,16 @@ export class TopBar extends LitElement {
       flex: 1;
       display: flex;
     }
-  `
+  `;
   render() {
     return html`
       <a href="/" title="Updraft Home">
-        <img src="${updraftLogo}" alt="Updraft logo"/>
+        <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
       <slot></slot>
-      <profile-area .hideCreateIdeaButton=${this.hideCreateIdeaButton}></profile-area>
+      <profile-area
+        .hideCreateIdeaButton=${this.hideCreateIdeaButton}
+      ></profile-area>
     `;
   }
 }

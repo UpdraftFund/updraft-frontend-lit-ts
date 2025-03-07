@@ -1,4 +1,4 @@
-import { createContext } from '@lit/context'
+import { createContext } from '@lit/context';
 import { signal } from '@lit-labs/signals';
 
 import { CurrentUser, Connection, Balances, UpdraftSettings } from '@/types';
@@ -12,7 +12,8 @@ export const watchedTags = signal<string[]>(storedTags);
 
 export const connectionContext = createContext<Connection>('connection');
 export const balanceContext = createContext<Balances>('balances');
-export const updraftSettings = createContext<UpdraftSettings>('updraftSettings');
+export const updraftSettings =
+  createContext<UpdraftSettings>('updraftSettings');
 
 export class RequestBalanceRefresh extends Event {
   static readonly type = 'request-balance-refresh';

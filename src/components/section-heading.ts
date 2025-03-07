@@ -5,23 +5,22 @@ import { css, html, LitElement } from 'lit';
 export class SectionHeading extends LitElement {
   static styles = css`
     :host {
-      font-size: .9rem;
+      font-size: 0.9rem;
     }
 
     hr {
-      height: 1px; 
+      height: 1px;
       background-color: var(--layout-divider); /* Line color */
       border: none;
     }
-  `
+  `;
 
   render() {
     return html`
-      <hr>
+      <hr />
       <slot></slot>
     `;
   }
-
 }
 
 declare global {
