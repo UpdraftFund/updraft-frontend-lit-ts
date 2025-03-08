@@ -1,6 +1,7 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { formatDistanceToNow } from 'date-fns';
+import { formatUnits } from 'viem';
 
 // Import Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card.js';
@@ -14,11 +15,13 @@ type ActivityType = {
   type: 'ideaFunded' | 'solutionFunded' | 'solutionDrafted';
   contribution?: number;
   idea?: { 
+    id: string;
     name: string; 
     creator: { id: string }; 
     description?: string | null;
   };
   solution?: { 
+    id: string;
     name?: string; 
     description?: string | null;
   };
@@ -81,6 +84,16 @@ export class ActivityCard extends LitElement {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
+    }
+    
+    .name-link {
+      text-decoration: none;
+      color: var(--sl-color-neutral-900);
+    }
+    
+    .name-link:hover {
+      text-decoration: underline;
+      color: var(--accent);
     }
     
     .description-container {
@@ -153,11 +166,11 @@ export class ActivityCard extends LitElement {
           <div class="time">${this.formatTime()}</div>
         </div>
         
-        <div class="name">${this.getName()}</div>
+        <div class="name">${this.renderNameWithLink()}</div>
         
         <div class="description-container">
           <div class="description">${this.getDescription()}</div>
-          <sl-button variant="primary" size="small">${this.getFundButtonText()}</sl-button>
+          <sl-button variant="primary" size="small" href="${this.getButtonLink()}">${this.getFundButtonText()}</sl-button>
         </div>
         
         <sl-divider></sl-divider>
@@ -186,14 +199,42 @@ export class ActivityCard extends LitElement {
     
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${userName} supported an Idea with ${this.activity.contribution || 0} UPD`;
+        return `${userName} supported an Idea with ${formatUnits(BigInt(this.activity.contribution || 0), 18)} UPD`;
       case 'solutionFunded':
-        return `${userName} funded a solution with ${this.activity.contribution || 0} Stones`;
+        return `${userName} funded a solution with ${formatUnits(BigInt(this.activity.contribution || 0), 18)} UPD`;
       case 'solutionDrafted':
         return `${userName} drafted a solution`;
       default:
         return 'Unknown Activity';
     }
+  }
+
+  private renderNameWithLink() {
+    const name = this.getName();
+    
+    if (this.activity.type === 'ideaFunded' && this.activity.idea?.name) {
+      // Extract idea ID from the activity data
+      const ideaId = this.getIdeaId();
+      if (ideaId) {
+        return html`<a href="/idea/${ideaId}" class="name-link">${name}</a>`;
+      }
+    } else if ((this.activity.type === 'solutionFunded' || this.activity.type === 'solutionDrafted') && this.activity.solution?.name) {
+      // Extract solution ID from the activity data
+      const solutionId = this.getSolutionId();
+      if (solutionId) {
+        return html`<a href="/solution/${solutionId}" class="name-link">${name}</a>`;
+      }
+    }
+    
+    return name;
+  }
+  
+  private getIdeaId() {
+    return this.activity.idea?.id || '';
+  }
+  
+  private getSolutionId() {
+    return this.activity.solution?.id || '';
   }
 
   private getName() {
@@ -241,7 +282,7 @@ export class ActivityCard extends LitElement {
         <div class="details-bar">
           <div class="goal">
             <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
-            <div class="goal-text">${this.activity.tokensContributed || '0'} out of ${this.activity.fundingGoal || '150,000'} Stones</div>
+            <div class="goal-text">${this.activity.tokensContributed || '0'} out of ${this.activity.fundingGoal || '150,000'} UPD</div>
           </div>
           ${isCompleted ? html`<sl-badge variant="success" pill><span class="emoji">🥳</span> Funded</sl-badge>` : ''}
           <span class="emoji-badge"><span class="emoji">⏰</span> ${this.formatDeadline()}</span>
@@ -303,5 +344,16 @@ export class ActivityCard extends LitElement {
     } catch (e) {
       return 'in 2 days'; // Fallback
     }
+  }
+
+  private getButtonLink() {
+    if (this.activity.type === 'ideaFunded') {
+      const ideaId = this.getIdeaId();
+      return ideaId ? `/idea/${ideaId}` : '';
+    } else if (this.activity.type === 'solutionFunded' || this.activity.type === 'solutionDrafted') {
+      const solutionId = this.getSolutionId();
+      return solutionId ? `/solution/${solutionId}` : '';
+    }
+    return '';
   }
 }

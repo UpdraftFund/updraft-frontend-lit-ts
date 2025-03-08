@@ -16,11 +16,13 @@ type ActivityType = {
   type: 'ideaFunded' | 'solutionFunded' | 'solutionDrafted';
   contribution?: number;
   idea?: { 
+    id: string;
     name: string; 
     creator: { id: string }; 
     description?: string | null;
   };
   solution?: { 
+    id: string;
     name?: string; 
     description?: string | null;
   };
@@ -103,6 +105,7 @@ export class ActivityFeed extends LitElement {
             userName: this.userName,
             contribution: item.contribution,
             idea: {
+              id: item.idea.id,
               name: item.idea.name || 'Unnamed Idea',
               creator: { id: item.idea.creator.id },
               description: item.idea.description
@@ -114,6 +117,7 @@ export class ActivityFeed extends LitElement {
             type: 'solutionFunded',
             contribution: item.contribution,
             solution: {
+              id: item.solution.id,
               description: item.solution.info
             },
             displayName: item.solution.id,
@@ -128,6 +132,7 @@ export class ActivityFeed extends LitElement {
           ...result.data.solutionsDrafted.map((item) => ({
             type: 'solutionDrafted',
             solution: {
+              id: item.id,
               description: item.info
             },
             displayName: item.id,
