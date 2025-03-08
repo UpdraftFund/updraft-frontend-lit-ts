@@ -22,6 +22,7 @@
     "@shoelace-style/shoelace": "^2.20.0",
     "@wagmi/connectors": "^5.7.7",
     "@wagmi/core": "^2.16.4",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "ethereum-blockies-base64": "^1.0.2",
     "graphql": "^16.10.0",

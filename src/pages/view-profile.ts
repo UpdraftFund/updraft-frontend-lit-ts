@@ -11,7 +11,7 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@layout/top-bar';
 import '@layout/page-heading';
 import '@layout/left-side-bar';
-import '@layout/activity-feed';
+import '@/components/page-specific/profile/activity-feed';
 
 import { connectionContext } from '@/context';
 import { Connection } from '@/types';
@@ -254,7 +254,9 @@ export class ViewProfile extends LitElement {
             },
           })}
         </main>
-        <activity-feed></activity-feed>
+        ${this.address
+          ? html`<activity-feed .userId=${this.address} .userName=${this.profile.value?.name}></activity-feed>`
+          : ''}
       </div>
     `;
   }

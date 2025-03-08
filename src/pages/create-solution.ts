@@ -34,7 +34,6 @@ import { dialogStyles } from '@/styles/dialog-styles';
 import '@layout/top-bar';
 import '@layout/page-heading';
 import '@layout/left-side-bar';
-import '@layout/activity-feed';
 import '@components/transaction-watcher';
 import '@components/upd-dialog';
 import '@components/share-dialog';
@@ -196,13 +195,6 @@ export class CreateSolution extends SaveableForm {
 
         form {
           margin: 1rem;
-        }
-      }
-
-      @media (max-width: 1078px) {
-        activity-feed {
-          flex: 0 0 0; /* Collapse the sidebar */
-          pointer-events: none; /* Prevent interaction when hidden */
         }
       }
     `,
@@ -430,7 +422,6 @@ export class CreateSolution extends SaveableForm {
           <upd-dialog></upd-dialog>
           <share-dialog></share-dialog>
         </main>
-        <activity-feed></activity-feed>
       </div>
     `;
   }

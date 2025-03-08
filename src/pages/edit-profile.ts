@@ -15,7 +15,7 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@layout/top-bar';
 import '@layout/page-heading';
 import '@layout/left-side-bar';
-import '@layout/activity-feed';
+import '@/components/page-specific/profile/activity-feed';
 import '@components/transaction-watcher';
 import '@components/upd-dialog';
 import '@components/share-dialog';
@@ -34,8 +34,13 @@ import {
 
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
-import { user, updraftSettings, defaultFunderReward } from '@/context';
-import { UpdraftSettings } from '@/types';
+import {
+  user,
+  updraftSettings,
+  defaultFunderReward,
+  connectionContext,
+} from '@/context';
+import { UpdraftSettings, Connection } from '@/types';
 import { modal } from '@/web3';
 
 import ideaSchema from '@schemas/idea-schema.json';
@@ -150,6 +155,9 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
   @consume({ context: updraftSettings, subscribe: true })
   updraftSettings!: UpdraftSettings;
+
+  @consume({ context: connectionContext, subscribe: true })
+  connection!: Connection;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('transaction-watcher.submit', true)
@@ -381,7 +389,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             @transaction-success=${this.handleSubmitSuccess}
           ></transaction-watcher>
         </main>
-        <activity-feed></activity-feed>
+        ${this.connection.address
+          ? html`<activity-feed
+              .userId=${this.connection.address}
+              .userName=${user.get().name}
+            ></activity-feed>`
+          : ''}
       </div>
     `;
   }
