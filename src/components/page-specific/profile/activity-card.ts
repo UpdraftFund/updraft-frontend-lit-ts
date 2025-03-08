@@ -14,15 +14,15 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 type ActivityType = {
   type: 'ideaFunded' | 'solutionFunded' | 'solutionDrafted';
   contribution?: number;
-  idea?: { 
+  idea?: {
     id: string;
-    name: string; 
-    creator: { id: string }; 
+    name: string;
+    creator: { id: string };
     description?: string | null;
   };
-  solution?: { 
+  solution?: {
     id: string;
-    name?: string; 
+    name?: string;
     description?: string | null;
   };
   name?: string;
@@ -44,12 +44,12 @@ export class ActivityCard extends LitElement {
       display: block;
       width: 100%;
     }
-    
+
     sl-card {
       --padding: 1rem;
       width: 100%;
     }
-    
+
     .action-time {
       display: flex;
       justify-content: space-between;
@@ -57,7 +57,7 @@ export class ActivityCard extends LitElement {
       width: 100%;
       margin-bottom: 0.5rem;
     }
-    
+
     .action {
       font-family: 'Inter', sans-serif;
       font-weight: 500;
@@ -65,13 +65,13 @@ export class ActivityCard extends LitElement {
       line-height: 1.44em;
       color: var(--sl-color-neutral-900);
     }
-    
+
     .time {
       font-family: 'Inter', sans-serif;
       font-size: 0.875rem;
       color: var(--sl-color-neutral-600);
     }
-    
+
     .name {
       font-family: 'Inter', sans-serif;
       font-weight: 600;
@@ -85,17 +85,17 @@ export class ActivityCard extends LitElement {
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
-    
+
     .name-link {
       text-decoration: none;
       color: var(--sl-color-neutral-900);
     }
-    
+
     .name-link:hover {
       text-decoration: underline;
       color: var(--accent);
     }
-    
+
     .description-container {
       display: flex;
       justify-content: space-between;
@@ -104,7 +104,7 @@ export class ActivityCard extends LitElement {
       gap: 1rem;
       margin-bottom: 1rem;
     }
-    
+
     .description {
       font-family: 'Inter', sans-serif;
       font-size: 0.875rem;
@@ -117,7 +117,7 @@ export class ActivityCard extends LitElement {
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
     }
-    
+
     .details-bar {
       display: flex;
       flex-wrap: wrap;
@@ -127,30 +127,30 @@ export class ActivityCard extends LitElement {
       gap: 0.75rem;
       margin-top: 1rem;
     }
-    
+
     .goal {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
       min-width: 150px;
     }
-    
+
     .goal-text {
       font-size: 0.75rem;
       color: var(--sl-color-neutral-600);
     }
-    
+
     sl-badge {
       --sl-font-size-x-small: 0.75rem;
     }
-    
+
     .emoji-badge {
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
       font-size: 0.875rem;
     }
-    
+
     .emoji {
       font-size: 1rem;
     }
@@ -162,19 +162,26 @@ export class ActivityCard extends LitElement {
     return html`
       <sl-card>
         <div class="action-time">
-          <div class="action">${this.getActivityIcon()} ${this.getActivityAction()}</div>
+          <div class="action">
+            ${this.getActivityIcon()} ${this.getActivityAction()}
+          </div>
           <div class="time">${this.formatTime()}</div>
         </div>
-        
+
         <div class="name">${this.renderNameWithLink()}</div>
-        
+
         <div class="description-container">
           <div class="description">${this.getDescription()}</div>
-          <sl-button variant="primary" size="small" href="${this.getButtonLink()}">${this.getFundButtonText()}</sl-button>
+          <sl-button
+            variant="primary"
+            size="small"
+            href="${this.getButtonLink()}"
+            >${this.getFundButtonText()}</sl-button
+          >
         </div>
-        
+
         <sl-divider></sl-divider>
-        
+
         ${this.renderDetailsBar()}
       </sl-card>
     `;
@@ -196,12 +203,18 @@ export class ActivityCard extends LitElement {
   private getActivityAction() {
     // In a real app, you would get the user's name from a profile service
     const userName = this.activity.userName;
-    
+
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${userName} supported an Idea with ${formatUnits(BigInt(this.activity.contribution || 0), 18)} UPD`;
+        return `${userName} supported an Idea with ${formatUnits(
+          BigInt(this.activity.contribution || 0),
+          18
+        )} UPD`;
       case 'solutionFunded':
-        return `${userName} funded a solution with ${formatUnits(BigInt(this.activity.contribution || 0), 18)} UPD`;
+        return `${userName} funded a solution with ${formatUnits(
+          BigInt(this.activity.contribution || 0),
+          18
+        )} UPD`;
       case 'solutionDrafted':
         return `${userName} drafted a solution`;
       default:
@@ -211,45 +224,55 @@ export class ActivityCard extends LitElement {
 
   private renderNameWithLink() {
     const name = this.getName();
-    
+
     if (this.activity.type === 'ideaFunded' && this.activity.idea?.name) {
       // Extract idea ID from the activity data
       const ideaId = this.getIdeaId();
       if (ideaId) {
         return html`<a href="/idea/${ideaId}" class="name-link">${name}</a>`;
       }
-    } else if ((this.activity.type === 'solutionFunded' || this.activity.type === 'solutionDrafted') && this.activity.solution?.name) {
+    } else if (
+      (this.activity.type === 'solutionFunded' ||
+        this.activity.type === 'solutionDrafted') &&
+      this.activity.solution?.name
+    ) {
       // Extract solution ID from the activity data
       const solutionId = this.getSolutionId();
       if (solutionId) {
-        return html`<a href="/solution/${solutionId}" class="name-link">${name}</a>`;
+        return html`<a href="/solution/${solutionId}" class="name-link"
+          >${name}</a
+        >`;
       }
     }
-    
+
     return name;
   }
-  
+
   private getIdeaId() {
     return this.activity.idea?.id || '';
   }
-  
+
   private getSolutionId() {
     return this.activity.solution?.id || '';
   }
 
   private getName() {
-    return this.activity.name || 
-           this.activity.displayName ||
-           this.activity.idea?.name || 
-           this.activity.solution?.name || 
-           'Unnamed';
+    return (
+      this.activity.name ||
+      this.activity.displayName ||
+      this.activity.idea?.name ||
+      this.activity.solution?.name ||
+      'Unnamed'
+    );
   }
 
   private getDescription() {
-    return this.activity.description || 
-           this.activity.idea?.description || 
-           this.activity.solution?.description || 
-           '';
+    return (
+      this.activity.description ||
+      this.activity.idea?.description ||
+      this.activity.solution?.description ||
+      ''
+    );
   }
 
   private getFundButtonText() {
@@ -268,8 +291,15 @@ export class ActivityCard extends LitElement {
     if (this.activity.type === 'ideaFunded') {
       return html`
         <div class="details-bar">
-          <span class="emoji-badge"><span class="emoji">🌱</span> Created ${this.formatCreatedTime()}</span>
-          <span class="emoji-badge"><span class="emoji">💰</span> ${this.activity.funderReward || '10'}% Funder Reward</span>
+          <span class="emoji-badge"
+            ><span class="emoji">🌱</span> Created
+            ${this.formatCreatedTime()}</span
+          >
+          <span class="emoji-badge"
+            ><span class="emoji">💰</span> ${this.activity.funderReward ||
+            '10'}%
+            Funder Reward</span
+          >
           <span class="emoji-badge"><span class="emoji">🔥</span> 78.8k</span>
         </div>
       `;
@@ -277,18 +307,37 @@ export class ActivityCard extends LitElement {
       // For solution types
       const progress = this.calculateProgress();
       const isCompleted = progress >= 100;
-      
+
       return html`
         <div class="details-bar">
           <div class="goal">
-            <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
-            <div class="goal-text">${this.activity.tokensContributed || '0'} out of ${this.activity.fundingGoal || '150,000'} UPD</div>
+            <sl-progress-bar
+              value="${Math.min(progress, 100)}"
+            ></sl-progress-bar>
+            <div class="goal-text">
+              ${this.activity.tokensContributed || '0'} out of
+              ${this.activity.fundingGoal || '150,000'} UPD
+            </div>
           </div>
-          ${isCompleted ? html`<sl-badge variant="success" pill><span class="emoji">🥳</span> Funded</sl-badge>` : ''}
-          <span class="emoji-badge"><span class="emoji">⏰</span> ${this.formatDeadline()}</span>
-          <span class="emoji-badge"><span class="emoji">🌱</span> ${this.formatCreatedTime()}</span>
-          <span class="emoji-badge"><span class="emoji">💎</span> ${this.activity.stake || '200K'}</span>
-          <span class="emoji-badge"><span class="emoji">💰</span> ${this.activity.funderReward || '10'}%</span>
+          ${isCompleted
+            ? html`<sl-badge variant="success" pill
+                ><span class="emoji">🥳</span> Funded</sl-badge
+              >`
+            : ''}
+          <span class="emoji-badge"
+            ><span class="emoji">⏰</span> ${this.formatDeadline()}</span
+          >
+          <span class="emoji-badge"
+            ><span class="emoji">🌱</span> ${this.formatCreatedTime()}</span
+          >
+          <span class="emoji-badge"
+            ><span class="emoji">💎</span> ${this.activity.stake ||
+            '200K'}</span
+          >
+          <span class="emoji-badge"
+            ><span class="emoji">💰</span> ${this.activity.funderReward ||
+            '10'}%</span
+          >
         </div>
       `;
     }
@@ -298,14 +347,18 @@ export class ActivityCard extends LitElement {
     if (!this.activity.tokensContributed || !this.activity.fundingGoal) {
       return 0;
     }
-    
-    const contributed = parseFloat(String(this.activity.tokensContributed).replace(/,/g, ''));
-    const goal = parseFloat(String(this.activity.fundingGoal).replace(/,/g, ''));
-    
+
+    const contributed = parseFloat(
+      String(this.activity.tokensContributed).replace(/,/g, '')
+    );
+    const goal = parseFloat(
+      String(this.activity.fundingGoal).replace(/,/g, '')
+    );
+
     if (isNaN(contributed) || isNaN(goal) || goal === 0) {
       return 0;
     }
-    
+
     return (contributed / goal) * 100;
   }
 
@@ -331,15 +384,15 @@ export class ActivityCard extends LitElement {
     if (!this.activity.deadline) {
       return 'in 2 days';
     }
-    
+
     try {
       const deadline = new Date(this.activity.deadline);
       const now = new Date();
-      
+
       if (deadline < now) {
         return 'expired';
       }
-      
+
       return `in ${formatDistanceToNow(deadline, { addSuffix: false })}`;
     } catch (e) {
       return 'in 2 days'; // Fallback
@@ -350,7 +403,10 @@ export class ActivityCard extends LitElement {
     if (this.activity.type === 'ideaFunded') {
       const ideaId = this.getIdeaId();
       return ideaId ? `/idea/${ideaId}` : '';
-    } else if (this.activity.type === 'solutionFunded' || this.activity.type === 'solutionDrafted') {
+    } else if (
+      this.activity.type === 'solutionFunded' ||
+      this.activity.type === 'solutionDrafted'
+    ) {
       const solutionId = this.getSolutionId();
       return solutionId ? `/solution/${solutionId}` : '';
     }
