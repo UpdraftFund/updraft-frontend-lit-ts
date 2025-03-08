@@ -10,33 +10,6 @@ import '@components/page-specific/profile/activity-card';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 
-// Import the ActivityType from a shared types file in a real application
-// For now, we'll define it here to match the one in activity-card.ts
-type ActivityType = {
-  type: 'ideaFunded' | 'solutionFunded' | 'solutionDrafted';
-  contribution?: number;
-  idea?: { 
-    id: string;
-    name: string; 
-    creator: { id: string }; 
-    description?: string | null;
-  };
-  solution?: { 
-    id: string;
-    name?: string; 
-    description?: string | null;
-  };
-  name?: string;
-  displayName?: string;
-  description?: string | null;
-  time: string;
-  deadline?: string;
-  fundingGoal?: string;
-  tokensContributed?: string;
-  stake?: string;
-  funderReward?: string;
-};
-
 @customElement('activity-feed')
 export class ActivityFeed extends LitElement {
   static styles = css`
