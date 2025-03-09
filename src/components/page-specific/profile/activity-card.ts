@@ -1,9 +1,11 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { formatDistanceToNow } from 'date-fns';
 import { formatUnits } from 'viem';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
-// Import Shoelace components
+dayjs.extend(relativeTime);
+
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
@@ -29,8 +31,8 @@ type ActivityType = {
   userName?: string;
   displayName?: string;
   description?: string | null;
-  time: string;
-  deadline?: string;
+  time: number;
+  deadline?: number;
   fundingGoal?: string;
   tokensContributed?: string;
   stake?: string;
@@ -159,13 +161,14 @@ export class ActivityCard extends LitElement {
   @property() activity!: ActivityType;
 
   render() {
+    const date = dayjs(this.activity.time * 1000);
     return html`
       <sl-card>
         <div class="action-time">
           <div class="action">
             ${this.getActivityIcon()} ${this.getActivityAction()}
           </div>
-          <div class="time">${this.formatTime()}</div>
+          <div class="time">${date.fromNow()}</div>
         </div>
 
         <div class="name">${this.renderNameWithLink()}</div>
@@ -173,10 +176,11 @@ export class ActivityCard extends LitElement {
         <div class="description-container">
           <div class="description">${this.getDescription()}</div>
           <sl-button
-            variant="primary"
-            size="small"
-            href="${this.getButtonLink()}"
-            >${this.getFundButtonText()}</sl-button
+              variant="primary"
+              size="small"
+              href="${this.getButtonLink()}"
+          >${this.getFundButtonText()}
+          </sl-button
           >
         </div>
 
@@ -240,7 +244,7 @@ export class ActivityCard extends LitElement {
       const solutionId = this.getSolutionId();
       if (solutionId) {
         return html`<a href="/solution/${solutionId}" class="name-link"
-          >${name}</a
+        >${name}</a
         >`;
       }
     }
@@ -292,12 +296,12 @@ export class ActivityCard extends LitElement {
       return html`
         <div class="details-bar">
           <span class="emoji-badge"
-            ><span class="emoji">🌱</span> Created
+          ><span class="emoji">🌱</span> Created
             ${this.formatCreatedTime()}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💰</span> ${this.activity.funderReward ||
-            '10'}%
+          ><span class="emoji">💰</span> ${this.activity.funderReward ||
+          '10'}%
             Funder Reward</span
           >
           <span class="emoji-badge"><span class="emoji">🔥</span> 78.8k</span>
@@ -312,7 +316,7 @@ export class ActivityCard extends LitElement {
         <div class="details-bar">
           <div class="goal">
             <sl-progress-bar
-              value="${Math.min(progress, 100)}"
+                value="${Math.min(progress, 100)}"
             ></sl-progress-bar>
             <div class="goal-text">
               ${this.activity.tokensContributed || '0'} out of
@@ -320,23 +324,25 @@ export class ActivityCard extends LitElement {
             </div>
           </div>
           ${isCompleted
-            ? html`<sl-badge variant="success" pill
-                ><span class="emoji">🥳</span> Funded</sl-badge
-              >`
-            : ''}
+              ? html`
+                <sl-badge variant="success" pill
+                ><span class="emoji">🥳</span> Funded
+                </sl-badge
+                >`
+              : ''}
           <span class="emoji-badge"
-            ><span class="emoji">⏰</span> ${this.formatDeadline()}</span
+          ><span class="emoji">⏰</span> ${this.formatDeadline()}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🌱</span> ${this.formatCreatedTime()}</span
+          ><span class="emoji">🌱</span> ${this.formatCreatedTime()}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💎</span> ${this.activity.stake ||
-            '200K'}</span
+          ><span class="emoji">💎</span> ${this.activity.stake ||
+          '200K'}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💰</span> ${this.activity.funderReward ||
-            '10'}%</span
+          ><span class="emoji">💰</span> ${this.activity.funderReward ||
+          '10'}%</span
           >
         </div>
       `;
@@ -362,40 +368,19 @@ export class ActivityCard extends LitElement {
     return (contributed / goal) * 100;
   }
 
-  private formatTime() {
-    try {
-      const date = new Date(this.activity.time);
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch (e) {
-      return '15 minutes ago'; // Fallback
-    }
-  }
-
   private formatCreatedTime() {
-    try {
-      const date = new Date(this.activity.time);
-      return formatDistanceToNow(date, { addSuffix: false });
-    } catch (e) {
-      return '3 days ago'; // Fallback
-    }
+    return dayjs(this.activity.time * 1000).fromNow();
   }
 
   private formatDeadline() {
-    if (!this.activity.deadline) {
-      return 'in 2 days';
-    }
 
-    try {
-      const deadline = new Date(this.activity.deadline);
-      const now = new Date();
+    const deadline = dayjs(this.activity.deadline || 0 * 1000);
+    const now = dayjs();
 
-      if (deadline < now) {
-        return 'expired';
-      }
-
-      return `in ${formatDistanceToNow(deadline, { addSuffix: false })}`;
-    } catch (e) {
-      return 'in 2 days'; // Fallback
+    if (deadline.isBefore(now)) {
+      return 'expired';
+    } else {
+      return deadline.fromNow();
     }
   }
 
