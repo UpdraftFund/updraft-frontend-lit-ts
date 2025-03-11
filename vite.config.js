@@ -19,5 +19,8 @@ export default defineConfig({
       '@contracts': resolve(__dirname, 'src/contracts'),
       '@gql': resolve(__dirname, '.graphclient')
     }
+  },
+  define: {
+    'process.env': {}
   }
 });
