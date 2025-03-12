@@ -13,7 +13,7 @@ import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 import '@components/search-bar';
-import '@components/idea-card-large';
+import '@components/page-specific/discover/idea-card-large.ts';
 
 import { connectionContext, watchedTags, watchTag } from '@/context.ts';
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
