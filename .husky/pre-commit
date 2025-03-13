@@ -1,1 +1,1 @@
-yarn tsc --noEmit
+yarn type-check && yarn lint-staged
