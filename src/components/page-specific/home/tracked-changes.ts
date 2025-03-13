@@ -18,13 +18,6 @@ export class TrackedChanges extends LitElement {
       --padding: 1rem;
     }
 
-    .change-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.5rem;
-    }
-
     .change-card-title {
       font-family: var(--sl-font-sans);
       font-size: 1.5rem;
@@ -45,7 +38,7 @@ export class TrackedChanges extends LitElement {
     .change-details {
       display: flex;
       gap: 1rem;
-      margin-top: 1rem;
+      align-items: center;
     }
   `;
 
@@ -53,12 +46,10 @@ export class TrackedChanges extends LitElement {
     return html`
       <h2>Tracked Changes</h2>
       <sl-card>
-        <div class="change-card-header">
-          <div>
-            <h3 class="change-card-title">Audit the Updraft smart contracts</h3>
-            <div class="change-card-byline">by johnnycake.eth</div>
-          </div>
-          <sl-icon-button name="x-lg" label="Remove"></sl-icon-button>
+        <div slot="header">
+          <h3 class="change-card-title">Audit the Updraft smart contracts</h3>
+          <div class="change-card-byline">by johnnycake.eth</div>
+          <!-- <sl-icon-button name="x-lg" label="Remove"></sl-icon-button> -->
         </div>
         <div class="change-card-supporters">
           Supported by adamstallard.eth, bastin.eth, and 4 others
@@ -66,21 +57,21 @@ export class TrackedChanges extends LitElement {
       </sl-card>
 
       <sl-card>
-        <div class="change-card-header">
-          <div>
-            <h3 class="change-card-title">Updraft Smart Contract Audit</h3>
-            <div class="change-card-byline">by Acme Auditors</div>
-          </div>
-          <sl-icon-button name="x-lg" label="Remove"></sl-icon-button>
+        <div slot="header">
+          <h3 class="change-card-title">Audit the Updraft smart contracts</h3>
+          <div class="change-card-byline">by johnnycake.eth</div>
+          <div>Has a new Solution</div>
+          <!-- <sl-icon-button name="x-lg" label="Remove"></sl-icon-button> -->
         </div>
-        <div>Has a new Solution</div>
+        <h3 class="change-card-title">Updraft Smart Contract Audit</h3>
+        <div class="change-card-byline">by Acme Auditors</div>
         <p>
           Our industry-leading audit methodology and tooling includes a review
           of your code's logic, with a mathematical approach to ensure your
           program works as intended.
         </p>
-        <sl-button variant="primary">Fund this Solution</sl-button>
-        <div class="change-details">
+        <div slot="footer" class="change-details">
+          <sl-button variant="primary">Fund this Solution</sl-button>
           <span>⏰ in 2 days</span>
           <span>🎯 Goal: 0% of 12.2k USDGLO</span>
           <span>💎 200K</span>
