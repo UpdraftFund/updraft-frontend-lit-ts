@@ -19,27 +19,15 @@ import '@/components/page-specific/profile/activity-feed';
 import '@components/transaction-watcher';
 import '@components/upd-dialog';
 import '@components/share-dialog';
-import {
-  TransactionWatcher,
-  TransactionSuccess,
-} from '@components/transaction-watcher';
+import { TransactionWatcher, TransactionSuccess } from '@components/transaction-watcher';
 import { UpdDialog } from '@components/upd-dialog';
 import { ShareDialog } from '@components/share-dialog';
 import { SlDialog } from '@shoelace-style/shoelace';
-import {
-  SaveableForm,
-  loadForm,
-  formToJson,
-} from '@components/base/saveable-form';
+import { SaveableForm, loadForm, formToJson } from '@components/base/saveable-form';
 
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
-import {
-  user,
-  updraftSettings,
-  defaultFunderReward,
-  connectionContext,
-} from '@/context';
+import { user, updraftSettings, defaultFunderReward, connectionContext } from '@/context';
 import { UpdraftSettings, Connection } from '@/types';
 import { modal } from '@/web3';
 
@@ -182,10 +170,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   }
 
   private addEmptyLink() {
-    this.links = [
-      ...this.links,
-      { name: `link${this.links.length + 1}`, value: '' },
-    ];
+    this.links = [...this.links, { name: `link${this.links.length + 1}`, value: '' }];
   }
 
   private handleLinkInput(event: InputEvent, index: number) {
@@ -240,15 +225,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
           if (ideaForm) {
-            this.submitTransaction.hash = await updraft.write(
-              'createIdeaWithProfile',
-              [
-                BigInt(defaultFunderReward),
-                parseUnits(ideaForm.deposit, 18),
-                toHex(JSON.stringify(ideaData)),
-                toHex(JSON.stringify(profileData)),
-              ]
-            );
+            this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
+              BigInt(defaultFunderReward),
+              parseUnits(ideaForm.deposit, 18),
+              toHex(JSON.stringify(ideaData)),
+              toHex(JSON.stringify(profileData)),
+            ]);
             this.shareDialog.topic = ideaData.name as string;
           }
         } else {
@@ -280,14 +262,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       const address = t.receipt?.logs?.[0]?.topics?.[1];
       if (address) {
         if (this.entity === 'idea') {
-          this.shareDialog.url = `${window.location.origin}/idea/${trim(
-            address
-          )}`;
+          this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
           this.shareDialog.action = 'created an Idea';
         } else {
-          this.shareDialog.url = `${window.location.origin}/solution/${trim(
-            address
-          )}`;
+          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}`;
           this.shareDialog.action = 'created a Solution';
         }
         this.shareDialog.show();
@@ -302,44 +280,16 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
   render() {
     return html`
-      <top-bar>
-        <page-heading>Edit Your Profile</page-heading>
-      </top-bar>
       <div class="container">
-        <left-side-bar></left-side-bar>
         <main>
-          <form
-            name="edit-profile"
-            @submit=${this.handleFormSubmit}
-            @input=${this.handleInput}
-          >
+          <form name="edit-profile" @submit=${this.handleFormSubmit} @input=${this.handleInput}>
             <label class="avatar">
-              <img
-                src=${this.uploadedImage || user.get().avatar}
-                alt="User avatar"
-              />
-              <input
-                type="file"
-                accept="image/*"
-                @change=${this.handleImageUpload}
-              />
-              <sl-icon
-                class="edit-icon"
-                src="${pencilSquare}"
-                label="Edit image"
-              ></sl-icon>
+              <img src=${this.uploadedImage || user.get().avatar} alt="User avatar" />
+              <input type="file" accept="image/*" @change=${this.handleImageUpload} />
+              <sl-icon class="edit-icon" src="${pencilSquare}" label="Edit image"></sl-icon>
             </label>
-            <sl-input
-              name="name"
-              label="Name"
-              required
-              autocomplete="name"
-            ></sl-input>
-            <sl-input
-              name="team"
-              label="Team"
-              autocomplete="organization"
-            ></sl-input>
+            <sl-input name="name" label="Name" required autocomplete="name"></sl-input>
+            <sl-input name="team" label="Team" autocomplete="organization"></sl-input>
             <sl-textarea name="about" label="About" resize="auto"></sl-textarea>
             <sl-textarea name="news" label="News" resize="auto"></sl-textarea>
             <div class="links-section">
@@ -355,9 +305,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
                   >
                     <img
                       slot="prefix"
-                      src=${`https://www.google.com/s2/favicons?domain=${
-                        link.value || '.'
-                      }&sz=16`}
+                      src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
                       @error=${(e: Event) => this.handleImageError(e)}
                       alt="Logo for ${link.value}"
                       width="16px"
@@ -368,15 +316,14 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
               )}
             </div>
             <sl-button variant="primary" @click=${this.handleSubmit}>
-              Submit Profile
-              ${this.entity ? 'and Create ' + capitalize(this.entity) : ''}
+              Submit Profile ${this.entity ? 'and Create ' + capitalize(this.entity) : ''}
             </sl-button>
           </form>
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
             <p>
-              Before you can submit your profile, you need to sign a transaction
-              to allow Updraft to spend your UPD tokens.
+              Before you can submit your profile, you need to sign a transaction to allow Updraft to
+              spend your UPD tokens.
             </p>
             <transaction-watcher
               class="approve"
@@ -389,12 +336,13 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             @transaction-success=${this.handleSubmitSuccess}
           ></transaction-watcher>
         </main>
-        ${this.connection.address
+        <!-- ${this.connection.address
           ? html`<activity-feed
               .userId=${this.connection.address}
               .userName=${user.get().name}
             ></activity-feed>`
-          : ''}
+          : ''} -->
+        <page-heading>Edit Your Profile</page-heading>
       </div>
     `;
   }

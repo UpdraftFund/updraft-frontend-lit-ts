@@ -223,9 +223,7 @@ export class IdeaPage extends LitElement {
   private handleSupportInput(e: Event) {
     const input = e.target as SlInput;
     const value = Number(input.value);
-    const userBalance = Number(
-      this.userBalances?.updraft?.balance || 'Infinity'
-    );
+    const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
     this.needUpd = false;
 
     if (isNaN(value)) {
@@ -249,10 +247,7 @@ export class IdeaPage extends LitElement {
     if (isNaN(value)) {
       fee = this.updraftSettings.minFee;
     } else {
-      fee = Math.max(
-        this.updraftSettings.minFee,
-        value * this.updraftSettings.percentFee
-      );
+      fee = Math.max(this.updraftSettings.minFee, value * this.updraftSettings.percentFee);
     }
     this.antiSpamFee = fee.toFixed(2);
   }
@@ -275,10 +270,7 @@ export class IdeaPage extends LitElement {
           this.approveTransaction.reset();
           this.approveDialog.show();
           const upd = new Upd(this.updraftSettings.updAddress);
-          this.approveTransaction.hash = await upd.write('approve', [
-            this.ideaId,
-            total,
-          ]);
+          this.approveTransaction.hash = await upd.write('approve', [this.ideaId, total]);
         }
         console.error(e);
       }
@@ -295,38 +287,23 @@ export class IdeaPage extends LitElement {
 
   render() {
     return html`
-      <top-bar></top-bar>
       <div class="container">
-        <left-side-bar></left-side-bar>
         <main>
           ${this.idea.render({
             complete: (idea: Idea) => {
-              const {
-                startTime,
-                funderReward,
-                shares,
-                creator,
-                tags,
-                description,
-              } = idea;
+              const { startTime, funderReward, shares, creator, tags, description } = idea;
               let pctFunderReward;
               if (funderReward != defaultFunderReward && this.updraftSettings) {
-                pctFunderReward =
-                  (funderReward * 100) / this.updraftSettings.percentScale;
+                pctFunderReward = (funderReward * 100) / this.updraftSettings.percentScale;
               }
-              const profile = JSON.parse(
-                fromHex(creator.profile as `0x${string}`, 'string')
-              );
+              const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
               const date = dayjs(startTime * 1000);
               const interest = shortNum(formatUnits(shares, 18));
               return html`
                 <h1 class="heading">Idea: ${idea.name}</h1>
-                <a href="/profile/${creator.id}"
-                  >by ${profile.name || creator.id}</a
-                >
+                <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
                 <span class="created"
-                  >Created ${date.format('MMM D, YYYY [at] h:mm A UTC')}
-                  (${date.fromNow()})</span
+                  >Created ${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})</span
                 >
                 <div class="reward-fire">
                   ${pctFunderReward
@@ -337,9 +314,7 @@ export class IdeaPage extends LitElement {
                         </span>
                       `
                     : ''}
-                  <span class="fire"
-                    ><sl-icon src=${fire}></sl-icon>${interest}</span
-                  >
+                  <span class="fire"><sl-icon src=${fire}></sl-icon>${interest}</span>
                 </div>
                 <form @submit=${this.handleSubmit}>
                   <div class="support">
@@ -354,26 +329,18 @@ export class IdeaPage extends LitElement {
                     <span>UPD</span>
                     ${this.needUpd
                       ? html`
-                          <sl-button
-                            variant="primary"
-                            @click=${() => this.updDialog.show()}
+                          <sl-button variant="primary" @click=${() => this.updDialog.show()}
                             >Get more UPD
                           </sl-button>
                         `
                       : html`
-                          <sl-button variant="primary" type="submit">
-                            Support this Idea
-                          </sl-button>
+                          <sl-button variant="primary" type="submit"> Support this Idea </sl-button>
                         `}
                     ${this.antiSpamFee
-                      ? html` <span
-                          >Anti-Spam Fee: ${this.antiSpamFee} UPD</span
-                        >`
+                      ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
                       : ''}
                   </div>
-                  ${this.depositError
-                    ? html` <div class="error">${this.depositError}</div>`
-                    : ''}
+                  ${this.depositError ? html` <div class="error">${this.depositError}</div>` : ''}
                 </form>
                 <p>${description}</p>
                 ${tags
@@ -381,9 +348,7 @@ export class IdeaPage extends LitElement {
                       <div class="tags">
                         ${tags.map(
                           (tag) => html`
-                            <a href="/discover?search=[${tag}]" class="tag"
-                              >${tag}</a
-                            >
+                            <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
                           `
                         )}
                       </div>
@@ -393,28 +358,22 @@ export class IdeaPage extends LitElement {
                   <sl-button variant="primary">Add Solution</sl-button>
                 </a>
 
-                <share-dialog
-                  action="supported an Idea"
-                  .topic=${idea.name}
-                ></share-dialog>
+                <share-dialog action="supported an Idea" .topic=${idea.name}></share-dialog>
               `;
             },
           })}
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
             <p>
-              Before you can support this Idea, you need to sign a transaction
-              to allow the Idea contract to spend your UPD tokens.
+              Before you can support this Idea, you need to sign a transaction to allow the Idea
+              contract to spend your UPD tokens.
             </p>
             <transaction-watcher
               class="approve"
               @transaction-success=${this.handleSubmit}
             ></transaction-watcher>
           </sl-dialog>
-          <transaction-watcher
-            class="submit"
-            @transaction-success=${this.handleTransactionSuccess}
-          >
+          <transaction-watcher class="submit" @transaction-success=${this.handleTransactionSuccess}>
           </transaction-watcher>
         </main>
         <idea-side-bar></idea-side-bar>

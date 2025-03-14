@@ -146,9 +146,7 @@ export class ViewProfile extends LitElement {
     task: async ([userId]) => {
       const result = await urqlClient.query(ProfileDocument, { userId });
       if (result.data?.user?.profile) {
-        return JSON.parse(
-          fromHex(result.data.user.profile as `0x${string}`, 'string')
-        );
+        return JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
       }
     },
     args: () => [this.address] as const,
@@ -156,11 +154,7 @@ export class ViewProfile extends LitElement {
 
   private get profileButton() {
     if (this.address === this.connection.address) {
-      return html`
-        <sl-button variant="primary" href="/edit-profile"
-          >Edit profile</sl-button
-        >
-      `;
+      return html` <sl-button variant="primary" href="/edit-profile">Edit profile</sl-button> `;
     } else {
       return html` <sl-button variant="primary">Follow</sl-button> `;
     }
@@ -199,9 +193,7 @@ export class ViewProfile extends LitElement {
 
   render() {
     return html`
-      <top-bar></top-bar>
       <div class="container">
-        <left-side-bar></left-side-bar>
         <main>
           ${this.profile.render({
             complete: (value) => {
@@ -209,19 +201,12 @@ export class ViewProfile extends LitElement {
               return html`
                 <div class="profile-header">
                   <div class="avatar">
-                    <img
-                      src="${image || makeBlockie(this.address)}"
-                      alt="Profile avatar"
-                    />
+                    <img src="${image || makeBlockie(this.address)}" alt="Profile avatar" />
                   </div>
                   <div>
-                    ${name || team
-                      ? html` <h1 class="name">${name || team}</h1>`
-                      : ''}
+                    ${name || team ? html` <h1 class="name">${name || team}</h1>` : ''}
                     <div class="address">${this.address}</div>
-                    ${name && team
-                      ? html` <div class="team">${team}</div>`
-                      : ''}
+                    ${name && team ? html` <div class="team">${team}</div>` : ''}
                   </div>
                 </div>
 
@@ -255,7 +240,10 @@ export class ViewProfile extends LitElement {
           })}
         </main>
         ${this.address
-          ? html`<activity-feed .userId=${this.address} .userName=${this.profile.value?.name}></activity-feed>`
+          ? html`<activity-feed
+              .userId=${this.address}
+              .userName=${this.profile.value?.name}
+            ></activity-feed>`
           : ''}
       </div>
     `;

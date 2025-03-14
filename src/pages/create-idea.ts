@@ -16,11 +16,7 @@ import '@components/upd-dialog';
 import { UpdDialog } from '@components/upd-dialog';
 import { SaveableForm } from '@components/base/saveable-form';
 
-import {
-  balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings,
-} from '@/context';
+import { balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
 import { UpdraftSettings, Balances } from '@/types';
 
 @customElement('create-idea')
@@ -111,8 +107,7 @@ export class CreateIdea extends SaveableForm {
   private handleTagsInput(e: Event) {
     const input = e.target as SlInput;
     const value = input.value;
-    const spacePositions =
-      [...value.matchAll(/\s/g)].map((match) => match.index) || [];
+    const spacePositions = [...value.matchAll(/\s/g)].map((match) => match.index) || [];
 
     if (spacePositions.length > 4) {
       const fifthSpaceIndex = spacePositions[4];
@@ -131,9 +126,7 @@ export class CreateIdea extends SaveableForm {
   private handleDepositInput(e: Event) {
     const input = e.target as SlInput;
     const value = Number(input.value);
-    const userBalance = Number(
-      this.userBalances?.updraft?.balance || 'Infinity'
-    );
+    const userBalance = Number(this.userBalances?.updraft?.balance || 'Infinity');
     const minFee = this.updraftSettings.minFee;
 
     if (isNaN(value)) {
@@ -174,12 +167,9 @@ export class CreateIdea extends SaveableForm {
 
   render() {
     return html`
-      <top-bar hide-create-idea-button>
-        <page-heading>Create a new Idea</page-heading>
-      </top-bar>
       <div class="container">
-        <left-side-bar></left-side-bar>
         <main>
+          <page-heading>Create a new Idea</page-heading>
           <form name="create-idea" @submit=${this.handleFormSubmit}>
             <sl-input name="name" required autocomplete="off">
               <label-with-hint
@@ -220,18 +210,14 @@ export class CreateIdea extends SaveableForm {
                 >
                 </sl-input>
                 <span>UPD</span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => this.updDialog.show()}
+                <sl-button variant="primary" @click=${() => this.updDialog.show()}
                   >Get more UPD
                 </sl-button>
                 ${this.antiSpamFee
                   ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
                   : ''}
               </div>
-              ${this.depositError
-                ? html` <div class="error">${this.depositError}</div>`
-                : ''}
+              ${this.depositError ? html` <div class="error">${this.depositError}</div>` : ''}
             </div>
             <input type="hidden" name="reward" value="50" />
             <a href="/submit-profile-and-create-idea" rel="next">

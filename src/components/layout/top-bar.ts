@@ -4,6 +4,8 @@ import { customElement, property } from 'lit/decorators.js';
 import '@layout/profile-area';
 
 import updraftLogo from '@assets/images/updraft-logo-46.png';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
 @customElement('top-bar')
 export class TopBar extends LitElement {
@@ -36,9 +38,33 @@ export class TopBar extends LitElement {
       flex: 1;
       display: flex;
     }
+    .menu-button {
+      display: none;
+    }
+    @media (max-width: 768px) {
+      .menu-button {
+        display: block;
+        margin-right: 8px;
+      }
+    }
   `;
+
+  private toggleLeftSidebar() {
+    const event = new CustomEvent('toggle-drawer', {
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
+  }
+
   render() {
     return html`
+      <sl-icon-button 
+        class="menu-button" 
+        name="list" 
+        label="Menu"
+        @click=${this.toggleLeftSidebar}
+      ></sl-icon-button>
       <a href="/" title="Updraft Home">
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>

@@ -19,11 +19,7 @@ export class HomePage extends LitElement {
       display: flex;
       flex: 1;
       overflow: hidden;
-      background: linear-gradient(
-        to bottom,
-        var(--subtle-background),
-        var(--main-background)
-      );
+      background: linear-gradient(to bottom, var(--subtle-background), var(--main-background));
     }
 
     left-side-bar {
@@ -51,14 +47,11 @@ export class HomePage extends LitElement {
 
   render() {
     return html`
-      <top-bar><search-bar></search-bar></top-bar>
       <div class="container">
-        <left-side-bar location="home"></left-side-bar>
         <main>
           <tracked-changes></tracked-changes>
           <beginner-tasks></beginner-tasks>
         </main>
-        <right-side-bar show-hot-ideas></right-side-bar>
       </div>
     `;
   }

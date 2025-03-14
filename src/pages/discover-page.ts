@@ -28,13 +28,7 @@ import {
   IdeasByTagsDocument,
 } from '@gql';
 
-type QueryType =
-  | 'hot-ideas'
-  | 'new-ideas'
-  | 'deadline'
-  | 'followed'
-  | 'search'
-  | 'tags';
+type QueryType = 'hot-ideas' | 'new-ideas' | 'deadline' | 'followed' | 'search' | 'tags';
 type ResultType = Idea[] | Solution[] | IdeaContribution[];
 
 @customElement('discover-page')
@@ -51,11 +45,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       display: flex;
       flex: auto;
       overflow: hidden;
-      background: linear-gradient(
-        to bottom,
-        var(--subtle-background),
-        var(--main-background)
-      );
+      background: linear-gradient(to bottom, var(--subtle-background), var(--main-background));
     }
 
     left-side-bar {
@@ -119,9 +109,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }),
     tags: () => {
       const tagMatches = this.search?.match(/\[.*?\]/g) || [];
-      this.tags = tagMatches
-        .map((tag) => tag.replace(/[\[\]]/g, ''))
-        .slice(0, 5); // only get up to 5 matches
+      this.tags = tagMatches.map((tag) => tag.replace(/[\[\]]/g, '')).slice(0, 5); // only get up to 5 matches
       const defaultTag = this.tags[0] || '';
       return {
         tag1: this.tags[0] || defaultTag,
@@ -144,9 +132,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   };
 
   private readonly results = new Task(this, {
-    task: async ([tab, search]): Promise<
-      { data: any; entity: string } | undefined
-    > => {
+    task: async ([tab, search]): Promise<{ data: any; entity: string } | undefined> => {
       this.queryType = tab;
       if (this.queryType === 'search' && search?.startsWith('[')) {
         this.queryType = 'tags';
@@ -231,64 +217,35 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <top-bar>
-        <span class="search-tabs">
-          <sl-tab-group @sl-tab-show=${this.handleTab}>
-            <sl-tab
-              slot="nav"
-              panel="hot-ideas"
-              .active=${this.tab === 'hot-ideas'}
-              >Hot Ideas</sl-tab
-            >
-            <sl-tab
-              slot="nav"
-              panel="new-ideas"
-              .active=${this.tab === 'new-ideas'}
-              >New Ideas</sl-tab
-            >
-            <sl-tab
-              slot="nav"
-              panel="deadline"
-              .active=${this.tab === 'deadline'}
-              >Deadline</sl-tab
-            >
-            <sl-tab
-              slot="nav"
-              panel="followed"
-              .active=${this.tab === 'followed'}
-              >Followed</sl-tab
-            >
-            <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}
-              >Search</sl-tab
-            >
-          </sl-tab-group>
-          <search-bar value=${this.search}></search-bar>
-        </span>
-      </top-bar>
+      <span class="search-tabs">
+        <sl-tab-group @sl-tab-show=${this.handleTab}>
+          <sl-tab slot="nav" panel="hot-ideas" .active=${this.tab === 'hot-ideas'}
+            >Hot Ideas</sl-tab
+          >
+          <sl-tab slot="nav" panel="new-ideas" .active=${this.tab === 'new-ideas'}
+            >New Ideas</sl-tab
+          >
+          <sl-tab slot="nav" panel="deadline" .active=${this.tab === 'deadline'}>Deadline</sl-tab>
+          <sl-tab slot="nav" panel="followed" .active=${this.tab === 'followed'}>Followed</sl-tab>
+          <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}>Search</sl-tab>
+        </sl-tab-group>
+      </span>
       <div class="container">
-        <left-side-bar location="discover"></left-side-bar>
         <main>
           ${this.results.render({
             complete: (result) => {
               if (result) {
-                const data =
-                  result.data?.[result.entity] || ([] as ResultType[]);
+                const data = result.data?.[result.entity] || ([] as ResultType[]);
                 return html`
                   ${this.queryType === 'tags' ? this.renderTagList() : ''}
                   ${data.map((item: ResultType) => {
                     switch (result.entity) {
                       case 'ideas':
-                        return html` <idea-card-large
-                          .idea=${item}
-                        ></idea-card-large>`;
+                        return html` <idea-card-large .idea=${item}></idea-card-large>`;
                       case 'ideaSearch':
-                        return html` <idea-card-large
-                          .idea=${item}
-                        ></idea-card-large>`;
+                        return html` <idea-card-large .idea=${item}></idea-card-large>`;
                       case 'solutions':
-                        return html` <solution-card
-                          .solution=${item}
-                        ></solution-card>`;
+                        return html` <solution-card .solution=${item}></solution-card>`;
                       case 'ideaContributions':
                         return html` <idea-card-large
                           .idea=${(item as unknown as IdeaContribution).idea}
@@ -300,7 +257,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
             },
           })}
         </main>
-        <right-side-bar></right-side-bar>
       </div>
     `;
   }
