@@ -11,6 +11,10 @@ query TrackedChanges($ideaIds: [String!], $solutionIds: [Bytes!], $since: BigInt
         idea {
             id
             name
+            creator {
+                id
+                profile
+            }
         }
         funder {
             id
