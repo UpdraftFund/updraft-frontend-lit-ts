@@ -103,7 +103,7 @@ export class MyApp extends LitElement {
     /* Responsive layout */
     @media (max-width: 1200px) {
       .main-content {
-        padding: 1.5rem;
+        padding: 0 0.3rem;
       }
 
       right-side-bar {
@@ -160,6 +160,9 @@ export class MyApp extends LitElement {
         --border-muted: #21262d;
         --neutral-muted: #6e7681;
         --neutral-subtle: #161b22;
+      }
+      .icon-button {
+        color: #c9ced4 !important;
       }
     }
   `;

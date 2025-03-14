@@ -7,6 +7,8 @@ import updraftLogo from '@assets/images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
+import listIcon from '@icons/list.svg';
+
 @customElement('top-bar')
 export class TopBar extends LitElement {
   @property({
@@ -47,21 +49,25 @@ export class TopBar extends LitElement {
         margin-right: 8px;
       }
     }
+    sl-icon-button {
+      color: var(--main-foreground);
+      font-size: 1.5rem;
+    }
   `;
 
   private toggleLeftSidebar() {
     const event = new CustomEvent('toggle-drawer', {
       bubbles: true,
-      composed: true
+      composed: true,
     });
     this.dispatchEvent(event);
   }
 
   render() {
     return html`
-      <sl-icon-button 
-        class="menu-button" 
-        name="list" 
+      <sl-icon-button
+        class="menu-button"
+        src="${listIcon}"
         label="Menu"
         @click=${this.toggleLeftSidebar}
       ></sl-icon-button>
@@ -69,9 +75,7 @@ export class TopBar extends LitElement {
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
       <slot></slot>
-      <profile-area
-        .hideCreateIdeaButton=${this.hideCreateIdeaButton}
-      ></profile-area>
+      <profile-area .hideCreateIdeaButton=${this.hideCreateIdeaButton}></profile-area>
     `;
   }
 }
