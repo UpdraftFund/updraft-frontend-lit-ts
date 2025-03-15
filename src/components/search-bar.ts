@@ -24,8 +24,14 @@ export class SearchBar extends LitElement {
 
   render() {
     return html`
-      <form action="/discover">
-        <sl-input type="search" name="search" value=${this.value}>
+      <form action="/discover" aria-label="Search">
+        <sl-input
+          type="search"
+          name="search"
+          value=${this.value}
+          aria-label="Search Updraft"
+          placeholder="Search"
+        >
           <sl-icon slot="prefix" src=${search}></sl-icon>
         </sl-input>
       </form>

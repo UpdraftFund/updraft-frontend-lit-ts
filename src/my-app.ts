@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
 import { Task } from '@lit/task';
@@ -7,7 +7,9 @@ import { getBalance } from '@wagmi/core';
 import { formatUnits, fromHex } from 'viem';
 import makeBlockie from 'ethereum-blockies-base64';
 
+// Import both themes but only one will be activated based on user preference
 import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@shoelace-style/shoelace/dist/themes/dark.css';
 import '@styles/reset.css';
 import '@styles/global.css';
 import '@styles/theme.css';
@@ -28,6 +30,11 @@ import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft.ts';
 
+import '@components/layout/top-bar';
+import '@components/search-bar';
+import '@components/layout/left-side-bar';
+import '@components/layout/right-side-bar';
+
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
   await import('urlpattern-polyfill');
@@ -41,29 +48,50 @@ export class MyApp extends LitElement {
       display: flex;
       flex-direction: column;
       max-width: 100vw;
-      --main-background: #ffffff;
-      --subtle-background: #f6f8fa;
-      --main-foreground: #24292f;
-      --section-heading: #57606a;
-      --accent: #0969da;
-      --accent-subtle: #ddf4ff;
-      --accent-muted: #54aeff;
-      --accent-emphasis: #0969da;
-      --danger: #cf222e;
-      --danger-subtle: #ffebe9;
-      --success: #1a7f37;
-      --success-subtle: #dafbe1;
-      --attention: #9a6700;
-      --attention-subtle: #fff8c5;
-      --border-default: #d0d7de;
-      --border-muted: #d8dee4;
-      --neutral-muted: #afb8c1;
-      --neutral-subtle: #f6f8fa;
-      color: var(--main-foreground);
-      background-color: var(--main-background);
+
+      color: var(--sl-color-neutral-900);
+      background-color: var(--sl-color-neutral-0);
       font-family:
-        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji';
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica,
+        Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    }
+
+    /* Custom application variables that work with both themes */
+    :host,
+    :root {
+      --main-background: var(--sl-color-neutral-0);
+      --subtle-background: var(--sl-color-neutral-50);
+      --main-foreground: var(--sl-color-neutral-900);
+      --section-heading: var(--sl-color-neutral-600);
+      --accent: var(--sl-color-primary-600);
+      --accent-subtle: var(--sl-color-primary-100);
+      --accent-muted: var(--sl-color-primary-400);
+      --accent-emphasis: var(--sl-color-primary-700);
+      --danger: var(--sl-color-danger-600);
+      --danger-subtle: var(--sl-color-danger-100);
+      --success: var(--sl-color-success-600);
+      --success-subtle: var(--sl-color-success-100);
+      --attention: var(--sl-color-warning-600);
+      --attention-subtle: var(--sl-color-warning-100);
+      --border-default: var(--sl-color-neutral-200);
+      --border-muted: var(--sl-color-neutral-100);
+      --neutral-muted: var(--sl-color-neutral-400);
+      --neutral-subtle: var(--sl-color-neutral-50);
+    }
+
+    /* Tab group specific styling */
+    ::slotted(sl-tab-group)::part(base) {
+      --indicator-color: var(--accent);
+      --track-color: var(--border-default);
+    }
+
+    ::slotted(sl-tab)::part(base) {
+      color: var(--main-foreground);
+    }
+
+    ::slotted(sl-tab[active])::part(base) {
+      color: var(--accent);
+      font-weight: 600;
     }
 
     .app-layout {
@@ -101,13 +129,15 @@ export class MyApp extends LitElement {
     }
 
     /* Responsive layout */
-    @media (max-width: 1200px) {
+    @media (max-width: 1024px) {
       .main-content {
         padding: 0 0.3rem;
       }
 
+      /* Ensure right sidebar is visible in tablet view by default */
       right-side-bar {
-        display: none;
+        flex: 0 0 300px;
+        display: block;
       }
     }
 
@@ -126,6 +156,13 @@ export class MyApp extends LitElement {
         padding: 1rem;
         order: 1; /* Main content first */
       }
+
+      right-side-bar {
+        display: block; /* Ensure it's displayed on mobile */
+        width: 100%;
+        flex: none;
+        order: 2; /* Right sidebar below main content */
+      }
     }
 
     @media (max-width: 480px) {
@@ -139,31 +176,13 @@ export class MyApp extends LitElement {
       display: none;
     }
 
-    /* Dark mode */
-    @media (prefers-color-scheme: dark) {
-      :host {
-        --main-background: #0d1117;
-        --subtle-background: #161b22;
-        --main-foreground: #c9d1d9;
-        --section-heading: #8b949e;
-        --accent: #58a6ff;
-        --accent-subtle: #388bfd26;
-        --accent-muted: #388bfd;
-        --accent-emphasis: #1f6feb;
-        --danger: #f85149;
-        --danger-subtle: #f8514926;
-        --success: #3fb950;
-        --success-subtle: #3fb95026;
-        --attention: #d29922;
-        --attention-subtle: #d2992226;
-        --border-default: #30363d;
-        --border-muted: #21262d;
-        --neutral-muted: #6e7681;
-        --neutral-subtle: #161b22;
-      }
-      .icon-button {
-        color: #c9ced4 !important;
-      }
+    /* Icon button styling */
+    .icon-button {
+      color: var(--main-foreground);
+    }
+
+    search-bar {
+      margin: 0 auto;
     }
   `;
 
@@ -174,7 +193,7 @@ export class MyApp extends LitElement {
         await import('./pages/home-page');
         return true;
       },
-      render: () => html` <home-page></home-page>`,
+      render: () => html`<home-page></home-page>`,
     },
     {
       path: '/discover',
@@ -186,7 +205,10 @@ export class MyApp extends LitElement {
         const params = new URLSearchParams(window.location.search);
         const search = params.get('search');
         const tab = params.get('tab') || (search ? 'search' : null);
-        return html` <discover-page .search=${search} .tab=${tab}></discover-page>`;
+        return html`<discover-page
+          .search=${search}
+          .tab=${tab}
+        ></discover-page>`;
       },
     },
     {
@@ -195,7 +217,7 @@ export class MyApp extends LitElement {
         await import('./pages/idea-page');
         return true;
       },
-      render: ({ id }) => html` <idea-page .ideaId=${id}></idea-page>`,
+      render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`,
     },
     {
       path: '/create-idea',
@@ -203,7 +225,7 @@ export class MyApp extends LitElement {
         await import('./pages/create-idea');
         return true;
       },
-      render: () => html` <create-idea></create-idea>`,
+      render: () => html`<create-idea></create-idea>`,
     },
     {
       path: '/edit-profile',
@@ -211,7 +233,7 @@ export class MyApp extends LitElement {
         await import('./pages/edit-profile');
         return true;
       },
-      render: () => html` <edit-profile></edit-profile>`,
+      render: () => html`<edit-profile></edit-profile>`,
     },
     {
       path: '/submit-profile-and-create-:entity',
@@ -219,7 +241,8 @@ export class MyApp extends LitElement {
         await import('./pages/edit-profile');
         return true;
       },
-      render: ({ entity }) => html` <edit-profile .entity=${entity}></edit-profile>`,
+      render: ({ entity }) =>
+        html`<edit-profile .entity=${entity}></edit-profile>`,
     },
     {
       path: '/profile/:address',
@@ -227,7 +250,8 @@ export class MyApp extends LitElement {
         await import('./pages/view-profile');
         return true;
       },
-      render: ({ address }) => html` <view-profile .address=${address}></view-profile>`,
+      render: ({ address }) =>
+        html`<view-profile .address=${address}></view-profile>`,
     },
     {
       path: '/create-solution/:ideaId',
@@ -237,9 +261,9 @@ export class MyApp extends LitElement {
       },
       render: ({ ideaId }) => {
         if (!ideaId) {
-          return html` <div>No idea id</div>`;
+          return html`<div>No idea id</div>`;
         }
-        return html` <create-solution .ideaId=${ideaId}></create-solution>`;
+        return html`<create-solution .ideaId=${ideaId}></create-solution>`;
       },
     },
   ]);
@@ -252,8 +276,13 @@ export class MyApp extends LitElement {
 
   private search: string = '';
 
+  @state() expanded = false;
+
   constructor() {
     super();
+
+    // Set the theme based on user preference
+    this.setupTheme();
 
     modal.subscribeAccount(async ({ isConnected, address }) => {
       if (address) {
@@ -263,7 +292,9 @@ export class MyApp extends LitElement {
         });
         let profile = {} as { name: string; team: string; image: string };
         if (result.data?.user?.profile) {
-          profile = JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
+          profile = JSON.parse(
+            fromHex(result.data.user.profile as `0x${string}`, 'string')
+          );
         }
         user.set({
           name: profile.name || profile.team || address,
@@ -287,7 +318,32 @@ export class MyApp extends LitElement {
       this.getUpdraftSettings.run().then(() => this.refreshBalances.run());
     });
 
-    this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances.run());
+    this.addEventListener(RequestBalanceRefresh.type, () =>
+      this.refreshBalances.run()
+    );
+  }
+
+  private setupTheme() {
+    // Apply the appropriate theme class to the document element
+    const prefersDark = window.matchMedia?.(
+      '(prefers-color-scheme: dark)'
+    ).matches;
+    document.documentElement.classList.toggle('sl-theme-dark', prefersDark);
+    document.documentElement.classList.toggle('sl-theme-light', !prefersDark);
+
+    // Also apply to the component itself for shadow DOM styling
+    this.classList.toggle('sl-theme-dark', prefersDark);
+    this.classList.toggle('sl-theme-light', !prefersDark);
+
+    // Listen for changes in color scheme preference
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', (e) => {
+        document.documentElement.classList.toggle('sl-theme-dark', e.matches);
+        document.documentElement.classList.toggle('sl-theme-light', !e.matches);
+        this.classList.toggle('sl-theme-dark', e.matches);
+        this.classList.toggle('sl-theme-light', !e.matches);
+      });
   }
 
   public refreshBalances = new Task(this, {
@@ -332,32 +388,49 @@ export class MyApp extends LitElement {
     autoRun: false,
   });
 
+  getCurrentLocation(): string {
+    const path = window.location.pathname;
+    if (path === '/') return 'home';
+    if (path.startsWith('/discover')) return 'discover';
+    if (path.startsWith('/idea/')) return 'idea';
+    if (path.startsWith('/solution/')) return 'solution';
+    if (path.startsWith('/profile')) return 'profile';
+    if (path.startsWith('/create')) return 'create';
+    return 'not-found';
+  }
+
   getPageLayout(): PageLayout {
     // Define different layouts based on the current route
-    const path = window.location.pathname;
+    const currentLocation = this.getCurrentLocation();
 
-    if (path === '/') {
+    if (currentLocation === 'home') {
       return {
         showLeftSidebar: true,
         showRightSidebar: true,
         showHotIdeas: true,
       };
-    } else if (path.startsWith('/discover')) {
+    } else if (currentLocation === 'discover') {
       return {
         showLeftSidebar: true,
         showRightSidebar: true,
         showHotIdeas: false,
       };
-    } else if (path.startsWith('/idea/') || path.startsWith('/solution/')) {
+    } else if (currentLocation === 'idea' || currentLocation === 'solution') {
+      return {
+        showLeftSidebar: true,
+        showRightSidebar: true,
+        showHotIdeas: false,
+      };
+    } else if (currentLocation === 'profile') {
       return {
         showLeftSidebar: true,
         showRightSidebar: false,
         showHotIdeas: false,
       };
-    } else if (path.startsWith('/profile')) {
+    } else if (currentLocation === 'create') {
       return {
         showLeftSidebar: true,
-        showRightSidebar: false,
+        showRightSidebar: true,
         showHotIdeas: false,
       };
     } else {
@@ -367,16 +440,6 @@ export class MyApp extends LitElement {
         showHotIdeas: false,
       };
     }
-  }
-
-  getCurrentLocation(): string {
-    const path = window.location.pathname;
-    if (path === '/') return 'home';
-    if (path.startsWith('/discover')) return 'discover';
-    if (path.startsWith('/idea/')) return 'idea';
-    if (path.startsWith('/solution/')) return 'solution';
-    if (path.startsWith('/profile')) return 'profile';
-    return 'not-found';
   }
 
   render() {
@@ -389,11 +452,19 @@ export class MyApp extends LitElement {
     return html`
       <top-bar><search-bar value=${this.search}></search-bar></top-bar>
       <div class="app-layout">
-        ${layout.showLeftSidebar ? html`<left-side-bar .location=${location}></left-side-bar>` : ''}
+        ${layout.showLeftSidebar
+          ? html`<left-side-bar
+              .location=${location}
+              @expanded=${(e: CustomEvent) => (this.expanded = e.detail)}
+            ></left-side-bar>`
+          : ''}
         <div class="content-wrapper">
           <div class="main-content">${this.router.outlet()}</div>
           ${layout.showRightSidebar
-            ? html`<right-side-bar ?show-hot-ideas=${layout.showHotIdeas}></right-side-bar>`
+            ? html`<right-side-bar
+                ?show-hot-ideas=${layout.showHotIdeas}
+                ?expanded=${this.expanded}
+              ></right-side-bar>`
             : ''}
         </div>
       </div>

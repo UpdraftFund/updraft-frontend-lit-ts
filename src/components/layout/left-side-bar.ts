@@ -13,7 +13,11 @@ import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@components/section-heading';
 import '@components/idea-card-small';
 
-import { connectionContext, leftSidebarCollapsed, toggleLeftSidebar } from '@/context.ts';
+import {
+  connectionContext,
+  leftSidebarCollapsed,
+  toggleLeftSidebar,
+} from '@/context.ts';
 import { Connection } from '@/types';
 
 import urqlClient from '@/urql-client.ts';
@@ -33,7 +37,10 @@ export class LeftSideBar extends LitElement {
       border-right: 3px solid var(--subtle-background);
       overflow: hidden;
       padding: 0 1rem;
-      transition: width 0.3s ease, padding 0.3s ease, flex-basis 0.3s ease;
+      transition:
+        width 0.3s ease,
+        padding 0.3s ease,
+        flex-basis 0.3s ease;
       position: relative;
     }
 
@@ -125,7 +132,47 @@ export class LeftSideBar extends LitElement {
       padding: 0.75rem 0;
     }
 
-    /* Responsive behavior */
+    /* Tablet breakpoint - auto-collapse sidebar but allow manual expansion */
+    @media (max-width: 1024px) and (min-width: 769px) {
+      :host {
+        width: 64px;
+        padding: 0;
+        flex-basis: 64px !important;
+      }
+
+      :host .label,
+      :host section-heading,
+      :host .my-ideas,
+      :host .my-solutions {
+        display: none;
+      }
+
+      :host nav a {
+        justify-content: center;
+        padding: 0.75rem 0;
+      }
+
+      /* When expanded, show full sidebar */
+      :host([expanded]) {
+        width: 250px;
+        padding: 0 1rem;
+        flex-basis: 250px !important;
+      }
+
+      :host([expanded]) .label,
+      :host([expanded]) section-heading,
+      :host([expanded]) .my-ideas,
+      :host([expanded]) .my-solutions {
+        display: block;
+      }
+
+      :host([expanded]) nav a {
+        justify-content: flex-start;
+        padding: 0.75rem;
+      }
+    }
+
+    /* Mobile breakpoint - switch to drawer mode */
     @media (max-width: 768px) {
       :host {
         position: fixed;
@@ -135,12 +182,15 @@ export class LeftSideBar extends LitElement {
         z-index: 100;
         width: 250px;
         transform: translateX(-100%);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
         box-shadow: none;
         border-radius: 0;
         border-right: none;
         background: var(--main-background);
         overflow-y: auto;
+        padding: 0 1rem;
       }
 
       :host([expanded]) {
@@ -148,28 +198,21 @@ export class LeftSideBar extends LitElement {
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
       }
 
+      /* Show all content in drawer mode */
+      :host .label,
+      :host section-heading,
+      :host .my-ideas,
+      :host .my-solutions {
+        display: block;
+      }
+
+      :host nav a {
+        justify-content: flex-start;
+        padding: 0.75rem;
+      }
+
       .toggle-button {
         display: none; /* Hide the toggle button on mobile, we'll use the top bar button instead */
-      }
-
-      .drawer-backdrop {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 99;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        pointer-events: none;
-      }
-
-      :host([expanded]) + .drawer-backdrop {
-        display: block;
-        opacity: 1;
-        pointer-events: all;
       }
     }
 
@@ -177,6 +220,27 @@ export class LeftSideBar extends LitElement {
       :host {
         width: 85%; /* Use percentage for better mobile experience */
       }
+    }
+
+    /* Backdrop styling */
+    .drawer-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 99;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .drawer-backdrop.active {
+      display: block;
+      opacity: 1;
+      pointer-events: all;
     }
   `;
 
@@ -221,9 +285,16 @@ export class LeftSideBar extends LitElement {
     super.connectedCallback();
     // Set up a listener for the sidebar state changes
     window.addEventListener('storage', this.handleStorageChange);
-    document.addEventListener('layout-sidebar-left-toggle', this.handleSidebarToggle);
+    document.addEventListener(
+      'layout-sidebar-left-toggle',
+      this.handleSidebarToggle
+    );
     document.addEventListener('toggle-drawer', this.handleDrawerToggle);
+    window.addEventListener('popstate', this.handleNavigation);
     
+    // Add click event listeners to all links for mobile drawer
+    this.addEventListener('click', this.handleLinkClick);
+
     // Create backdrop element for mobile drawer
     this.createBackdrop();
   }
@@ -231,9 +302,14 @@ export class LeftSideBar extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('storage', this.handleStorageChange);
-    document.removeEventListener('layout-sidebar-left-toggle', this.handleSidebarToggle);
+    document.removeEventListener(
+      'layout-sidebar-left-toggle',
+      this.handleSidebarToggle
+    );
     document.removeEventListener('toggle-drawer', this.handleDrawerToggle);
-    
+    window.removeEventListener('popstate', this.handleNavigation);
+    this.removeEventListener('click', this.handleLinkClick);
+
     // Remove backdrop when component is disconnected
     this.removeBackdrop();
   }
@@ -256,20 +332,72 @@ export class LeftSideBar extends LitElement {
     if (window.innerWidth <= 768) {
       this.expanded = !this.expanded;
       this.requestUpdate();
-      
+
       // Prevent body scrolling when drawer is open
       document.body.style.overflow = this.expanded ? 'hidden' : '';
+
+      // Show/hide backdrop
+      this.toggleBackdrop();
+    }
+  };
+
+  private handleNavigation = () => {
+    // Close drawer when navigation occurs
+    if (this.expanded && window.innerWidth <= 768) {
+      this.expanded = false;
+      this.requestUpdate();
+      document.body.style.overflow = '';
+      this.toggleBackdrop();
+    }
+  };
+
+  private handleLinkClick = (event: Event) => {
+    // Close drawer when a link is clicked (on mobile only)
+    if (this.expanded && window.innerWidth <= 768) {
+      const path = event.composedPath();
+      for (const element of path) {
+        if (element instanceof HTMLAnchorElement) {
+          this.expanded = false;
+          this.requestUpdate();
+          document.body.style.overflow = '';
+          this.toggleBackdrop();
+          break;
+        }
+      }
     }
   };
 
   private handleToggle() {
-    toggleLeftSidebar();
-    // Dispatch an event that other components can listen to
-    const event = new CustomEvent('layout-sidebar-left-toggle', {
-      bubbles: true,
-      composed: true
-    });
-    this.dispatchEvent(event);
+    // For tablet view, toggle expanded state
+    if (window.innerWidth <= 1024 && window.innerWidth > 768) {
+      this.expanded = !this.expanded;
+      this.requestUpdate();
+      
+      // Dispatch an event to notify right sidebar about the state change
+      const event = new CustomEvent('expanded', {
+        bubbles: true,
+        composed: true,
+        detail: this.expanded
+      });
+      this.dispatchEvent(event);
+
+      // Also dispatch the legacy event for backward compatibility
+      const layoutEvent = new CustomEvent('layout-sidebar-left-toggle', {
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(layoutEvent);
+    } else if (window.innerWidth > 1024) {
+      // For desktop view, use the normal collapse toggle
+      toggleLeftSidebar();
+
+      // Dispatch an event that other components can listen to
+      const layoutEvent = new CustomEvent('layout-sidebar-left-toggle', {
+        bubbles: true,
+        composed: true,
+      });
+      this.dispatchEvent(layoutEvent);
+    }
   }
 
   private createBackdrop() {
@@ -278,16 +406,19 @@ export class LeftSideBar extends LitElement {
       const backdrop = document.createElement('div');
       backdrop.classList.add('drawer-backdrop');
       backdrop.addEventListener('click', () => {
-        this.expanded = false;
-        this.requestUpdate();
-        document.body.style.overflow = '';
+        if (window.innerWidth <= 768 && this.expanded) {
+          this.expanded = false;
+          this.requestUpdate();
+          document.body.style.overflow = '';
+          this.toggleBackdrop();
+        }
       });
-      
+
       // Insert after this element
       this.parentNode?.insertBefore(backdrop, this.nextSibling);
     }
   }
-  
+
   private removeBackdrop() {
     const backdrop = document.querySelector('.drawer-backdrop');
     if (backdrop) {
@@ -295,11 +426,25 @@ export class LeftSideBar extends LitElement {
     }
   }
 
+  private toggleBackdrop() {
+    const backdrop = document.querySelector('.drawer-backdrop');
+    if (backdrop) {
+      if (this.expanded && window.innerWidth <= 768) {
+        backdrop.classList.add('active');
+      } else {
+        backdrop.classList.remove('active');
+      }
+    }
+  }
+
   render() {
     return html`
       <div class="toggle-button" @click=${this.handleToggle}>
         <sl-icon
-          src=${this.collapsed ? chevronRight : chevronLeft}
+          src=${(window.innerWidth <= 1024 && window.innerWidth > 768 && !this.expanded) || 
+               (window.innerWidth > 1024 && this.collapsed)
+               ? chevronRight
+               : chevronLeft}
           label="Toggle sidebar"
         ></sl-icon>
       </div>

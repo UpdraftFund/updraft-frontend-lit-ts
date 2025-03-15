@@ -31,9 +31,7 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
 import { dialogStyles } from '@/styles/dialog-styles';
 
-import '@layout/top-bar';
 import '@layout/page-heading';
-import '@layout/left-side-bar';
 import '@components/transaction-watcher';
 import '@components/upd-dialog';
 import '@components/share-dialog';
@@ -73,10 +71,6 @@ export class CreateSolution extends SaveableForm {
   static styles = [
     dialogStyles,
     css`
-      left-side-bar {
-        flex: 0 0 274px;
-      }
-
       .container {
         display: flex;
         flex: auto;
@@ -182,13 +176,6 @@ export class CreateSolution extends SaveableForm {
 
       /* Responsive behavior for smaller screens */
       @media (max-width: 768px) {
-        left-side-bar {
-          flex: 0 0 0;
-          pointer-events: none;
-          padding: 0;
-          border: none;
-        }
-
         .container {
           flex-direction: column;
         }
@@ -310,11 +297,8 @@ export class CreateSolution extends SaveableForm {
 
   render() {
     return html`
-      <top-bar hide-create-idea-button>
-        <page-heading>Create a new Solution</page-heading>
-      </top-bar>
+      <page-heading>Create a new Solution</page-heading>
       <div class="container">
-        <left-side-bar></left-side-bar>
         <main>
           <h1 class="idea-name">Idea: ${this.ideaId}</h1>
           <form name="create-solution" @submit=${this.handleFormSubmit}>

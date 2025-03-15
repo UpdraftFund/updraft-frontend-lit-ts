@@ -3,7 +3,13 @@
  * https://www.figma.com/design/lfPeBM41v53XQZLkYRUt5h/Updraft?node-id=920-7089&m=dev
  ***/
 
-import { customElement, state, property, query, queryAll } from 'lit/decorators.js';
+import {
+  customElement,
+  state,
+  property,
+  query,
+  queryAll,
+} from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -121,16 +127,39 @@ export class RightSideBar extends LitElement {
     }
 
     /* Responsive behavior */
+    @media (max-width: 1024px) and (min-width: 769px) {
+      :host {
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      :host([hidden-by-left-sidebar]) {
+        opacity: 0;
+        visibility: hidden;
+        width: 0;
+        padding: 0;
+        margin: 0;
+        flex-basis: 0 !important;
+        overflow: hidden;
+      }
+    }
+
     @media (max-width: 768px) {
       :host {
         border-left: none;
         border-top: 1px solid var(--border-default);
       }
     }
+
+    .hot-ideas h2 {
+      color: var(--attention);
+    }
   `;
 
   @property({ type: Boolean, reflect: true, attribute: 'show-hot-ideas' })
   showHotIdeas = false;
+
+  @property({ type: Boolean, reflect: true, attribute: 'hidden-by-left-sidebar' })
+  hiddenByLeftSidebar = false;
 
   @state() private hotIdeas?: Idea[];
   @state() private topTags?: TagCount[];
@@ -151,14 +180,19 @@ export class RightSideBar extends LitElement {
     this.subscribe();
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
     document.addEventListener('click', this.handleClickOutsideEditArea);
+    document.addEventListener('expanded', this.handleLeftSidebarExpanded as EventListener);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.unsubHotIdeas?.();
     this.unsubTopTags?.();
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
     document.removeEventListener('click', this.handleClickOutsideEditArea);
+    document.removeEventListener('expanded', this.handleLeftSidebarExpanded as EventListener);
   }
 
   private subscribe() {
@@ -166,15 +200,19 @@ export class RightSideBar extends LitElement {
     this.unsubTopTags?.();
 
     if (this.showHotIdeas) {
-      const hotIdeasSub = urqlClient.query(IdeasBySharesDocument, {}).subscribe((result) => {
-        this.hotIdeas = result.data?.ideas as Idea[];
-      });
+      const hotIdeasSub = urqlClient
+        .query(IdeasBySharesDocument, {})
+        .subscribe((result) => {
+          this.hotIdeas = result.data?.ideas as Idea[];
+        });
       this.unsubHotIdeas = hotIdeasSub.unsubscribe;
     }
 
-    const topTagsSub = urqlClient.query(TopTagsDocument, {}).subscribe((result) => {
-      this.topTags = result.data?.tagCounts as TagCount[];
-    });
+    const topTagsSub = urqlClient
+      .query(TopTagsDocument, {})
+      .subscribe((result) => {
+        this.topTags = result.data?.tagCounts as TagCount[];
+      });
     this.unsubTopTags = topTagsSub.unsubscribe;
   }
 
@@ -205,6 +243,14 @@ export class RightSideBar extends LitElement {
     }
   };
 
+  private handleLeftSidebarExpanded = (e: Event) => {
+    // Only respond to this event in tablet view
+    if (window.innerWidth <= 1024 && window.innerWidth > 768) {
+      // The event detail is now just the boolean value
+      this.hiddenByLeftSidebar = (e as CustomEvent<boolean>).detail;
+    }
+  };
+
   render() {
     const tags = watchedTags.get();
 
@@ -212,13 +258,15 @@ export class RightSideBar extends LitElement {
       <div class="sidebar-content">
         ${this.showHotIdeas && this.hotIdeas
           ? html`
-              <div class="section">
+              <div class="section hot-ideas">
                 <h2>
                   <sl-icon src=${fire}></sl-icon>
                   Hot Ideas
                 </h2>
                 ${this.hotIdeas.map(
-                  (idea) => html` <idea-card-small .idea=${idea}></idea-card-small> `
+                  (idea) => html`
+                    <idea-card-small .idea=${idea}></idea-card-small>
+                  `
                 )}
               </div>
             `
@@ -262,7 +310,9 @@ export class RightSideBar extends LitElement {
                 <div class="tags-container">
                   ${this.topTags.map(
                     (tag) => html`
-                      <a class="tag" href="/discover?search=[${tag.id}]"> ${tag.id} </a>
+                      <a class="tag" href="/discover?search=[${tag.id}]">
+                        ${tag.id}
+                      </a>
                     `
                   )}
                 </div>
