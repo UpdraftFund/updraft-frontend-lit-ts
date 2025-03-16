@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document captures key lessons learned during our implementation of centralized state management in the Updraft frontend, particularly from our work on the related-ideas component. These insights will guide future development and help maintain consistent patterns across the application.
+This document captures key lessons learned during our implementation of centralized state management in the Updraft frontend, particularly from our work on the related-ideas component and user state module. These insights will guide future development and help maintain consistent patterns across the application.
 
 ## Key Insights
 
@@ -19,124 +19,233 @@ While centralized state using `@lit/context` provides many benefits, we found th
 - For timing-critical updates where components need immediate notification
 - When dealing with asynchronous data fetching that updates state
 - For parent-child communication where the child needs to react quickly to parent changes
+- When components need to be resilient to context initialization delays
 
 **Implementation pattern:**
 ```typescript
-// In component that generates data
-updateTags(tags: string[]) {
-  // Update central state
-  setTags(tags);
+// In state module
+// Define custom events
+export const USER_CONNECTED_EVENT = 'user-connected';
+export const USER_DISCONNECTED_EVENT = 'user-disconnected';
+
+// Helper function to dispatch custom events
+const dispatchUserEvent = (eventName: string, detail?: any) => {
+  const event = new CustomEvent(eventName, {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+  document.dispatchEvent(event);
+};
+
+// State operations that also dispatch events
+export const setUserAddress = (address: Address | null): void => {
+  userAddress.set(address); // Update centralized state
   
   // Also dispatch event for immediate notification
-  this.dispatchEvent(new CustomEvent('tags-updated', {
-    detail: { tags },
-    bubbles: true,
-    composed: true
-  }));
-}
+  if (address) {
+    dispatchUserEvent(USER_CONNECTED_EVENT, { address });
+  } else {
+    dispatchUserEvent(USER_DISCONNECTED_EVENT);
+  }
+};
 
 // In consuming component
 connectedCallback() {
   super.connectedCallback();
-  this._tagsHandler = (e) => {
-    this._localTags = e.detail.tags;
-    this._runTask();
-  };
-  window.addEventListener('tags-updated', this._tagsHandler);
+  
+  // Event handlers as class properties for proper cleanup
+  this.userConnectedHandler = () => this.requestUpdate();
+  this.userDisconnectedHandler = () => this.requestUpdate();
+  
+  // Add event listeners for user state changes
+  document.addEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler);
+  document.addEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler);
 }
 
 disconnectedCallback() {
   super.disconnectedCallback();
-  window.removeEventListener('tags-updated', this._tagsHandler);
+  
+  // Remove event listeners to prevent memory leaks
+  document.removeEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler);
+  document.removeEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler);
 }
 ```
 
-### 2. Local State Backup Mechanisms
+### 2. Resilient Component Design
 
-Components that consume state from context can benefit from maintaining local state as a backup, particularly when dealing with asynchronous updates:
+Components should be designed to handle cases where context might not be immediately available:
+
+**Null-safe access patterns:**
+```typescript
+// Use optional chaining when accessing context properties
+render() {
+  return html`
+    ${this.userState?.isConnected
+      ? html`<div>Connected as ${this.userState?.address}</div>`
+      : html`<sl-button @click=${this.handleConnect}>Connect</sl-button>`
+    }
+  `;
+}
+
+// Provide fallback behavior when context is not available
+private async handleConnect() {
+  try {
+    if (this.userState?.connect) {
+      await this.userState.connect();
+    } else {
+      // Fallback to direct modal open if userState is not available
+      await modal.open({ view: 'Connect' });
+    }
+  } catch (error) {
+    console.error('Error connecting wallet:', error);
+  }
+}
+```
+
+### 3. Asynchronous Operations and State Updates
+
+When dealing with asynchronous operations that affect state:
+
+**Best practices:**
+- Always use `async/await` for asynchronous operations
+- Set loading states before starting async operations
+- Clear loading states in finally blocks to ensure they're reset even if errors occur
+- Use try/catch blocks to handle errors gracefully
+- Update state only after async operations complete successfully
 
 ```typescript
-// Maintain local state as backup
-@state()
-private _localTags: string[] = [];
-
-// Use the most reliable source
-get effectiveTags() {
-  const contextTags = this.ideaState?.tags || [];
-  return contextTags.length > 0 ? contextTags : this._localTags;
-}
+export const connectWallet = async (): Promise<void> => {
+  try {
+    setIsConnecting(true);  // Set loading state
+    setConnectionError(null);  // Clear previous errors
+    
+    // Perform async operation
+    await modal.open({ view: 'Connect' });
+    
+    // State updates will happen via event subscriptions
+  } catch (err) {
+    // Handle errors
+    setConnectionError(err instanceof Error ? err.message : 'Unknown error');
+  } finally {
+    // Always clear loading state
+    setIsConnecting(false);
+  }
+};
 ```
 
-This pattern ensures that components have access to data even if there are timing issues with context updates.
+### 4. Event Listener Management
 
-### 3. Task Management Patterns
+Proper event listener management is crucial to prevent memory leaks:
 
-When using `lit-labs/task` for data fetching, we found several important patterns:
-
-**Direct task triggering:**
-Rather than relying solely on reactive dependencies, explicitly triggering tasks provides more control:
+**Best practices:**
+- Store event handler references as class properties for proper cleanup
+- Register listeners in `connectedCallback()`
+- Remove listeners in `disconnectedCallback()`
+- Use arrow functions for handlers to maintain proper `this` binding
 
 ```typescript
-// Helper method to run task with specific data
-private _runTaskWithData(data: SomeType) {
-  this._currentTaskData = data;
-  this._task.run();
-}
+export class UserProfile extends LitElement {
+  // Event handlers as class properties
+  private userConnectedHandler = () => this.requestUpdate();
+  private userDisconnectedHandler = () => this.requestUpdate();
 
-// In the task itself, use the explicitly passed data
-private _task = new Task(
-  this,
-  async () => {
-    const data = this._currentTaskData;
-    // Use data for fetching...
-  },
-  // Empty or minimal dependency array since we're manually controlling execution
-  () => []
-);
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler);
+    document.addEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler);
+    document.removeEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler);
+  }
+}
 ```
 
-### 4. Proper Lifecycle Management
+### 5. Integration with External Libraries
 
-Ensuring proper cleanup in component lifecycle methods is crucial for preventing memory leaks and unexpected behavior:
+When integrating with external libraries like wallet connection providers:
+
+**Best practices:**
+- Create a clear abstraction layer between the external library and your state management
+- Use subscription methods provided by the library to keep state in sync
+- Handle errors and edge cases specific to the external library
+- Provide fallback mechanisms when the external library fails
 
 ```typescript
-connectedCallback() {
-  super.connectedCallback();
-  // Set up event listeners
-  this._handler = (e) => { /* handler logic */ };
-  window.addEventListener('some-event', this._handler);
-}
-
-disconnectedCallback() {
-  super.disconnectedCallback();
-  // Clean up event listeners
-  window.removeEventListener('some-event', this._handler);
-  this._handler = null;
+// In my-app.ts or a dedicated initialization module
+constructor() {
+  super();
+  
+  // Subscribe to wallet connection events from external library
+  modal.subscribeAccount(({ isConnected, address }) => {
+    if (address) {
+      // Update internal state
+      setUserAddress(address as `0x${string}`);
+      
+      // Fetch additional data based on the connection
+      this.fetchUserProfile(address);
+    }
+  });
+  
+  // Subscribe to network changes
+  modal.subscribeNetwork(({ caipNetwork }) => {
+    setNetworkName(caipNetwork?.name || null);
+  });
 }
 ```
 
-### 5. Debugging State Flow
+### 6. Backward Compatibility Strategies
 
-For debugging state flow issues, we found these techniques helpful:
+When migrating from an old state management approach to a new one:
 
-1. **Temporary logging in lifecycle methods:**
-   ```typescript
-   updated(changedProperties) {
-     console.log('Component updated:', {
-       props: Array.from(changedProperties.keys()),
-       stateValue: this.someState?.value,
-       localValue: this._localValue
-     });
-   }
-   ```
+**Best practices:**
+- Support both old and new approaches during the transition period
+- Create components that can work with either approach
+- Provide clear migration paths for developers
+- Use feature flags to toggle between implementations for testing
 
-2. **State flow visualization:**
-   - Add temporary UI elements showing current state values
-   - Use browser devtools to inspect component properties
-   - Add debug classes that change based on state for visual inspection
+```typescript
+// In a component that supports both approaches
+export class ProfileComponent extends LitElement {
+  // Legacy connection context
+  @property({ attribute: false })
+  connection: Connection;
+  
+  // New user state context
+  @consume({ context: userContext, subscribe: true })
+  userState?: UserState;
+  
+  // Toggle for testing
+  @property({ type: Boolean })
+  useNewImplementation = false;
+  
+  private get isConnected(): boolean {
+    // Check both implementations
+    return this.useNewImplementation
+      ? !!this.userState?.isConnected
+      : !!this.connection?.connected;
+  }
+  
+  async handleSubmit() {
+    if (!this.isConnected) {
+      // Handle connection using appropriate method
+      if (this.useNewImplementation && this.userState?.connect) {
+        await this.userState.connect();
+      } else {
+        await this.legacyConnect();
+      }
+    }
+    
+    // Rest of the method...
+  }
+}
+```
 
 ## Conclusion
 
-These lessons learned from our work on the related-ideas component have informed our overall state management approach. By combining centralized state with event-based communication and local state backups, we've created a robust pattern that handles the complexities of our application while maintaining good performance and developer experience.
+Our implementation of the user state module has reinforced the value of a hybrid approach to state management in Lit applications. By combining centralized state (via signals and context) with event-based communication, we've created a robust system that can handle the complexities of user authentication, profile management, and wallet connections.
 
-As we continue implementing state management across the application, we'll refine these patterns and update this document with new insights.
+The key takeaway is that no single approach is perfect for all scenarios. By understanding the strengths and weaknesses of different state management patterns, we can choose the right tool for each specific requirement, resulting in a more resilient and maintainable application.

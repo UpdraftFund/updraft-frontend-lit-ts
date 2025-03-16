@@ -1,42 +1,58 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { provide } from '@lit/context';
-import { Router } from '@lit-labs/router';
 import { Task } from '@lit/task';
-import { getBalance } from '@wagmi/core';
-import { formatUnits, fromHex } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
-
-// Import both themes but only one will be activated based on user preference
+import { Router } from '@lit-labs/router';
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import '@shoelace-style/shoelace/dist/themes/dark.css';
-import '@styles/reset.css';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@styles/global.css';
 import '@styles/theme.css';
 
 import { modal, config } from '@/web3';
+import urqlClient from '@/urql-client';
+import { fromHex } from 'viem';
+import makeBlockie from 'ethereum-blockies-base64';
+
+// Import user state context
+import {
+  userContext,
+  getUserState,
+  setUserAddress,
+  setUserProfile,
+  setNetworkName,
+} from '@/state/user-state';
 
 import {
   user,
   connectionContext,
   balanceContext,
+  updraftSettings as updraftSettingsContext,
   RequestBalanceRefresh,
-  updraftSettings,
 } from '@/context';
 import { Connection, Balances, UpdraftSettings } from '@/types';
 import { PageLayout } from '@/types/layout';
 
-import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft.ts';
 
 // Import idea state
-import { ideaContext, getIdeaState, resetState as resetIdeaState } from '@/state/idea-state';
+import {
+  ideaContext,
+  getIdeaState,
+  resetState as resetIdeaState,
+} from '@/state/idea-state';
 
 import '@components/layout/top-bar';
 import '@/components/shared/search-bar';
 import '@components/layout/left-side-bar';
 import '@components/layout/right-side-bar';
+
+// Import our new user-profile component
+import '@/components/shared/user-profile';
 
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
@@ -291,12 +307,19 @@ export class MyApp extends LitElement {
     connected: false,
   };
   @provide({ context: balanceContext }) balances: Balances = {};
-  @provide({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
+  @provide({ context: updraftSettingsContext })
+  updraftSettings!: UpdraftSettings;
 
   // Provide idea state context
   @provide({ context: ideaContext })
   get ideaState() {
     return getIdeaState();
+  }
+
+  // Provide user state context
+  @provide({ context: userContext })
+  get userState() {
+    return getUserState();
   }
 
   @state() expanded = false;
@@ -309,7 +332,12 @@ export class MyApp extends LitElement {
 
     modal.subscribeAccount(async ({ isConnected, address }) => {
       if (address) {
+        // Update legacy connection context for backward compatibility
         this.connection.address = address as `0x${string}`;
+
+        // Update new user state
+        setUserAddress(address as `0x${string}`);
+
         const result = await urqlClient.query(ProfileDocument, {
           userId: address,
         });
@@ -319,12 +347,23 @@ export class MyApp extends LitElement {
             fromHex(result.data.user.profile as `0x${string}`, 'string')
           );
         }
+
+        // Update legacy user state
         user.set({
           name: profile.name || profile.team || address,
           image: profile.image,
           avatar: profile.image || makeBlockie(address),
         });
+
+        // Update new user state
+        setUserProfile({
+          name: profile.name || profile.team || address,
+          image: profile.image,
+          avatar: profile.image || makeBlockie(address),
+        });
       }
+
+      // Update legacy connection context
       this.connection = {
         ...this.connection,
         connected: isConnected,
@@ -332,12 +371,17 @@ export class MyApp extends LitElement {
     });
 
     modal.subscribeNetwork(({ caipNetwork }) => {
+      // Update legacy connection context
       this.connection = {
         ...this.connection,
         network: {
           name: caipNetwork!.name,
         },
       };
+
+      // Update new user state
+      setNetworkName(caipNetwork?.name || null);
+
       this.getUpdraftSettings.run().then(() => this.refreshBalances.run());
     });
 
@@ -430,7 +474,7 @@ export class MyApp extends LitElement {
         showRightSidebar: true,
         showHotIdeas: false,
         type: 'standard',
-        title: 'Idea'
+        title: 'Idea',
       };
     } else if (path === '/discover') {
       return {
@@ -438,7 +482,7 @@ export class MyApp extends LitElement {
         showRightSidebar: true,
         showHotIdeas: false,
         type: 'standard',
-        title: 'Discover'
+        title: 'Discover',
       };
     } else if (path === '/') {
       return {
@@ -446,7 +490,7 @@ export class MyApp extends LitElement {
         showRightSidebar: true,
         showHotIdeas: true,
         type: 'standard',
-        title: 'Home'
+        title: 'Home',
       };
     } else if (path.startsWith('/profile/')) {
       return {
@@ -454,7 +498,7 @@ export class MyApp extends LitElement {
         showRightSidebar: false,
         showHotIdeas: false,
         type: 'profile',
-        title: 'Profile'
+        title: 'Profile',
       };
     } else if (path === '/edit-profile') {
       return {
@@ -462,7 +506,7 @@ export class MyApp extends LitElement {
         showRightSidebar: false,
         showHotIdeas: false,
         type: 'profile',
-        title: 'Edit Profile'
+        title: 'Edit Profile',
       };
     } else if (path.startsWith('/submit-profile-and-create-')) {
       return {
@@ -470,7 +514,7 @@ export class MyApp extends LitElement {
         showRightSidebar: false,
         showHotIdeas: false,
         type: 'profile',
-        title: 'Create Profile'
+        title: 'Create Profile',
       };
     } else if (path === '/create-idea') {
       return {
@@ -478,7 +522,7 @@ export class MyApp extends LitElement {
         showRightSidebar: true,
         showHotIdeas: false,
         type: 'creation',
-        title: 'Create Idea'
+        title: 'Create Idea',
       };
     } else if (path.startsWith('/create-solution/')) {
       return {
@@ -486,17 +530,17 @@ export class MyApp extends LitElement {
         showRightSidebar: true,
         showHotIdeas: false,
         type: 'creation',
-        title: 'Create Solution'
+        title: 'Create Solution',
       };
     }
-    
+
     // Default layout
     return {
       showLeftSidebar: true,
       showRightSidebar: false,
       showHotIdeas: false,
       type: 'standard',
-      title: 'Updraft'
+      title: 'Updraft',
     };
   }
 

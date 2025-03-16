@@ -21,23 +21,54 @@ import { signal, computed } from '@lit-labs/signals';
 import { createContext } from '@lit/context';
 import type { Address } from 'viem';
 
-// State signals
+// Import user profile type
+import type { CurrentUser } from '@/types/current-user';
+
+// Import the wallet connection modal
+import { modal } from '@/web3';
+
+// Define custom events for user state changes
+export const USER_CONNECTED_EVENT = 'user-connected';
+export const USER_DISCONNECTED_EVENT = 'user-disconnected';
+export const USER_PROFILE_UPDATED_EVENT = 'user-profile-updated';
+export const NETWORK_CHANGED_EVENT = 'network-changed';
+
+// Initialize signals with default values
 export const userAddress = signal<Address | null>(null);
-export const userProfile = signal<UserProfile | null>(null);
+export const userProfile = signal<CurrentUser | null>(null);
 export const isConnecting = signal<boolean>(false);
 export const connectionError = signal<string | null>(null);
+export const networkName = signal<string | null>(null);
 
 // Computed values
 export const isConnected = computed(() => userAddress.get() !== null);
 export const hasProfile = computed(() => userProfile.get() !== null);
 
+// Helper function to dispatch custom events
+const dispatchUserEvent = (eventName: string, detail?: any) => {
+  const event = new CustomEvent(eventName, {
+    bubbles: true,
+    composed: true,
+    detail,
+  });
+  document.dispatchEvent(event);
+};
+
 // State operations
 export const setUserAddress = (address: Address | null): void => {
   userAddress.set(address);
+  if (address) {
+    dispatchUserEvent(USER_CONNECTED_EVENT, { address });
+  } else {
+    dispatchUserEvent(USER_DISCONNECTED_EVENT);
+  }
 };
 
-export const setUserProfile = (profile: UserProfile | null): void => {
+export const setUserProfile = (profile: CurrentUser | null): void => {
   userProfile.set(profile);
+  if (profile) {
+    dispatchUserEvent(USER_PROFILE_UPDATED_EVENT, { profile });
+  }
 };
 
 export const setIsConnecting = (connecting: boolean): void => {
@@ -48,23 +79,65 @@ export const setConnectionError = (error: string | null): void => {
   connectionError.set(error);
 };
 
+export const setNetworkName = (name: string | null): void => {
+  networkName.set(name);
+  if (name) {
+    dispatchUserEvent(NETWORK_CHANGED_EVENT, { networkName: name });
+  }
+};
+
 export const resetState = (): void => {
   userAddress.set(null);
   userProfile.set(null);
   isConnecting.set(false);
   connectionError.set(null);
+  networkName.set(null);
+  dispatchUserEvent(USER_DISCONNECTED_EVENT);
+};
+
+// Connect wallet function
+export const connectWallet = async (): Promise<void> => {
+  try {
+    setIsConnecting(true);
+    setConnectionError(null);
+    
+    // Open the wallet connection modal
+    await modal.open({ view: 'Connect' });
+    
+    // The modal will automatically close on successful connection
+    // because the AppKit handles this internally
+  } catch (err) {
+    setConnectionError(err instanceof Error ? err.message : 'Unknown error');
+  } finally {
+    setIsConnecting(false);
+  }
+};
+
+// Disconnect wallet function
+export const disconnectWallet = async (): Promise<void> => {
+  try {
+    // Disconnect the wallet using the modal
+    await modal.disconnect();
+    resetState();
+  } catch (err) {
+    console.error('Error disconnecting wallet:', err);
+  }
 };
 
 // Define interface for the context
 export interface UserState {
   address: Address | null;
-  profile: UserProfile | null;
+  profile: CurrentUser | null;
   isConnected: boolean;
   isConnecting: boolean;
   hasProfile: boolean;
+  networkName: string | null;
   connectionError: string | null;
+  connect: () => Promise<void>;
+  disconnect: () => Promise<void>;
   setAddress: (address: Address | null) => void;
-  setProfile: (profile: UserProfile | null) => void;
+  setProfile: (profile: CurrentUser | null) => void;
+  setNetworkName: (name: string | null) => void;
   setIsConnecting: (connecting: boolean) => void;
   setConnectionError: (error: string | null) => void;
   reset: () => void;
@@ -80,9 +153,13 @@ export const getUserState = (): UserState => ({
   isConnected: isConnected.get(),
   isConnecting: isConnecting.get(),
   hasProfile: hasProfile.get(),
+  networkName: networkName.get(),
   connectionError: connectionError.get(),
+  connect: connectWallet,
+  disconnect: disconnectWallet,
   setAddress: setUserAddress,
   setProfile: setUserProfile,
+  setNetworkName: setNetworkName,
   setIsConnecting: setIsConnecting,
   setConnectionError: setConnectionError,
   reset: resetState,
@@ -95,7 +172,7 @@ Update `my-app.ts` to provide the user state context:
 
 ```typescript
 // In my-app.ts
-import { userContext, getUserState, resetState as resetUserState } from '@/state/user-state';
+import { userContext, getUserState, setUserAddress, setUserProfile, setNetworkName } from '@/state/user-state';
 
 // Add to class
 @provide({ context: userContext })
@@ -103,110 +180,138 @@ get userState() {
   return getUserState();
 }
 
-// Update route handling to reset state when needed
-handleNavigation() {
-  // Reset user state when navigating away from profile pages if needed
-  // ...
+// Initialize user state from wallet connection
+constructor() {
+  super();
+  
+  // Subscribe to wallet connection events
+  modal.subscribeAccount(async ({ isConnected, address }) => {
+    if (address) {
+      // Update user state with address
+      setUserAddress(address as `0x${string}`);
+      
+      // Fetch and update profile
+      const result = await urqlClient.query(ProfileDocument, {
+        userId: address,
+      });
+      if (result.data?.user?.profile) {
+        const profile = JSON.parse(
+          fromHex(result.data.user.profile as `0x${string}`, 'string')
+        );
+        
+        // Update user state with profile
+        setUserProfile({
+          name: profile.name || profile.team || address,
+          image: profile.image,
+          avatar: profile.image || makeBlockie(address),
+        });
+      }
+    }
+  });
+  
+  // Subscribe to network changes
+  modal.subscribeNetwork(({ caipNetwork }) => {
+    // Update user state with network name
+    setNetworkName(caipNetwork?.name || null);
+  });
 }
 ```
 
-### 3. Wallet Connection Integration
+### 3. User Profile Component Implementation
 
-Update the wallet connection component to use the user state:
-
-```typescript
-// In wallet-connection.ts
-import { consume } from '@lit/context';
-import { userContext, UserState } from '@/state/user-state';
-
-@customElement('wallet-connection')
-export class WalletConnection extends LitElement {
-  @consume({ context: userContext, subscribe: true })
-  userState!: UserState;
-  
-  // Connect wallet method
-  async connectWallet() {
-    try {
-      this.userState.setIsConnecting(true);
-      this.userState.setConnectionError(null);
-      
-      // Existing wallet connection logic
-      const address = await connectWithWagmi();
-      
-      // Update state
-      this.userState.setAddress(address);
-      
-      // Fetch profile if available
-      await this.fetchUserProfile(address);
-    } catch (err) {
-      this.userState.setConnectionError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      this.userState.setIsConnecting(false);
-    }
-  }
-  
-  // Fetch user profile
-  async fetchUserProfile(address: Address) {
-    try {
-      const result = await urqlClient.query(UserProfileDocument, { address });
-      if (result.data?.user) {
-        this.userState.setProfile(result.data.user);
-      }
-    } catch (err) {
-      console.error('Error fetching user profile:', err);
-    }
-  }
-  
-  // Render method
-  render() {
-    return html`
-      ${this.userState.isConnected
-        ? html`<div>Connected: ${this.userState.address}</div>`
-        : html`<sl-button @click=${this.connectWallet} ?loading=${this.userState.isConnecting}>
-            Connect Wallet
-          </sl-button>`
-      }
-      ${this.userState.connectionError
-        ? html`<div class="error">${this.userState.connectionError}</div>`
-        : nothing
-      }
-    `;
-  }
-}
-```
-
-### 4. Profile Component Updates
-
-Update profile-related components to consume from the user state:
+Create a new user-profile component that consumes the user state:
 
 ```typescript
-// In profile-page.ts
+// In user-profile.ts
+import { LitElement, html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
-import { userContext, UserState } from '@/state/user-state';
+import { when } from 'lit/directives/when.js';
+import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-@customElement('profile-page')
-export class ProfilePage extends LitElement {
+import { modal } from '@/web3';
+
+import {
+  userContext,
+  UserState,
+  USER_CONNECTED_EVENT,
+  USER_DISCONNECTED_EVENT,
+  USER_PROFILE_UPDATED_EVENT,
+  NETWORK_CHANGED_EVENT
+} from '@/state/user-state';
+
+@customElement('user-profile')
+export class UserProfile extends LitElement {
+  static styles = css`
+    /* Styles omitted for brevity */
+  `;
+
+  // Consume the user state context
   @consume({ context: userContext, subscribe: true })
   userState!: UserState;
-  
-  // Render method
+
+  // Event handlers for user state changes
+  private userConnectedHandler = () => this.requestUpdate();
+  private userDisconnectedHandler = () => this.requestUpdate();
+  private userProfileUpdatedHandler = () => this.requestUpdate();
+  private networkChangedHandler = () => this.requestUpdate();
+
+  connectedCallback() {
+    super.connectedCallback();
+    
+    // Add event listeners for user state changes
+    document.addEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler);
+    document.addEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler);
+    document.addEventListener(USER_PROFILE_UPDATED_EVENT, this.userProfileUpdatedHandler);
+    document.addEventListener(NETWORK_CHANGED_EVENT, this.networkChangedHandler);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    
+    // Remove event listeners to prevent memory leaks
+    document.removeEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler);
+    document.removeEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler);
+    document.removeEventListener(USER_PROFILE_UPDATED_EVENT, this.userProfileUpdatedHandler);
+    document.removeEventListener(NETWORK_CHANGED_EVENT, this.networkChangedHandler);
+  }
+
+  /**
+   * Handle connect button click
+   */
+  private async handleConnect() {
+    try {
+      // Use the connect method from the user state
+      if (this.userState) {
+        await this.userState.connect();
+      } else {
+        // Fallback to direct modal open if userState is not available
+        await modal.open({ view: 'Connect' });
+      }
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+    }
+  }
+
+  /**
+   * Formats an address for display
+   */
+  private formatAddress(address: string): string {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
+
   render() {
-    if (!this.userState.isConnected) {
-      return html`<div>Please connect your wallet to view your profile</div>`;
+    // Check if the user state is available
+    if (!this.userState) {
+      // Instead of just showing "Please connect your wallet", show a button to connect
+      return html`
+        <sl-button @click=${this.handleConnect}>Connect Wallet</sl-button>
+      `;
     }
     
-    if (!this.userState.hasProfile) {
-      return html`<div>Loading profile...</div>`;
-    }
-    
-    return html`
-      <div>
-        <h1>Profile</h1>
-        <div>Address: ${this.userState.address}</div>
-        <div>Username: ${this.userState.profile?.username}</div>
-        <!-- Other profile information -->
-      </div>
-    `;
+    // Rest of the render method remains the same
   }
 }
 ```

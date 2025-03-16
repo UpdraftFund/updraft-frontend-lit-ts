@@ -38,6 +38,7 @@ import {
   defaultFunderReward,
   connectionContext,
 } from '@/context';
+import { userContext, UserState } from '@/state/user-state';
 import { UpdraftSettings, Connection } from '@/types';
 import { modal } from '@/web3';
 
@@ -138,11 +139,9 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
 
-  @consume({ context: updraftSettings, subscribe: true })
-  updraftSettings!: UpdraftSettings;
-
-  @consume({ context: connectionContext, subscribe: true })
-  connection!: Connection;
+  @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
+  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+  @consume({ context: userContext, subscribe: true }) userState!: UserState;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('transaction-watcher.submit', true)
@@ -221,6 +220,21 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         avatar: this.uploadedImage || user.get().avatar,
       });
       try {
+        // Add debugging to check connection state
+        console.log('Connection state:', {
+          userStateConnected: this.userState?.isConnected,
+          legacyConnected: this.connection?.connected,
+          userStateAddress: this.userState?.address,
+          legacyAddress: this.connection?.address
+        });
+        
+        // Check if user is connected using either the new or legacy connection
+        if (!this.userState?.isConnected && !this.connection?.connected) {
+          console.log('User not connected, opening modal');
+          await this.openConnectModal();
+          return;
+        }
+        
         if (this.entity === 'idea') {
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
@@ -237,16 +251,19 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             this.shareDialog.topic = ideaData.name as string;
           }
         } else {
+          console.log('Submitting profile update');
           this.submitTransaction.hash = await updraft.write('updateProfile', [
             toHex(JSON.stringify(profileData)),
           ]);
         }
       } catch (e: any) {
-        if (e.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        } else if (e.message.includes('exceeds balance')) {
+        console.error('Profile update error:', e);
+        if (e.message?.startsWith('connection') || e.message?.includes('getChainId')) {
+          // Open the wallet connection modal if there's a connection issue
+          await this.openConnectModal();
+        } else if (e.message?.includes('exceeds balance')) {
           this.updDialog.show();
-        } else if (e.message.includes('exceeds allowance')) {
+        } else if (e.message?.includes('exceeds allowance')) {
           this.approveTransaction.reset();
           this.approveDialog.show();
           const upd = new Upd(this.updraftSettings.updAddress);
@@ -255,7 +272,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             parseUnits('1', 29),
           ]);
         }
-        console.error(e);
       }
     }
   }
@@ -273,6 +289,20 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         }
         this.shareDialog.show();
       }
+    }
+  }
+
+  private async openConnectModal() {
+    try {
+      console.log('Opening connect modal');
+      // Use the user state connect method if available, otherwise fall back to direct modal open
+      if (this.userState?.connect) {
+        await this.userState.connect();
+      } else {
+        await modal.open({ view: 'Connect' });
+      }
+    } catch (error) {
+      console.error('Error opening connect modal:', error);
     }
   }
 

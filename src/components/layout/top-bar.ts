@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import '@layout/profile-area';
+import '@/components/shared/user-profile';
 
 import updraftLogo from '@assets/images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -17,6 +18,9 @@ export class TopBar extends LitElement {
     reflect: true,
   })
   hideCreateIdeaButton = false;
+
+  @property({ type: Boolean })
+  useNewUserProfile = false;
 
   static styles = css`
     :host {
@@ -53,6 +57,18 @@ export class TopBar extends LitElement {
       color: var(--main-foreground);
       font-size: 1.5rem;
     }
+    .toggle-button {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .toggle-button:hover {
+      background-color: var(--accent-emphasis);
+    }
   `;
 
   private toggleLeftSidebar() {
@@ -61,6 +77,10 @@ export class TopBar extends LitElement {
       composed: true,
     });
     this.dispatchEvent(event);
+  }
+
+  private toggleProfileComponent() {
+    this.useNewUserProfile = !this.useNewUserProfile;
   }
 
   render() {
@@ -75,7 +95,14 @@ export class TopBar extends LitElement {
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
       <slot></slot>
-      <profile-area .hideCreateIdeaButton=${this.hideCreateIdeaButton}></profile-area>
+      <button class="toggle-button" @click=${this.toggleProfileComponent}>
+        ${this.useNewUserProfile ? 'Use Legacy Profile' : 'Use New Profile'}
+      </button>
+      ${this.useNewUserProfile
+        ? html`<user-profile></user-profile>`
+        : html`<profile-area
+            .hideCreateIdeaButton=${this.hideCreateIdeaButton}
+          ></profile-area>`}
     `;
   }
 }

@@ -22,12 +22,18 @@ export class Contract {
   }
 
   async write(functionName: string, args?: unknown[]) {
-    const { request } = await simulateContract(config, {
-      abi: this.abi,
-      address: this.address,
-      functionName,
-      args,
-    });
-    return writeContract(config, request);
+    try {
+      const { request } = await simulateContract(config, {
+        abi: this.abi,
+        address: this.address,
+        functionName,
+        args,
+      });
+      return writeContract(config, request);
+    } catch (error) {
+      console.error('Contract write error:', error);
+      // Re-throw the error with more context to help debugging
+      throw error;
+    }
   }
 }
