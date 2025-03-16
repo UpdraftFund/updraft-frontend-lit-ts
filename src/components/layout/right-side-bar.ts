@@ -26,6 +26,10 @@ import urqlClient from '@/urql-client.ts';
 import { TopTagsDocument, IdeasBySharesDocument } from '@gql';
 import { Idea, TagCount } from '@/types';
 
+// Import idea page specific components
+import '@/components/page-specific/idea/top-supporters';
+import '@/components/page-specific/idea/related-ideas';
+
 @customElement('right-side-bar')
 export class RightSideBar extends LitElement {
   static styles = css`
@@ -167,6 +171,9 @@ export class RightSideBar extends LitElement {
   })
   hiddenByLeftSidebar = false;
 
+  @property() ideaId?: string;
+  @property() tags?: string[];
+
   @state() private hotIdeas?: Idea[];
   @state() private topTags?: TagCount[];
   @state() private editMode = false;
@@ -283,54 +290,62 @@ export class RightSideBar extends LitElement {
               </div>
             `
           : ''}
-        <div class="section watched-tags">
-          <h2>Watched Tags</h2>
-          <sl-icon-button
-            class="edit-button"
-            name="pencil-square"
-            src=${pencilSquare}
-            label="Edit watched tags"
-            @click=${this.handleEditClick}
-          ></sl-icon-button>
-          <div class="tags-container ${this.editMode ? 'edit-mode' : ''}">
-            ${tags.length
-              ? tags.map(
-                  (tag) => html`
-                    <div class="tag-with-remove">
-                      <a class="tag" href="/discover?search=[${tag}]">${tag}</a>
-                      ${this.editMode
-                        ? html`
-                            <sl-icon-button
-                              class="remove-button"
-                              src=${xCircle}
-                              label="Remove tag"
-                              @click=${() => unwatchTag(tag)}
-                            ></sl-icon-button>
-                          `
-                        : ''}
-                    </div>
-                  `
-                )
-              : html`<div>No watched tags yet</div>`}
-          </div>
-        </div>
 
-        ${this.topTags
+        ${this.ideaId
           ? html`
-              <div class="section">
-                <h2>Popular Tags</h2>
-                <div class="tags-container">
-                  ${this.topTags.map(
-                    (tag) => html`
-                      <a class="tag" href="/discover?search=[${tag.id}]">
-                        ${tag.id}
-                      </a>
-                    `
-                  )}
+              <top-supporters .ideaId=${this.ideaId}></top-supporters>
+              <related-ideas .ideaId=${this.ideaId} .tags=${this.tags || []}></related-ideas>
+            `
+          : html`
+              <div class="section watched-tags">
+                <h2>Watched Tags</h2>
+                <sl-icon-button
+                  class="edit-button"
+                  name="pencil-square"
+                  src=${pencilSquare}
+                  label="Edit watched tags"
+                  @click=${this.handleEditClick}
+                ></sl-icon-button>
+                <div class="tags-container ${this.editMode ? 'edit-mode' : ''}">
+                  ${tags.length
+                    ? tags.map(
+                        (tag) => html`
+                          <div class="tag-with-remove">
+                            <a class="tag" href="/discover?search=[${tag}]">${tag}</a>
+                            ${this.editMode
+                              ? html`
+                                  <sl-icon-button
+                                    class="remove-button"
+                                    src=${xCircle}
+                                    label="Remove tag"
+                                    @click=${() => unwatchTag(tag)}
+                                  ></sl-icon-button>
+                                `
+                              : ''}
+                          </div>
+                        `
+                      )
+                    : html`<div>No watched tags yet</div>`}
                 </div>
               </div>
-            `
-          : ''}
+
+              ${this.topTags
+                ? html`
+                    <div class="section">
+                      <h2>Popular Tags</h2>
+                      <div class="tags-container">
+                        ${this.topTags.map(
+                          (tag) => html`
+                            <a class="tag" href="/discover?search=[${tag.id}]">
+                              ${tag.id}
+                            </a>
+                          `
+                        )}
+                      </div>
+                    </div>
+                  `
+                : ''}
+            `}
       </div>
     `;
   }

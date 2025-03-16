@@ -214,6 +214,8 @@ export class MyApp extends LitElement {
     {
       path: '/idea/:id',
       enter: async () => {
+        // Reset ideaTags when navigating to a new idea
+        this.ideaTags = [];
         await import('./pages/idea-page');
         return true;
       },
@@ -278,6 +280,8 @@ export class MyApp extends LitElement {
 
   @state() expanded = false;
 
+  @state() private ideaTags: string[] = [];
+
   constructor() {
     super();
 
@@ -321,6 +325,12 @@ export class MyApp extends LitElement {
     this.addEventListener(RequestBalanceRefresh.type, () =>
       this.refreshBalances.run()
     );
+
+    // Listen for the idea-tags-loaded event
+    this.addEventListener('idea-tags-loaded', (e: Event) => {
+      const customEvent = e as CustomEvent<{ tags: string[] }>;
+      this.ideaTags = customEvent.detail.tags;
+    });
   }
 
   private setupTheme() {
@@ -399,6 +409,14 @@ export class MyApp extends LitElement {
     return 'not-found';
   }
 
+  getIdeaIdFromUrl(): string | undefined {
+    const path = window.location.pathname;
+    if (path.startsWith('/idea/')) {
+      return path.split('/idea/')[1];
+    }
+    return undefined;
+  }
+
   getPageLayout(): PageLayout {
     // Define different layouts based on the current route
     const currentLocation = this.getCurrentLocation();
@@ -464,6 +482,8 @@ export class MyApp extends LitElement {
             ? html`<right-side-bar
                 ?show-hot-ideas=${layout.showHotIdeas}
                 ?expanded=${this.expanded}
+                .ideaId=${location === 'idea' ? this.getIdeaIdFromUrl() : undefined}
+                .tags=${location === 'idea' ? this.ideaTags : undefined}
               ></right-side-bar>`
             : ''}
         </div>

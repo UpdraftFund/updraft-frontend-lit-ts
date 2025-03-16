@@ -196,6 +196,15 @@ export class IdeaPage extends LitElement {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
       if (ideaData) {
+        // Dispatch a custom event with the idea tags when the idea data is loaded
+        if (ideaData.tags) {
+          const event = new CustomEvent('idea-tags-loaded', {
+            detail: { tags: ideaData.tags },
+            bubbles: true,
+            composed: true
+          });
+          this.dispatchEvent(event);
+        }
         return ideaData as Idea;
       } else {
         throw new Error(`Idea ${ideaId} not found.`);
