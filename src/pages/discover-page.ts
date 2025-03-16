@@ -109,6 +109,19 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         .map((tag) => tag.replace(/[\[\]]/g, ''))
         .slice(0, 5); // only get up to 5 matches
       const defaultTag = this.tags[0] || '';
+      
+      // If no tags are found, return a default structure with empty strings
+      if (this.tags.length === 0) {
+        return {
+          tag1: '',
+          tag2: '',
+          tag3: '',
+          tag4: '',
+          tag5: '',
+          detailed: true,
+        };
+      }
+      
       return {
         tag1: this.tags[0] || defaultTag,
         tag2: this.tags[1] || defaultTag,

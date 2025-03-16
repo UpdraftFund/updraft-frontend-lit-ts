@@ -200,13 +200,15 @@ export class IdeaPage extends LitElement {
         // Update the idea state with the tags and dispatch an event
         if (ideaData.tags) {
           setTags(ideaData.tags);
-          
+
           // Dispatch a custom event that related-ideas can listen for
-          this.dispatchEvent(new CustomEvent('idea-tags-loaded', {
-            detail: { tags: ideaData.tags },
-            bubbles: true,
-            composed: true
-          }));
+          this.dispatchEvent(
+            new CustomEvent('idea-tags-loaded', {
+              detail: { tags: ideaData.tags },
+              bubbles: true,
+              composed: true,
+            })
+          );
         }
         return ideaData as Idea;
       } else {
@@ -327,14 +329,14 @@ export class IdeaPage extends LitElement {
                   (${date.fromNow()})</span
                 >
                 <div class="reward-fire">
-                  ${pctFunderReward
+                  <!-- ${pctFunderReward
                     ? html`
                         <span class="reward">
                           <sl-icon src=${gift}></sl-icon>
                           ${pctFunderReward.toFixed(0)}% funder reward
                         </span>
                       `
-                    : ''}
+                    : ''} -->
                   <span class="fire"
                     ><sl-icon src=${fire}></sl-icon>${interest}</span
                   >

@@ -13,6 +13,7 @@ import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@styles/global.css';
 import '@styles/theme.css';
+import '@styles/reset.css';
 
 import { modal, config } from '@/web3';
 import urqlClient from '@/urql-client';

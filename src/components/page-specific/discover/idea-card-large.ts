@@ -11,6 +11,7 @@ import gift from '@icons/gift.svg';
 import fire from '@icons/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 import { defaultFunderReward, updraftSettings } from '@/context.ts';
 import { Idea, UpdraftSettings } from '@/types';
@@ -21,41 +22,79 @@ import { shortNum } from '@/utils.ts';
 export class IdeaCardLarge extends LitElement {
   static styles = css`
     :host {
-      display: inline-block;
+      display: block;
       color: var(--main-foreground);
     }
 
-    h3 {
-      margin-bottom: 0rem;
+    .idea-card {
+      background-color: var(--sl-color-neutral-0);
+      border-radius: 0.5rem;
+      box-shadow: var(--sl-shadow-x-small);
+      overflow: hidden;
+      padding: 1.5rem;
+      width: 100%;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .idea a {
+    .idea-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--sl-shadow-small);
+    }
+
+    .idea-header {
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 0.25rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    a {
       color: inherit;
       text-decoration: none;
     }
 
-    .idea a:hover {
+    a:hover {
       color: var(--accent);
+    }
+
+    .byline {
+      color: var(--sl-color-neutral-600);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
     }
 
     .info-row {
       display: flex;
+      flex-wrap: wrap;
       gap: 1rem;
       padding: 0;
-      margin: 0;
+      margin: 0 0 1rem 0;
     }
 
     .info-row li {
       list-style: none;
       display: flex;
       align-items: center;
+      gap: 0.25rem;
+      font-size: 0.9rem;
+      color: var(--sl-color-neutral-700);
+    }
+
+    .description {
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
     }
 
     .tags {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin-bottom: 1rem;
+      margin-top: 1rem;
     }
 
     .tag {
@@ -66,6 +105,7 @@ export class IdeaCardLarge extends LitElement {
       font-size: 0.875rem;
       text-decoration: none;
       color: var(--main-foreground);
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     .tag:hover {
@@ -99,12 +139,18 @@ export class IdeaCardLarge extends LitElement {
       fromHex(creator.profile as `0x${string}`, 'string')
     );
     const date = dayjs(startTime * 1000);
+    
     return html`
-      <div class="idea">
-        <a href="/idea/${id}">
-          <h3>${name}</h3>
-        </a>
-        <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
+      <div class="idea-card">
+        <div class="idea-header">
+          <a href="/idea/${id}">
+            <h3>${name}</h3>
+          </a>
+          <div class="byline">
+            <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
+          </div>
+        </div>
+        
         <ul class="info-row">
           <li>
             <sl-icon src=${seedling}></sl-icon>
@@ -126,21 +172,21 @@ export class IdeaCardLarge extends LitElement {
             <span>${interest}</span>
           </li>
         </ul>
-        <a href="/idea/${id}">
-          ${description ? html` <p>${description}</p>` : ''}
-        </a>
+        
+        ${description ? html`<div class="description">${description}</div>` : ''}
+        
+        ${tags && tags.length > 0
+          ? html`
+              <div class="tags">
+                ${tags.map(
+                  (tag) => html`
+                    <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
+                  `
+                )}
+              </div>
+            `
+          : ''}
       </div>
-      ${tags
-        ? html`
-            <div class="tags">
-              ${tags.map(
-                (tag) => html`
-                  <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                `
-              )}
-            </div>
-          `
-        : ''}
     `;
   }
 }

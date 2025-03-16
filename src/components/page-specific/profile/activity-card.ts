@@ -176,12 +176,11 @@ export class ActivityCard extends LitElement {
         <div class="description-container">
           <div class="description">${this.getDescription()}</div>
           <sl-button
-              variant="primary"
-              size="small"
-              href="${this.getButtonLink()}"
-          >${this.getFundButtonText()}
-          </sl-button
-          >
+            variant="primary"
+            size="small"
+            href="${this.getButtonLink()}"
+            >${this.getFundButtonText()}
+          </sl-button>
         </div>
 
         <sl-divider></sl-divider>
@@ -244,7 +243,7 @@ export class ActivityCard extends LitElement {
       const solutionId = this.getSolutionId();
       if (solutionId) {
         return html`<a href="/solution/${solutionId}" class="name-link"
-        >${name}</a
+          >${name}</a
         >`;
       }
     }
@@ -296,14 +295,13 @@ export class ActivityCard extends LitElement {
       return html`
         <div class="details-bar">
           <span class="emoji-badge"
-          ><span class="emoji">🌱</span> Created
+            ><span class="emoji">🌱</span> Created
             ${this.formatCreatedTime()}</span
           >
-          <span class="emoji-badge"
-          ><span class="emoji">💰</span> ${this.activity.funderReward ||
-          '10'}%
+          <!-- <span class="emoji-badge"
+          ><span class="emoji">💰</span> ${this.activity.funderReward || '10'}%
             Funder Reward</span
-          >
+          > -->
           <span class="emoji-badge"><span class="emoji">🔥</span> 78.8k</span>
         </div>
       `;
@@ -316,7 +314,7 @@ export class ActivityCard extends LitElement {
         <div class="details-bar">
           <div class="goal">
             <sl-progress-bar
-                value="${Math.min(progress, 100)}"
+              value="${Math.min(progress, 100)}"
             ></sl-progress-bar>
             <div class="goal-text">
               ${this.activity.tokensContributed || '0'} out of
@@ -324,25 +322,23 @@ export class ActivityCard extends LitElement {
             </div>
           </div>
           ${isCompleted
-              ? html`
-                <sl-badge variant="success" pill
+            ? html` <sl-badge variant="success" pill
                 ><span class="emoji">🥳</span> Funded
-                </sl-badge
-                >`
-              : ''}
+              </sl-badge>`
+            : ''}
           <span class="emoji-badge"
-          ><span class="emoji">⏰</span> ${this.formatDeadline()}</span
+            ><span class="emoji">⏰</span> ${this.formatDeadline()}</span
           >
           <span class="emoji-badge"
-          ><span class="emoji">🌱</span> ${this.formatCreatedTime()}</span
+            ><span class="emoji">🌱</span> ${this.formatCreatedTime()}</span
           >
           <span class="emoji-badge"
-          ><span class="emoji">💎</span> ${this.activity.stake ||
-          '200K'}</span
+            ><span class="emoji">💎</span> ${this.activity.stake ||
+            '200K'}</span
           >
           <span class="emoji-badge"
-          ><span class="emoji">💰</span> ${this.activity.funderReward ||
-          '10'}%</span
+            ><span class="emoji">💰</span> ${this.activity.funderReward ||
+            '10'}%</span
           >
         </div>
       `;
@@ -373,7 +369,6 @@ export class ActivityCard extends LitElement {
   }
 
   private formatDeadline() {
-
     const deadline = dayjs(this.activity.deadline || 0 * 1000);
     const now = dayjs();
 

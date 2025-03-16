@@ -35,7 +35,7 @@ import {
   USER_CONNECTED_EVENT,
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
-  NETWORK_CHANGED_EVENT
+  NETWORK_CHANGED_EVENT,
 } from '@/state/user-state';
 
 import { Connection, Balances } from '@/types';
@@ -161,30 +161,56 @@ export class ProfileArea extends SignalWatcher(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    
+
     // Add event listeners for user state changes
-    document.addEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler as EventListener);
-    document.addEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler as EventListener);
-    document.addEventListener(USER_PROFILE_UPDATED_EVENT, this.userProfileUpdatedHandler as EventListener);
-    document.addEventListener(NETWORK_CHANGED_EVENT, this.networkChangedHandler as EventListener);
+    document.addEventListener(
+      USER_CONNECTED_EVENT,
+      this.userConnectedHandler as EventListener
+    );
+    document.addEventListener(
+      USER_DISCONNECTED_EVENT,
+      this.userDisconnectedHandler as EventListener
+    );
+    document.addEventListener(
+      USER_PROFILE_UPDATED_EVENT,
+      this.userProfileUpdatedHandler as EventListener
+    );
+    document.addEventListener(
+      NETWORK_CHANGED_EVENT,
+      this.networkChangedHandler as EventListener
+    );
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    
+
     // Remove event listeners when component is disconnected
-    document.removeEventListener(USER_CONNECTED_EVENT, this.userConnectedHandler as EventListener);
-    document.removeEventListener(USER_DISCONNECTED_EVENT, this.userDisconnectedHandler as EventListener);
-    document.removeEventListener(USER_PROFILE_UPDATED_EVENT, this.userProfileUpdatedHandler as EventListener);
-    document.removeEventListener(NETWORK_CHANGED_EVENT, this.networkChangedHandler as EventListener);
+    document.removeEventListener(
+      USER_CONNECTED_EVENT,
+      this.userConnectedHandler as EventListener
+    );
+    document.removeEventListener(
+      USER_DISCONNECTED_EVENT,
+      this.userDisconnectedHandler as EventListener
+    );
+    document.removeEventListener(
+      USER_PROFILE_UPDATED_EVENT,
+      this.userProfileUpdatedHandler as EventListener
+    );
+    document.removeEventListener(
+      NETWORK_CHANGED_EVENT,
+      this.networkChangedHandler as EventListener
+    );
   }
 
   render() {
     // Use the new user state for rendering, but fallback to legacy connection for backward compatibility
     // Add null checks to prevent errors when userState is not yet initialized
-    const isConnected = this.userState?.isConnected || this.connection.connected;
+    const isConnected =
+      this.userState?.isConnected || this.connection.connected;
     const address = this.userState?.address || this.connection.address;
-    const networkName = this.userState?.networkName || this.connection.network?.name;
+    const networkName =
+      this.userState?.networkName || this.connection.network?.name;
     const avatar = this.userState?.profile?.avatar || user.get().avatar;
     const name = this.userState?.profile?.name || user.get().name;
 
@@ -193,8 +219,16 @@ export class ProfileArea extends SignalWatcher(LitElement) {
           ${this.hideCreateIdeaButton
             ? null
             : html`
-                <a href="/create-idea" title="Create Idea">
-                  <sl-icon src="${plusLgIcon}"></sl-icon>
+                <a
+                  href="/create-idea"
+                  title="Create Idea"
+                  style="display: flex; align-items: center; flex-direction: column; text-align: center;"
+                >
+                  <sl-icon
+                    style="width: 2rem; height: 2rem;"
+                    src="${plusLgIcon}"
+                  ></sl-icon>
+                  <span>Create Idea</span>
                 </a>
               `}
           <sl-dropdown
