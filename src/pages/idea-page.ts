@@ -22,12 +22,12 @@ import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 // TODO: Remove
 // import '@/components/page-specific/idea/side-bar';
-import '@components/upd-dialog';
-import '@components/share-dialog';
-import '@components/transaction-watcher';
-import { UpdDialog } from '@components/upd-dialog.ts';
-import { ShareDialog } from '@components/share-dialog.ts';
-import { TransactionWatcher } from '@components/transaction-watcher.ts';
+import '@/components/shared/upd-dialog';
+import '@/components/shared/share-dialog';
+import '@/components/shared/transaction-watcher';
+import { UpdDialog } from '@/components/shared/upd-dialog';
+import { ShareDialog } from '@/components/shared/share-dialog';
+import { TransactionWatcher } from '@/components/shared/transaction-watcher';
 
 import urqlClient from '@/urql-client';
 import { IdeaDocument } from '@gql';

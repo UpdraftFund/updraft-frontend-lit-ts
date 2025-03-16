@@ -10,8 +10,8 @@ import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
-import '@components/upd-dialog';
-import { UpdDialog } from '@components/upd-dialog';
+import '@/components/shared/upd-dialog';
+import { UpdDialog } from '@/components/shared/upd-dialog';
 
 import plusLgIcon from '@icons/plus-lg.svg';
 import layersIcon from '@icons/layers.svg';

@@ -9,9 +9,9 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput } from '@shoelace-style/shoelace';
 
 import '@layout/page-heading';
-import '@components/label-with-hint';
-import '@components/upd-dialog';
-import { UpdDialog } from '@components/upd-dialog';
+import '@/components/shared/label-with-hint';
+import '@/components/shared/upd-dialog';
+import { UpdDialog } from '@/components/shared/upd-dialog';
 import { SaveableForm } from '@components/base/saveable-form';
 
 import {

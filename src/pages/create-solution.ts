@@ -19,9 +19,9 @@ import { consume } from '@lit/context';
 import {
   TransactionSuccess,
   TransactionWatcher,
-} from '@/components/transaction-watcher';
-import { ShareDialog } from '@/components/share-dialog';
-import { UpdDialog } from '@components/upd-dialog';
+} from '@/components/shared/transaction-watcher';
+import { ShareDialog } from '@/components/shared/share-dialog';
+import { UpdDialog } from '@/components/shared/upd-dialog';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -32,10 +32,10 @@ import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
 import { dialogStyles } from '@/styles/dialog-styles';
 
 import '@layout/page-heading';
-import '@components/transaction-watcher';
-import '@components/upd-dialog';
-import '@components/share-dialog';
-import '@components/label-with-hint';
+import '@/components/shared/transaction-watcher';
+import '@/components/shared/upd-dialog';
+import '@/components/shared/share-dialog';
+import '@/components/shared/label-with-hint';
 
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@/contracts/updraft';

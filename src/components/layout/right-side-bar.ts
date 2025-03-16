@@ -14,7 +14,7 @@ import { css, html, LitElement } from 'lit';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@components/idea-card-small';
+import '@/components/shared/idea-card-small';
 
 import fire from '@icons/fire.svg';
 import xCircle from '@icons/x-circle.svg';
@@ -129,9 +129,11 @@ export class RightSideBar extends LitElement {
     /* Responsive behavior */
     @media (max-width: 1024px) and (min-width: 769px) {
       :host {
-        transition: opacity 0.3s ease, visibility 0.3s ease;
+        transition:
+          opacity 0.3s ease,
+          visibility 0.3s ease;
       }
-      
+
       :host([hidden-by-left-sidebar]) {
         opacity: 0;
         visibility: hidden;
@@ -158,7 +160,11 @@ export class RightSideBar extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'show-hot-ideas' })
   showHotIdeas = false;
 
-  @property({ type: Boolean, reflect: true, attribute: 'hidden-by-left-sidebar' })
+  @property({
+    type: Boolean,
+    reflect: true,
+    attribute: 'hidden-by-left-sidebar',
+  })
   hiddenByLeftSidebar = false;
 
   @state() private hotIdeas?: Idea[];
@@ -180,7 +186,10 @@ export class RightSideBar extends LitElement {
     this.subscribe();
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
     document.addEventListener('click', this.handleClickOutsideEditArea);
-    document.addEventListener('expanded', this.handleLeftSidebarExpanded as EventListener);
+    document.addEventListener(
+      'expanded',
+      this.handleLeftSidebarExpanded as EventListener
+    );
   }
 
   disconnectedCallback() {
@@ -192,7 +201,10 @@ export class RightSideBar extends LitElement {
       this.handleVisibilityChange
     );
     document.removeEventListener('click', this.handleClickOutsideEditArea);
-    document.removeEventListener('expanded', this.handleLeftSidebarExpanded as EventListener);
+    document.removeEventListener(
+      'expanded',
+      this.handleLeftSidebarExpanded as EventListener
+    );
   }
 
   private subscribe() {

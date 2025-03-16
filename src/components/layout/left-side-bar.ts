@@ -10,8 +10,8 @@ import chevronRight from '@icons/chevron-right.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@components/section-heading';
-import '@components/idea-card-small';
+import '@/components/shared/section-heading';
+import '@/components/shared/idea-card-small';
 
 import {
   connectionContext,
@@ -291,7 +291,7 @@ export class LeftSideBar extends LitElement {
     );
     document.addEventListener('toggle-drawer', this.handleDrawerToggle);
     window.addEventListener('popstate', this.handleNavigation);
-    
+
     // Add click event listeners to all links for mobile drawer
     this.addEventListener('click', this.handleLinkClick);
 
@@ -372,12 +372,12 @@ export class LeftSideBar extends LitElement {
     if (window.innerWidth <= 1024 && window.innerWidth > 768) {
       this.expanded = !this.expanded;
       this.requestUpdate();
-      
+
       // Dispatch an event to notify right sidebar about the state change
       const event = new CustomEvent('expanded', {
         bubbles: true,
         composed: true,
-        detail: this.expanded
+        detail: this.expanded,
       });
       this.dispatchEvent(event);
 
@@ -441,10 +441,12 @@ export class LeftSideBar extends LitElement {
     return html`
       <div class="toggle-button" @click=${this.handleToggle}>
         <sl-icon
-          src=${(window.innerWidth <= 1024 && window.innerWidth > 768 && !this.expanded) || 
-               (window.innerWidth > 1024 && this.collapsed)
-               ? chevronRight
-               : chevronLeft}
+          src=${(window.innerWidth <= 1024 &&
+            window.innerWidth > 768 &&
+            !this.expanded) ||
+          (window.innerWidth > 1024 && this.collapsed)
+            ? chevronRight
+            : chevronLeft}
           label="Toggle sidebar"
         ></sl-icon>
       </div>

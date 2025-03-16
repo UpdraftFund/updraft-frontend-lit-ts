@@ -31,7 +31,7 @@ import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft.ts';
 
 import '@components/layout/top-bar';
-import '@components/search-bar';
+import '@/components/shared/search-bar';
 import '@components/layout/left-side-bar';
 import '@components/layout/right-side-bar';
 

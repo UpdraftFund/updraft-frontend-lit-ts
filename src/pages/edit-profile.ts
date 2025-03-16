@@ -14,15 +14,15 @@ import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@layout/page-heading';
 import '@/components/page-specific/profile/activity-feed';
-import '@components/transaction-watcher';
-import '@components/upd-dialog';
-import '@components/share-dialog';
+import '@/components/shared/transaction-watcher';
+import '@/components/shared/upd-dialog';
+import '@/components/shared/share-dialog';
 import {
   TransactionWatcher,
   TransactionSuccess,
-} from '@components/transaction-watcher';
-import { UpdDialog } from '@components/upd-dialog';
-import { ShareDialog } from '@components/share-dialog';
+} from '@/components/shared/transaction-watcher';
+import { UpdDialog } from '@/components/shared/upd-dialog';
+import { ShareDialog } from '@/components/shared/share-dialog';
 import { SlDialog } from '@shoelace-style/shoelace';
 import {
   SaveableForm,
