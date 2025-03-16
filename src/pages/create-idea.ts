@@ -99,7 +99,7 @@ export class CreateIdea extends SaveableForm {
     const input = e.target as SlInput;
     const value = input.value;
     const spacePositions =
-      [...value.matchAll(/\s/g)].map((match) => match.index) || [];
+      [...value.matchAll(/\s/g)].map((match) => match.index as number) || [];
 
     if (spacePositions.length > 4) {
       const fifthSpaceIndex = spacePositions[4];

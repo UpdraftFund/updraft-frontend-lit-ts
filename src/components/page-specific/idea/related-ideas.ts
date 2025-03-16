@@ -71,32 +71,42 @@ export class RelatedIdeas extends LitElement {
         this._runTaskWithTags(tags);
       }
     };
-    
-    window.addEventListener('idea-tags-loaded', this._tagsLoadedHandler as EventListener);
+
+    window.addEventListener(
+      'idea-tags-loaded',
+      this._tagsLoadedHandler as EventListener
+    );
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     // Clean up event listener
     if (this._tagsLoadedHandler) {
-      window.removeEventListener('idea-tags-loaded', this._tagsLoadedHandler as EventListener);
+      window.removeEventListener(
+        'idea-tags-loaded',
+        this._tagsLoadedHandler as EventListener
+      );
       this._tagsLoadedHandler = null;
     }
   }
 
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
-    
+
     // Get tags from state or local backup
     const stateTags = this.ideaState?.tags || [];
     const effectiveTags = stateTags.length > 0 ? stateTags : this._localTags;
-    
+
     // Check if we have an ideaId and tags, and if the task hasn't run yet or relevant props changed
     const hasTags = effectiveTags.length > 0;
-    const shouldRunTask = this.ideaId && hasTags && 
-      (!this._hasRunTask || changedProperties.has('ideaId') || 
-       changedProperties.has('ideaState') || changedProperties.has('_localTags'));
-    
+    const shouldRunTask =
+      this.ideaId &&
+      hasTags &&
+      (!this._hasRunTask ||
+        changedProperties.has('ideaId') ||
+        changedProperties.has('ideaState') ||
+        changedProperties.has('_localTags'));
+
     if (shouldRunTask) {
       this._hasRunTask = true;
       this._runTaskWithTags(effectiveTags);
@@ -116,10 +126,13 @@ export class RelatedIdeas extends LitElement {
     this,
     async () => {
       // Use the current task tags or fall back to state/local tags
-      const tags = this._currentTaskTags.length > 0 ? 
-        this._currentTaskTags : 
-        (this.ideaState?.tags?.length > 0 ? this.ideaState.tags : this._localTags);
-      
+      const tags =
+        this._currentTaskTags.length > 0
+          ? this._currentTaskTags
+          : this.ideaState?.tags?.length > 0
+            ? this.ideaState.tags
+            : this._localTags;
+
       if (!this.ideaId || !tags || tags.length === 0) {
         return { ideas: [], debug: { reason: 'No ideaId or tags available' } };
       }
@@ -128,41 +141,45 @@ export class RelatedIdeas extends LitElement {
         // Query for each tag and combine results
         const allResults = await Promise.all(
           tags.map((tag: string) => {
-            return urqlClient.query(RelatedIdeasDocument, {
-              ideaId: this.ideaId,
-              tag,
-            }).toPromise();
+            return urqlClient
+              .query(RelatedIdeasDocument, {
+                ideaId: this.ideaId,
+                tag,
+              })
+              .toPromise();
           })
         );
 
         // Combine and deduplicate results
-        const allIdeas = allResults.flatMap(result => result.data?.ideas || []);
-        
+        const allIdeas = allResults.flatMap(
+          (result) => result.data?.ideas || []
+        );
+
         // Deduplicate by idea ID
         const uniqueIdeas = Array.from(
-          new Map(allIdeas.map(idea => [idea.id, idea])).values()
+          new Map(allIdeas.map((idea) => [idea.id, idea])).values()
         );
-        
+
         // Sort by shares (descending)
         uniqueIdeas.sort((a, b) => Number(b.shares) - Number(a.shares));
-        
+
         // Take only the top 3
         const topIdeas = uniqueIdeas.slice(0, 3);
-        
-        return { 
+
+        return {
           ideas: topIdeas,
-          debug: { 
+          debug: {
             queriedTags: tags,
             resultsCount: allIdeas.length,
             uniqueCount: uniqueIdeas.length,
-            finalCount: topIdeas.length
-          } 
+            finalCount: topIdeas.length,
+          },
         };
       } catch (err) {
         console.error('Error fetching related ideas:', err);
-        return { 
+        return {
           ideas: [],
-          debug: { error: err instanceof Error ? err.message : String(err) }
+          debug: { error: err instanceof Error ? err.message : String(err) },
         };
       }
     },
@@ -179,7 +196,7 @@ export class RelatedIdeas extends LitElement {
           pending: () => html`<sl-spinner></sl-spinner>`,
           complete: (data) => {
             const ideas = data?.ideas || [];
-            
+
             return html`
               ${ideas.length > 0
                 ? html`
@@ -191,17 +208,12 @@ export class RelatedIdeas extends LitElement {
                       )}
                     </div>
                   `
-                : html`
-                    <div class="no-ideas">No related ideas found</div>
-                  `
-              }
+                : html` <div class="no-ideas">No related ideas found</div> `}
             `;
           },
           error: (err: unknown) => {
             console.error('Error rendering related ideas:', err);
-            return html`
-              <div class="error">Error loading related ideas</div>
-            `;
+            return html` <div class="error">Error loading related ideas</div> `;
           },
         })}
       </div>
