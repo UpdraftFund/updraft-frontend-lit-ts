@@ -27,3 +27,6 @@ dist-ssr
 /.graphclient/
 
 tmp.txt
+
+# Windsurf rules
+.windsurfrules
