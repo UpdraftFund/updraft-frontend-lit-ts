@@ -4,14 +4,20 @@
  ***/
 
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state, queryAll, query } from 'lit/decorators.js';
+import {
+  customElement,
+  property,
+  state,
+  queryAll,
+  query,
+} from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@/components/shared/idea-card-small';
 import '@/components/page-specific/idea/related-ideas';
 import '@/components/page-specific/idea/top-supporters';
-import '@/components/page-specific/idea/hot-ideas';
+import '@/components/shared/hot-ideas';
 
 import urqlClient from '@/urql-client';
 import { TopTagsDocument } from '@gql';
@@ -157,7 +163,11 @@ export class RightSideBar extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'show-hot-ideas' })
   showHotIdeas = false;
 
-  @property({ type: Boolean, reflect: true, attribute: 'hidden-by-left-sidebar' })
+  @property({
+    type: Boolean,
+    reflect: true,
+    attribute: 'hidden-by-left-sidebar',
+  })
   hiddenByLeftSidebar = false;
 
   @property() ideaId?: string;
@@ -201,7 +211,7 @@ export class RightSideBar extends LitElement {
 
   updated(changedProperties: Map<string, any>) {
     super.updated(changedProperties);
-    
+
     // Re-subscribe when showHotIdeas changes
     if (changedProperties.has('showHotIdeas')) {
       this.subscribe();
@@ -258,10 +268,7 @@ export class RightSideBar extends LitElement {
 
     return html`
       <div class="sidebar-content">
-        ${this.showHotIdeas
-          ? html`<hot-ideas></hot-ideas>`
-          : ''}
-
+        ${this.showHotIdeas ? html`<hot-ideas></hot-ideas>` : ''}
         ${this.ideaId
           ? html`
               <top-supporters .ideaId=${this.ideaId}></top-supporters>
@@ -282,7 +289,9 @@ export class RightSideBar extends LitElement {
                     ? tags.map(
                         (tag) => html`
                           <div class="tag-with-remove">
-                            <a class="tag" href="/discover?search=[${tag}]">${tag}</a>
+                            <a class="tag" href="/discover?search=[${tag}]"
+                              >${tag}</a
+                            >
                             ${this.editMode
                               ? html`
                                   <sl-icon-button

@@ -197,9 +197,16 @@ export class IdeaPage extends LitElement {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
       if (ideaData) {
-        // Update the idea state with the tags instead of dispatching a custom event
+        // Update the idea state with the tags and dispatch an event
         if (ideaData.tags) {
           setTags(ideaData.tags);
+          
+          // Dispatch a custom event that related-ideas can listen for
+          this.dispatchEvent(new CustomEvent('idea-tags-loaded', {
+            detail: { tags: ideaData.tags },
+            bubbles: true,
+            composed: true
+          }));
         }
         return ideaData as Idea;
       } else {
