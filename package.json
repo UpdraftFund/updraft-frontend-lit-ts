@@ -35,10 +35,12 @@
   "devDependencies": {
     "@graphprotocol/client-cli": "^3.0.7",
     "@open-wc/testing": "^4.0.0",
+    "@rollup/plugin-alias": "^5.1.1",
     "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
     "@web/dev-server-esbuild": "^1.0.4",
+    "@web/dev-server-rollup": "^0.6.4",
     "@web/test-runner": "^0.20.0",
     "@web/test-runner-playwright": "^0.11.0",
     "eslint": "^9.22.0",
@@ -47,6 +49,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
     "prettier": "^3.5.3",
+    "sinon": "^19.0.2",
     "typescript": "~5.7.3",
     "vite": "^6.1.0"
   },

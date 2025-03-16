@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
@@ -50,21 +50,18 @@ export class HotIdeas extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    // Start the task to fetch hot ideas
     this._getHotIdeasTask.run();
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.unsubHotIdeas?.();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    this.unsubHotIdeas?.();
   }
 
   private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubHotIdeas?.();
-    } else {
+    if (document.visibilityState === 'visible') {
       this._getHotIdeasTask.run();
     }
   };
@@ -72,13 +69,30 @@ export class HotIdeas extends LitElement {
   private _getHotIdeasTask = new Task(
     this,
     async () => {
-      const result = await urqlClient.query(IdeasBySharesDocument, {});
-      const ideas = result.data?.ideas as Idea[];
-      setHotIdeas(ideas);
-      return ideas;
+      const result = await urqlClient.query(IdeasBySharesDocument, {}).toPromise();
+      if (result.data?.ideas) {
+        const ideas = result.data.ideas as Idea[];
+        setHotIdeas(ideas);
+        return ideas;
+      }
+      return [] as Idea[];
     },
     () => []
   );
+
+  private renderHotIdeas(ideas: Idea[]) {
+    return html`
+      <div class="hot-ideas-list">
+        ${ideas.map(
+          (idea) => html`
+            <idea-card-small
+              .idea=${idea}
+            ></idea-card-small>
+          `
+        )}
+      </div>
+    `;
+  }
 
   render() {
     return html`
@@ -89,43 +103,33 @@ export class HotIdeas extends LitElement {
         </h2>
         ${this._getHotIdeasTask.render({
           pending: () => {
-            // If we already have hot ideas in the state, show them while loading
+            // If we have hot ideas in the state, show them while loading
             if (this.ideaState?.hotIdeas?.length) {
-              return this.renderHotIdeas(this.ideaState.hotIdeas);
+              return html`
+                <sl-spinner></sl-spinner>
+                ${this.renderHotIdeas(this.ideaState.hotIdeas as Idea[])}
+              `;
             }
             return html`<sl-spinner></sl-spinner>`;
           },
           complete: (ideas) => {
-            // If the task completed but we have no ideas, check the state
-            if (!ideas || ideas.length === 0) {
-              if (this.ideaState?.hotIdeas?.length) {
-                return this.renderHotIdeas(this.ideaState.hotIdeas);
-              }
+            if (ideas.length === 0) {
               return html`<div class="no-ideas">No hot ideas found</div>`;
             }
             return this.renderHotIdeas(ideas);
           },
-          error: (err: unknown) => {
+          error: (err) => {
             console.error('Error rendering hot ideas:', err);
             // If we have hot ideas in the state, show them despite the error
             if (this.ideaState?.hotIdeas?.length) {
-              return this.renderHotIdeas(this.ideaState.hotIdeas);
+              return html`
+                <div class="error">Error loading hot ideas</div>
+                ${this.renderHotIdeas(this.ideaState.hotIdeas as Idea[])}
+              `;
             }
             return html`<div class="error">Error loading hot ideas</div>`;
           },
         })}
-      </div>
-    `;
-  }
-
-  private renderHotIdeas(ideas: Idea[]) {
-    return html`
-      <div class="hot-ideas-list">
-        ${ideas.map(
-          (idea: Idea) => html`
-            <idea-card-small .idea=${idea}></idea-card-small>
-          `
-        )}
       </div>
     `;
   }
