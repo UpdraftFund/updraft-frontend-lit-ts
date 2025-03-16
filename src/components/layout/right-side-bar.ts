@@ -214,6 +214,15 @@ export class RightSideBar extends LitElement {
     );
   }
 
+  updated(changedProperties: Map<string, any>) {
+    super.updated(changedProperties);
+    
+    // Re-subscribe when showHotIdeas changes
+    if (changedProperties.has('showHotIdeas')) {
+      this.subscribe();
+    }
+  }
+
   private subscribe() {
     this.unsubHotIdeas?.();
     this.unsubTopTags?.();
