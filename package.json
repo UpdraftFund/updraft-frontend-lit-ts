@@ -9,7 +9,9 @@
     "build": "yarn build-graph && yarn tsc && vite build",
     "preview": "vite preview",
     "build-graph": "graphclient build",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "web-test-runner",
+    "test:watch": "web-test-runner --watch"
   },
   "dependencies": {
     "@graphprotocol/client-urql": "^2.0.7",
@@ -32,8 +34,13 @@
   },
   "devDependencies": {
     "@graphprotocol/client-cli": "^3.0.7",
+    "@open-wc/testing": "^4.0.0",
+    "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
+    "@web/dev-server-esbuild": "^1.0.4",
+    "@web/test-runner": "^0.20.0",
+    "@web/test-runner-playwright": "^0.11.0",
     "eslint": "^9.22.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",

@@ -30,6 +30,9 @@ import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft.ts';
 
+// Import idea state
+import { ideaContext, getIdeaState, resetState as resetIdeaState } from '@/state/idea-state';
+
 import '@components/layout/top-bar';
 import '@/components/shared/search-bar';
 import '@components/layout/left-side-bar';
@@ -190,6 +193,8 @@ export class MyApp extends LitElement {
     {
       path: '/',
       enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
         await import('./pages/home-page');
         return true;
       },
@@ -198,6 +203,8 @@ export class MyApp extends LitElement {
     {
       path: '/discover',
       enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
         await import('./pages/discover-page');
         return true;
       },
@@ -214,8 +221,8 @@ export class MyApp extends LitElement {
     {
       path: '/idea/:id',
       enter: async () => {
-        // Reset ideaTags when navigating to a new idea
-        this.ideaTags = [];
+        // Reset idea state when navigating to a new idea
+        resetIdeaState();
         await import('./pages/idea-page');
         return true;
       },
@@ -224,6 +231,8 @@ export class MyApp extends LitElement {
     {
       path: '/create-idea',
       enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
         await import('./pages/create-idea');
         return true;
       },
@@ -232,6 +241,8 @@ export class MyApp extends LitElement {
     {
       path: '/edit-profile',
       enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
         await import('./pages/edit-profile');
         return true;
       },
@@ -240,6 +251,8 @@ export class MyApp extends LitElement {
     {
       path: '/submit-profile-and-create-:entity',
       enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
         await import('./pages/edit-profile');
         return true;
       },
@@ -249,6 +262,8 @@ export class MyApp extends LitElement {
     {
       path: '/profile/:address',
       enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
         await import('./pages/view-profile');
         return true;
       },
@@ -258,6 +273,8 @@ export class MyApp extends LitElement {
     {
       path: '/create-solution/:ideaId',
       enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
         await import('./pages/create-solution');
         return true;
       },
@@ -276,7 +293,11 @@ export class MyApp extends LitElement {
   @provide({ context: balanceContext }) balances: Balances = {};
   @provide({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
 
-  private search: string = '';
+  // Provide idea state context
+  @provide({ context: ideaContext })
+  get ideaState() {
+    return getIdeaState();
+  }
 
   @state() expanded = false;
 
@@ -349,10 +370,11 @@ export class MyApp extends LitElement {
     window
       .matchMedia('(prefers-color-scheme: dark)')
       .addEventListener('change', (e) => {
-        document.documentElement.classList.toggle('sl-theme-dark', e.matches);
-        document.documentElement.classList.toggle('sl-theme-light', !e.matches);
-        this.classList.toggle('sl-theme-dark', e.matches);
-        this.classList.toggle('sl-theme-light', !e.matches);
+        const isDark = e.matches;
+        document.documentElement.classList.toggle('sl-theme-dark', isDark);
+        document.documentElement.classList.toggle('sl-theme-light', !isDark);
+        this.classList.toggle('sl-theme-dark', isDark);
+        this.classList.toggle('sl-theme-light', !isDark);
       });
   }
 
@@ -398,94 +420,109 @@ export class MyApp extends LitElement {
     autoRun: false,
   });
 
-  getCurrentLocation(): string {
-    const path = window.location.pathname;
-    if (path === '/') return 'home';
-    if (path.startsWith('/discover')) return 'discover';
-    if (path.startsWith('/idea/')) return 'idea';
-    if (path.startsWith('/solution/')) return 'solution';
-    if (path.startsWith('/profile')) return 'profile';
-    if (path.startsWith('/create')) return 'create';
-    return 'not-found';
+  private getCurrentLocation(): string {
+    return window.location.pathname;
   }
 
-  getIdeaIdFromUrl(): string | undefined {
-    const path = window.location.pathname;
+  private getIdeaIdFromUrl(): string | undefined {
+    const match = this.getCurrentLocation().match(/\/idea\/([^/]+)/);
+    return match ? match[1] : undefined;
+  }
+
+  private getPageLayout(): PageLayout {
+    const path = this.getCurrentLocation();
+
     if (path.startsWith('/idea/')) {
-      return path.split('/idea/')[1];
-    }
-    return undefined;
-  }
-
-  getPageLayout(): PageLayout {
-    // Define different layouts based on the current route
-    const currentLocation = this.getCurrentLocation();
-
-    if (currentLocation === 'home') {
+      return {
+        showLeftSidebar: true,
+        showRightSidebar: true,
+        showHotIdeas: false,
+        type: 'standard',
+        title: 'Idea'
+      };
+    } else if (path === '/discover') {
+      return {
+        showLeftSidebar: true,
+        showRightSidebar: true,
+        showHotIdeas: false,
+        type: 'standard',
+        title: 'Discover'
+      };
+    } else if (path === '/') {
       return {
         showLeftSidebar: true,
         showRightSidebar: true,
         showHotIdeas: true,
+        type: 'standard',
+        title: 'Home'
       };
-    } else if (currentLocation === 'discover') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: false,
-      };
-    } else if (currentLocation === 'idea' || currentLocation === 'solution') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: false,
-      };
-    } else if (currentLocation === 'profile') {
+    } else if (path.startsWith('/profile/')) {
       return {
         showLeftSidebar: true,
         showRightSidebar: false,
         showHotIdeas: false,
+        type: 'profile',
+        title: 'Profile'
       };
-    } else if (currentLocation === 'create') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: false,
-      };
-    } else {
+    } else if (path === '/edit-profile') {
       return {
         showLeftSidebar: true,
         showRightSidebar: false,
         showHotIdeas: false,
+        type: 'profile',
+        title: 'Edit Profile'
+      };
+    } else if (path.startsWith('/submit-profile-and-create-')) {
+      return {
+        showLeftSidebar: true,
+        showRightSidebar: false,
+        showHotIdeas: false,
+        type: 'profile',
+        title: 'Create Profile'
+      };
+    } else if (path === '/create-idea') {
+      return {
+        showLeftSidebar: true,
+        showRightSidebar: true,
+        showHotIdeas: false,
+        type: 'creation',
+        title: 'Create Idea'
+      };
+    } else if (path.startsWith('/create-solution/')) {
+      return {
+        showLeftSidebar: true,
+        showRightSidebar: true,
+        showHotIdeas: false,
+        type: 'creation',
+        title: 'Create Solution'
       };
     }
+    
+    // Default layout
+    return {
+      showLeftSidebar: true,
+      showRightSidebar: false,
+      showHotIdeas: false,
+      type: 'standard',
+      title: 'Updraft'
+    };
   }
 
   render() {
     const layout = this.getPageLayout();
-    const location = this.getCurrentLocation();
-
-    const params = new URLSearchParams(window.location.search);
-    this.search = params.get('search') || '';
+    const ideaId = this.getIdeaIdFromUrl();
 
     return html`
-      <top-bar><search-bar value=${this.search}></search-bar></top-bar>
+      <top-bar></top-bar>
       <div class="app-layout">
-        ${layout.showLeftSidebar
-          ? html`<left-side-bar
-              .location=${location}
-              @expanded=${(e: CustomEvent) => (this.expanded = e.detail)}
-            ></left-side-bar>`
-          : ''}
+        <left-side-bar></left-side-bar>
         <div class="content-wrapper">
-          <div class="main-content">${this.router.outlet()}</div>
-          ${layout.showRightSidebar
-            ? html`<right-side-bar
-                ?show-hot-ideas=${layout.showHotIdeas}
-                ?expanded=${this.expanded}
-                .ideaId=${location === 'idea' ? this.getIdeaIdFromUrl() : undefined}
-                .tags=${location === 'idea' ? this.ideaTags : undefined}
-              ></right-side-bar>`
-            : ''}
+          <main class="main-content">${this.router.outlet()}</main>
+          <right-side-bar
+            .layout=${layout}
+            .ideaId=${ideaId}
+            .ideaTags=${this.ideaTags}
+          ></right-side-bar>
         </div>
       </div>
     `;
