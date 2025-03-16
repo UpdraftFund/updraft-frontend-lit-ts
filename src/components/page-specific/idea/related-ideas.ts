@@ -1,12 +1,15 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Task } from '@lit/task';
+import { consume } from '@lit/context';
 
 import '@/components/shared/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import urqlClient from '@/urql-client';
 import { RelatedIdeasDocument } from '@gql';
+import { ideaContext } from '@/state/idea-state';
+import { IdeaState } from '@/types';
 
 @customElement('related-ideas')
 export class RelatedIdeas extends LitElement {
@@ -36,20 +39,24 @@ export class RelatedIdeas extends LitElement {
   @property({ type: String })
   ideaId = '';
 
-  @property({ type: Array })
-  tags: string[] = [];
+  // Consume the idea state context instead of using a property for tags
+  @consume({ context: ideaContext, subscribe: true })
+  ideaState!: IdeaState;
 
   private _getRelatedIdeasTask = new Task(
     this,
     async () => {
-      if (!this.ideaId || !this.tags || this.tags.length === 0) {
+      // Use ideaId from property and tags from context
+      const tags = this.ideaState.tags;
+      
+      if (!this.ideaId || !tags || tags.length === 0) {
         return { ideas: [] };
       }
 
       try {
         // Query for each tag and combine results
         const allResults = await Promise.all(
-          this.tags.map(tag =>
+          tags.map(tag =>
             urqlClient.query(RelatedIdeasDocument, {
               ideaId: this.ideaId,
               tag,
@@ -77,7 +84,7 @@ export class RelatedIdeas extends LitElement {
         return { ideas: [] };
       }
     },
-    () => [this.ideaId, this.tags]
+    () => [this.ideaId, this.ideaState.tags]
   );
 
   render() {

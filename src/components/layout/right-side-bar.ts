@@ -3,32 +3,25 @@
  * https://www.figma.com/design/lfPeBM41v53XQZLkYRUt5h/Updraft?node-id=920-7089&m=dev
  ***/
 
-import {
-  customElement,
-  state,
-  property,
-  query,
-  queryAll,
-} from 'lit/decorators.js';
-import { css, html, LitElement } from 'lit';
+import { LitElement, html, css } from 'lit';
+import { customElement, property, state, queryAll, query } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@/components/shared/idea-card-small';
+import '@/components/page-specific/idea/related-ideas';
+import '@/components/page-specific/idea/top-supporters';
+import '@/components/page-specific/idea/hot-ideas';
 
-import fire from '@icons/fire.svg';
-import xCircle from '@icons/x-circle.svg';
+import urqlClient from '@/urql-client';
+import { TopTagsDocument } from '@gql';
+import { TagCount } from '@/types';
+import { watchedTags, unwatchTag } from '@/context';
+
 import pencilSquare from '@icons/pencil-square.svg';
-
-import { watchedTags, unwatchTag } from '@/context.ts';
-
-import urqlClient from '@/urql-client.ts';
-import { TopTagsDocument, IdeasBySharesDocument } from '@gql';
-import { Idea, TagCount } from '@/types';
+import xCircle from '@icons/x-circle.svg';
 
 // Import idea page specific components
-import '@/components/page-specific/idea/top-supporters';
-import '@/components/page-specific/idea/related-ideas';
 
 @customElement('right-side-bar')
 export class RightSideBar extends LitElement {
@@ -164,24 +157,17 @@ export class RightSideBar extends LitElement {
   @property({ type: Boolean, reflect: true, attribute: 'show-hot-ideas' })
   showHotIdeas = false;
 
-  @property({
-    type: Boolean,
-    reflect: true,
-    attribute: 'hidden-by-left-sidebar',
-  })
+  @property({ type: Boolean, reflect: true, attribute: 'hidden-by-left-sidebar' })
   hiddenByLeftSidebar = false;
 
   @property() ideaId?: string;
-  @property() tags?: string[];
 
-  @state() private hotIdeas?: Idea[];
   @state() private topTags?: TagCount[];
   @state() private editMode = false;
 
   @queryAll('.watched-tags .tag') watchedTags!: NodeListOf<HTMLElement>;
   @query('.watched-tags') watchedTagsSection!: HTMLElement;
 
-  private unsubHotIdeas?: () => void;
   private unsubTopTags?: () => void;
 
   constructor() {
@@ -201,7 +187,6 @@ export class RightSideBar extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.unsubHotIdeas?.();
     this.unsubTopTags?.();
     document.removeEventListener(
       'visibilitychange',
@@ -224,17 +209,7 @@ export class RightSideBar extends LitElement {
   }
 
   private subscribe() {
-    this.unsubHotIdeas?.();
     this.unsubTopTags?.();
-
-    if (this.showHotIdeas) {
-      const hotIdeasSub = urqlClient
-        .query(IdeasBySharesDocument, {})
-        .subscribe((result) => {
-          this.hotIdeas = result.data?.ideas as Idea[];
-        });
-      this.unsubHotIdeas = hotIdeasSub.unsubscribe;
-    }
 
     const topTagsSub = urqlClient
       .query(TopTagsDocument, {})
@@ -264,7 +239,6 @@ export class RightSideBar extends LitElement {
 
   private handleVisibilityChange = () => {
     if (document.hidden) {
-      this.unsubHotIdeas?.();
       this.unsubTopTags?.();
     } else {
       this.subscribe();
@@ -284,26 +258,14 @@ export class RightSideBar extends LitElement {
 
     return html`
       <div class="sidebar-content">
-        ${this.showHotIdeas && this.hotIdeas
-          ? html`
-              <div class="section hot-ideas">
-                <h2>
-                  <sl-icon src=${fire}></sl-icon>
-                  Hot Ideas
-                </h2>
-                ${this.hotIdeas.map(
-                  (idea) => html`
-                    <idea-card-small .idea=${idea}></idea-card-small>
-                  `
-                )}
-              </div>
-            `
+        ${this.showHotIdeas
+          ? html`<hot-ideas></hot-ideas>`
           : ''}
 
         ${this.ideaId
           ? html`
               <top-supporters .ideaId=${this.ideaId}></top-supporters>
-              <related-ideas .ideaId=${this.ideaId} .tags=${this.tags || []}></related-ideas>
+              <related-ideas .ideaId=${this.ideaId}></related-ideas>
             `
           : html`
               <div class="section watched-tags">

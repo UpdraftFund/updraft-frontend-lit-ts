@@ -6,7 +6,9 @@ import {
   isLoading, 
   setIdeaId, 
   setTags, 
-  resetState 
+  resetState,
+  setHotIdeas,
+  getIdeaState
 } from '../idea-state';
 
 describe('Idea State Module', () => {
@@ -55,6 +57,41 @@ describe('Idea State Module', () => {
       expect(ideaId.get()).to.be.null;
       expect(tags.get()).to.deep.equal([]);
       expect(isLoading.get()).to.be.false;
+    });
+  });
+
+  describe('Hot Ideas', () => {
+    it('should initialize with default values', () => {
+      const state = getIdeaState();
+      expect(state.hotIdeas).to.deep.equal([]);
+    });
+
+    it('should update hotIdeas', () => {
+      const mockIdeas = [
+        { id: '1', title: 'Idea 1', shares: '10' },
+        { id: '2', title: 'Idea 2', shares: '20' }
+      ];
+      setHotIdeas(mockIdeas as any);
+      const state = getIdeaState();
+      expect(state.hotIdeas).to.deep.equal(mockIdeas);
+    });
+
+    it('should reset hotIdeas on resetState', () => {
+      // Set some values
+      setIdeaId('test-idea-id');
+      setTags(['tag1', 'tag2']);
+      setHotIdeas([{ id: '1', title: 'Idea 1', shares: '10' } as any]);
+      
+      // Reset state
+      resetState();
+      
+      // Verify reset
+      const state = getIdeaState();
+      expect(state.ideaId).to.be.null;
+      expect(state.tags).to.deep.equal([]);
+      expect(state.hotIdeas).to.deep.equal([]);
+      expect(state.hasTags).to.be.false;
+      expect(state.isLoading).to.be.false;
     });
   });
 });

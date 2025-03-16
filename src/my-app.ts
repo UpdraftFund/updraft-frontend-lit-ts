@@ -301,8 +301,6 @@ export class MyApp extends LitElement {
 
   @state() expanded = false;
 
-  @state() private ideaTags: string[] = [];
-
   constructor() {
     super();
 
@@ -346,12 +344,6 @@ export class MyApp extends LitElement {
     this.addEventListener(RequestBalanceRefresh.type, () =>
       this.refreshBalances.run()
     );
-
-    // Listen for the idea-tags-loaded event
-    this.addEventListener('idea-tags-loaded', (e: Event) => {
-      const customEvent = e as CustomEvent<{ tags: string[] }>;
-      this.ideaTags = customEvent.detail.tags;
-    });
   }
 
   private setupTheme() {
@@ -521,7 +513,7 @@ export class MyApp extends LitElement {
           <right-side-bar
             .layout=${layout}
             .ideaId=${ideaId}
-            .ideaTags=${this.ideaTags}
+            ?show-hot-ideas=${layout.showHotIdeas}
           ></right-side-bar>
         </div>
       </div>

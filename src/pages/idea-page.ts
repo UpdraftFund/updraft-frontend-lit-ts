@@ -42,6 +42,7 @@ import {
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@/web3.ts';
 import { shortNum } from '@/utils.ts';
+import { setTags } from '@/state/idea-state';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -196,21 +197,16 @@ export class IdeaPage extends LitElement {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
       if (ideaData) {
-        // Dispatch a custom event with the idea tags when the idea data is loaded
+        // Update the idea state with the tags instead of dispatching a custom event
         if (ideaData.tags) {
-          const event = new CustomEvent('idea-tags-loaded', {
-            detail: { tags: ideaData.tags },
-            bubbles: true,
-            composed: true
-          });
-          this.dispatchEvent(event);
+          setTags(ideaData.tags);
         }
         return ideaData as Idea;
       } else {
         throw new Error(`Idea ${ideaId} not found.`);
       }
     },
-    args: () => [this.ideaId] as const,
+    args: () => [this.ideaId],
   });
 
   private handleSupportFocus() {
