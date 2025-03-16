@@ -3,6 +3,8 @@ import { customElement, state } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Task } from '@lit/task';
 import { Router } from '@lit-labs/router';
+import { formatUnits } from 'viem';
+import { getBalance } from '@wagmi/core';
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import '@shoelace-style/shoelace/dist/themes/dark.css';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -375,7 +377,7 @@ export class MyApp extends LitElement {
           team: profile.team,
           about: profile.about,
           news: profile.news,
-          links: profile.links
+          links: profile.links,
         });
 
         // Update new user state with complete profile data
@@ -387,7 +389,7 @@ export class MyApp extends LitElement {
           team: profile.team,
           about: profile.about,
           news: profile.news,
-          links: profile.links
+          links: profile.links,
         });
 
         // Explicitly close the modal when a connection is successful, but only once

@@ -353,15 +353,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           value: link
         }));
       console.log('Initialized links from user profile:', this.links);
-    } else if (user.get().links && Array.isArray(user.get().links)) {
+    } else if (user.get()?.links && Array.isArray(user.get()?.links)) {
       // Fallback to legacy user state if needed
-      this.links = user.get().links
-        .filter(link => link && link.trim() !== '')
-        .map((link, index) => ({
-          name: `link${index + 1}`,
-          value: link
-        }));
-      console.log('Initialized links from legacy user state:', this.links);
+      const userData = user.get();
+      if (userData && userData.links) {
+        this.links = userData.links
+          .filter(link => link && link.trim() !== '')
+          .map((link, index) => ({
+            name: `link${index + 1}`,
+            value: link
+          }));
+        console.log('Initialized links from legacy user state:', this.links);
+      }
     }
     
     // Always ensure we have at least one empty link field
