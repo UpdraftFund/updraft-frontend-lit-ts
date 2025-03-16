@@ -26,7 +26,8 @@ export const isConnected = computed(() => userAddress.get() !== null);
 export const hasProfile = computed(() => userProfile.get() !== null);
 
 // Helper function to dispatch custom events
-const dispatchUserEvent = (eventName: string, detail?: any) => {
+export const dispatchUserEvent = (eventName: string, detail?: any) => {
+  console.log(`Dispatching ${eventName} event with detail:`, detail);
   const event = new CustomEvent(eventName, {
     bubbles: true,
     composed: true,
@@ -37,6 +38,7 @@ const dispatchUserEvent = (eventName: string, detail?: any) => {
 
 // State operations
 export const setUserAddress = (address: Address | null): void => {
+  console.log('setUserAddress called with:', address);
   userAddress.set(address);
   if (address) {
     dispatchUserEvent(USER_CONNECTED_EVENT, { address });
@@ -81,10 +83,10 @@ export const connectWallet = async (): Promise<void> => {
   try {
     setIsConnecting(true);
     setConnectionError(null);
-    
+
     // Open the wallet connection modal
     await modal.open({ view: 'Connect' });
-    
+
     // The modal will automatically close on successful connection
     // because the AppKit handles this internally
   } catch (err) {
@@ -128,20 +130,24 @@ export interface UserState {
 export const userContext = createContext<UserState>('user-state');
 
 // Helper function to get the current state (for context provider)
-export const getUserState = (): UserState => ({
-  address: userAddress.get(),
-  profile: userProfile.get(),
-  isConnected: isConnected.get(),
-  isConnecting: isConnecting.get(),
-  hasProfile: hasProfile.get(),
-  networkName: networkName.get(),
-  connectionError: connectionError.get(),
-  connect: connectWallet,
-  disconnect: disconnectWallet,
-  setAddress: setUserAddress,
-  setProfile: setUserProfile,
-  setNetworkName: setNetworkName,
-  setIsConnecting: setIsConnecting,
-  setConnectionError: setConnectionError,
-  reset: resetState,
-});
+export const getUserState = (): UserState => {
+  const state = {
+    address: userAddress.get(),
+    profile: userProfile.get(),
+    isConnected: isConnected.get(),
+    isConnecting: isConnecting.get(),
+    hasProfile: hasProfile.get(),
+    networkName: networkName.get(),
+    connectionError: connectionError.get(),
+    connect: connectWallet,
+    disconnect: disconnectWallet,
+    setAddress: setUserAddress,
+    setProfile: setUserProfile,
+    setNetworkName,
+    setIsConnecting,
+    setConnectionError,
+    reset: resetState,
+  };
+  console.log('getUserState returning:', state);
+  return state;
+};

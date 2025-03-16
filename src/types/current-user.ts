@@ -2,6 +2,10 @@ export type CurrentUser = {
   name: string;
   image?: string;
   avatar: string;
+  team?: string;
+  about?: string;
+  news?: string;
+  links?: string[];
 };
 
 export type Connection = {

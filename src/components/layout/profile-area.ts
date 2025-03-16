@@ -247,7 +247,14 @@ export class ProfileArea extends SignalWatcher(LitElement) {
       : html`
           <sl-button
             variant="primary"
-            @click=${() => this.userState?.connect()}
+            @click=${() => {
+              if (this.userState?.connect) {
+                this.userState.connect();
+              } else {
+                // Fallback to direct modal open
+                modal.open({ view: 'Connect' });
+              }
+            }}
             ?loading=${this.userState?.isConnecting}
             >Connect Wallet</sl-button
           >

@@ -12,8 +12,9 @@ import { TaskStatus } from '@lit/task';
 import {
   balanceContext,
   RequestBalanceRefresh,
-  updraftSettings,
+  updraftSettings as updraftSettingsContext,
 } from '@/context';
+import { userContext, UserState } from '@/state/user-state';
 import { consume } from '@lit/context';
 
 import {
@@ -60,8 +61,10 @@ export class CreateSolution extends SaveableForm {
 
   @consume({ context: balanceContext, subscribe: true })
   userBalances!: Balances;
-  @consume({ context: updraftSettings, subscribe: true })
+  @consume({ context: updraftSettingsContext, subscribe: true })
   updraftSettings!: UpdraftSettings;
+  @consume({ context: userContext, subscribe: true })
+  userState!: UserState;
 
   @state() private depositError: string | null = null;
   @state() private antiSpamFee?: string;
@@ -236,6 +239,12 @@ export class CreateSolution extends SaveableForm {
   }
 
   private async handleSubmit() {
+    // Check if user is connected before proceeding
+    if (!this.userState?.isConnected) {
+      this.userState?.connect();
+      return;
+    }
+    
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
       try {
         const solution = formToJson('create-solution', solutionSchema);
@@ -249,7 +258,7 @@ export class CreateSolution extends SaveableForm {
             dayjs(solutionForm['deadline']).unix(),
             BigInt(
               (Number(solutionForm['reward']) *
-                this.updraftSettings.percentScale) /
+                Number(this.updraftSettings.percentScale)) /
                 100
             ),
             toHex(JSON.stringify(solution)),
@@ -386,7 +395,7 @@ export class CreateSolution extends SaveableForm {
             </div>
 
             <sl-button variant="primary" @click=${this.handleSubmit}
-              >Submit Solution</sl-button
+              >${this.userState?.isConnected ? 'Submit Solution' : 'Connect Wallet'}</sl-button
             >
           </form>
           <sl-dialog label="Set Allowance">

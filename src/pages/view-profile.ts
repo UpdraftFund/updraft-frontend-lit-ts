@@ -12,6 +12,7 @@ import '@layout/page-heading';
 import '@/components/page-specific/profile/activity-feed';
 
 import { connectionContext } from '@/context';
+import { userContext, UserState } from '@/state/user-state';
 import { Connection } from '@/types';
 
 import urqlClient from '@/urql-client';
@@ -126,6 +127,8 @@ export class ViewProfile extends LitElement {
   @property() address!: string;
   @consume({ context: connectionContext, subscribe: true })
   connection!: Connection;
+  @consume({ context: userContext, subscribe: true })
+  userState!: UserState;
 
   private readonly profile = new Task(this, {
     task: async ([userId]) => {
@@ -140,7 +143,12 @@ export class ViewProfile extends LitElement {
   });
 
   private get profileButton() {
-    if (this.address === this.connection.address) {
+    // Check if the viewed profile belongs to the current user using both legacy and new state
+    const isCurrentUser = 
+      (this.userState?.isConnected && this.address === this.userState.address) || 
+      (this.connection?.connected && this.address === this.connection.address);
+    
+    if (isCurrentUser) {
       return html`
         <sl-button variant="primary" href="/edit-profile"
           >Edit profile</sl-button

@@ -1,0 +1,22 @@
+1. We're using yarn as our package manager
+2. We're using lit for our frontend framework
+3. We're using typescript for our language
+4. We're using Shoelace for our UI components
+5. We're using wagmi for our wallet connection
+6. We're using viem for our blockchain interactions
+7. We're consuming data from The Graph GraphQL API https://github.com/graphprotocol/graph-client#readme
+8. We're using urql for our graphql client, the related queries are in the `src/queries` directory
+9. We're using lit-labs/router for our routing
+10. We're using lit-labs/signals for our signals
+11. We're using lit-labs/task for our tasks
+12. We're using lit-labs/hydrate for our hydration
+13. We're keeping page specific components in the `src/components/page-specific` directory
+14. We're keeping shared components in the `src/components/shared` directory
+15. We're keeping pages in the `src/pages` directory
+16. The app's CSS is in the `src/styles` directory
+17. Our right sidebar has interswappable components which are determined by the route and `getPageLyout` in my-app.ts
+18. The app routes are defined in my-app.ts, with the Idea page for example being rendered at the path '/idea/:id'
+19. We're using web-test-runner for our testing
+20. Use Semantic Commit Messages as per https://www.conventionalcommits.org/en/v1.0.0/ with descriptive list of changes if the amount of changes calls for it
+21. Use `yarn dev` to start the development server
+22. When modifying imports, don't remove existing imports

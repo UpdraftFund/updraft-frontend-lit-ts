@@ -24,6 +24,9 @@ import {
   setUserAddress,
   setUserProfile,
   setNetworkName,
+  USER_CONNECTED_EVENT,
+  USER_DISCONNECTED_EVENT,
+  dispatchUserEvent,
 } from '@/state/user-state';
 
 import {
@@ -255,6 +258,16 @@ export class MyApp extends LitElement {
       render: () => html`<create-idea></create-idea>`,
     },
     {
+      path: '/create-idea-submit',
+      enter: async () => {
+        // Reset idea state when navigating away from idea page
+        resetIdeaState();
+        await import('./pages/create-idea');
+        return true;
+      },
+      render: () => html`<create-idea direct-submit></create-idea>`,
+    },
+    {
       path: '/edit-profile',
       enter: async () => {
         // Reset idea state when navigating away from idea page
@@ -317,9 +330,12 @@ export class MyApp extends LitElement {
   }
 
   // Provide user state context
+  @state() private _userState = getUserState();
+
   @provide({ context: userContext })
   get userState() {
-    return getUserState();
+    console.log('MyApp providing userState:', this._userState);
+    return this._userState;
   }
 
   @state() expanded = false;
@@ -330,7 +346,9 @@ export class MyApp extends LitElement {
     // Set the theme based on user preference
     this.setupTheme();
 
-    modal.subscribeAccount(async ({ isConnected, address }) => {
+    modal.subscribeAccount(async ({ address }) => {
+      console.log('modal.subscribeAccount called with address:', address);
+
       if (address) {
         // Update legacy connection context for backward compatibility
         this.connection.address = address as `0x${string}`;
@@ -341,7 +359,7 @@ export class MyApp extends LitElement {
         const result = await urqlClient.query(ProfileDocument, {
           userId: address,
         });
-        let profile = {} as { name: string; team: string; image: string };
+        let profile = {} as Record<string, any>;
         if (result.data?.user?.profile) {
           profile = JSON.parse(
             fromHex(result.data.user.profile as `0x${string}`, 'string')
@@ -353,21 +371,64 @@ export class MyApp extends LitElement {
           name: profile.name || profile.team || address,
           image: profile.image,
           avatar: profile.image || makeBlockie(address),
+          // Include additional profile data if available
+          team: profile.team,
+          about: profile.about,
+          news: profile.news,
+          links: profile.links
         });
 
-        // Update new user state
+        // Update new user state with complete profile data
         setUserProfile({
           name: profile.name || profile.team || address,
           image: profile.image,
           avatar: profile.image || makeBlockie(address),
+          // Include additional profile data if available
+          team: profile.team,
+          about: profile.about,
+          news: profile.news,
+          links: profile.links
         });
+
+        // Explicitly close the modal when a connection is successful, but only once
+        try {
+          // Only try to close if we're not already closing
+          if (modal.isOpen()) {
+            console.log('Closing modal after successful connection');
+            await modal.close();
+            console.log('Modal closed after successful connection');
+          }
+        } catch (error) {
+          console.error('Error closing modal:', error);
+        }
+      } else {
+        // If disconnected, reset the user state
+        setUserAddress(null);
+        setUserProfile(null);
       }
 
       // Update legacy connection context
       this.connection = {
         ...this.connection,
-        connected: isConnected,
+        connected: !!address,
       };
+
+      // Check if the connection state has changed
+      // We don't need to compare with isConnected.get() since setUserAddress already
+      // dispatches the appropriate events when the address changes
+      if (!address) {
+        // If we're disconnected and the address is null, make sure to dispatch the disconnected event
+        dispatchUserEvent(USER_DISCONNECTED_EVENT);
+      } else {
+        // If we're connected and have an address, make sure to dispatch the connected event
+        dispatchUserEvent(USER_CONNECTED_EVENT, { address });
+      }
+
+      // Update the user state property to ensure context consumers get the updates
+      this._userState = getUserState();
+
+      // Force a re-render of the app to ensure all components get the updated state
+      this.requestUpdate();
     });
 
     modal.subscribeNetwork(({ caipNetwork }) => {
@@ -381,6 +442,9 @@ export class MyApp extends LitElement {
 
       // Update new user state
       setNetworkName(caipNetwork?.name || null);
+
+      // Update the user state property to ensure context consumers get the updates
+      this._userState = getUserState();
 
       this.getUpdraftSettings.run().then(() => this.refreshBalances.run());
     });
@@ -480,7 +544,7 @@ export class MyApp extends LitElement {
       return {
         showLeftSidebar: true,
         showRightSidebar: true,
-        showHotIdeas: false,
+        showHotIdeas: true,
         type: 'standard',
         title: 'Discover',
       };
@@ -517,6 +581,14 @@ export class MyApp extends LitElement {
         title: 'Create Profile',
       };
     } else if (path === '/create-idea') {
+      return {
+        showLeftSidebar: true,
+        showRightSidebar: true,
+        showHotIdeas: false,
+        type: 'creation',
+        title: 'Create Idea',
+      };
+    } else if (path === '/create-idea-submit') {
       return {
         showLeftSidebar: true,
         showRightSidebar: true,

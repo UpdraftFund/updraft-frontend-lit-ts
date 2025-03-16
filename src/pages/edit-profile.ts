@@ -34,11 +34,11 @@ import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
 import {
   user,
-  updraftSettings,
+  updraftSettings as updraftSettingsContext,
   defaultFunderReward,
   connectionContext,
 } from '@/context';
-import { userContext, UserState } from '@/state/user-state';
+import { userContext, UserState, setUserProfile } from '@/state/user-state';
 import { UpdraftSettings, Connection } from '@/types';
 import { modal } from '@/web3';
 
@@ -140,7 +140,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @state() private uploadedImage: string | undefined;
 
   @consume({ context: connectionContext, subscribe: true }) connection!: Connection;
-  @consume({ context: updraftSettings, subscribe: true }) updraftSettings!: UpdraftSettings;
+  @consume({ context: updraftSettingsContext, subscribe: true }) updraftSettings!: UpdraftSettings;
   @consume({ context: userContext, subscribe: true }) userState!: UserState;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
@@ -214,23 +214,27 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       if (this.uploadedImage) {
         profileData.image = this.uploadedImage;
       }
-      user.set({
+      
+      // Update both legacy user state and new user state
+      const updatedProfile = {
         name: profileData.name || profileData.team,
-        image: this.uploadedImage || user.get().image,
-        avatar: this.uploadedImage || user.get().avatar,
-      });
+        image: this.uploadedImage || (this.userState?.profile?.image || user.get().image),
+        avatar: this.uploadedImage || (this.userState?.profile?.avatar || user.get().avatar),
+        team: profileData.team || (this.userState?.profile?.team || user.get().team),
+        about: profileData.about || (this.userState?.profile?.about || user.get().about),
+        news: profileData.news || (this.userState?.profile?.news || user.get().news),
+        links: this.links.map(link => link.value) || (this.userState?.profile?.links || user.get().links),
+      };
+      
+      // Update legacy user state for backward compatibility
+      user.set(updatedProfile);
+      
+      // Update new user state
+      setUserProfile(updatedProfile);
+      
       try {
-        // Add debugging to check connection state
-        console.log('Connection state:', {
-          userStateConnected: this.userState?.isConnected,
-          legacyConnected: this.connection?.connected,
-          userStateAddress: this.userState?.address,
-          legacyAddress: this.connection?.address
-        });
-        
         // Check if user is connected using either the new or legacy connection
         if (!this.userState?.isConnected && !this.connection?.connected) {
-          console.log('User not connected, opening modal');
           await this.openConnectModal();
           return;
         }
@@ -306,9 +310,72 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     }
   }
 
+  private initializeFormFields() {
+    console.log('Initializing form fields with user state:', this.userState);
+    console.log('Legacy user state:', user.get());
+    
+    // Get the form elements
+    const nameInput = this.shadowRoot?.querySelector('sl-input[name="name"]') as HTMLInputElement;
+    const teamInput = this.shadowRoot?.querySelector('sl-input[name="team"]') as HTMLInputElement;
+    const aboutTextarea = this.shadowRoot?.querySelector('sl-textarea[name="about"]') as HTMLTextAreaElement;
+    const newsTextarea = this.shadowRoot?.querySelector('sl-textarea[name="news"]') as HTMLTextAreaElement;
+    
+    // Set values from user state (prioritize context state over legacy state)
+    if (nameInput) {
+      nameInput.value = this.userState?.profile?.name || user.get().name || '';
+    }
+    
+    if (teamInput) {
+      teamInput.value = this.userState?.profile?.team || user.get().team || '';
+    }
+    
+    if (aboutTextarea) {
+      aboutTextarea.value = this.userState?.profile?.about || user.get().about || '';
+    }
+    
+    if (newsTextarea) {
+      newsTextarea.value = this.userState?.profile?.news || user.get().news || '';
+    }
+    
+    // Force a re-render to ensure all form fields are updated
+    this.requestUpdate();
+  }
+
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
+    
+    // Initialize links from user profile data if available
+    if (this.userState?.profile?.links && Array.isArray(this.userState.profile.links)) {
+      this.links = this.userState.profile.links
+        .filter(link => link && link.trim() !== '')
+        .map((link, index) => ({
+          name: `link${index + 1}`,
+          value: link
+        }));
+      console.log('Initialized links from user profile:', this.links);
+    } else if (user.get().links && Array.isArray(user.get().links)) {
+      // Fallback to legacy user state if needed
+      this.links = user.get().links
+        .filter(link => link && link.trim() !== '')
+        .map((link, index) => ({
+          name: `link${index + 1}`,
+          value: link
+        }));
+      console.log('Initialized links from legacy user state:', this.links);
+    }
+    
+    // Always ensure we have at least one empty link field
+    if (this.links.length === 0 || this.links[this.links.length - 1].value.trim() !== '') {
+      this.addEmptyLink();
+    }
+    
+    // Restore any form data that might have been saved locally
     this.restoreLinks();
+    
+    // Initialize all form fields with user profile data
+    setTimeout(() => {
+      this.initializeFormFields();
+    }, 0);
   }
 
   render() {
@@ -323,7 +390,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           >
             <label class="avatar">
               <img
-                src=${this.uploadedImage || user.get().avatar}
+                src=${this.uploadedImage || (this.userState?.profile?.avatar || user.get().avatar)}
                 alt="User avatar"
               />
               <input
@@ -342,14 +409,26 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
               label="Name"
               required
               autocomplete="name"
+              value=${this.userState?.profile?.name || user.get().name || ''}
             ></sl-input>
             <sl-input
               name="team"
               label="Team"
               autocomplete="organization"
+              value=${this.userState?.profile?.team || user.get().team || ''}
             ></sl-input>
-            <sl-textarea name="about" label="About" resize="auto"></sl-textarea>
-            <sl-textarea name="news" label="News" resize="auto"></sl-textarea>
+            <sl-textarea 
+              name="about" 
+              label="About" 
+              resize="auto" 
+              value=${this.userState?.profile?.about || user.get().about || ''}
+            ></sl-textarea>
+            <sl-textarea 
+              name="news" 
+              label="News" 
+              resize="auto" 
+              value=${this.userState?.profile?.news || user.get().news || ''}
+            ></sl-textarea>
             <div class="links-section">
               <p>Links</p>
               ${this.links.map(
