@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Task } from '@lit/task';
-import { fromHex } from 'viem';
+import { fromHex, formatUnits } from 'viem';
 import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
@@ -80,38 +80,40 @@ export class TopSupporters extends LitElement {
     this,
     async ([ideaId]) => {
       if (!ideaId) return [];
-      
+
       const result = await urqlClient.query(IdeaContributionsDocument, {
         ideaId,
         first: 5,
         skip: 0,
       });
-      
+
       if (!result.data?.ideaContributions) return [];
-      
-      return result.data.ideaContributions.map((contribution: any): Supporter => {
-        let name = contribution.funder.id;
-        let avatar = makeBlockie(contribution.funder.id);
-        
-        if (contribution.funder.profile) {
-          try {
-            const profile = JSON.parse(
-              fromHex(contribution.funder.profile as `0x${string}`, 'string')
-            );
-            name = profile.name || profile.team || contribution.funder.id;
-            avatar = profile.image || avatar;
-          } catch (e) {
-            console.error('Error parsing profile', e);
+
+      return result.data.ideaContributions.map(
+        (contribution: any): Supporter => {
+          let name = contribution.funder.id;
+          let avatar = makeBlockie(contribution.funder.id);
+
+          if (contribution.funder.profile) {
+            try {
+              const profile = JSON.parse(
+                fromHex(contribution.funder.profile as `0x${string}`, 'string')
+              );
+              name = profile.name || profile.team || contribution.funder.id;
+              avatar = profile.image || avatar;
+            } catch (e) {
+              console.error('Error parsing profile', e);
+            }
           }
+
+          return {
+            id: contribution.funder.id,
+            name,
+            avatar,
+            contribution: contribution.contribution,
+          };
         }
-        
-        return {
-          id: contribution.funder.id,
-          name,
-          avatar,
-          contribution: contribution.contribution,
-        };
-      });
+      );
     },
     () => [this.ideaId]
   );
@@ -122,12 +124,15 @@ export class TopSupporters extends LitElement {
         <h2>Top Supporters</h2>
         ${this.fetchSupporters.render({
           pending: () => html`<sl-spinner></sl-spinner>`,
-          error: (error: unknown) => html`<div class="no-supporters">Error: ${error instanceof Error ? error.message : String(error)}</div>`,
+          error: (error: unknown) =>
+            html`<div class="no-supporters">
+              Error: ${error instanceof Error ? error.message : String(error)}
+            </div>`,
           complete: (supporters) => {
             if (supporters.length === 0) {
               return html`<div class="no-supporters">No supporters yet</div>`;
             }
-            
+
             return html`
               <div class="supporters-list">
                 ${supporters.map(
@@ -138,15 +143,19 @@ export class TopSupporters extends LitElement {
                         label="Avatar for ${supporter.name}"
                       ></sl-avatar>
                       <div class="supporter-info">
-                        <a href="/profile/${supporter.id}" class="supporter-name">${supporter.name}</a>
-                        <div class="supporter-contribution">${shortNum(supporter.contribution)} UPD</div>
+                        <a
+                          href="/profile/${supporter.id}"
+                          class="supporter-name"
+                          >${supporter.name}</a
+                        >
+                        <div class="supporter-contribution">${shortNum(formatUnits(BigInt(supporter.contribution), 18))} UPD</div>
                       </div>
                     </div>
                   `
                 )}
               </div>
             `;
-          }
+          },
         })}
       </div>
     `;
