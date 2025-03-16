@@ -148,7 +148,12 @@ export class TopSupporters extends LitElement {
                           class="supporter-name"
                           >${supporter.name}</a
                         >
-                        <div class="supporter-contribution">${shortNum(formatUnits(BigInt(supporter.contribution), 18))} UPD</div>
+                        <div class="supporter-contribution">
+                          ${shortNum(
+                            formatUnits(BigInt(supporter.contribution), 18)
+                          )}
+                          UPD
+                        </div>
                       </div>
                     </div>
                   `
