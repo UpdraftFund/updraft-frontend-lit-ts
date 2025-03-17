@@ -1,49 +1,66 @@
-#    New Supporter(s) ✅
-#    New Solution ✅
-#    New Funder(s) ✅
-#    Goal reached ✅
-#    Goal failed ✅
-#    New Goal ✅
-#    Info changed (news) ✅
+query TrackedChanges(
+  $ideaIds: [String!]
+  $solutionIds: [Bytes!]
+  $since: BigInt!
+) {
+  # Get new supporters for the ideas
+  newSupporters: ideaContributions(
+    where: { idea_in: $ideaIds, createdTime_gt: $since }
+    orderBy: createdTime
+    orderDirection: desc
+  ) {
+    idea {
+      id
+      name
+      creator {
+        id
+        profile
+      }
+    }
+    funder {
+      id
+      profile
+    }
+    contribution
+    createdTime
+  }
 
-query TrackedChanges($ideaIds: [String!], $solutionIds: [Bytes!], $since: BigInt!) {
-    newSupporters: ideaContributions(where: { idea_in: $ideaIds, createdTime_gt: $since }) {
-        idea {
-            id
-            name
-            creator {
-                id
-                profile
-            }
-        }
-        funder {
-            id
-            profile
-        }
-        contribution
-        createdTime
+  # Get new solutions for the ideas
+  newSolutions: solutions(
+    where: { idea_in: $ideaIds, startTime_gt: $since }
+    orderBy: startTime
+    orderDirection: desc
+  ) {
+    idea {
+      id
+      name
     }
-    newSolutions: solutions(where: { idea_in: $ideaIds, startTime_gt: $since }) {
-        idea {
-            id
-            name
-        }
-        ...SolutionFields
+    ...SolutionFields
+  }
+
+  # Get updated solutions
+  solutionUpdated: solutions(
+    where: { id_in: $solutionIds, modifiedTime_gt: $since }
+    orderBy: modifiedTime
+    orderDirection: desc
+  ) {
+    ...SolutionFields
+  }
+
+  # Get new funders for solutions
+  newFunders: solutionContributions(
+    where: { solution_: { id_in: $solutionIds }, createdTime_gt: $since }
+    orderBy: createdTime
+    orderDirection: desc
+  ) {
+    solution {
+      ...SolutionFields
     }
-    solutionUpdated: solutions(where: { id_in: $solutionIds, modifiedTime_gt: $since }) {
-        # Compare fundingGoal, deadline and info to local storage to determine what changed.
-        ...SolutionFields
+    funder {
+      id
+      profile
     }
-    newFunders: solutionContributions(where: { solution_: { id_in: $solutionIds }, createdTime_gt: $since }) {
-        # Use this to also check if the fundingGoal has been reached
-        solution {
-            ...SolutionFields
-        }
-        funder {
-            id
-            profile
-        }
-        contribution
-        createdTime
-    }
+    contribution
+    createdTime
+  }
 }
