@@ -1,6 +1,7 @@
 import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { consume } from '@lit/context';
+import { Task } from '@lit/task';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -8,7 +9,7 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
 import { beginnerTasksContext, BeginnerTasksState, BeginnerTask, tasks as defaultTasks } from '../../../state/beginner-tasks-state';
 import { userContext, UserState } from '../../../state/user-state';
-import type { Balances } from '../../../types/current-user';
+import { getUpdBalance } from '../../../utils/token';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends LitElement {
@@ -17,6 +18,15 @@ export class BeginnerTasks extends LitElement {
 
   @consume({ context: userContext, subscribe: true })
   user?: UserState;
+
+  private updBalanceTask = new Task(
+    this,
+    async ([address]) => {
+      if (!address) return '0';
+      return getUpdBalance(address);
+    },
+    () => [this.user?.address]
+  );
 
   static styles = css`
     :host {
@@ -77,8 +87,7 @@ export class BeginnerTasks extends LitElement {
 
   private renderTask(task: BeginnerTask) {
     const isCompleted = this.tasks?.completedTasks.has(task.id) || false;
-    const balances = this.user?.profile?.balances as Balances | undefined;
-    const updBalance = balances?.upd?.balance || '0';
+    const { value: updBalance = '0' } = this.updBalanceTask;
 
     return html`
       <sl-card>
@@ -108,11 +117,11 @@ export class BeginnerTasks extends LitElement {
   render() {
     // Use default tasks if context is not available
     const tasksToRender = this.tasks?.tasks || defaultTasks.get();
-    
+
     return html`
       <h2>Tasks</h2>
       <section class="beginner-tasks">
-        ${tasksToRender.map(task => this.renderTask(task))}
+        ${tasksToRender.map((task) => this.renderTask(task))}
       </section>
     `;
   }
