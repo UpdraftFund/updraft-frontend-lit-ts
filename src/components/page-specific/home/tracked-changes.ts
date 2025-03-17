@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { formatUnits } from 'viem';
 
 import { TrackedChangesDocument } from '@gql';
 import urqlClient from '@/urql-client';
@@ -138,7 +139,7 @@ export class TrackedChanges extends LitElement {
       console.log('Fetching tracked changes with:', {
         ideaIds: this.ideaIds,
         solutionIds: this.solutionIds,
-        since: oneDayAgo
+        since: oneDayAgo,
       });
 
       const result = await urqlClient.query(TrackedChangesDocument, {
@@ -187,16 +188,25 @@ export class TrackedChanges extends LitElement {
           const isDuplicate = self.findIndex((c) => {
             if (c.type !== change.type) return false;
             if (c.time !== change.time) return false;
-            
+
             switch (c.type) {
               case 'newSupporter':
-                return c.idea?.id === change.idea?.id && c.funder?.id === change.funder?.id;
+                return (
+                  c.idea?.id === change.idea?.id &&
+                  c.funder?.id === change.funder?.id
+                );
               case 'newSolution':
-                return c.idea?.id === change.idea?.id && c.solution?.id === change.solution?.id;
+                return (
+                  c.idea?.id === change.idea?.id &&
+                  c.solution?.id === change.solution?.id
+                );
               case 'solutionUpdated':
                 return c.solution?.id === change.solution?.id;
               case 'newFunder':
-                return c.solution?.id === change.solution?.id && c.funder?.id === change.funder?.id;
+                return (
+                  c.solution?.id === change.solution?.id &&
+                  c.funder?.id === change.funder?.id
+                );
               default:
                 return false;
             }
@@ -216,19 +226,35 @@ export class TrackedChanges extends LitElement {
     args: () => [this.ideaIds, this.solutionIds],
   });
 
+  private formatAmount(
+    amount: string | null | undefined,
+    decimals: number = 18
+  ): string {
+    if (!amount) return '0';
+    return Number(formatUnits(BigInt(amount), decimals)).toLocaleString();
+  }
+
+  private formatReward(percentage: string | null | undefined): string {
+    if (!percentage) return '0';
+    return (Number(percentage) / 10000).toString();
+  }
+
   private getChangeTitle(change: TrackedChange) {
     switch (change.type) {
       case 'newSupporter':
         return html`
           <h3 class="change-card-title">${change.idea?.name}</h3>
           <div class="change-card-byline">
-            ${change.funder?.id} supported with ${change.contribution} UPD
+            ${change.funder?.id} supported with
+            ${this.formatAmount(change.contribution)} UPD
           </div>
         `;
       case 'newSolution':
         return html`
           <h3 class="change-card-title">${change.idea?.name}</h3>
-          <div class="change-card-byline">New solution by ${change.solution?.id}</div>
+          <div class="change-card-byline">
+            New solution by ${change.solution?.id}
+          </div>
         `;
       case 'solutionUpdated':
         return html`
@@ -239,7 +265,8 @@ export class TrackedChanges extends LitElement {
         return html`
           <h3 class="change-card-title">${change.solution?.info}</h3>
           <div class="change-card-byline">
-            ${change.funder?.id} funded with ${change.contribution} UPD
+            ${change.funder?.id} funded with
+            ${this.formatAmount(change.contribution)} UPD
           </div>
         `;
       default:
@@ -252,8 +279,10 @@ export class TrackedChanges extends LitElement {
       return 0;
     }
 
-    const contributed = parseFloat(String(solution.tokensContributed).replace(/,/g, ''));
-    const goal = parseFloat(String(solution.fundingGoal).replace(/,/g, ''));
+    const contributed = Number(
+      formatUnits(BigInt(solution.tokensContributed), 18)
+    );
+    const goal = Number(formatUnits(BigInt(solution.fundingGoal), 18));
 
     if (isNaN(contributed) || isNaN(goal) || goal === 0) {
       return 0;
@@ -276,7 +305,8 @@ export class TrackedChanges extends LitElement {
         <div class="goal">
           <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
           <div class="goal-text">
-            ${solution.tokensContributed} out of ${solution.fundingGoal} UPD
+            ${this.formatAmount(solution.tokensContributed)} out of
+            ${this.formatAmount(solution.fundingGoal)} UPD
           </div>
         </div>
         ${isCompleted
@@ -287,14 +317,19 @@ export class TrackedChanges extends LitElement {
             `
           : ''}
         <span class="emoji-badge"
-          ><span class="emoji">⏰</span>
-          ${deadline.isBefore(now) ? 'expired' : deadline.fromNow()}</span
+          ><span class="emoji">⏰</span> ${deadline.isBefore(now)
+            ? 'expired'
+            : deadline.fromNow()}</span
         >
         <span class="emoji-badge"
-          ><span class="emoji">💎</span> ${solution.stake}</span
+          ><span class="emoji">💎</span> ${this.formatAmount(
+            solution.stake
+          )}</span
         >
         <span class="emoji-badge"
-          ><span class="emoji">💰</span> ${solution.funderReward}%</span
+          ><span class="emoji">💰</span> ${this.formatReward(
+            solution.funderReward
+          )}%</span
         >
       </div>
     `;
@@ -327,10 +362,10 @@ export class TrackedChanges extends LitElement {
             ${changes.map(
               (change) => html`
                 <sl-card>
-                  <div slot="header">
-                    ${this.getChangeTitle(change)}
-                  </div>
-                  ${change.solution ? this.renderSolutionDetails(change.solution) : ''}
+                  <div slot="header">${this.getChangeTitle(change)}</div>
+                  ${change.solution
+                    ? this.renderSolutionDetails(change.solution)
+                    : ''}
                 </sl-card>
               `
             )}
