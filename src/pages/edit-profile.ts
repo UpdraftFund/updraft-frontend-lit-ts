@@ -4,6 +4,7 @@ import { TaskStatus } from '@lit/task';
 import { SignalWatcher, html } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 import { parseUnits, toHex, trim } from 'viem';
+import dayjs from 'dayjs';
 
 import pencilSquare from '@icons/pencil-square.svg';
 
@@ -254,6 +255,35 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             );
             this.shareDialog.topic = ideaData.name as string;
           }
+        } else if (this.entity === 'solution') {
+          // Handle solution creation with profile update
+          const solutionData = formToJson('create-solution', ideaSchema);
+          const solutionForm = loadForm('create-solution');
+          const params = new URLSearchParams(window.location.search);
+          const ideaId = params.get('ideaId');
+          
+          if (solutionForm && ideaId) {
+            // Format the deadline date properly
+            const deadlineDate = solutionForm['deadline']
+              ? dayjs(solutionForm['deadline']).unix()
+              : dayjs().add(30, 'days').unix(); // Default to 30 days from now if not set
+
+            this.submitTransaction.hash = await updraft.write('createSolutionWithProfile', [
+              ideaId,
+              solutionForm['funding-token'],
+              parseUnits(solutionForm['deposit'], 18),
+              parseUnits(solutionForm['goal'], 18),
+              deadlineDate,
+              BigInt(
+                (Number(solutionForm['reward']) *
+                  Number(this.updraftSettings.percentScale)) /
+                  100
+              ),
+              toHex(JSON.stringify(solutionData)),
+              toHex(JSON.stringify(profileData)),
+            ]);
+            this.shareDialog.topic = solutionData.name as string;
+          }
         } else {
           console.log('Submitting profile update');
           this.submitTransaction.hash = await updraft.write('updateProfile', [
@@ -287,8 +317,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         if (this.entity === 'idea') {
           this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
           this.shareDialog.action = 'created an Idea';
-        } else {
-          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}`;
+        } else if (this.entity === 'solution') {
+          const params = new URLSearchParams(window.location.search);
+          const ideaId = params.get('ideaId');
+          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${ideaId}`;
           this.shareDialog.action = 'created a Solution';
         }
         this.shareDialog.show();

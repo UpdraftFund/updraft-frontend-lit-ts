@@ -325,20 +325,13 @@ export class MyApp extends LitElement {
   @provide({ context: balanceContext }) balances: Balances = {};
   @provide({ context: updraftSettingsContext })
   updraftSettings!: UpdraftSettings;
+  @provide({ context: userContext }) userState = getUserState();
+  @state() private _userState = getUserState();
 
   // Provide idea state context
   @provide({ context: ideaContext })
   get ideaState() {
     return getIdeaState();
-  }
-
-  // Provide user state context
-  @state() private _userState = getUserState();
-
-  @provide({ context: userContext })
-  get userState() {
-    console.log('MyApp providing userState:', this._userState);
-    return this._userState;
   }
 
   @state() expanded = false;
@@ -417,20 +410,17 @@ export class MyApp extends LitElement {
       };
 
       // Check if the connection state has changed
-      // We don't need to compare with isConnected.get() since setUserAddress already
-      // dispatches the appropriate events when the address changes
       if (!address) {
-        // If we're disconnected and the address is null, make sure to dispatch the disconnected event
         dispatchUserEvent(USER_DISCONNECTED_EVENT);
       } else {
-        // If we're connected and have an address, make sure to dispatch the connected event
         dispatchUserEvent(USER_CONNECTED_EVENT, { address });
       }
 
-      // Update the user state property to ensure context consumers get the updates
+      // Update both user state properties
       this._userState = getUserState();
+      this.userState = getUserState();
 
-      // Force a re-render of the app to ensure all components get the updated state
+      // Force a re-render of the app
       this.requestUpdate();
     });
 
@@ -446,8 +436,9 @@ export class MyApp extends LitElement {
       // Update new user state
       setNetworkName(caipNetwork?.name || null);
 
-      // Update the user state property to ensure context consumers get the updates
+      // Update both user state properties
       this._userState = getUserState();
+      this.userState = getUserState();
 
       this.getUpdraftSettings.run().then(() => this.refreshBalances.run());
     });

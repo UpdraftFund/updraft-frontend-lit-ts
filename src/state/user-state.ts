@@ -84,14 +84,17 @@ export const connectWallet = async (): Promise<void> => {
     setIsConnecting(true);
     setConnectionError(null);
 
+    console.log('Connecting wallet...');
     // Open the wallet connection modal
     await modal.open({ view: 'Connect' });
 
     // The modal will automatically close on successful connection
     // because the AppKit handles this internally
   } catch (err) {
+    console.error('Error connecting wallet:', err);
     setConnectionError(err instanceof Error ? err.message : 'Unknown error');
   } finally {
+    console.log('Finished connecting wallet');
     setIsConnecting(false);
   }
 };

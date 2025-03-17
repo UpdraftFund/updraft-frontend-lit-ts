@@ -5,7 +5,7 @@ import {
 } from '@/components/base/saveable-form';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css } from 'lit';
-import { parseUnits, toHex } from 'viem';
+import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 import { TaskStatus } from '@lit/task';
 
@@ -16,6 +16,8 @@ import {
 } from '@/context';
 import { userContext, UserState } from '@/state/user-state';
 import { consume } from '@lit/context';
+import { Task } from '@lit/task';
+import { modal } from '@/web3';
 
 import {
   TransactionSuccess,
@@ -38,17 +40,19 @@ import '@/components/shared/upd-dialog';
 import '@/components/shared/share-dialog';
 import '@/components/shared/label-with-hint';
 
+import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@/contracts/updraft';
 import { Upd } from '@/contracts/upd';
 
-import { UpdraftSettings } from '@/types';
-import { Balances } from '@/types';
-import { modal } from '@/web3';
+import { UpdraftSettings, Balances } from '@/types';
+import { IdeaDocument } from '@gql';
+import urqlClient from '@/urql-client';
 
 @customElement('create-solution')
 export class CreateSolution extends SaveableForm {
-  @property({ type: String }) ideaId!: string;
+  @property() ideaId!: string;
+  @state() ideaName: string = '';
 
   @query('sl-range', true) rewardRange!: SlRange;
   @query('upd-dialog', true) updDialog!: UpdDialog;
@@ -70,6 +74,21 @@ export class CreateSolution extends SaveableForm {
   @state() private antiSpamFee?: string;
 
   private resizeObserver!: ResizeObserver;
+
+  private readonly ideaTask = new Task(this, {
+    task: async ([ideaId]) => {
+      if (!ideaId) return null;
+      const result = await urqlClient.query(IdeaDocument, { ideaId });
+      const ideaData = result.data?.idea;
+      if (ideaData) {
+        this.ideaName = ideaData.name || 'Unnamed Idea';
+        return ideaData;
+      } else {
+        throw new Error(`Idea ${ideaId} not found.`);
+      }
+    },
+    args: () => [this.ideaId],
+  });
 
   static styles = [
     dialogStyles,
@@ -227,6 +246,47 @@ export class CreateSolution extends SaveableForm {
     this.antiSpamFee = fee.toFixed(2);
   }
 
+  private handleTagsInput(e: Event) {
+    const input = e.target as SlInput;
+    const value = input.value;
+    const spacePositions =
+      [...value.matchAll(/\s/g)].map((match) => match.index as number) || [];
+
+    if (spacePositions.length > 4) {
+      const fifthSpaceIndex = spacePositions[4];
+      // Trim input to the fifth space and allow a trailing space
+      input.value = value.slice(0, fifthSpaceIndex + 1);
+      input.style.setProperty('--sl-input-focus-ring-color', 'red');
+    } else {
+      input.style.removeProperty('--sl-input-focus-ring-color');
+    }
+  }
+
+  private handleGoalInput(e: Event) {
+    const input = e.target as SlInput;
+    const value = input.value;
+
+    // Ensure the goal is a valid number
+    if (isNaN(Number(value)) && value !== '') {
+      input.style.setProperty('--sl-input-focus-ring-color', 'red');
+    } else {
+      input.style.removeProperty('--sl-input-focus-ring-color');
+    }
+  }
+
+  private handleFundingTokenInput(e: Event) {
+    const input = e.target as SlInput;
+    const value = input.value;
+
+    // Basic validation for Ethereum address format
+    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+    if (!ethAddressRegex.test(value) && value !== '') {
+      input.style.setProperty('--sl-input-focus-ring-color', 'red');
+    } else {
+      input.style.removeProperty('--sl-input-focus-ring-color');
+    }
+  }
+
   private syncRangeTooltip = () => {
     // Hack to sync the tooltip
     this.rewardRange.focus();
@@ -239,38 +299,45 @@ export class CreateSolution extends SaveableForm {
   }
 
   private async handleSubmit() {
-    // Check if user is connected before proceeding
-    if (!this.userState?.isConnected) {
-      this.userState?.connect();
+    const userState = this.userState;
+    if (!userState?.isConnected) {
+      await userState.connect();
       return;
     }
-    
+
+    // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
+      const formData = formToJson('create-solution', solutionSchema);
       try {
-        const solution = formToJson('create-solution', solutionSchema);
-        const solutionForm = loadForm('create-solution');
-        if (solutionForm) {
-          this.submitTransaction.hash = await updraft.write('createSolution', [
-            this.ideaId,
-            solutionForm['funding-token'],
-            parseUnits(solutionForm['deposit'], 18),
-            parseUnits(solutionForm['goal'], 18),
-            dayjs(solutionForm['deadline']).unix(),
-            BigInt(
-              (Number(solutionForm['reward']) *
-                Number(this.updraftSettings.percentScale)) /
-                100
-            ),
-            toHex(JSON.stringify(solution)),
-          ]);
-          this.shareDialog.topic = solution.name as string;
-        }
+        // Format the deadline date properly
+        const deadlineDate = formData['deadline']
+          ? dayjs(formData['deadline']).unix()
+          : dayjs().add(30, 'days').unix(); // Default to 30 days from now if not set
+
+        this.submitTransaction.hash = await updraft.write('createSolution', [
+          this.ideaId,
+          formData['funding-token'],
+          parseUnits(formData['deposit'], 18),
+          parseUnits(formData['goal'], 18),
+          deadlineDate,
+          BigInt(
+            (Number(formData['reward']) *
+              Number(this.updraftSettings.percentScale)) /
+              100
+          ),
+          toHex(JSON.stringify(formData)),
+        ]);
       } catch (e: any) {
-        if (e.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        } else if (e.message.includes('exceeds balance')) {
+        console.error('Solution creation error:', e);
+        if (
+          e.message?.startsWith('connection') ||
+          e.message?.includes('getChainId')
+        ) {
+          // Open the wallet connection modal if there's a connection issue
+          await userState.connect();
+        } else if (e.message?.includes('exceeds balance')) {
           this.updDialog.show();
-        } else if (e.message.includes('exceeds allowance')) {
+        } else if (e.message?.includes('exceeds allowance')) {
           this.approveTransaction.reset();
           this.approveDialog.show();
           const upd = new Upd(this.updraftSettings.updAddress);
@@ -279,19 +346,38 @@ export class CreateSolution extends SaveableForm {
             parseUnits('1', 29),
           ]);
         }
-        console.error(e);
       }
     }
   }
 
   private async handleSubmitSuccess(t: TransactionSuccess) {
-    console.log('submit success', t);
+    const address = t.receipt?.logs?.[0]?.topics?.[1];
+    if (address) {
+      const solutionData = formToJson('create-solution', solutionSchema);
+      this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${this.ideaId}`;
+      this.shareDialog.topic = solutionData.name as string;
+      this.shareDialog.action = 'created a Solution';
+      this.shareDialog.show();
+    }
+  }
+
+  private nextButtonClick(e: MouseEvent) {
+    const form = this.form;
+    if (!form.checkValidity()) {
+      e.preventDefault(); // If the form is invalid, prevent the click
+      form.reportValidity(); // Show validation messages
+      return;
+    }
+
+    // Save the form data to localStorage for the profile creation step
+    const formData = formToJson('create-solution', solutionSchema);
+    localStorage.setItem('create-solution-form', JSON.stringify(formData));
   }
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
 
-    this.rewardRange.tooltipFormatter = (n: number) => `${n}%`;
+    this.rewardRange.tooltipFormatter = (value: number) => `${value}%`;
     this.rewardRange.defaultValue = 50;
     this.rewardRange.updateComplete.then(this.syncRangeTooltip);
 
@@ -309,9 +395,20 @@ export class CreateSolution extends SaveableForm {
       <page-heading>Create a new Solution</page-heading>
       <div class="container">
         <main>
-          <h1 class="idea-name">Idea: ${this.ideaId}</h1>
+          <h1 class="idea-name">
+            ${this.ideaTask.value
+              ? `Solution for: ${this.ideaName}`
+              : this.ideaTask.status === TaskStatus.PENDING
+                ? 'Loading idea...'
+                : `Idea: ${this.ideaId}`}
+          </h1>
           <form name="create-solution" @submit=${this.handleFormSubmit}>
-            <sl-input name="name" required autocomplete="off">
+            <sl-input
+              name="name"
+              required
+              autocomplete="off"
+              placeholder="My Solution Name"
+            >
               <label-with-hint
                 slot="label"
                 label="Name*"
@@ -319,7 +416,11 @@ export class CreateSolution extends SaveableForm {
               ></label-with-hint>
             </sl-input>
 
-            <sl-textarea name="description" resize="auto">
+            <sl-textarea
+              name="description"
+              resize="auto"
+              placeholder="Describe your solution in detail..."
+            >
               <label-with-hint
                 slot="label"
                 label="Description"
@@ -327,11 +428,52 @@ export class CreateSolution extends SaveableForm {
               ></label-with-hint>
             </sl-textarea>
 
-            <sl-input name="funding-token" required autocomplete="off">
+            <sl-input
+              name="tags"
+              @sl-input=${this.handleTagsInput}
+              placeholder="tag1 tag2 tag3"
+            >
+              <label-with-hint
+                slot="label"
+                label="Tags"
+                hint="Enter up to five tags separated by spaces to help people find your solution. Use hyphens for multi-word-tags."
+              >
+              </label-with-hint>
+            </sl-input>
+
+            <sl-input
+              name="funding-token"
+              required
+              autocomplete="off"
+              @input=${this.handleFundingTokenInput}
+              placeholder="0x..."
+            >
               <label-with-hint
                 slot="label"
                 label="Funding Token*"
                 hint="The address of the token you want to use to fund your solution"
+              ></label-with-hint>
+            </sl-input>
+
+            <sl-input
+              name="goal"
+              required
+              autocomplete="off"
+              @input=${this.handleGoalInput}
+              placeholder="1000"
+            >
+              <label-with-hint
+                slot="label"
+                label="Goal*"
+                hint="The amount of funding you want to raise"
+              ></label-with-hint>
+            </sl-input>
+
+            <sl-input type="date" name="deadline" required autocomplete="off">
+              <label-with-hint
+                slot="label"
+                label="Deadline*"
+                hint="Select the deadline for your solution. This is the date by which your funding goal should be reached."
               ></label-with-hint>
             </sl-input>
 
@@ -348,6 +490,7 @@ export class CreateSolution extends SaveableForm {
                   autocomplete="off"
                   @focus=${this.handleDepositFocus}
                   @input=${this.handleDepositInput}
+                  placeholder="10"
                 >
                 </sl-input>
                 <span>UPD</span>
@@ -365,38 +508,25 @@ export class CreateSolution extends SaveableForm {
                 : ''}
             </div>
 
-            <sl-input name="goal" required autocomplete="off">
-              <label-with-hint
-                slot="label"
-                label="Goal*"
-                hint="The amount of funding you want to raise"
-              ></label-with-hint>
-            </sl-input>
+            <input type="hidden" name="reward" value="50" />
 
-            <sl-input name="deadline" required autocomplete="off">
-              <label-with-hint
-                slot="label"
-                label="Deadline*"
-                hint="The deadline for your solution Format: YYYY-MM-DDTHH:MM:SS.000+00:00 Example: 2025-03-01T00:00:00.000+00:00"
-              ></label-with-hint>
-            </sl-input>
-
-            <div class="reward-container">
-              <label-with-hint
-                label="Contributor Fee"
-                hint="The % of each contribution that goes to contributors. A high contributor fee means contributors                         stand to earn more if your solution is popular. A low contributor fee means more of their funds are                         available to withdraw if your solution isn’t popular."
-              >
-              </label-with-hint>
-              <div class="range-and-labels">
-                <span class="left-label">Risk less</span>
-                <sl-range name="reward" value="50"></sl-range>
-                <span class="right-label">Earn more</span>
-              </div>
-            </div>
-
-            <sl-button variant="primary" @click=${this.handleSubmit}
-              >${this.userState?.isConnected ? 'Submit Solution' : 'Connect Wallet'}</sl-button
-            >
+            ${this.userState?.isConnected
+              ? html`
+                  <a
+                    href="/submit-profile-and-create-solution?ideaId=${this
+                      .ideaId}"
+                    rel="next"
+                  >
+                    <sl-button variant="primary" @click=${this.nextButtonClick}
+                      >Next: Create your Profile</sl-button
+                    >
+                  </a>
+                `
+              : html`
+                  <sl-button variant="primary" @click=${this.handleSubmit}>
+                    Connect Wallet
+                  </sl-button>
+                `}
           </form>
           <sl-dialog label="Set Allowance">
             <p>
