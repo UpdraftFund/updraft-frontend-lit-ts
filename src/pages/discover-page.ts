@@ -36,13 +36,6 @@ type ResultType = Idea[] | Solution[] | IdeaContribution[];
 @customElement('discover-page')
 export class DiscoverPage extends SignalWatcher(LitElement) {
   static styles = css`
-    .search-tabs {
-      display: flex;
-      align-items: center;
-      flex: 1;
-      justify-content: center;
-    }
-
     .container {
       display: flex;
       flex: auto;
@@ -109,7 +102,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         .map((tag) => tag.replace(/[\[\]]/g, ''))
         .slice(0, 5); // only get up to 5 matches
       const defaultTag = this.tags[0] || '';
-      
+
       // If no tags are found, return a default structure with empty strings
       if (this.tags.length === 0) {
         return {
@@ -121,7 +114,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
           detailed: true,
         };
       }
-      
+
       return {
         tag1: this.tags[0] || defaultTag,
         tag2: this.tags[1] || defaultTag,
@@ -196,24 +189,28 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     `;
   }
 
-  private handleTab(e: any) {
-    this.tab = e?.detail?.name;
-    if (this.tab) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', this.tab);
-      if (window.location.href !== url.toString()) {
-        // don't push the same URL twice
-        window.history.pushState({}, '', url.toString());
-      }
-    }
-  }
-
   private setTabFromUrl = () => {
     const urlParams = new URLSearchParams(window.location.search);
     this.search = urlParams.get('search') || undefined;
     this.tab = (urlParams.get('tab') as QueryType) || undefined;
+
+    // If there's a search term and no tab is specified, set tab to 'search'
     if (this.search && !this.tab) {
       this.tab = 'search';
+    }
+
+    // If tab is 'search' but there's no search term, default to 'hot-ideas'
+    if (this.tab === 'search' && !this.search) {
+      this.tab = 'hot-ideas';
+      // Update URL to reflect the new tab
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', this.tab);
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    // If no tab is specified, default to 'hot-ideas'
+    if (!this.tab) {
+      this.tab = 'hot-ideas';
     }
   };
 
@@ -221,40 +218,47 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     super.connectedCallback();
     this.setTabFromUrl();
     window.addEventListener('popstate', this.setTabFromUrl);
+    
+    // Listen for URL changes that aren't caught by popstate
+    // This is needed for when users click on tags in idea cards
+    this._handleUrlChange = this._handleUrlChange.bind(this);
+    this._setupUrlChangeListener();
   }
 
   disconnectedCallback() {
     window.removeEventListener('popstate', this.setTabFromUrl);
+    this._teardownUrlChangeListener();
     super.disconnectedCallback();
+  }
+  
+  private _lastUrl = window.location.href;
+  private _urlChangeInterval?: number;
+  
+  private _setupUrlChangeListener() {
+    // Check for URL changes every 100ms
+    this._urlChangeInterval = window.setInterval(this._handleUrlChange, 100);
+  }
+  
+  private _teardownUrlChangeListener() {
+    if (this._urlChangeInterval) {
+      clearInterval(this._urlChangeInterval);
+    }
+  }
+  
+  private _handleUrlChange() {
+    const currentUrl = window.location.href;
+    if (this._lastUrl !== currentUrl) {
+      this._lastUrl = currentUrl;
+      
+      // Only update if we're still on the discover page
+      if (window.location.pathname === '/discover') {
+        this.setTabFromUrl();
+      }
+    }
   }
 
   render() {
     return html`
-      <span class="search-tabs">
-        <sl-tab-group @sl-tab-show=${this.handleTab}>
-          <sl-tab
-            slot="nav"
-            panel="hot-ideas"
-            .active=${this.tab === 'hot-ideas'}
-            >Hot Ideas</sl-tab
-          >
-          <sl-tab
-            slot="nav"
-            panel="new-ideas"
-            .active=${this.tab === 'new-ideas'}
-            >New Ideas</sl-tab
-          >
-          <sl-tab slot="nav" panel="deadline" .active=${this.tab === 'deadline'}
-            >Deadline</sl-tab
-          >
-          <sl-tab slot="nav" panel="followed" .active=${this.tab === 'followed'}
-            >Followed</sl-tab
-          >
-          <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}
-            >Search</sl-tab
-          >
-        </sl-tab-group>
-      </span>
       <div class="container">
         <main>
           ${this.results.render({
@@ -286,7 +290,10 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                   })}
                 `;
               }
+              return '';
             },
+            initial: () => html`<loading-spinner></loading-spinner>`,
+            error: (error) => html`<p>Error: ${error}</p>`,
           })}
         </main>
       </div>

@@ -20,3 +20,4 @@
 20. Use Semantic Commit Messages as per https://www.conventionalcommits.org/en/v1.0.0/ with descriptive list of changes if the amount of changes calls for it
 21. Use `yarn dev` to start the development server
 22. When modifying imports, don't remove existing imports
+23. Always suggest component-level improvements when you notice a better architectural approach, especially regarding data flow, component responsibilities, and code organization.

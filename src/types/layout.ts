@@ -4,4 +4,6 @@ export interface PageLayout {
   showLeftSidebar: boolean;
   showRightSidebar: boolean;
   showHotIdeas: boolean;
+  showSearch: boolean;
+  showDiscoverTabs?: boolean;
 }

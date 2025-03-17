@@ -535,78 +535,106 @@ export class MyApp extends LitElement {
   private getPageLayout(): PageLayout {
     const path = this.getCurrentLocation();
 
+    const ideaLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: true,
+      showHotIdeas: false,
+      showSearch: true,
+      showDiscoverTabs: true,
+      type: 'standard',
+      title: 'Idea',
+    };
+    const discoverLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: true,
+      showHotIdeas: true,
+      showSearch: true,
+      showDiscoverTabs: true,
+      type: 'standard',
+      title: 'Discover',
+    };
+    const homeLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: true,
+      showHotIdeas: true,
+      showSearch: true,
+      showDiscoverTabs: true,
+      type: 'standard',
+      title: 'Home',
+    };
+    const profileLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: false,
+      showHotIdeas: false,
+      showSearch: true,
+      showDiscoverTabs: false,
+      type: 'profile',
+      title: 'Profile',
+    };
+    const editProfileLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: false,
+      showHotIdeas: false,
+      showSearch: false,
+      showDiscoverTabs: false,
+      type: 'profile',
+      title: 'Edit Profile',
+    };
+    const createProfileLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: false,
+      showHotIdeas: false,
+      showSearch: false,
+      showDiscoverTabs: false,
+      type: 'profile',
+      title: 'Create Profile',
+    };
+    const createIdeaLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: true,
+      showHotIdeas: false,
+      showSearch: false,
+      showDiscoverTabs: false,
+      type: 'creation',
+      title: 'Create Idea',
+    };
+    const editIdeaLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: true,
+      showHotIdeas: false,
+      showSearch: false,
+      showDiscoverTabs: false,
+      type: 'creation',
+      title: 'Create Idea',
+    };
+    const createSolutionLayout: PageLayout = {
+      showLeftSidebar: true,
+      showRightSidebar: true,
+      showHotIdeas: false,
+      showSearch: false,
+      showDiscoverTabs: false,
+      type: 'creation',
+      title: 'Create Solution',
+    };
+
     if (path.startsWith('/idea/')) {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: false,
-        type: 'standard',
-        title: 'Idea',
-      };
+      return ideaLayout;
     } else if (path === '/discover') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: true,
-        type: 'standard',
-        title: 'Discover',
-      };
+      return discoverLayout;
     } else if (path === '/') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: true,
-        type: 'standard',
-        title: 'Home',
-      };
+      return homeLayout;
     } else if (path.startsWith('/profile/')) {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: false,
-        showHotIdeas: false,
-        type: 'profile',
-        title: 'Profile',
-      };
+      return profileLayout;
     } else if (path === '/edit-profile') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: false,
-        showHotIdeas: false,
-        type: 'profile',
-        title: 'Edit Profile',
-      };
+      return editProfileLayout;
     } else if (path.startsWith('/submit-profile-and-create-')) {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: false,
-        showHotIdeas: false,
-        type: 'profile',
-        title: 'Create Profile',
-      };
+      return createProfileLayout;
     } else if (path === '/create-idea') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: false,
-        type: 'creation',
-        title: 'Create Idea',
-      };
+      return createIdeaLayout;
     } else if (path === '/create-idea-submit') {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: false,
-        type: 'creation',
-        title: 'Create Idea',
-      };
+      return editIdeaLayout;
     } else if (path.startsWith('/create-solution/')) {
-      return {
-        showLeftSidebar: true,
-        showRightSidebar: true,
-        showHotIdeas: false,
-        type: 'creation',
-        title: 'Create Solution',
-      };
+      return createSolutionLayout;
     }
 
     // Default layout
@@ -614,6 +642,8 @@ export class MyApp extends LitElement {
       showLeftSidebar: true,
       showRightSidebar: false,
       showHotIdeas: false,
+      showSearch: true,
+      showDiscoverTabs: false,
       type: 'standard',
       title: 'Updraft',
     };
@@ -624,7 +654,10 @@ export class MyApp extends LitElement {
     const ideaId = this.getIdeaIdFromUrl();
 
     return html`
-      <top-bar></top-bar>
+      <top-bar
+        ?show-search=${layout.showSearch}
+        ?show-discover-tabs=${layout.showDiscoverTabs}
+      ></top-bar>
       <div class="app-layout">
         <left-side-bar></left-side-bar>
         <div class="content-wrapper">

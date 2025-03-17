@@ -33,7 +33,9 @@ export class IdeaCardLarge extends LitElement {
       overflow: hidden;
       padding: 1.5rem;
       width: 100%;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
     }
 
     .idea-card:hover {
@@ -105,7 +107,9 @@ export class IdeaCardLarge extends LitElement {
       font-size: 0.875rem;
       text-decoration: none;
       color: var(--main-foreground);
-      transition: background-color 0.2s ease, color 0.2s ease;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
     }
 
     .tag:hover {
@@ -139,7 +143,7 @@ export class IdeaCardLarge extends LitElement {
       fromHex(creator.profile as `0x${string}`, 'string')
     );
     const date = dayjs(startTime * 1000);
-    
+
     return html`
       <div class="idea-card">
         <div class="idea-header">
@@ -147,10 +151,12 @@ export class IdeaCardLarge extends LitElement {
             <h3>${name}</h3>
           </a>
           <div class="byline">
-            <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
+            <a href="/profile/${creator.id}"
+              >by ${profile.name || creator.id}</a
+            >
           </div>
         </div>
-        
+
         <ul class="info-row">
           <li>
             <sl-icon src=${seedling}></sl-icon>
@@ -172,15 +178,18 @@ export class IdeaCardLarge extends LitElement {
             <span>${interest}</span>
           </li>
         </ul>
-        
-        ${description ? html`<div class="description">${description}</div>` : ''}
-        
+
+        ${description
+          ? html`<div class="description">${description}</div>`
+          : ''}
         ${tags && tags.length > 0
           ? html`
               <div class="tags">
                 ${tags.map(
                   (tag) => html`
-                    <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
+                    <a href="/discover?tab=search&search=[${tag}]" class="tag"
+                      >${tag}</a
+                    >
                   `
                 )}
               </div>
