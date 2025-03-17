@@ -30,42 +30,42 @@ export default {
           find: '@/urql-client',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/urql-client.mock.ts'
+            'src/components/right-sidebar/__tests__/mocks/urql-client.mock.ts'
           ),
         },
         {
           find: '@/state/idea-state',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/idea-state.mock.ts'
+            'src/components/right-sidebar/__tests__/mocks/idea-state.mock.ts'
           ),
         },
         {
           find: '@/state/user-state',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/user-state.mock.ts'
+            'src/components/right-sidebar/__tests__/mocks/user-state.mock.ts'
           ),
         },
         {
           find: '@/web3',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/web3.mock.ts'
+            'src/components/right-sidebar/__tests__/mocks/web3.mock.ts'
           ),
         },
         {
           find: '@gql',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/gql.mock.ts'
+            'src/components/right-sidebar/__tests__/mocks/gql.mock.ts'
           ),
         },
         {
-          find: '@/components/shared/idea-card-small',
+          find: '@/components/right-sidebar/idea-card-small',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/idea-card-small.mock.ts'
+            'src/components/right-sidebar/__tests__/mocks/idea-card-small.mock.ts'
           ),
         },
         // Mock crypto module to resolve the crypto import issue
@@ -73,14 +73,14 @@ export default {
           find: 'crypto',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/crypto.mock.ts'
+            'src/components/right-sidebar/__tests__/mocks/crypto.mock.ts'
           ),
         },
         {
-          find: '@/assets/icons/fire.svg',
+          find: '@icons/fire.svg',
           replacement: path.resolve(
             process.cwd(),
-            'src/components/shared/__tests__/mocks/fire.svg'
+            'src/components/right-sidebar/__tests__/mocks/fire.svg'
           ),
         },
         // Standard path aliases for other imports
