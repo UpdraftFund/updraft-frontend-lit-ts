@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 
-import '@/components/shared/idea-card-small';
+import '@/components/right-sidebar/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import urqlClient from '@/urql-client';

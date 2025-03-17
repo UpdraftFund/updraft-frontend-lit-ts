@@ -566,7 +566,7 @@ export class MyApp extends LitElement {
       showLeftSidebar: true,
       showRightSidebar: false,
       showHotIdeas: false,
-      showSearch: true,
+      showSearch: false,
       showDiscoverTabs: false,
       type: 'profile',
       title: 'Profile',
@@ -582,8 +582,8 @@ export class MyApp extends LitElement {
     };
     const createProfileLayout: PageLayout = {
       showLeftSidebar: true,
-      showRightSidebar: false,
-      showHotIdeas: false,
+      showRightSidebar: true,
+      showHotIdeas: true,
       showSearch: false,
       showDiscoverTabs: false,
       type: 'profile',
@@ -592,16 +592,7 @@ export class MyApp extends LitElement {
     const createIdeaLayout: PageLayout = {
       showLeftSidebar: true,
       showRightSidebar: true,
-      showHotIdeas: false,
-      showSearch: false,
-      showDiscoverTabs: false,
-      type: 'creation',
-      title: 'Create Idea',
-    };
-    const editIdeaLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: true,
-      showHotIdeas: false,
+      showHotIdeas: true,
       showSearch: false,
       showDiscoverTabs: false,
       type: 'creation',
@@ -631,8 +622,6 @@ export class MyApp extends LitElement {
       return createProfileLayout;
     } else if (path === '/create-idea') {
       return createIdeaLayout;
-    } else if (path === '/create-idea-submit') {
-      return editIdeaLayout;
     } else if (path.startsWith('/create-solution/')) {
       return createSolutionLayout;
     }
@@ -662,11 +651,14 @@ export class MyApp extends LitElement {
         <left-side-bar></left-side-bar>
         <div class="content-wrapper">
           <main class="main-content">${this.router.outlet()}</main>
-          <right-side-bar
-            .layout=${layout}
-            .ideaId=${ideaId}
-            ?show-hot-ideas=${layout.showHotIdeas}
-          ></right-side-bar>
+          ${layout.showRightSidebar
+            ? html`
+                <right-side-bar
+                  .ideaId=${ideaId}
+                  ?show-hot-ideas=${layout.showHotIdeas}
+                ></right-side-bar>
+              `
+            : ''}
         </div>
       </div>
     `;

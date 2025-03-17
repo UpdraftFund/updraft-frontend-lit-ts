@@ -228,7 +228,9 @@ export class ProfileArea extends SignalWatcher(LitElement) {
                     style="width: 2rem; height: 2rem;"
                     src="${plusLgIcon}"
                   ></sl-icon>
-                  <span>Create Idea</span>
+                  <span style="text-underline-position: under;"
+                    >Create Idea</span
+                  >
                 </a>
               `}
           <sl-dropdown

@@ -11,7 +11,7 @@ import chevronRight from '@icons/chevron-right.svg';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@/components/shared/section-heading';
-import '@/components/shared/idea-card-small';
+import '@/components/right-sidebar/idea-card-small';
 
 import {
   connectionContext,
