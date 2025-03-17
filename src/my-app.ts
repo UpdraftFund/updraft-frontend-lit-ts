@@ -60,6 +60,9 @@ import '@components/layout/right-side-bar';
 // Import our new user-profile component
 import '@/components/shared/user-profile';
 
+// Import beginner tasks state
+import { beginnerTasksContext, tasks, completedTasks, completeTask, resetState, isAllTasksCompleted } from './state/beginner-tasks-state';
+
 // @ts-ignore: Property 'UrlPattern' does not exist
 if (!globalThis.URLPattern) {
   await import('urlpattern-polyfill');
@@ -332,6 +335,18 @@ export class MyApp extends LitElement {
   @provide({ context: ideaContext })
   get ideaState() {
     return getIdeaState();
+  }
+
+  // Provide beginner tasks state context
+  @provide({ context: beginnerTasksContext })
+  get beginnerTasksState() {
+    return {
+      tasks: tasks.get(),
+      completedTasks: completedTasks.get(),
+      isAllTasksCompleted: isAllTasksCompleted.get(),
+      completeTask,
+      resetState
+    };
   }
 
   @state() expanded = false;

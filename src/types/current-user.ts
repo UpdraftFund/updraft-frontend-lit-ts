@@ -6,6 +6,7 @@ export type CurrentUser = {
   about?: string;
   news?: string;
   links?: string[];
+  balances?: Balances;
 };
 
 export type Connection = {
@@ -16,4 +17,9 @@ export type Connection = {
   };
 };
 
-export type Balances = Record<string, { symbol: string; balance: string }>;
+export type Balances = {
+  [key: string]: {
+    symbol: string;
+    balance: string;
+  };
+};
