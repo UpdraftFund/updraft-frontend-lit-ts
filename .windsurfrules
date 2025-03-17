@@ -1,23 +1,64 @@
-1. We're using yarn as our package manager
-2. We're using lit for our frontend framework
-3. We're using typescript for our language
-4. We're using Shoelace for our UI components
-5. We're using wagmi for our wallet connection
-6. We're using viem for our blockchain interactions
-7. We're consuming data from The Graph GraphQL API https://github.com/graphprotocol/graph-client#readme
-8. We're using urql for our graphql client, the related queries are in the `src/queries` directory
-9. We're using lit-labs/router for our routing
-10. We're using lit-labs/signals for our signals
-11. We're using lit-labs/task for our tasks
-12. We're using lit-labs/hydrate for our hydration
-13. We're keeping page specific components in the `src/components/page-specific` directory
-14. We're keeping shared components in the `src/components/shared` directory
-15. We're keeping pages in the `src/pages` directory
-16. The app's CSS is in the `src/styles` directory
-17. Our right sidebar has interswappable components which are determined by the route and `getPageLyout` in my-app.ts
-18. The app routes are defined in my-app.ts, with the Idea page for example being rendered at the path '/idea/:id'
-19. We're using web-test-runner for our testing
-20. Use Semantic Commit Messages as per https://www.conventionalcommits.org/en/v1.0.0/ with descriptive list of changes if the amount of changes calls for it
-21. Use `yarn dev` to start the development server
-22. When modifying imports, don't remove existing imports
-23. Always suggest component-level improvements when you notice a better architectural approach, especially regarding data flow, component responsibilities, and code organization.
+# Setup
+
+- We're using yarn as our package manager
+- We're using lit for our frontend framework
+- We're using typescript for our language
+- We're using Shoelace for our UI components
+- We're using wagmi for our wallet connection
+- We're using viem for our blockchain interactions
+- We're consuming data from The Graph GraphQL API https://github.com/graphprotocol/graph-client#readme
+- We're using urql for our graphql client, the related queries are in the `src/queries` directory
+- We're keeping page specific components in the `src/components/page-specific` directory
+- We're keeping shared components in the `src/components/shared` directory
+- We're keeping pages in the `src/pages` directory
+- The app's CSS is in the `src/styles` directory
+- Our right sidebar has interswappable components which are determined by the route and `getPageLyout` in my-app.ts
+- The app routes are defined in my-app.ts, with the Idea page for example being rendered at the path '/idea/:id'
+- We're using web-test-runner for our testing
+- Use Semantic Commit Messages as per https://www.conventionalcommits.org/en/v1.0.0/ with descriptive list of changes if the amount of changes calls for it
+- Use `yarn dev` to start the development server
+- When modifying imports, don't remove existing imports
+
+# General Code Style, Formatting & Best Practices
+
+- Prefer iteration and modularization over code duplication.
+- Always suggest component-level improvements when you notice a better architectural approach, especially regarding data flow, component responsibilities, and code organization.
+- Always declare the type of each variable and function (parameters and return value).
+- Avoid using any.
+- Use JSDoc to document public classes and methods.
+- Use TypeScript for all code; prefer interfaces over types.
+- Create necessary types. Check `src/types` directory for existing types.
+- Avoid any and enums; use explicit types and maps instead.
+- Use functional components with TypeScript interfaces.
+- Enable strict mode in TypeScript for better type safety.
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
+- Use Prettier for consistent code formatting.
+
+# Naming Conventions
+
+- Use PascalCase for classes.
+- Use camelCase for variables, functions, and methods.
+- Use kebab-case for file and directory names.
+- Use UPPERCASE for environment variables.
+- Avoid magic numbers and define constants.
+- Favor named exports for components.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+
+# Functions & Logic
+
+- Keep functions short and single-purpose (<20 lines).
+- Avoid deeply nested blocks by:
+- Using early returns.
+- Extracting logic into utility functions.
+- Use higher-order functions (map, filter, reduce) to simplify logic.
+- Use arrow functions for simple cases (<3 instructions), named functions otherwise.
+- Use default parameter values instead of null/undefined checks.
+- Use RO-RO (Receive Object, Return Object) for passing and returning multiple parameters.
+
+# Data Handling
+
+- Avoid excessive use of primitive types; encapsulate data in composite types.
+- Avoid placing validation inside functions—use classes with internal validation instead.
+- Prefer immutability for data:
+- Use readonly for immutable properties.
+- Use as const for literals that never change.
