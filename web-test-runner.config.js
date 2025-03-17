@@ -41,6 +41,20 @@ export default {
           ),
         },
         {
+          find: '@/state/user-state',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/components/shared/__tests__/mocks/user-state.mock.ts'
+          ),
+        },
+        {
+          find: '@/web3',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/components/shared/__tests__/mocks/web3.mock.ts'
+          ),
+        },
+        {
           find: '@gql',
           replacement: path.resolve(
             process.cwd(),
@@ -54,13 +68,23 @@ export default {
             'src/components/shared/__tests__/mocks/idea-card-small.mock.ts'
           ),
         },
-
+        // Mock crypto module to resolve the crypto import issue
+        {
+          find: 'crypto',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/components/shared/__tests__/mocks/crypto.mock.ts'
+          ),
+        },
+        {
+          find: '@/assets/icons/fire.svg',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/components/shared/__tests__/mocks/fire.svg'
+          ),
+        },
         // Standard path aliases for other imports
         { find: '@/', replacement: path.resolve(process.cwd(), 'src/') },
-        {
-          find: '@icons',
-          replacement: path.resolve(process.cwd(), 'src/assets/icons/'),
-        },
       ],
     }),
   ],

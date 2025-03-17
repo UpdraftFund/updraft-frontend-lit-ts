@@ -289,7 +289,9 @@ export class RightSideBar extends LitElement {
                     ? tags.map(
                         (tag) => html`
                           <div class="tag-with-remove">
-                            <a class="tag" href="/discover?search=[${tag}]"
+                            <a
+                              class="tag"
+                              href="/discover?tab=search&search=[${tag}]"
                               >${tag}</a
                             >
                             ${this.editMode

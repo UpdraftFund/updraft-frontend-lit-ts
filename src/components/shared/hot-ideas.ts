@@ -56,7 +56,10 @@ export class HotIdeas extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
     this.unsubHotIdeas?.();
   }
 
@@ -69,7 +72,9 @@ export class HotIdeas extends LitElement {
   private _getHotIdeasTask = new Task(
     this,
     async () => {
-      const result = await urqlClient.query(IdeasBySharesDocument, {}).toPromise();
+      const result = await urqlClient
+        .query(IdeasBySharesDocument, {})
+        .toPromise();
       if (result.data?.ideas) {
         const ideas = result.data.ideas as Idea[];
         setHotIdeas(ideas);
@@ -84,11 +89,7 @@ export class HotIdeas extends LitElement {
     return html`
       <div class="hot-ideas-list">
         ${ideas.map(
-          (idea) => html`
-            <idea-card-small
-              .idea=${idea}
-            ></idea-card-small>
-          `
+          (idea) => html` <idea-card-small .idea=${idea}></idea-card-small> `
         )}
       </div>
     `;
