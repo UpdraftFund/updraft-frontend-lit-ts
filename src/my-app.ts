@@ -329,7 +329,6 @@ export class MyApp extends LitElement {
   @provide({ context: updraftSettingsContext })
   updraftSettings!: UpdraftSettings;
   @provide({ context: userContext }) userState = getUserState();
-  @state() private _userState = getUserState();
 
   // Provide idea state context
   @provide({ context: ideaContext })
@@ -431,8 +430,7 @@ export class MyApp extends LitElement {
         dispatchUserEvent(USER_CONNECTED_EVENT, { address });
       }
 
-      // Update both user state properties
-      this._userState = getUserState();
+      // Update user state property
       this.userState = getUserState();
 
       // Force a re-render of the app
@@ -451,8 +449,7 @@ export class MyApp extends LitElement {
       // Update new user state
       setNetworkName(caipNetwork?.name || null);
 
-      // Update both user state properties
-      this._userState = getUserState();
+      // Update user state property
       this.userState = getUserState();
 
       this.getUpdraftSettings.run().then(() => this.refreshBalances.run());

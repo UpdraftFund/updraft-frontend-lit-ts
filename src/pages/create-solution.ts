@@ -1,6 +1,5 @@
 import {
   formToJson,
-  loadForm,
   SaveableForm,
 } from '@/components/base/saveable-form';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -17,7 +16,6 @@ import {
 import { userContext, UserState } from '@/state/user-state';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
-import { modal } from '@/web3';
 
 import {
   TransactionSuccess,
@@ -40,14 +38,21 @@ import '@/components/shared/upd-dialog';
 import '@/components/shared/share-dialog';
 import '@/components/shared/label-with-hint';
 
-import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@/contracts/updraft';
-import { Upd } from '@/contracts/upd';
 
 import { UpdraftSettings, Balances } from '@/types';
 import { IdeaDocument } from '@gql';
 import urqlClient from '@/urql-client';
+
+interface SolutionFormData {
+  deadline: string;
+  deposit: string;
+  goal: string;
+  'funding-token': string;
+  reward: string;
+  [key: string]: string;
+}
 
 @customElement('create-solution')
 export class CreateSolution extends SaveableForm {
@@ -298,55 +303,38 @@ export class CreateSolution extends SaveableForm {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
 
-  private async handleSubmit() {
-    const userState = this.userState;
-    if (!userState?.isConnected) {
-      await userState.connect();
-      return;
-    }
+  protected async handleSubmit(event: Event) {
+    event.preventDefault();
+    const formData = formToJson('create-solution', solutionSchema) as SolutionFormData;
 
-    // Don't allow overlapping transactions
-    if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
-      const formData = formToJson('create-solution', solutionSchema);
-      try {
-        // Format the deadline date properly
-        const deadlineDate = formData['deadline']
-          ? dayjs(formData['deadline']).unix()
-          : dayjs().add(30, 'days').unix(); // Default to 30 days from now if not set
+    try {
+      // Convert deadline to Unix timestamp
+      const deadline = formData.deadline
+        ? dayjs(formData.deadline).unix()
+        : Math.floor(Date.now() / 1000) + 86400; // Default to 24 hours from now
 
+      // Parse deposit and goal amounts
+      const deposit = parseUnits(formData.deposit || '0', 18);
+      const goal = parseUnits(formData.goal || '0', 18);
+
+      // Don't allow overlapping transactions
+      if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
         this.submitTransaction.hash = await updraft.write('createSolution', [
           this.ideaId,
           formData['funding-token'],
-          parseUnits(formData['deposit'], 18),
-          parseUnits(formData['goal'], 18),
-          deadlineDate,
+          deposit,
+          goal,
+          deadline,
           BigInt(
-            (Number(formData['reward']) *
+            (Number(formData.reward) *
               Number(this.updraftSettings.percentScale)) /
               100
           ),
           toHex(JSON.stringify(formData)),
         ]);
-      } catch (e: any) {
-        console.error('Solution creation error:', e);
-        if (
-          e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId')
-        ) {
-          // Open the wallet connection modal if there's a connection issue
-          await userState.connect();
-        } else if (e.message?.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (e.message?.includes('exceeds allowance')) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(this.updraftSettings.updAddress);
-          this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address,
-            parseUnits('1', 29),
-          ]);
-        }
       }
+    } catch (error) {
+      console.error('Error submitting solution:', error);
     }
   }
 
