@@ -1,33 +1,11 @@
 import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { consume } from '@lit/context';
-import { Task } from '@lit/task';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-
-import { beginnerTasksContext, BeginnerTasksState, BeginnerTask, tasks as defaultTasks } from '../../../state/beginner-tasks-state';
-import { userContext, UserState } from '../../../state/user-state';
-import { getUpdBalance } from '../../../utils/token';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends LitElement {
-  @consume({ context: beginnerTasksContext, subscribe: true })
-  tasks?: BeginnerTasksState;
-
-  @consume({ context: userContext, subscribe: true })
-  user?: UserState;
-
-  private updBalanceTask = new Task(
-    this,
-    async ([address]) => {
-      if (!address) return '0';
-      return getUpdBalance(address);
-    },
-    () => [this.user?.address]
-  );
-
   static styles = css`
     :host {
       display: block;
@@ -42,7 +20,6 @@ export class BeginnerTasks extends LitElement {
 
     sl-card {
       --padding: 1.25rem;
-      position: relative;
     }
 
     .task-card-title {
@@ -50,9 +27,6 @@ export class BeginnerTasks extends LitElement {
       font-size: 1.25rem;
       font-weight: 600;
       margin: 0 0 1rem 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
     }
 
     .task-card-description {
@@ -60,68 +34,84 @@ export class BeginnerTasks extends LitElement {
       line-height: 1.5;
       margin-bottom: 1.5rem;
     }
-
-    .completed-icon {
-      color: var(--sl-color-success-600);
-    }
-
-    .task-card-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .upd-balance {
-      font-size: 0.875rem;
-      color: var(--sl-color-neutral-600);
-    }
   `;
 
-  private handleTaskAction(taskId: string, route: string) {
-    if (taskId === 'connect-wallet' && this.user) {
-      this.user.connect();
-    } else if (route) {
-      window.location.href = route;
-    }
-  }
-
-  private renderTask(task: BeginnerTask) {
-    const isCompleted = this.tasks?.completedTasks.has(task.id) || false;
-    const { value: updBalance = '0' } = this.updBalanceTask;
-
-    return html`
-      <sl-card>
-        <h3 class="task-card-title">
-          ${task.title}
-          ${isCompleted
-            ? html`<sl-icon name="check-circle-fill" class="completed-icon"></sl-icon>`
-            : ''}
-        </h3>
-        <p class="task-card-description">${task.description}</p>
-        <div class="task-card-actions">
-          <sl-button
-            variant="primary"
-            ?disabled=${isCompleted}
-            @click=${() => this.handleTaskAction(task.id, task.route)}
-          >
-            ${task.buttonText}
-          </sl-button>
-          ${task.id === 'get-upd'
-            ? html`<div class="upd-balance">🪁 ${updBalance} UPD</div>`
-            : ''}
-        </div>
-      </sl-card>
-    `;
-  }
-
   render() {
-    // Use default tasks if context is not available
-    const tasksToRender = this.tasks?.tasks || defaultTasks.get();
-
     return html`
       <h2>Tasks</h2>
       <section class="beginner-tasks">
-        ${tasksToRender.map((task) => this.renderTask(task))}
+        <sl-card>
+          <h3 class="task-card-title">Follow Someone</h3>
+          <p class="task-card-description">
+            A great way to learn is by watching another user. You can see a
+            user's activity on their profile page. Go to Adam's profile and
+            follow him from there.
+          </p>
+          <sl-button variant="primary">Adam's profile</sl-button>
+        </sl-card>
+
+        <sl-card>
+          <h3 class="task-card-title">Watch a Tag</h3>
+          <p class="task-card-description">
+            Stay up to date on the latest activity from a project, DAO,
+            investor, builder, or topic. Search for the [updraft] tag and watch
+            it.
+          </p>
+          <sl-button variant="primary">Search for [updraft]</sl-button>
+        </sl-card>
+
+        <sl-card>
+          <h3 class="task-card-title">Connect a Wallet</h3>
+          <p class="task-card-description">
+            Funding happens through an Ethereum wallet. Choose a wallet
+            provider, install it, then click "Connect Wallet"
+          </p>
+          <p class="task-card-description">
+            ⬩Enkrypt ⬩Frame ⬩Metamask ⬩MEW ⬩Rabby
+          </p>
+          <sl-button variant="primary">Connect Wallet</sl-button>
+        </sl-card>
+
+        <sl-card>
+          <h3 class="task-card-title">Get UPD🪁</h3>
+          <p class="task-card-description">
+            You need the right balance of ETH, UPD, and other tokens to use
+            Updraft. You'll need at least 5 UPD to complete the other tasks.
+            Swap some ETH for UPD.
+          </p>
+          <sl-button variant="primary">Swap for UPD</sl-button>
+          <div>🪁 525 UPD</div>
+        </sl-card>
+
+        <sl-card>
+          <h3 class="task-card-title">Fund an Idea</h3>
+          <p class="task-card-description">
+            You can earn UPD by funding a popular idea. Look for the 💰 symbol
+            to see the reward you can earn from future funders. Find an Idea and
+            fund it with UPD.
+          </p>
+          <sl-button variant="primary">Go to "Example" Idea</sl-button>
+        </sl-card>
+
+        <sl-card>
+          <h3 class="task-card-title">Fund a Solution</h3>
+          <p class="task-card-description">
+            Every Idea needs a Solution. A great team and execution can change
+            the world. Fund a Solution you love and earn a reward 💰 if others
+            feel the same way.
+          </p>
+          <sl-button variant="primary">Go to "Example" Solution</sl-button>
+        </sl-card>
+
+        <sl-card>
+          <h3 class="task-card-title">Create a Profile</h3>
+          <p class="task-card-description">
+            You're nearing the end of your beginner's journey. Soon others will
+            follow and learn from you. Create a profile so they can see what
+            you're up to and follow your lead.
+          </p>
+          <sl-button variant="primary">Go to Your Profile</sl-button>
+        </sl-card>
       </section>
     `;
   }
