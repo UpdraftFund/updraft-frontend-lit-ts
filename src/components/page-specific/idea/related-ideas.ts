@@ -7,7 +7,7 @@ import '@/components/right-sidebar/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import urqlClient from '@/urql-client';
-import { RelatedIdeasDocument } from '@gql';
+import { IdeasByTagsDocument } from '@gql';
 import { ideaContext, IdeaState } from '@/state/idea-state';
 
 @customElement('related-ideas')
@@ -142,9 +142,12 @@ export class RelatedIdeas extends LitElement {
         const allResults = await Promise.all(
           tags.map((tag: string) => {
             return urqlClient
-              .query(RelatedIdeasDocument, {
-                ideaId: this.ideaId,
-                tag,
+              .query(IdeasByTagsDocument, {
+                tag1: tag,
+                tag2: tag,
+                tag3: tag,
+                tag4: tag,
+                tag5: tag,
               })
               .toPromise();
           })
