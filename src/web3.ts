@@ -37,7 +37,7 @@ export const modal = createAppKit({
   themeMode: 'light',
   themeVariables: {
     '--w3m-accent': 'var(--accent);',
-    '--w3m-font-family': "'Noto Sans', sans-serif;",
+    '--w3m-font-family': 'var(--sl-font-sans);',
     '--w3m-color-mix': 'var(--accent);',
     '--w3m-color-mix-strength': 12,
   },
