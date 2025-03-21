@@ -60,22 +60,23 @@ export class HomePage extends LitElement {
   @consume({ context: userContext, subscribe: true })
   userState?: UserState;
 
-  private readonly userIdeasSolutions = new Task(
-    this,
-    {
-      task: async () => {
-        console.log('User state:', this.userState);
-        
-        if (!this.userState?.address) {
-          console.log('No user address found');
-          return { ideaIds: [], solutionIds: [] };
-        }
+  private readonly userIdeasSolutions = new Task(this, {
+    task: async () => {
+      console.log('User state:', this.userState);
 
-        try {
-          console.log('Fetching ideas and solutions for user:', this.userState.address);
+      if (!this.userState?.address) {
+        console.log('No user address found');
+        return { ideaIds: [], solutionIds: [] };
+      }
 
-          // Define the GraphQL query inline to avoid module import issues
-          const USER_IDEAS_SOLUTIONS_QUERY = `
+      try {
+        console.log(
+          'Fetching ideas and solutions for user:',
+          this.userState.address
+        );
+
+        // Define the GraphQL query inline to avoid module import issues
+        const USER_IDEAS_SOLUTIONS_QUERY = `
             query UserIdeasSolutions($userId: String!) {
               createdIdeas: ideas(
                 where: { creator: $userId }
@@ -117,66 +118,62 @@ export class HomePage extends LitElement {
             }
           `;
 
-          const result = await urqlClient.query<UserIdeasSolutionsResponse>(USER_IDEAS_SOLUTIONS_QUERY, {
+        const result = await urqlClient.query<UserIdeasSolutionsResponse>(
+          USER_IDEAS_SOLUTIONS_QUERY,
+          {
             userId: this.userState.address,
-          });
-
-          if (result.error) {
-            console.error('Error fetching user ideas and solutions:', result.error);
-            return { ideaIds: [], solutionIds: [] };
           }
+        );
 
-          // Extract and combine idea IDs
-          const createdIdeaIds = result.data?.createdIdeas?.map(idea => idea.id) || [];
-          const fundedIdeaIds = result.data?.fundedIdeas?.map(contribution => contribution.idea.id) || [];
-          const ideaIds = [...new Set([...createdIdeaIds, ...fundedIdeaIds])];
-
-          // Extract and combine solution IDs
-          const createdSolutionIds = result.data?.createdSolutions?.map(solution => solution.id) || [];
-          const fundedSolutionIds = result.data?.fundedSolutions?.map(contribution => contribution.solution.id) || [];
-          const solutionIds = [...new Set([...createdSolutionIds, ...fundedSolutionIds])];
-
-          console.log('User ideas:', ideaIds);
-          console.log('User solutions:', solutionIds);
-
-          return { ideaIds, solutionIds };
-        } catch (error) {
-          console.error('Error fetching user ideas and solutions:', error);
+        if (result.error) {
+          console.error(
+            'Error fetching user ideas and solutions:',
+            result.error
+          );
           return { ideaIds: [], solutionIds: [] };
         }
-      },
-      args: () => [this.userState?.address],
-    }
-  );
 
-  private handleConnect() {
-    this.userState?.connect();
-  }
+        // Extract and combine idea IDs
+        const createdIdeaIds =
+          result.data?.createdIdeas?.map((idea) => idea.id) || [];
+        const fundedIdeaIds =
+          result.data?.fundedIdeas?.map(
+            (contribution) => contribution.idea.id
+          ) || [];
+        const ideaIds = [...new Set([...createdIdeaIds, ...fundedIdeaIds])];
+
+        // Extract and combine solution IDs
+        const createdSolutionIds =
+          result.data?.createdSolutions?.map((solution) => solution.id) || [];
+        const fundedSolutionIds =
+          result.data?.fundedSolutions?.map(
+            (contribution) => contribution.solution.id
+          ) || [];
+        const solutionIds = [
+          ...new Set([...createdSolutionIds, ...fundedSolutionIds]),
+        ];
+
+        console.log('User ideas:', ideaIds);
+        console.log('User solutions:', solutionIds);
+
+        return { ideaIds, solutionIds };
+      } catch (error) {
+        console.error('Error fetching user ideas and solutions:', error);
+        return { ideaIds: [], solutionIds: [] };
+      }
+    },
+    args: () => [this.userState?.address],
+  });
 
   render() {
-    if (!this.userState?.isConnected) {
-      return html`
-        <div class="container">
-          <main>
-            <div class="connect-prompt">
-              <h2>Connect your wallet to see your activity</h2>
-              <sl-button variant="primary" @click=${this.handleConnect}>
-                Connect Wallet
-              </sl-button>
-            </div>
-          </main>
-        </div>
-      `;
-    }
-
     return html`
       <div class="container">
         <main>
           ${this.userIdeasSolutions.render({
             pending: () => html`<tracked-changes></tracked-changes>`,
             complete: ({ ideaIds, solutionIds }) => html`
-              <tracked-changes 
-                .ideaIds=${ideaIds} 
+              <tracked-changes
+                .ideaIds=${ideaIds}
                 .solutionIds=${solutionIds}
               ></tracked-changes>
             `,
