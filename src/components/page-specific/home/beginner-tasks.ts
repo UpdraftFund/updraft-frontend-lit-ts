@@ -9,6 +9,7 @@ export class BeginnerTasks extends LitElement {
   static styles = css`
     :host {
       display: block;
+      font-family: var(--main-font);
     }
 
     .beginner-tasks {
@@ -23,7 +24,6 @@ export class BeginnerTasks extends LitElement {
     }
 
     .task-card-title {
-      font-family: var(--sl-font-sans);
       font-size: 1.25rem;
       font-weight: 600;
       margin: 0 0 1rem 0;
