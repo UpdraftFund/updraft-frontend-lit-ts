@@ -24,4 +24,39 @@
 
   --sl-input-border-radius-medium: 20px;
   --sl-input-required-content: unset;
+  
+  /* Custom application variables that work with both themes */
+  --main-background: var(--sl-color-neutral-0);
+  --subtle-background: var(--sl-color-neutral-50);
+  --main-foreground: var(--sl-color-neutral-900);
+  --section-heading: var(--sl-color-neutral-600);
+  --accent: var(--sl-color-primary-600);
+  --accent-subtle: var(--sl-color-primary-100);
+  --accent-muted: var(--sl-color-primary-400);
+  --accent-emphasis: var(--sl-color-primary-700);
+  --danger: var(--sl-color-danger-600);
+  --danger-subtle: var(--sl-color-danger-100);
+  --success: var(--sl-color-success-600);
+  --success-subtle: var(--sl-color-success-100);
+  --attention: var(--sl-color-warning-600);
+  --attention-subtle: var(--sl-color-warning-100);
+  --border-default: var(--sl-color-neutral-200);
+  --border-muted: var(--sl-color-neutral-100);
+  --neutral-muted: var(--sl-color-neutral-400);
+  --neutral-subtle: var(--sl-color-neutral-50);
+}
+
+/* Tab group specific styling */
+sl-tab-group::part(base) {
+  --indicator-color: var(--accent);
+  --track-color: var(--border-default);
+}
+
+sl-tab::part(base) {
+  color: var(--main-foreground);
+}
+
+sl-tab[active]::part(base) {
+  color: var(--accent);
+  font-weight: 600;
 }
