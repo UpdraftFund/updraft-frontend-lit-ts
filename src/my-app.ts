@@ -39,7 +39,7 @@ import {
   updraftSettings as updraftSettingsContext,
   RequestBalanceRefresh,
 } from '@/context';
-import { Connection, Balances, UpdraftSettings } from '@/types';
+import { Connection, Balances, UpdraftSettings, Profile } from '@/types';
 import { PageLayout } from '@/types/layout';
 
 import { ProfileDocument } from '@gql';
@@ -60,11 +60,7 @@ import '@components/layout/right-side-bar';
 // Import our new user-profile component
 import '@/components/shared/user-profile';
 
-// Import beginner tasks state
-import { beginnerTasksContext, tasks, completedTasks, completeTask, resetState, isAllTasksCompleted } from './state/beginner-tasks-state';
-
-// @ts-ignore: Property 'UrlPattern' does not exist
-if (!globalThis.URLPattern) {
+if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
 }
 
@@ -306,18 +302,6 @@ export class MyApp extends LitElement {
     return getIdeaState();
   }
 
-  // Provide beginner tasks state context
-  @provide({ context: beginnerTasksContext })
-  get beginnerTasksState() {
-    return {
-      tasks: tasks.get(),
-      completedTasks: completedTasks.get(),
-      isAllTasksCompleted: isAllTasksCompleted.get(),
-      completeTask,
-      resetState
-    };
-  }
-
   @state() expanded = false;
 
   constructor() {
@@ -339,7 +323,7 @@ export class MyApp extends LitElement {
         const result = await urqlClient.query(ProfileDocument, {
           userId: address,
         });
-        let profile = {} as Record<string, any>;
+        let profile = {} as Profile;
         if (result.data?.user?.profile) {
           profile = JSON.parse(
             fromHex(result.data.user.profile as `0x${string}`, 'string')
