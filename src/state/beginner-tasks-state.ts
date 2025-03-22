@@ -1,106 +1,70 @@
-import { createContext } from '@lit/context';
 import { signal, computed } from '@lit-labs/signals';
 
-export interface BeginnerTask {
-  id: string;
-  title: string;
-  description: string;
-  buttonText: string;
-  route: string;
-}
+export const BEGINNER_TASKS = [
+  'follow-someone',
+  'watch-tag',
+  'connect-wallet',
+  'get-gas',
+  'get-upd',
+  'support-idea',
+  'fund-solution',
+  'create-profile',
+] as const;
 
-export interface BeginnerTasksState {
-  // Core data
-  tasks: BeginnerTask[];
-  completedTasks: Set<string>;
+const isBeginnerTask = (task: string): task is BeginnerTask => {
+  return BEGINNER_TASKS.includes(task as BeginnerTask);
+};
 
-  // Computed values
-  isAllTasksCompleted: boolean;
+export const BEGINNER_TASKS_COUNT = BEGINNER_TASKS.length;
 
-  // Actions
-  completeTask: (taskId: string) => void;
-  resetState: () => void;
-}
+export const STORAGE_KEY = 'completedBeginnerTasks';
 
-// Internal signals
-export const tasks = signal<BeginnerTask[]>([
-  {
-    id: 'follow-user',
-    title: 'Follow Someone',
-    description:
-      "A great way to learn is by watching another user. You can see a user's activity on their profile page. Go to Adam's profile and follow him from there.",
-    buttonText: "Adam's profile",
-    route: '/profile/adam',
-  },
-  {
-    id: 'watch-tag',
-    title: 'Watch a Tag',
-    description:
-      'Stay up to date on the latest activity from a project, DAO, investor, builder, or topic. Search for the [updraft] tag and watch it.',
-    buttonText: 'Search for [updraft]',
-    route: '/discover?tab=search&search=[updraft]',
-  },
-  {
-    id: 'connect-wallet',
-    title: 'Connect a Wallet',
-    description:
-      'Funding happens through an Ethereum wallet. Choose a wallet provider, install it, then click "Connect Wallet"',
-    buttonText: 'Connect Wallet',
-    route: '',
-  },
-  {
-    id: 'get-upd',
-    title: 'Get UPD🪁',
-    description:
-      "You need the right balance of ETH, UPD, and other tokens to use Updraft. You'll need at least 5 UPD to complete the other tasks. Swap some ETH for UPD.",
-    buttonText: 'Swap for UPD',
-    route: '/swap',
-  },
-  {
-    id: 'fund-idea',
-    title: 'Fund an Idea',
-    description:
-      'You can earn UPD by funding a popular idea. Look for the 💰 symbol to see the reward you can earn from future funders. Find an Idea and fund it with UPD.',
-    buttonText: 'Go to "Example" Idea',
-    route: '/idea/example',
-  },
-  {
-    id: 'fund-solution',
-    title: 'Fund a Solution',
-    description:
-      'Every Idea needs a Solution. A great team and execution can change the world. Fund a Solution you love and earn a reward 💰 if others feel the same way.',
-    buttonText: 'Go to "Example" Solution',
-    route: '/solution/example',
-  },
-  {
-    id: 'create-profile',
-    title: 'Create a Profile',
-    description:
-      "You're nearing the end of your beginner's journey. Soon others will follow and learn from you. Create a profile so they can see what you're up to and follow your lead.",
-    buttonText: 'Go to Your Profile',
-    route: '/profile',
-  },
-]);
+export type BeginnerTask = (typeof BEGINNER_TASKS)[number];
 
-export const completedTasks = signal<Set<string>>(new Set());
+export const completedTasks = signal<Set<BeginnerTask>>(new Set());
 
-// Computed values
-export const isAllTasksCompleted = computed(() => {
-  return completedTasks.get().size === tasks.get().length;
+export const allTasksCompleted = computed(() => {
+  return completedTasks.get().size === BEGINNER_TASKS_COUNT;
 });
 
-// Actions
-export const completeTask = (taskId: string): void => {
+export const markComplete = (taskId: BeginnerTask): void => {
   const newCompletedTasks = new Set(completedTasks.get());
   newCompletedTasks.add(taskId);
   completedTasks.set(newCompletedTasks);
+
+  try {
+    const tasksArray = Array.from(newCompletedTasks);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasksArray));
+  } catch (error) {
+    console.warn('Failed to save completed task to local storage:', error);
+  }
 };
 
-export const resetState = (): void => {
+export const reset = (): void => {
   completedTasks.set(new Set());
+
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.warn('Failed to clear completed tasks from local storage:', error);
+  }
 };
 
-// Context
-export const beginnerTasksContext = createContext<BeginnerTasksState>(
-  'beginner-tasks-state'
-);
+export const loadFromStorage = (): void => {
+  try {
+    const savedTasks = localStorage.getItem(STORAGE_KEY);
+    if (savedTasks) {
+      const tasksArray = JSON.parse(savedTasks) as BeginnerTask[];
+      const validTasks = tasksArray.filter((task): task is BeginnerTask =>
+        isBeginnerTask(task)
+      );
+      completedTasks.set(new Set(validTasks));
+    }
+  } catch (error) {
+    console.group('Failed to load completed beginner tasks from local storage');
+    console.warn(error);
+    console.warn('Resetting all beginner tasks to incomplete.');
+    console.groupEnd();
+    reset();
+  }
+};
