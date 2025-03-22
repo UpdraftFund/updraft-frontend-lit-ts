@@ -3,7 +3,7 @@
 ## Development Environment
 
 - **Language**: TypeScript
-- **Framework**: Lit (v3.2.1) - A modern web components framework
+- **Framework**: Lit (v3.x) - A modern web components framework
 - **Build Tool**: Vite (v6.1.0)
 - **Package Manager**: Yarn
 - **Testing**: Web Test Runner (@web/test-runner)
@@ -17,42 +17,53 @@
 
 ### Core Libraries
 
-- **@lit-labs/signals**: Reactive state management (v0.1.1)
-- **@lit-labs/router**: Routing for Lit applications (v0.1.3)
-- **@lit/context**: Context API for Lit (v1.1.3)
-- **@lit/task**: Task management for asynchronous operations (v1.0.2)
+- **@lit-labs/signals**: Reactive state management for fine-grained updates
+- **@lit-labs/router**: Client-side routing with Web Components
+- **@lit/task**: Declarative async task management
+- **@lit/context**: Context API for static configuration
 
 ### UI Components
 
-- **@shoelace-style/shoelace**: Web component library (v2.20.0)
+- **@shoelace-style/shoelace**: Web component library
 
 ### Data Management
 
-- **@graphprotocol/client-urql**: GraphQL client integration (v2.0.7)
-- **urql**: GraphQL client (v4.2.1)
-- **graphql**: GraphQL implementation (v16.10.0)
+- **@graphprotocol/client-urql**: GraphQL client integration
+- **urql**: GraphQL client
+- **graphql**: GraphQL implementation
 
 ### Web3 Integration
 
-- **@reown/appkit**: Web3 app toolkit (v1.6.7)
-- **@reown/appkit-adapter-wagmi**: Wagmi adapter for appkit (v1.6.7)
-- **@reown/appkit-siwe**: Sign-In with Ethereum integration (v1.6.7)
-- **@wagmi/core**: Core Wagmi libraries (v2.16.4)
-- **@wagmi/connectors**: Wallet connectors (v5.7.7)
+- **@reown/appkit**: Web3 app toolkit
+- **@reown/appkit-adapter-wagmi**: Wagmi adapter for appkit
+- **@reown/appkit-siwe**: Sign-In with Ethereum integration
+- **@wagmi/core**: Core Wagmi libraries
+- **@wagmi/connectors**: Wallet connectors
 
 ### Utilities
 
-- **dayjs**: Date manipulation library (v1.11.13)
-- **ethereum-blockies-base64**: Ethereum address identicons (v1.0.2)
+- **dayjs**: Date manipulation library
+- **ethereum-blockies-base64**: Ethereum address identicons
 
 ## Project Structure
 
-- **/src**: Main source code directory
-- **/docs**: Documentation files (including Lit Signals best practices)
-- **/public**: Static assets
-- **/dist**: Build output
-- **/.graphclient**: Generated GraphQL client code
-- **/updraft-schemas**: GraphQL schemas (submodule)
+```
+/
+├── src/
+│   ├── components/
+│   │   ├── my-component/        # Component-specific files
+│   │   │   ├── my-component.ts
+│   │   │   ├── my-component.css
+│   │   │   └── my-component.test.ts
+│   │   └── page-specific/       # Page-specific components
+│   ├── state/                   # Signal-based state management
+│   └── utils/                   # Utility functions
+├── docs/                        # Documentation files
+├── public/                      # Static assets
+├── dist/                        # Build output
+├── .graphclient/               # Generated GraphQL client code
+└── updraft-schemas/            # GraphQL schemas (submodule)
+```
 
 ## Development Workflow
 
@@ -64,21 +75,78 @@
 
 ## Key Technical Patterns
 
-### Lit Signals for State Management
+### Lit Components
 
-The project uses Lit Signals as its primary state management solution. Signals provide a reactive mechanism for UI updates when data changes.
+- Components extend from `SignalWatcher(LitElement)`
+- Use Shadow DOM for style encapsulation
+- Declarative rendering with Lit templates
+- Reactive properties and signals for state management
+
+### State Management with Signals
+
+Our primary state management solution uses Lit Signals for:
+
+- Feature-specific state (e.g., beginner tasks completion)
+- UI state and user preferences
+- Form state and validation
+- Async operation status
+- Computed/derived values
+
+Example from our beginner tasks implementation:
+
+```typescript
+// Clean, simple signal-based state
+export const completedTasks = signal<Set<BeginnerTask>>(new Set());
+
+// Computed values for derived state
+export const allTasksCompleted = computed(
+  () => completedTasks.get().size === BEGINNER_TASKS.length
+);
+
+// Helper functions for state updates
+export const markComplete = (taskId: BeginnerTask): void => {
+  const newCompletedTasks = new Set(completedTasks.get());
+  newCompletedTasks.add(taskId);
+  completedTasks.set(newCompletedTasks);
+  // ... persistence logic
+};
+```
+
+### Context Usage
+
+Context is reserved for truly static application-wide values:
+
+- API endpoints and constants
+- Theme configuration
+- Localization data
+- Environment variables
+
+We avoid using Context for:
+
+- Mutable state (use Signals instead)
+- Service instances (use direct instantiation)
+- Feature flags (use Signals)
+- User preferences (use Signals)
 
 ### Web Components Architecture
 
-The UI is built with Web Components using Lit, enabling a component-based architecture with shadow DOM encapsulation.
+- Custom elements for component definition
+- Shadow DOM for style encapsulation
+- HTML templates for declarative rendering
+- Properties and events for component communication
 
-### GraphQL Data Fetching
+### Data Fetching
 
-Data is fetched from APIs using GraphQL through the urql client and The Graph Protocol.
+- GraphQL with urql client
+- Task pattern for async operations
+- Signal-based data dependencies
+- Error handling and loading states
 
 ### Web3 Integration
 
-The application integrates with blockchain technologies through Wagmi and provides authentication via Sign-In with Ethereum (SIWE).
+- Wagmi for wallet connectivity
+- SIWE for authentication
+- Appkit for Web3 functionality
 
 ## Deployment
 
