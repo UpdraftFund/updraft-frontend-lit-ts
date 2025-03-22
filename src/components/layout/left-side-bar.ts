@@ -33,8 +33,8 @@ export class LeftSideBar extends LitElement {
       display: flex;
       flex-direction: column;
       background: var(--main-background);
-      border-radius: 25px 25px 0 0;
-      border-right: 3px solid var(--subtle-background);
+      border-radius: 0;
+      border-right: 1px solid var(--subtle-background);
       overflow: hidden;
       padding: 0 1rem;
       transition:
@@ -42,12 +42,14 @@ export class LeftSideBar extends LitElement {
         padding 0.3s ease,
         flex-basis 0.3s ease;
       position: relative;
+      box-sizing: border-box;
     }
 
     :host([collapsed]) {
       width: 64px;
       padding: 0;
       flex-basis: 64px !important;
+      box-sizing: border-box;
     }
 
     nav ul {
@@ -101,7 +103,7 @@ export class LeftSideBar extends LitElement {
       right: -12px;
       z-index: 10;
       background: var(--main-background);
-      border: 2px solid var(--subtle-background);
+      border: 1px solid var(--subtle-background);
       border-radius: 50%;
       width: 24px;
       height: 24px;
@@ -221,27 +223,6 @@ export class LeftSideBar extends LitElement {
         width: 85%; /* Use percentage for better mobile experience */
       }
     }
-
-    /* Backdrop styling */
-    .drawer-backdrop {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 99;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .drawer-backdrop.active {
-      display: block;
-      opacity: 1;
-      pointer-events: all;
-    }
   `;
 
   private readonly ideaContributions = new Task(this, {
@@ -294,9 +275,6 @@ export class LeftSideBar extends LitElement {
 
     // Add click event listeners to all links for mobile drawer
     this.addEventListener('click', this.handleLinkClick);
-
-    // Create backdrop element for mobile drawer
-    this.createBackdrop();
   }
 
   disconnectedCallback() {
@@ -309,9 +287,6 @@ export class LeftSideBar extends LitElement {
     document.removeEventListener('toggle-drawer', this.handleDrawerToggle);
     window.removeEventListener('popstate', this.handleNavigation);
     this.removeEventListener('click', this.handleLinkClick);
-
-    // Remove backdrop when component is disconnected
-    this.removeBackdrop();
   }
 
   private handleStorageChange = (event: StorageEvent) => {
@@ -335,9 +310,6 @@ export class LeftSideBar extends LitElement {
 
       // Prevent body scrolling when drawer is open
       document.body.style.overflow = this.expanded ? 'hidden' : '';
-
-      // Show/hide backdrop
-      this.toggleBackdrop();
     }
   };
 
@@ -347,7 +319,6 @@ export class LeftSideBar extends LitElement {
       this.expanded = false;
       this.requestUpdate();
       document.body.style.overflow = '';
-      this.toggleBackdrop();
     }
   };
 
@@ -360,7 +331,6 @@ export class LeftSideBar extends LitElement {
           this.expanded = false;
           this.requestUpdate();
           document.body.style.overflow = '';
-          this.toggleBackdrop();
           break;
         }
       }
@@ -400,53 +370,19 @@ export class LeftSideBar extends LitElement {
     }
   }
 
-  private createBackdrop() {
-    // Create backdrop element if it doesn't exist
-    if (!document.querySelector('.drawer-backdrop')) {
-      const backdrop = document.createElement('div');
-      backdrop.classList.add('drawer-backdrop');
-      backdrop.addEventListener('click', () => {
-        if (window.innerWidth <= 768 && this.expanded) {
-          this.expanded = false;
-          this.requestUpdate();
-          document.body.style.overflow = '';
-          this.toggleBackdrop();
-        }
-      });
 
-      // Insert after this element
-      this.parentNode?.insertBefore(backdrop, this.nextSibling);
-    }
-  }
 
-  private removeBackdrop() {
-    const backdrop = document.querySelector('.drawer-backdrop');
-    if (backdrop) {
-      backdrop.remove();
-    }
-  }
-
-  private toggleBackdrop() {
-    const backdrop = document.querySelector('.drawer-backdrop');
-    if (backdrop) {
-      if (this.expanded && window.innerWidth <= 768) {
-        backdrop.classList.add('active');
-      } else {
-        backdrop.classList.remove('active');
-      }
-    }
-  }
 
   render() {
     return html`
       <div class="toggle-button" @click=${this.handleToggle}>
         <sl-icon
           src=${(window.innerWidth <= 1024 &&
-            window.innerWidth > 768 &&
-            !this.expanded) ||
-          (window.innerWidth > 1024 && this.collapsed)
-            ? chevronRight
-            : chevronLeft}
+        window.innerWidth > 768 &&
+        !this.expanded) ||
+        (window.innerWidth > 1024 && this.collapsed)
+        ? chevronRight
+        : chevronLeft}
           label="Toggle sidebar"
         ></sl-icon>
       </div>
