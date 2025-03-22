@@ -26,11 +26,6 @@
   --sl-input-required-content: unset;
   
   /* Custom application variables that work with both themes */
-  --main-background: var(--sl-color-neutral-0);
-  --subtle-background: var(--sl-color-neutral-50);
-  --main-foreground: var(--sl-color-neutral-900);
-  --section-heading: var(--sl-color-neutral-600);
-  --accent: var(--sl-color-primary-600);
   --accent-subtle: var(--sl-color-primary-100);
   --accent-muted: var(--sl-color-primary-400);
   --accent-emphasis: var(--sl-color-primary-700);
