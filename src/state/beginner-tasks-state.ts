@@ -40,6 +40,10 @@ export const markComplete = (taskId: BeginnerTask): void => {
   }
 };
 
+export const isComplete = (taskId: BeginnerTask) => {
+  return completedTasks.get().has(taskId);
+};
+
 export const reset = (): void => {
   completedTasks.set(new Set());
 
