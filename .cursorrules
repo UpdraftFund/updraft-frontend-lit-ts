@@ -1,0 +1,72 @@
+# Cursor Rules for Updraft Frontend Project
+
+## Project Intelligence
+
+### Key Documentation
+
+- The `docs/lit-signals-best-practices.md` file contains critical information about how to use Lit Signals in this project.
+- The Memory Bank (memory-bank/ directory) contains project documentation organized in a hierarchical structure.
+
+### Lit Signals Patterns
+
+1. Always use `SignalWatcher(LitElement)` for components that use signals.
+2. Import `html` from `@lit-labs/signals` when using signals in templates.
+3. Access signals directly in templates when using signalsHtml.
+4. Always use `.set()` to update signals, never modify them directly.
+5. Use `watch()` directive with regular `html` from `lit` for fine-grained control.
+
+### File Organization
+
+- Components should follow a modular structure
+- State management code should be in `src/state/` directory
+- Feature-specific state should be in feature-named files
+
+### Code Style Preferences
+
+- Use TypeScript for all new code
+- Prefer arrow functions for signal updates
+- Use destructuring when accessing object properties
+- Follow existing formatting patterns (enforced by Prettier)
+
+### Common Workflows
+
+1. Always run `yarn tsc` before pushing changes to check for type errors
+2. Use `yarn dev` for local development with hot reloading
+3. Create separate components for reusable UI elements
+4. Follow the centralized state pattern for shared state
+5. Use Tasks for data fetching operations
+
+### Anti-patterns to Avoid
+
+1. Accessing signals with `.get()` in signalsHtml templates
+2. Modifying signal objects directly
+3. Not extending from SignalWatcher when using signals
+4. Using regular html when auto-tracking is needed
+5. Treating signals as global variables
+
+### Performance Guidelines
+
+1. Use `watch()` for granular updates in complex templates
+2. Keep signal dependencies minimal
+3. Use computed signals for derived state
+4. Only update what needs to change in object signals
+
+### Best Practices
+
+1. Organize signals by feature or domain
+2. Use action functions to update signals
+3. Wrap complex signal updates in functions
+4. Follow the component patterns established in the project
+5. Use the appropriate pattern (Signals vs Context) based on the use case
+
+### Web3 Integration
+
+1. Use the Wagmi adapters for wallet connectivity
+2. Follow the established authentication flow with SIWE
+3. Keep blockchain interactions in service layers
+
+### Testing Approach
+
+1. Create unit tests for components using Web Test Runner
+2. Test signal-based state management
+3. Verify proper reactivity in components 
