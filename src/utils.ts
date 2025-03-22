@@ -11,9 +11,13 @@ export const shortNum = function (n: string | number, p = 3, e = p - 3) {
     ans = n.toFixed(p);
   } else {
     const suffixes = ['', 'K', 'M', 'B', 'T', 'Q'];
-    const index = Math.floor(Math.log10(absn) / 3);
-    const scaled = n / 10 ** (index * 3);
-    ans = scaled.toPrecision(p) + suffixes[index];
+    let index = Math.floor(Math.log10(absn) / 3);
+    let scaled = n / 10 ** (index * 3);
+    if (Math.round(scaled) >= 10 ** p) {
+      ++index;
+      scaled /= 10 ** p;
+    }
+    ans = scaled.toPrecision(3) + suffixes[index];
   }
   ans = ans.replace(/\.0+(\D|$)/, '$1');
   return ans.replace(/(\.\d*?)0+(\D|$)/, '$1$2');
