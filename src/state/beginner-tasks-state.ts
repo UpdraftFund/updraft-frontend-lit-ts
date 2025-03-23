@@ -23,11 +23,13 @@ export type BeginnerTask = (typeof BEGINNER_TASKS)[number];
 
 export const completedTasks = signal<Set<BeginnerTask>>(new Set());
 
-export const allTasksCompleted = computed(() => {
+export const allTasksComplete = computed(() => {
   return completedTasks.get().size === BEGINNER_TASKS_COUNT;
 });
 
 export const markComplete = (taskId: BeginnerTask): void => {
+  if (isComplete(taskId)) return; // avoid unnecessary rerenders
+
   const newCompletedTasks = new Set(completedTasks.get());
   newCompletedTasks.add(taskId);
   completedTasks.set(newCompletedTasks);
