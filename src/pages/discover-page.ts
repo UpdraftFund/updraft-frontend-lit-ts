@@ -11,7 +11,8 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import '@components/page-specific/discover/idea-card-large.ts';
 
-import { connectionContext, watchedTags, watchTag } from '@/context.ts';
+import { connectionContext } from '@/context.ts';
+import { watchedTags, watchTag } from '@state/watched-tags-state';
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
 
 import urqlClient from '@/urql-client.ts';
@@ -31,6 +32,7 @@ type QueryType =
   | 'followed'
   | 'search'
   | 'tags';
+
 type ResultType = Idea[] | Solution[] | IdeaContribution[];
 
 @customElement('discover-page')
@@ -137,7 +139,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   private readonly results = new Task(this, {
     task: async ([tab, search]): Promise<
-      { data: any; entity: string } | undefined
+      { data: Record<string, unknown> | undefined; entity: string } | undefined
     > => {
       this.queryType = tab;
       if (this.queryType === 'search' && search?.startsWith('[')) {
@@ -178,9 +180,9 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                 pill
                 size="small"
                 @click=${() => watchTag(tag)}
-                ?disabled=${watchedTags.get().includes(tag)}
+                ?disabled=${watchedTags.get().has(tag)}
               >
-                ${watchedTags.get().includes(tag) ? 'Watched' : 'Watch Tag'}
+                ${watchedTags.get().has(tag) ? 'Watched' : 'Watch Tag'}
               </sl-button>
             </span>
           `
@@ -218,7 +220,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     super.connectedCallback();
     this.setTabFromUrl();
     window.addEventListener('popstate', this.setTabFromUrl);
-    
+
     // Listen for URL changes that aren't caught by popstate
     // This is needed for when users click on tags in idea cards
     this._handleUrlChange = this._handleUrlChange.bind(this);
@@ -230,26 +232,26 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     this._teardownUrlChangeListener();
     super.disconnectedCallback();
   }
-  
+
   private _lastUrl = window.location.href;
   private _urlChangeInterval?: number;
-  
+
   private _setupUrlChangeListener() {
     // Check for URL changes every 100ms
     this._urlChangeInterval = window.setInterval(this._handleUrlChange, 100);
   }
-  
+
   private _teardownUrlChangeListener() {
     if (this._urlChangeInterval) {
       clearInterval(this._urlChangeInterval);
     }
   }
-  
+
   private _handleUrlChange() {
     const currentUrl = window.location.href;
     if (this._lastUrl !== currentUrl) {
       this._lastUrl = currentUrl;
-      
+
       // Only update if we're still on the discover page
       if (window.location.pathname === '/discover') {
         this.setTabFromUrl();
@@ -264,8 +266,8 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
           ${this.results.render({
             complete: (result) => {
               if (result) {
-                const data =
-                  result.data?.[result.entity] || ([] as ResultType[]);
+                const data = (result.data?.[result.entity] ||
+                  []) as ResultType[];
                 return html`
                   ${this.queryType === 'tags' ? this.renderTagList() : ''}
                   ${data.map((item: ResultType) => {
@@ -292,7 +294,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
               }
               return '';
             },
-            initial: () => html`<loading-spinner></loading-spinner>`,
+            initial: () => html` <loading-spinner></loading-spinner>`,
             error: (error) => html`<p>Error: ${error}</p>`,
           })}
         </main>

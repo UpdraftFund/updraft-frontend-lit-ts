@@ -4,17 +4,12 @@
  ***/
 
 import { LitElement, html, css } from 'lit';
-import {
-  customElement,
-  state,
-  queryAll,
-  query,
-} from 'lit/decorators.js';
+import { customElement, state, queryAll, query } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
-import { watchedTags, unwatchTag } from '@/context';
+import { watchedTags, unwatchTag } from '@state/watched-tags-state';
 
 import pencilSquare from '@icons/pencil-square.svg';
 import xCircle from '@icons/x-circle.svg';
@@ -157,13 +152,11 @@ export class WatchedTags extends LitElement {
           @click=${this.handleEditClick}
         ></sl-icon-button>
         <div class="tags-container ${this.editMode ? 'edit-mode' : ''}">
-          ${tags.length
-            ? tags.map(
+          ${tags.size > 0
+            ? [...tags].map(
                 (tag) => html`
                   <div class="tag-with-remove">
-                    <a
-                      class="tag"
-                      href="/discover?tab=search&search=[${tag}]"
+                    <a class="tag" href="/discover?tab=search&search=[${tag}]"
                       >${tag}</a
                     >
                     ${this.editMode

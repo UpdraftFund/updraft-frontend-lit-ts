@@ -30,6 +30,9 @@
       "@assets/*": ["src/assets/*"],
       "@icons/*": ["src/assets/icons/*"],
       "@pages/*": ["src/pages/*"],
+      "@state/*": [
+        "src/state/*"
+      ],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
       "@contracts/*": ["src/contracts/*"],
       "@gql": [".graphclient"]

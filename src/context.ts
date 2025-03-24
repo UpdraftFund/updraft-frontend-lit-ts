@@ -7,12 +7,11 @@ export const defaultFunderReward = 250000; // 25% assuming the percent scale set
 
 export const user = signal({} as CurrentUser);
 
-const storedTags = JSON.parse(localStorage.getItem('watchedTags') || '[]');
-export const watchedTags = signal<string[]>(storedTags);
-
 // Layout context for sidebar states
 const storedLeftSidebarState = localStorage.getItem('leftSidebarCollapsed');
-export const leftSidebarCollapsed = signal<boolean>(storedLeftSidebarState ? JSON.parse(storedLeftSidebarState) : false);
+export const leftSidebarCollapsed = signal<boolean>(
+  storedLeftSidebarState ? JSON.parse(storedLeftSidebarState) : false
+);
 
 export interface LayoutContextType {
   leftSidebarCollapsed: boolean;
@@ -33,22 +32,6 @@ export class RequestBalanceRefresh extends Event {
     super(RequestBalanceRefresh.type, { bubbles: true, composed: true });
   }
 }
-
-export const watchTag = (tag: string) => {
-  const currentTags = watchedTags.get();
-  if (!currentTags.includes(tag)) {
-    const updatedTags = [...currentTags, tag];
-    watchedTags.set(updatedTags);
-    localStorage.setItem('watchedTags', JSON.stringify(updatedTags));
-  }
-};
-
-export const unwatchTag = (tag: string) => {
-  const currentTags = watchedTags.get();
-  const updatedTags = currentTags.filter((t) => t !== tag);
-  watchedTags.set(updatedTags);
-  localStorage.setItem('watchedTags', JSON.stringify(updatedTags));
-};
 
 // Layout helper functions
 export const toggleLeftSidebar = () => {
