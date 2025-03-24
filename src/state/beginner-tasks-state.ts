@@ -11,17 +11,15 @@ export const BEGINNER_TASKS = [
   'create-profile',
 ] as const;
 
-const isBeginnerTask = (task: string): task is BeginnerTask => {
-  return BEGINNER_TASKS.includes(task as BeginnerTask);
-};
+export type BeginnerTask = (typeof BEGINNER_TASKS)[number];
 
 export const BEGINNER_TASKS_COUNT = BEGINNER_TASKS.length;
 
-export const STORAGE_KEY = 'completedBeginnerTasks';
-
-export type BeginnerTask = (typeof BEGINNER_TASKS)[number];
-
-export const completedTasks = signal<Set<BeginnerTask>>(new Set());
+const storedTasks: BeginnerTask[] = JSON.parse(
+  localStorage.getItem('completedTasks') || '[]'
+);
+const tasksSet = new Set<BeginnerTask>(storedTasks);
+export const completedTasks = signal<Set<BeginnerTask>>(tasksSet);
 
 export const allTasksComplete = computed(() => {
   return completedTasks.get().size === BEGINNER_TASKS_COUNT;
@@ -30,16 +28,10 @@ export const allTasksComplete = computed(() => {
 export const markComplete = (taskId: BeginnerTask): void => {
   if (isComplete(taskId)) return; // avoid unnecessary rerenders
 
-  const newCompletedTasks = new Set(completedTasks.get());
-  newCompletedTasks.add(taskId);
-  completedTasks.set(newCompletedTasks);
-
-  try {
-    const tasksArray = Array.from(newCompletedTasks);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasksArray));
-  } catch (error) {
-    console.warn('Failed to save completed task to local storage:', error);
-  }
+  const updatedTasks = new Set(completedTasks.get());
+  updatedTasks.add(taskId);
+  completedTasks.set(updatedTasks);
+  localStorage.setItem('completedTasks', JSON.stringify([...updatedTasks]));
 };
 
 export const isComplete = (taskId: BeginnerTask) => {
@@ -50,27 +42,8 @@ export const reset = (): void => {
   completedTasks.set(new Set());
 
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem('completedTasks');
   } catch (error) {
     console.warn('Failed to clear completed tasks from local storage:', error);
-  }
-};
-
-export const loadFromStorage = (): void => {
-  try {
-    const savedTasks = localStorage.getItem(STORAGE_KEY);
-    if (savedTasks) {
-      const tasksArray = JSON.parse(savedTasks) as BeginnerTask[];
-      const validTasks = tasksArray.filter((task): task is BeginnerTask =>
-        isBeginnerTask(task)
-      );
-      completedTasks.set(new Set(validTasks));
-    }
-  } catch (error) {
-    console.group('Failed to load completed beginner tasks from local storage');
-    console.warn(error);
-    console.warn('Resetting all beginner tasks to incomplete.');
-    console.groupEnd();
-    reset();
   }
 };
