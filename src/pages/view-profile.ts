@@ -15,6 +15,7 @@ import '@/components/page-specific/profile/activity-feed';
 import { connectionContext } from '@/context';
 import { userContext, UserState } from '@/state/user-state';
 import { followUser, isFollowed, unfollowUser } from '@state/follow-state.ts';
+import { markComplete } from '@state/beginner-tasks-state.ts';
 import { Connection } from '@/types';
 
 import urqlClient from '@/urql-client';
@@ -144,6 +145,11 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     args: () => [this.address] as const,
   });
 
+  private handleFollow(): void {
+    followUser(this.address);
+    markComplete('follow-someone');
+  }
+
   private get profileButton() {
     // Check if the viewed profile belongs to the current user using both legacy and new state
     const isCurrentUser =
@@ -165,9 +171,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
           >Unfollow</sl-button
         >`;
       } else {
-        return html` <sl-button
-          variant="primary"
-          @click=${() => followUser(this.address)}
+        return html` <sl-button variant="primary" @click=${this.handleFollow}
           >Follow</sl-button
         >`;
       }
