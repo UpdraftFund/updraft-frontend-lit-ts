@@ -27,3 +27,7 @@ export const unfollowUser = (user: string) => {
     localStorage.setItem('followedUsers', JSON.stringify([...updatedUsers]));
   }
 };
+
+export const isFollowed = (user: string) => {
+  return followedUsers.get().has(user);
+};
