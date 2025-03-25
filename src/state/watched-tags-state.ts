@@ -27,3 +27,7 @@ export const unwatchTag = (tag: string) => {
     localStorage.setItem('watchedTags', JSON.stringify([...updatedTags]));
   }
 };
+
+export const isWatched = (tag: string) => {
+  return watchedTags.get().has(tag);
+};

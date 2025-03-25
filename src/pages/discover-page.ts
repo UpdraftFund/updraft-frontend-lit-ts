@@ -12,7 +12,7 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@components/page-specific/discover/idea-card-large.ts';
 
 import { connectionContext } from '@/context.ts';
-import { watchedTags, watchTag } from '@state/watched-tags-state';
+import { isWatched, watchedTags, watchTag } from '@state/watched-tags-state';
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
 
 import urqlClient from '@/urql-client.ts';
@@ -182,7 +182,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                 @click=${() => watchTag(tag)}
                 ?disabled=${watchedTags.get().has(tag)}
               >
-                ${watchedTags.get().has(tag) ? 'Watched' : 'Watch Tag'}
+                ${isWatched(tag) ? 'Watched' : 'Watch Tag'}
               </sl-button>
             </span>
           `
