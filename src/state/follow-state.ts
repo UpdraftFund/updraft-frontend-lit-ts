@@ -20,7 +20,7 @@ export const followUser = (user: string) => {
 export const unfollowUser = (user: string) => {
   const currentUsers = followedUsers.get();
   if (currentUsers.has(user)) {
-    // Only update if the tag exists
+    // Only update if the user exists
     const updatedUsers = new Set(currentUsers);
     updatedUsers.delete(user);
     followedUsers.set(updatedUsers);
