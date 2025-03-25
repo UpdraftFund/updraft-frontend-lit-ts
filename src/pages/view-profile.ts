@@ -1,5 +1,6 @@
 import { customElement, property } from 'lit/decorators.js';
-import { css, html, LitElement } from 'lit';
+import { css, LitElement } from 'lit';
+import { SignalWatcher, html } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
@@ -13,13 +14,14 @@ import '@/components/page-specific/profile/activity-feed';
 
 import { connectionContext } from '@/context';
 import { userContext, UserState } from '@/state/user-state';
+import { followUser, isFollowed, unfollowUser } from '@state/follow-state.ts';
 import { Connection } from '@/types';
 
 import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
 
 @customElement('view-profile')
-export class ViewProfile extends LitElement {
+export class ViewProfile extends SignalWatcher(LitElement) {
   static styles = css`
     .container {
       display: flex;
@@ -144,18 +146,31 @@ export class ViewProfile extends LitElement {
 
   private get profileButton() {
     // Check if the viewed profile belongs to the current user using both legacy and new state
-    const isCurrentUser = 
-      (this.userState?.isConnected && this.address === this.userState.address) || 
+    const isCurrentUser =
+      (this.userState?.isConnected &&
+        this.address === this.userState.address) ||
       (this.connection?.connected && this.address === this.connection.address);
-    
+
     if (isCurrentUser) {
       return html`
         <sl-button variant="primary" href="/edit-profile"
-          >Edit profile</sl-button
-        >
+          >Edit profile
+        </sl-button>
       `;
     } else {
-      return html` <sl-button variant="primary">Follow</sl-button> `;
+      if (isFollowed(this.address)) {
+        return html` <sl-button
+          variant="primary"
+          @click=${() => unfollowUser(this.address)}
+          >Unfollow</sl-button
+        >`;
+      } else {
+        return html` <sl-button
+          variant="primary"
+          @click=${() => followUser(this.address)}
+          >Follow</sl-button
+        >`;
+      }
     }
   }
 
@@ -246,7 +261,7 @@ export class ViewProfile extends LitElement {
           })}
         </main>
         ${this.address
-          ? html`<activity-feed
+          ? html` <activity-feed
               .userId=${this.address}
               .userName=${this.profile.value?.name}
             ></activity-feed>`
