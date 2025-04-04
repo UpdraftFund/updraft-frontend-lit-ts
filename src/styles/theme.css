@@ -1,12 +1,13 @@
+/* Use --sl-color-<color-name> for dark mode compatibility https://shoelace.style/tokens/color - Tommy */
 :root {
-  --main-background: #ffffff;
-  --subtle-background: #dff5fc;
-  --accent: #0b6497;
-  --main-foreground: hsla(0, 0%, 16%, 1);
-  --subtle-text: hsla(0, 0%, 43%, 1);
-  --control-background: #ace9fb;
-  --section-heading: #939393;
-  --layout-divider: #d9d9d9;
+  --main-background: var(--sl-color-neutral-0);
+  --subtle-background: var(--sl-color-sky-50);
+  --accent: var(--sl-color-blue-600);
+  --main-foreground: var(--sl-color-neutral-800);
+  --subtle-text: var(--sl-color-neutral-500);
+  --control-background: var(--sl-color-sky-200);
+  --section-heading: var(--sl-color-neutral-500);
+  --layout-divider: var(--sl-color-neutral-200);
 
   --sl-input-border-color: hsla(194, 84%, 63%, 1);
 
@@ -24,21 +25,12 @@
 
   --sl-input-border-radius-medium: 20px;
   --sl-input-required-content: unset;
-  
+
   /* Custom application variables that work with both themes */
-  --accent-subtle: var(--sl-color-primary-100);
-  --accent-muted: var(--sl-color-primary-400);
-  --accent-emphasis: var(--sl-color-primary-700);
   --danger: var(--sl-color-danger-600);
-  --danger-subtle: var(--sl-color-danger-100);
   --success: var(--sl-color-success-600);
-  --success-subtle: var(--sl-color-success-100);
   --attention: var(--sl-color-warning-600);
-  --attention-subtle: var(--sl-color-warning-100);
   --border-default: var(--sl-color-neutral-200);
-  --border-muted: var(--sl-color-neutral-100);
-  --neutral-muted: var(--sl-color-neutral-400);
-  --neutral-subtle: var(--sl-color-neutral-50);
 }
 
 /* Tab group specific styling */

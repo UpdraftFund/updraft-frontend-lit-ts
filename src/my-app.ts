@@ -165,11 +165,6 @@ export class MyApp extends LitElement {
       }
     }
 
-    /* Drawer backdrop styling */
-    .drawer-backdrop {
-      display: none;
-    }
-
     /* Icon button styling */
     .icon-button {
       color: var(--main-foreground);
@@ -609,13 +604,13 @@ export class MyApp extends LitElement {
         <div class="content-wrapper">
           <main class="main-content">${this.router.outlet()}</main>
           ${layout.showRightSidebar
-            ? html`
+        ? html`
                 <right-side-bar
                   .ideaId=${ideaId}
                   ?show-hot-ideas=${layout.showHotIdeas}
                 ></right-side-bar>
               `
-            : ''}
+        : ''}
         </div>
       </div>
     `;
