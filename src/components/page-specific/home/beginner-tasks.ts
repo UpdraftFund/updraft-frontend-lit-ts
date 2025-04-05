@@ -44,7 +44,7 @@ export class BeginnerTasks extends LitElement {
           <h3 class="task-card-title">Follow Someone</h3>
           <p class="task-card-description">
             A great way to learn is by watching another user. You can see a
-            user's activity on their profile page. Go to Adam's profile and
+            user’s activity on their profile page. Go to Adam’s profile and
             follow him from there.
           </p>
           <sl-button variant="primary">Adam's profile</sl-button>
