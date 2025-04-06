@@ -72,18 +72,8 @@ export class MyApp extends LitElement {
       display: flex;
       flex-direction: column;
       max-width: 100vw;
-
       color: var(--main-foreground);
       background-color: var(--main-background);
-      font-family:
-        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica,
-        Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-    }
-
-    /* Custom application variables that work with both themes */
-    :host,
-    :root {
-      /* Variables moved to theme.css */
     }
 
     /* Tab group specific styling - moved to theme.css */
@@ -604,13 +594,13 @@ export class MyApp extends LitElement {
         <div class="content-wrapper">
           <main class="main-content">${this.router.outlet()}</main>
           ${layout.showRightSidebar
-        ? html`
+            ? html`
                 <right-side-bar
                   .ideaId=${ideaId}
                   ?show-hot-ideas=${layout.showHotIdeas}
                 ></right-side-bar>
               `
-        : ''}
+            : ''}
         </div>
       </div>
     `;
