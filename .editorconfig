@@ -11,7 +11,6 @@ ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_formatter_tags_enabled = true
 ij_smart_tabs = true
-ij_visual_guides = 
 ij_wrap_on_typing = false
 
 [*.css]
@@ -75,6 +74,7 @@ ij_xml_text_wrap = normal
 [{*.ats,*.cts,*.mts,*.ts}]
 ij_continuation_indent_size = 2
 ij_smart_tabs = false
+ij_visual_guides = 80
 ij_typescript_align_imports = false
 ij_typescript_align_multiline_array_initializer_expression = false
 ij_typescript_align_multiline_binary_operation = false
