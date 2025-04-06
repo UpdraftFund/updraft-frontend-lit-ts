@@ -168,12 +168,12 @@ export class ViewProfile extends SignalWatcher(LitElement) {
         return html` <sl-button
           variant="primary"
           @click=${() => unfollowUser(this.address)}
-          >Unfollow</sl-button
-        >`;
+          >Unfollow
+        </sl-button>`;
       } else {
         return html` <sl-button variant="primary" @click=${this.handleFollow}
-          >Follow</sl-button
-        >`;
+          >Follow
+        </sl-button>`;
       }
     }
   }
