@@ -64,11 +64,11 @@ export class RelatedIdeas extends LitElement {
     this._tagsLoadedHandler = (e: CustomEvent) => {
       const tags = e.detail?.tags;
       if (tags && Array.isArray(tags) && tags.length > 0) {
-        // Store tags locally as a backup
-        this._localTags = [...tags];
+        // Add type assertion
+        this._localTags = [...tags] as string[];
         this._hasRunTask = true;
-        // Force a task run with the tags from the event
-        this._runTaskWithTags(tags);
+        // Add type assertion
+        this._runTaskWithTags(tags as string[]);
       }
     };
 
