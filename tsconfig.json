@@ -6,21 +6,17 @@
     "module": "ESNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
-
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": true,
-
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
     "sourceMap": true,
-
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -30,9 +26,7 @@
       "@assets/*": ["src/assets/*"],
       "@icons/*": ["src/assets/icons/*"],
       "@pages/*": ["src/pages/*"],
-      "@state/*": [
-        "src/state/*"
-      ],
+      "@state/*": ["src/state/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
       "@contracts/*": ["src/contracts/*"],
       "@gql": [".graphclient"]

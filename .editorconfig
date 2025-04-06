@@ -441,7 +441,7 @@ tab_width = 4
 [{*.graphqlconfig,*.graphqlrc,*.har,*.jsb2,*.jsb3,*.json,*.jsonc,*.postman_collection,*.postman_collection.json,*.postman_environment,*.postman_environment.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,.ws-context,jest.config}]
 tab_width = 4
 ij_smart_tabs = false
-ij_json_array_wrapping = split_into_lines
+ij_json_array_wrapping = normal
 ij_json_keep_blank_lines_in_code = 0
 ij_json_keep_indents_on_empty_lines = false
 ij_json_keep_line_breaks = true
