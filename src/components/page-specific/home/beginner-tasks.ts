@@ -85,7 +85,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <sl-card>
                   <h3>Get UPD🪁</h3>
                   <p>
-                    UPD is the Updraft token and it's used in a lot of places.
+                    UPD is the Updraft token, and it's used in a lot of places.
                     You'll need at least 5 UPD to complete the rest of the
                     tasks. Swap some ETH for UPD.
                   </p>
