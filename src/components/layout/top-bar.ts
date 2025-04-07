@@ -10,7 +10,7 @@ import listIcon from '@icons/list.svg';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
-import { layout } from '@state/layout-state';
+import { topBarContent } from '@state/layout-state';
 
 @customElement('top-bar')
 export class TopBar extends SignalWatcher(LitElement) {
@@ -79,7 +79,7 @@ export class TopBar extends SignalWatcher(LitElement) {
       <a href="/" title="Updraft Home">
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
-      <slot>${layout.topBarContent}</slot>
+      <slot>${topBarContent}</slot>
       <profile-area
         .hideCreateIdeaButton=${this.hideCreateIdeaButton}
       ></profile-area>

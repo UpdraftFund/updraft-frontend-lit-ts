@@ -6,7 +6,7 @@ import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 
-import { layout } from '@state/layout-state';
+import { showLeftSidebar, showRightSidebar } from '@state/layout-state';
 
 @customElement('app-layout')
 export class AppLayout extends SignalWatcher(LitElement) {
@@ -110,12 +110,10 @@ export class AppLayout extends SignalWatcher(LitElement) {
     return html`
       <top-bar></top-bar>
       <div class="app-layout">
-        ${layout.showLeftSidebar
-          ? html` <left-side-bar></left-side-bar>`
-          : html``}
+        ${showLeftSidebar ? html` <left-side-bar></left-side-bar>` : html``}
         <div class="content-wrapper">
           <slot class="main-content"></slot>
-          ${layout.showRightSidebar
+          ${showRightSidebar
             ? html` <right-side-bar></right-side-bar>`
             : html``}
         </div>
