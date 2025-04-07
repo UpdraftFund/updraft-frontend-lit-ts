@@ -1,16 +1,14 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
-import '@/components/right-sidebar/idea-card-small';
+import '@components/shared/idea-card-small.ts';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
 import urqlClient from '@/urql-client';
 import { IdeasBySharesDocument } from '@gql';
 import { Idea } from '@/types';
-import { ideaContext, setHotIdeas } from '@/state/idea-state';
 
 import fire from '@icons/fire.svg';
 
@@ -43,9 +41,6 @@ export class HotIdeas extends LitElement {
     }
   `;
 
-  @consume({ context: ideaContext, subscribe: true })
-  ideaState: any;
-
   private unsubHotIdeas?: () => void;
 
   connectedCallback() {
@@ -77,7 +72,6 @@ export class HotIdeas extends LitElement {
         .toPromise();
       if (result.data?.ideas) {
         const ideas = result.data.ideas as Idea[];
-        setHotIdeas(ideas);
         return ideas;
       }
       return [] as Idea[];
@@ -104,13 +98,6 @@ export class HotIdeas extends LitElement {
         </h2>
         ${this._getHotIdeasTask.render({
           pending: () => {
-            // If we have hot ideas in the state, show them while loading
-            if (this.ideaState?.hotIdeas?.length) {
-              return html`
-                <sl-spinner></sl-spinner>
-                ${this.renderHotIdeas(this.ideaState.hotIdeas as Idea[])}
-              `;
-            }
             return html`<sl-spinner></sl-spinner>`;
           },
           complete: (ideas) => {
@@ -121,14 +108,6 @@ export class HotIdeas extends LitElement {
           },
           error: (err) => {
             console.error('Error rendering hot ideas:', err);
-            // If we have hot ideas in the state, show them despite the error
-            if (this.ideaState?.hotIdeas?.length) {
-              return html`
-                <div class="error">Error loading hot ideas</div>
-                ${this.renderHotIdeas(this.ideaState.hotIdeas as Idea[])}
-              `;
-            }
-            return html`<div class="error">Error loading hot ideas</div>`;
           },
         })}
       </div>

@@ -11,7 +11,7 @@ import chevronRight from '@icons/chevron-right.svg';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@/components/shared/section-heading';
-import '@/components/right-sidebar/idea-card-small';
+import '@components/shared/idea-card-small.ts';
 
 import {
   connectionContext,
@@ -370,19 +370,16 @@ export class LeftSideBar extends LitElement {
     }
   }
 
-
-
-
   render() {
     return html`
       <div class="toggle-button" @click=${this.handleToggle}>
         <sl-icon
           src=${(window.innerWidth <= 1024 &&
-        window.innerWidth > 768 &&
-        !this.expanded) ||
-        (window.innerWidth > 1024 && this.collapsed)
-        ? chevronRight
-        : chevronLeft}
+            window.innerWidth > 768 &&
+            !this.expanded) ||
+          (window.innerWidth > 1024 && this.collapsed)
+            ? chevronRight
+            : chevronLeft}
           label="Toggle sidebar"
         ></sl-icon>
       </div>
