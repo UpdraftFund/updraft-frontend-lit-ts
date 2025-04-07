@@ -27,7 +27,7 @@ import {
   updraftSettings,
 } from '@/context';
 
-import { layout } from '@state/layout-state.ts';
+import { nav } from '@state/layout-state.ts';
 
 import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
@@ -45,7 +45,7 @@ export class MyApp extends LitElement {
       path: '/',
       enter: async () => {
         await import('./pages/home-page');
-        layout.nav.set('home');
+        nav.set('home');
         return true;
       },
       render: () => html`<home-page></home-page>`,
@@ -54,7 +54,7 @@ export class MyApp extends LitElement {
       path: '/discover',
       enter: async () => {
         await import('./pages/discover-page');
-        layout.nav.set('discover');
+        nav.set('discover');
         return true;
       },
       render: () => {
@@ -71,7 +71,7 @@ export class MyApp extends LitElement {
       path: '/idea/:id',
       enter: async () => {
         await import('./pages/idea-page');
-        layout.nav.set('idea');
+        nav.set('idea');
         return true;
       },
       render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`,
@@ -80,7 +80,7 @@ export class MyApp extends LitElement {
       path: '/create-idea',
       enter: async () => {
         await import('./pages/create-idea');
-        layout.nav.set('create-idea');
+        nav.set('create-idea');
         return true;
       },
       render: () => html`<create-idea></create-idea>`,
@@ -89,7 +89,7 @@ export class MyApp extends LitElement {
       path: '/edit-profile',
       enter: async () => {
         await import('./pages/edit-profile');
-        layout.nav.set('edit-profile');
+        nav.set('edit-profile');
         return true;
       },
       render: () => html`<edit-profile></edit-profile>`,
@@ -98,7 +98,7 @@ export class MyApp extends LitElement {
       path: '/submit-profile-and-create-:entity',
       enter: async () => {
         await import('./pages/edit-profile');
-        layout.nav.set('edit-profile');
+        nav.set('edit-profile');
         return true;
       },
       render: ({ entity }) =>
@@ -108,7 +108,7 @@ export class MyApp extends LitElement {
       path: '/profile/:address',
       enter: async () => {
         await import('./pages/view-profile');
-        layout.nav.set('view-profile');
+        nav.set('view-profile');
         return true;
       },
       render: ({ address }) =>
@@ -118,7 +118,7 @@ export class MyApp extends LitElement {
       path: '/create-solution/:ideaId',
       enter: async () => {
         await import('./pages/create-solution');
-        layout.nav.set('create-solution');
+        nav.set('create-solution');
         return true;
       },
       render: ({ ideaId }) => {
