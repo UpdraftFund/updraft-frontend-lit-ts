@@ -3,12 +3,15 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 
+import urqlClient from '@/urql-client';
+
 import '@components/page-specific/home/tracked-changes';
 import '@components/page-specific/home/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@components/shared/search-bar';
 
-import urqlClient from '@/urql-client';
 import { userContext, type UserState } from '@/state/user-state';
+import { topBarContent } from '@/state/layout-state';
 
 interface UserIdeasSolutionsResponse {
   createdIdeas: Array<{ id: string; name: string }>;
@@ -166,11 +169,12 @@ export class HomePage extends LitElement {
   });
 
   render() {
+    topBarContent.set(html` <search-bar></search-bar>`);
     return html`
       <div class="container">
         <main>
           ${this.userIdeasSolutions.render({
-            pending: () => html`<tracked-changes></tracked-changes>`,
+            pending: () => html` <tracked-changes></tracked-changes>`,
             complete: ({ ideaIds, solutionIds }) => html`
               <tracked-changes
                 .ideaIds=${ideaIds}
@@ -179,7 +183,7 @@ export class HomePage extends LitElement {
             `,
             error: (error) => {
               console.error('Error rendering tracked changes:', error);
-              return html`<tracked-changes></tracked-changes>`;
+              return html` <tracked-changes></tracked-changes>`;
             },
           })}
           <beginner-tasks></beginner-tasks>

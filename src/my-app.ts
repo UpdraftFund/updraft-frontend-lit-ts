@@ -1,64 +1,38 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Task } from '@lit/task';
 import { Router } from '@lit-labs/router';
-import { formatUnits } from 'viem';
 import { getBalance } from '@wagmi/core';
+import { formatUnits, fromHex } from 'viem';
+import makeBlockie from 'ethereum-blockies-base64';
+
+import '@layout/app-layout';
+
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import '@shoelace-style/shoelace/dist/themes/dark.css';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@styles/global.css';
 import '@styles/theme.css';
 import '@styles/reset.css';
 
 import { modal, config } from '@/web3';
-import urqlClient from '@/urql-client';
-import { fromHex } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
 
-// Import user state context
-import {
-  userContext,
-  getUserState,
-  setUserAddress,
-  setUserProfile,
-  setNetworkName,
-  USER_CONNECTED_EVENT,
-  USER_DISCONNECTED_EVENT,
-  dispatchUserEvent,
-} from '@/state/user-state';
+import { Connection, Balances, UpdraftSettings, Profile } from '@/types';
 
 import {
   user,
   connectionContext,
   balanceContext,
-  updraftSettings as updraftSettingsContext,
   RequestBalanceRefresh,
+  updraftSettings,
 } from '@/context';
-import { Connection, Balances, UpdraftSettings, Profile } from '@/types';
-import { PageLayout } from '@/types/layout';
 
+import { layout } from '@state/layout-state.ts';
+
+import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft.ts';
-
-// Import idea state
-import {
-  ideaContext,
-  getIdeaState,
-  resetState as resetIdeaState,
-} from '@/state/idea-state';
-
-import '@components/layout/top-bar';
-import '@/components/shared/search-bar';
-import '@components/layout/left-side-bar';
-import '@components/layout/right-side-bar';
-
-// Import our new user-profile component
-import '@/components/shared/user-profile';
+import { setUserProfile } from '@state/user-state.ts';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -66,112 +40,12 @@ if (!('URLPattern' in globalThis)) {
 
 @customElement('my-app')
 export class MyApp extends LitElement {
-  static styles = css`
-    :host {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      max-width: 100vw;
-      color: var(--main-foreground);
-      background-color: var(--main-background);
-    }
-
-    /* Tab group specific styling - moved to theme.css */
-
-    .app-layout {
-      display: flex;
-      flex: 1;
-      height: calc(100vh - 64px); /* Subtract top-bar height */
-      overflow: hidden;
-    }
-
-    left-side-bar {
-      flex: 0 0 250px;
-      overflow-y: auto;
-      height: 100%;
-      transition: flex-basis 0.3s ease;
-    }
-
-    .content-wrapper {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
-    .main-content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0 0.3rem;
-      background: var(--subtle-background);
-      min-width: 0; /* Allow content to shrink below its minimum content size */
-    }
-
-    right-side-bar {
-      flex: 0 0 300px;
-      overflow-y: auto;
-      height: 100%;
-    }
-
-    /* Responsive layout */
-    @media (max-width: 1024px) {
-      .main-content {
-        padding: 0 0.3rem;
-      }
-
-      /* Ensure right sidebar is visible in tablet view by default */
-      right-side-bar {
-        flex: 0 0 300px;
-        display: block;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .app-layout {
-        flex-direction: column;
-        height: auto;
-        min-height: calc(100vh - 64px);
-      }
-
-      .content-wrapper {
-        flex-direction: column;
-      }
-
-      .main-content {
-        padding: 1rem;
-        order: 1; /* Main content first */
-      }
-
-      right-side-bar {
-        display: block; /* Ensure it's displayed on mobile */
-        width: 100%;
-        flex: none;
-        order: 2; /* Right sidebar below main content */
-      }
-    }
-
-    @media (max-width: 480px) {
-      .main-content {
-        padding: 0.5rem;
-      }
-    }
-
-    /* Icon button styling */
-    .icon-button {
-      color: var(--main-foreground);
-    }
-
-    search-bar {
-      margin: 0 auto;
-    }
-  `;
-
   private router = new Router(this, [
     {
       path: '/',
       enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
         await import('./pages/home-page');
+        layout.nav.set('home');
         return true;
       },
       render: () => html`<home-page></home-page>`,
@@ -179,9 +53,8 @@ export class MyApp extends LitElement {
     {
       path: '/discover',
       enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
         await import('./pages/discover-page');
+        layout.nav.set('discover');
         return true;
       },
       render: () => {
@@ -197,9 +70,8 @@ export class MyApp extends LitElement {
     {
       path: '/idea/:id',
       enter: async () => {
-        // Reset idea state when navigating to a new idea
-        resetIdeaState();
         await import('./pages/idea-page');
+        layout.nav.set('idea');
         return true;
       },
       render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`,
@@ -207,29 +79,17 @@ export class MyApp extends LitElement {
     {
       path: '/create-idea',
       enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
         await import('./pages/create-idea');
+        layout.nav.set('create-idea');
         return true;
       },
       render: () => html`<create-idea></create-idea>`,
     },
     {
-      path: '/create-idea-submit',
-      enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
-        await import('./pages/create-idea');
-        return true;
-      },
-      render: () => html`<create-idea direct-submit></create-idea>`,
-    },
-    {
       path: '/edit-profile',
       enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
         await import('./pages/edit-profile');
+        layout.nav.set('edit-profile');
         return true;
       },
       render: () => html`<edit-profile></edit-profile>`,
@@ -237,9 +97,8 @@ export class MyApp extends LitElement {
     {
       path: '/submit-profile-and-create-:entity',
       enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
         await import('./pages/edit-profile');
+        layout.nav.set('edit-profile');
         return true;
       },
       render: ({ entity }) =>
@@ -248,9 +107,8 @@ export class MyApp extends LitElement {
     {
       path: '/profile/:address',
       enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
         await import('./pages/view-profile');
+        layout.nav.set('view-profile');
         return true;
       },
       render: ({ address }) =>
@@ -259,15 +117,11 @@ export class MyApp extends LitElement {
     {
       path: '/create-solution/:ideaId',
       enter: async () => {
-        // Reset idea state when navigating away from idea page
-        resetIdeaState();
         await import('./pages/create-solution');
+        layout.nav.set('create-solution');
         return true;
       },
       render: ({ ideaId }) => {
-        if (!ideaId) {
-          return html`<div>No idea id</div>`;
-        }
         return html`<create-solution .ideaId=${ideaId}></create-solution>`;
       },
     },
@@ -277,17 +131,7 @@ export class MyApp extends LitElement {
     connected: false,
   };
   @provide({ context: balanceContext }) balances: Balances = {};
-  @provide({ context: updraftSettingsContext })
-  updraftSettings!: UpdraftSettings;
-  @provide({ context: userContext }) userState = getUserState();
-
-  // Provide idea state context
-  @provide({ context: ideaContext })
-  get ideaState() {
-    return getIdeaState();
-  }
-
-  @state() expanded = false;
+  @provide({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
 
   constructor() {
     super();
@@ -295,16 +139,11 @@ export class MyApp extends LitElement {
     // Set the theme based on user preference
     this.setupTheme();
 
-    modal.subscribeAccount(async ({ address }) => {
+    modal.subscribeAccount(async ({ isConnected, address }) => {
       console.log('modal.subscribeAccount called with address:', address);
 
       if (address) {
-        // Update legacy connection context for backward compatibility
         this.connection.address = address as `0x${string}`;
-
-        // Update new user state
-        setUserAddress(address as `0x${string}`);
-
         const result = await urqlClient.query(ProfileDocument, {
           userId: address,
         });
@@ -314,29 +153,17 @@ export class MyApp extends LitElement {
             fromHex(result.data.user.profile as `0x${string}`, 'string')
           );
         }
-
-        // Update legacy user state
         user.set({
+          ...profile,
           name: profile.name || profile.team || address,
-          image: profile.image,
           avatar: profile.image || makeBlockie(address),
-          // Include additional profile data if available
-          team: profile.team,
-          about: profile.about,
-          news: profile.news,
-          links: profile.links,
         });
 
         // Update new user state with complete profile data
         setUserProfile({
+          ...profile,
           name: profile.name || profile.team || address,
-          image: profile.image,
           avatar: profile.image || makeBlockie(address),
-          // Include additional profile data if available
-          team: profile.team,
-          about: profile.about,
-          news: profile.news,
-          links: profile.links,
         });
 
         // Explicitly close the modal when a connection is successful, but only once
@@ -350,47 +177,20 @@ export class MyApp extends LitElement {
         } catch (error) {
           console.error('Error closing modal:', error);
         }
-      } else {
-        // If disconnected, reset the user state
-        setUserAddress(null);
-        setUserProfile(null);
       }
-
-      // Update legacy connection context
       this.connection = {
         ...this.connection,
-        connected: !!address,
+        connected: isConnected,
       };
-
-      // Check if the connection state has changed
-      if (!address) {
-        dispatchUserEvent(USER_DISCONNECTED_EVENT);
-      } else {
-        dispatchUserEvent(USER_CONNECTED_EVENT, { address });
-      }
-
-      // Update user state property
-      this.userState = getUserState();
-
-      // Force a re-render of the app
-      this.requestUpdate();
     });
 
     modal.subscribeNetwork(({ caipNetwork }) => {
-      // Update legacy connection context
       this.connection = {
         ...this.connection,
         network: {
           name: caipNetwork!.name,
         },
       };
-
-      // Update new user state
-      setNetworkName(caipNetwork?.name || null);
-
-      // Update user state property
-      this.userState = getUserState();
-
       this.getUpdraftSettings.run().then(() => this.refreshBalances.run());
     });
 
@@ -465,145 +265,8 @@ export class MyApp extends LitElement {
     autoRun: false,
   });
 
-  private getCurrentLocation(): string {
-    return window.location.pathname;
-  }
-
-  private getIdeaIdFromUrl(): string | undefined {
-    const match = this.getCurrentLocation().match(/\/idea\/([^/]+)/);
-    return match ? match[1] : undefined;
-  }
-
-  private getPageLayout(): PageLayout {
-    const path = this.getCurrentLocation();
-
-    const ideaLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: true,
-      showHotIdeas: false,
-      showSearch: true,
-      showDiscoverTabs: true,
-      type: 'standard',
-      title: 'Idea',
-    };
-    const discoverLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: true,
-      showHotIdeas: true,
-      showSearch: true,
-      showDiscoverTabs: true,
-      type: 'standard',
-      title: 'Discover',
-    };
-    const homeLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: true,
-      showHotIdeas: true,
-      showSearch: true,
-      showDiscoverTabs: true,
-      type: 'standard',
-      title: 'Home',
-    };
-    const profileLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: false,
-      showHotIdeas: false,
-      showSearch: false,
-      showDiscoverTabs: false,
-      type: 'profile',
-      title: 'Profile',
-    };
-    const editProfileLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: false,
-      showHotIdeas: false,
-      showSearch: false,
-      showDiscoverTabs: false,
-      type: 'profile',
-      title: 'Edit Profile',
-    };
-    const createProfileLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: true,
-      showHotIdeas: true,
-      showSearch: false,
-      showDiscoverTabs: false,
-      type: 'profile',
-      title: 'Create Profile',
-    };
-    const createIdeaLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: true,
-      showHotIdeas: true,
-      showSearch: false,
-      showDiscoverTabs: false,
-      type: 'creation',
-      title: 'Create Idea',
-    };
-    const createSolutionLayout: PageLayout = {
-      showLeftSidebar: true,
-      showRightSidebar: true,
-      showHotIdeas: false,
-      showSearch: false,
-      showDiscoverTabs: false,
-      type: 'creation',
-      title: 'Create Solution',
-    };
-
-    if (path.startsWith('/idea/')) {
-      return ideaLayout;
-    } else if (path === '/discover') {
-      return discoverLayout;
-    } else if (path === '/') {
-      return homeLayout;
-    } else if (path.startsWith('/profile/')) {
-      return profileLayout;
-    } else if (path === '/edit-profile') {
-      return editProfileLayout;
-    } else if (path.startsWith('/submit-profile-and-create-')) {
-      return createProfileLayout;
-    } else if (path === '/create-idea') {
-      return createIdeaLayout;
-    } else if (path.startsWith('/create-solution/')) {
-      return createSolutionLayout;
-    }
-
-    // Default layout
-    return {
-      showLeftSidebar: true,
-      showRightSidebar: false,
-      showHotIdeas: false,
-      showSearch: true,
-      showDiscoverTabs: false,
-      type: 'standard',
-      title: 'Updraft',
-    };
-  }
-
   render() {
-    const layout = this.getPageLayout();
-    const ideaId = this.getIdeaIdFromUrl();
-
-    return html`
-      <top-bar
-        ?show-search=${layout.showSearch}
-        ?show-discover-tabs=${layout.showDiscoverTabs}
-      ></top-bar>
-      <div class="app-layout">
-        <left-side-bar></left-side-bar>
-        <div class="content-wrapper">
-          <main class="main-content">${this.router.outlet()}</main>
-          ${layout.showRightSidebar
-            ? html`
-                <right-side-bar
-                  .ideaId=${ideaId}
-                  ?show-hot-ideas=${layout.showHotIdeas}
-                ></right-side-bar>
-              `
-            : ''}
-        </div>
-      </div>
-    `;
+    return html` <app-layout> ${this.router.outlet()} </app-layout> `;
   }
 }
 
