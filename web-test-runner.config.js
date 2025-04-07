@@ -1,4 +1,3 @@
-import { playwrightLauncher } from '@web/test-runner-playwright';
 import { esbuildPlugin } from '@web/dev-server-esbuild';
 import { fromRollup } from '@web/dev-server-rollup';
 import alias from '@rollup/plugin-alias';
@@ -10,7 +9,6 @@ const aliasPlugin = fromRollup(alias);
 export default {
   files: 'src/**/*.test.(js|ts)',
   nodeResolve: true,
-  browsers: [playwrightLauncher({ product: 'chromium' })],
   plugins: [
     // Handle TypeScript with proper decorator support
     esbuildPlugin({
