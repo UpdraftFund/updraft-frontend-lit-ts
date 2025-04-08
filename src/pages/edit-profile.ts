@@ -6,7 +6,7 @@ import { consume } from '@lit/context';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import { CurrentUser } from '@/types';
+import { UpdraftSettings, Connection, CurrentUser } from '@/types';
 
 import pencilSquare from '@icons/pencil-square.svg';
 
@@ -34,6 +34,7 @@ import {
   formToJson,
 } from '@components/base/saveable-form';
 
+import { topBarContent } from '@state/layout-state';
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
 import {
@@ -43,7 +44,6 @@ import {
   connectionContext,
 } from '@/context';
 import { userContext, UserState, setUserProfile } from '@/state/user-state';
-import { UpdraftSettings, Connection } from '@/types';
 import { modal } from '@/web3';
 
 import ideaSchema from '@schemas/idea-schema.json';
@@ -457,8 +457,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   }
 
   render() {
+    topBarContent.set(html` <page-heading>Edit Your Profile</page-heading>`);
     return html`
-      <page-heading>Edit Your Profile</page-heading>
       <div class="container">
         <main>
           <form
