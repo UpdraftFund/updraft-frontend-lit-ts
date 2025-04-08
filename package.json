@@ -10,8 +10,8 @@
     "preview": "vite preview",
     "build-graph": "graphclient build",
     "type-check": "tsc --noEmit",
-    "test": "web-test-runner",
-    "test:watch": "web-test-runner --watch"
+    "test": "web-test-runner --node-resolve",
+    "test:watch": "web-test-runner --node-resolve --watch"
   },
   "dependencies": {
     "@graphprotocol/client-urql": "^2.0.7",

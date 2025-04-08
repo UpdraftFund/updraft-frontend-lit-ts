@@ -1,6 +1,6 @@
-# Common Feature Tests
+# Navigation Feature Tests
 
-This directory contains tests for common components and utilities.
+This directory contains tests for navigation components and functionality.
 
 ## Testing Guidelines
 
@@ -13,20 +13,27 @@ This directory contains tests for common components and utilities.
 
 ```typescript
 import { expect, fixture, html } from '@open-wc/testing';
-import '../my-component.js';
+import '../navigation-component.js';
 
-describe('MyComponent', () => {
+describe('NavigationComponent', () => {
   it('renders correctly', async () => {
-    const el = await fixture(html`<my-component></my-component>`);
+    const el = await fixture(html`<navigation-component></navigation-component>`);
     expect(el.shadowRoot).to.exist;
     // Add more assertions here
   });
-
+  
   it('responds to property changes', async () => {
-    const el = await fixture(html`<my-component></my-component>`);
+    const el = await fixture(html`<navigation-component></navigation-component>`);
     el.property = 'new value';
     await el.updateComplete;
     // Test the component's response to property changes
+  });
+  
+  it('handles navigation events', async () => {
+    const el = await fixture(html`<navigation-component></navigation-component>`);
+    const navLink = el.shadowRoot.querySelector('.nav-link');
+    navLink.click();
+    // Test navigation behavior
   });
 });
 ```
