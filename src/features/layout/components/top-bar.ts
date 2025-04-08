@@ -1,9 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import '@/features/layout/components/top-bar/profile-area';
-import '@/features/layout/components/top-bar/search-bar';
-import '@/features/layout/components/top-bar/discover-tabs';
+import '@/features/navigation/components/top-bar/profile-area';
+import '@/features/navigation/components/top-bar/search-bar';
+import '@/features/navigation/components/top-bar/discover-tabs';
 
 import updraftLogo from '@assets/images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -174,7 +174,14 @@ export class TopBar extends LitElement {
       <div class="middle-section">
         ${this.showDiscoverTabs
           ? html`<discover-tabs
-              .tab=${this.tab}
+              .tab=${this.tab as
+                | 'search'
+                | 'hot-ideas'
+                | 'new-ideas'
+                | 'deadline'
+                | 'followed'
+                | 'tags'
+                | undefined}
               .search=${this.search}
             ></discover-tabs>`
           : ''}

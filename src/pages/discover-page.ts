@@ -278,11 +278,11 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                     switch (result.entity) {
                       case 'ideas':
                         return html` <idea-card-large
-                          .idea=${item}
+                          .idea=${item as unknown as Idea}
                         ></idea-card-large>`;
                       case 'ideaSearch':
                         return html` <idea-card-large
-                          .idea=${item}
+                          .idea=${item as unknown as Idea}
                         ></idea-card-large>`;
                       case 'solutions':
                         return html` <solution-card

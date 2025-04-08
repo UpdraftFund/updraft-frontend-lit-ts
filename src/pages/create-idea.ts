@@ -19,7 +19,7 @@ import {
   RequestBalanceRefresh,
   updraftSettings,
 } from '@/features/common/state/context';
-import { Balances } from '@/features/user/types';
+import { Balances } from '@/features/user/types/current-user';
 import { UpdraftSettings } from '@/features/common/types';
 
 @customElement('create-idea')

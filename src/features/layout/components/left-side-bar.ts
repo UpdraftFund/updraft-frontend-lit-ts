@@ -19,6 +19,7 @@ import {
   toggleLeftSidebar,
 } from '@/features/common/state/context';
 import { Connection } from '@/features/user/types/current-user';
+import { Solution } from '@/features/solution/types';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import {
@@ -420,7 +421,7 @@ export class LeftSideBar extends LitElement {
             ics?.map(
               (ic) => html`
                 <solution-card-small
-                  .solution=${ic.solution}
+                  .solution=${ic.solution as Solution}
                 ></solution-card-small>
               `
             ),

@@ -55,7 +55,7 @@ import {
 } from '@/features/idea/state/idea';
 
 import '@/features/layout/components/top-bar';
-import '@/features/layout/components/top-bar/search-bar';
+import '@/features/navigation/components/top-bar/search-bar';
 import '@/features/layout/components/left-side-bar';
 import '@/features/layout/components/right-side-bar';
 
@@ -208,7 +208,7 @@ export class MyApp extends LitElement {
         await import('./pages/idea-page');
         return true;
       },
-      render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`,
+      render: ({ id }) => html`<idea-page .ideaId=${id as string}></idea-page>`,
     },
     {
       path: '/create-idea',
@@ -260,7 +260,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ address }) =>
-        html`<view-profile .address=${address}></view-profile>`,
+        html`<view-profile .address=${address as string}></view-profile>`,
     },
     {
       path: '/create-solution/:ideaId',

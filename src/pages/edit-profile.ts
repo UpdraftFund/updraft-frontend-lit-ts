@@ -418,8 +418,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       Array.isArray(this.userState.profile.links)
     ) {
       this.links = this.userState.profile.links
-        .filter((link) => link && link.trim() !== '')
-        .map((link, index) => ({
+        .filter((link: string) => link && link.trim() !== '')
+        .map((link: string, index: number) => ({
           name: `link${index + 1}`,
           value: link,
         }));
@@ -429,8 +429,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       const userData = user.get();
       if (userData && userData.links) {
         this.links = userData.links
-          .filter((link) => link && link.trim() !== '')
-          .map((link, index) => ({
+          .filter((link: string) => link && link.trim() !== '')
+          .map((link: string, index: number) => ({
             name: `link${index + 1}`,
             value: link,
           }));

@@ -3,7 +3,7 @@ import { createContext } from '@lit/context';
 import type { Address } from 'viem';
 
 // Import user profile type
-import type { CurrentUser } from '@/types/current-user';
+import type { CurrentUser } from '@/features/user/types/current-user';
 
 // Import the wallet connection modal
 import { modal } from '@/features/common/utils/web3';

@@ -397,7 +397,7 @@ export class IdeaPage extends LitElement {
 
                 <share-dialog
                   action="supported an Idea"
-                  .topic=${idea.name}
+                  .topic=${idea.name ?? ''}
                 ></share-dialog>
               `;
             },

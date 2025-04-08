@@ -15,7 +15,7 @@ import {
   balanceContext,
   RequestBalanceRefresh,
 } from '@/features/common/state/context';
-import { Balances } from '@/types';
+import { Balances } from '@/features/user/types/current-user';
 
 @customElement('upd-dialog')
 export class UpdDialog extends LitElement {
@@ -45,21 +45,40 @@ export class UpdDialog extends LitElement {
     return html`
       <sl-dialog label="Get more UPD">
         <span class="check-balance">
-          <p>You have <span class="balance">${
-            this.balances?.updraft?.balance || '0'
-          }</span> UPD</p>
-          <sl-button pill @click=${
-            this.handleRefreshBalance
-          } variant="primary" size="small">
-            <sl-icon slot="prefix" class="calculator-icon" src=${calculator}/></sl-icon>
+          <p>
+            You have
+            <span class="balance"
+              >${this.balances?.updraft?.balance || '0'}</span
+            >
+            UPD
+          </p>
+          <sl-button
+            pill
+            @click=${this.handleRefreshBalance}
+            variant="primary"
+            size="small"
+          >
+            <sl-icon
+              slot="prefix"
+              class="calculator-icon"
+              src=${calculator}
+            ></sl-icon>
             Recheck Balance
           </sl-button>
         </span>
         <h3>How to get UPD</h3>
         <ul>
-          <li><a href="https://discord.gg/mQJ58MY6Nz" target="_blank">
-            Get free UPD from our discord
-          </a></li>
+          <li>
+            <a href="https://discord.gg/mQJ58MY6Nz" target="_blank">
+              Get free UPD from our discord
+            </a>
+          </li>
+          <li>
+            <a href="https://app.uniswap.org/swap" target="_blank">
+              Swap ETH for UPD on Uniswap
+            </a>
+          </li>
+        </ul>
       </sl-dialog>
     `;
   }
