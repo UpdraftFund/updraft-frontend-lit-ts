@@ -6,11 +6,11 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import '@/components/right-sidebar/hot-ideas';
-import '@/components/page-specific/idea/related-ideas';
-import '@/components/page-specific/idea/top-supporters';
-import '@/components/right-sidebar/watched-tags';
-import '@/components/right-sidebar/popular-tags';
+import '@/features/idea/components/right-side-bar/hot-ideas';
+import '@/features/idea/components/right-side-bar/related-ideas';
+import '@/features/idea/components/right-side-bar/top-supporters';
+import '@/features/tags/components/watched-tags';
+import '@/features/tags/components/popular-tags';
 
 @customElement('right-side-bar')
 export class RightSideBar extends LitElement {

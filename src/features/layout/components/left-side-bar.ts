@@ -10,15 +10,15 @@ import chevronRight from '@icons/chevron-right.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@/components/shared/section-heading';
-import '@/components/right-sidebar/idea-card-small';
+import '@/features/common/components/section-heading';
+import '@/features/idea/components/idea-card-small';
 
 import {
   connectionContext,
   leftSidebarCollapsed,
   toggleLeftSidebar,
 } from '@/features/common/state/context';
-import { Connection } from '@/types';
+import { Connection } from '@/features/user/types/current-user';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import {

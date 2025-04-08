@@ -13,7 +13,7 @@ dayjs.extend(utc);
 import gift from '@icons/gift.svg';
 import fire from '@icons/fire.svg';
 
-import { dialogStyles } from '@styles/dialog-styles';
+import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -22,12 +22,12 @@ import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 // TODO: Remove
 // import '@/components/page-specific/idea/side-bar';
-import '@/components/shared/upd-dialog';
-import '@/components/shared/share-dialog';
-import '@/components/shared/transaction-watcher';
-import { UpdDialog } from '@/components/shared/upd-dialog';
-import { ShareDialog } from '@/components/shared/share-dialog';
-import { TransactionWatcher } from '@/components/shared/transaction-watcher';
+import '@/features/common/components/upd-dialog';
+import '@/features/common/components/share-dialog';
+import '@/features/common/components/transaction-watcher';
+import { UpdDialog } from '@/features/common/components/upd-dialog';
+import { ShareDialog } from '@/features/common/components/share-dialog';
+import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { IdeaDocument } from '@gql';
@@ -42,7 +42,7 @@ import {
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@/features/common/utils/web3';
 import { shortNum } from '@/features/common/utils/utils';
-import { setTags } from '@/state/idea-state';
+import { setTags } from '@/features/idea/state/idea';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {

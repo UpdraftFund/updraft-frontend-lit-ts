@@ -4,7 +4,7 @@ import { Task } from '@lit/task';
 
 import { UserActivityDocument } from '@gql';
 import urqlClient from '@/features/common/utils/urql-client';
-import '@components/page-specific/profile/activity-card';
+import '@/features/user/components/activity-card';
 
 // Import Shoelace components
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';

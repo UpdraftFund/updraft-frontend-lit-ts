@@ -3,14 +3,14 @@ import { customElement } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
-import '@/components/right-sidebar/idea-card-small';
+import '@/features/idea/components/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { IdeasBySharesDocument } from '@gql';
-import { Idea } from '@/types';
-import { ideaContext, setHotIdeas } from '@/state/idea-state';
+import { Idea } from '@/features/idea/types';
+import { ideaContext, setHotIdeas } from '@/features/idea/state/idea';
 
 import fire from '@icons/fire.svg';
 

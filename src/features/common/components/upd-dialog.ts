@@ -4,7 +4,7 @@ import { consume } from '@lit/context';
 
 import calculator from '@icons/calculator.svg';
 
-import { dialogStyles } from '@styles/dialog-styles';
+import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';

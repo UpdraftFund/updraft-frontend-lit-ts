@@ -8,10 +8,10 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput } from '@shoelace-style/shoelace';
 
-import '@layout/page-heading';
-import '@/components/shared/label-with-hint';
-import '@/components/shared/upd-dialog';
-import { UpdDialog } from '@/components/shared/upd-dialog';
+import '@/features/common/components/page-heading';
+import '@/features/common/components/label-with-hint';
+import '@/features/common/components/upd-dialog';
+import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { SaveableForm } from '@/features/common/components/saveable-form';
 
 import {
@@ -19,7 +19,8 @@ import {
   RequestBalanceRefresh,
   updraftSettings,
 } from '@/features/common/state/context';
-import { UpdraftSettings, Balances } from '@/types';
+import { Balances } from '@/features/user/types';
+import { UpdraftSettings } from '@/features/common/types';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {

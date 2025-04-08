@@ -13,16 +13,16 @@ import {
   RequestBalanceRefresh,
   updraftSettings as updraftSettingsContext,
 } from '@/features/common/state/context';
-import { userContext, UserState } from '@/state/user-state';
+import { userContext, UserState } from '@/features/user/state/user';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
 import {
   TransactionSuccess,
   TransactionWatcher,
-} from '@/components/shared/transaction-watcher';
-import { ShareDialog } from '@/components/shared/share-dialog';
-import { UpdDialog } from '@/components/shared/upd-dialog';
+} from '@/features/common/components/transaction-watcher';
+import { ShareDialog } from '@/features/common/components/share-dialog';
+import { UpdDialog } from '@/features/common/components/upd-dialog';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -30,13 +30,13 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
 
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
-import { dialogStyles } from '@/styles/dialog-styles';
+import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
-import '@layout/page-heading';
-import '@/components/shared/transaction-watcher';
-import '@/components/shared/upd-dialog';
-import '@/components/shared/share-dialog';
-import '@/components/shared/label-with-hint';
+import '@/features/common/components/page-heading';
+import '@/features/common/components/transaction-watcher';
+import '@/features/common/components/upd-dialog';
+import '@/features/common/components/share-dialog';
+import '@/features/common/components/label-with-hint';
 
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@/contracts/updraft';

@@ -1,7 +1,7 @@
 import { customElement, property, query } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 
-import { dialogStyles } from '@styles/dialog-styles';
+import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import linkIcon from '@icons/link-45deg.svg';
 import xIcon from '@icons/twitter-x.svg';

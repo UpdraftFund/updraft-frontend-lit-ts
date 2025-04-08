@@ -16,7 +16,8 @@ import {
   defaultFunderReward,
   updraftSettings,
 } from '@/features/common/state/context';
-import { Idea, UpdraftSettings } from '@/types';
+import { Idea } from '@/features/idea/types';
+import { UpdraftSettings } from '@/features/common/types';
 
 import { shortNum } from '@/features/common/utils/utils';
 

@@ -1,9 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import '@layout/profile-area';
-import '@/components/shared/search-bar';
-import '@/components/page-specific/discover/discover-tabs';
+import '@/features/layout/components/top-bar/profile-area';
+import '@/features/layout/components/top-bar/search-bar';
+import '@/features/layout/components/top-bar/discover-tabs';
 
 import updraftLogo from '@assets/images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';

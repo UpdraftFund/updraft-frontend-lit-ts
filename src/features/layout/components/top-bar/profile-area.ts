@@ -9,8 +9,7 @@ import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
-import '@/components/shared/upd-dialog';
-import { UpdDialog } from '@/components/shared/upd-dialog';
+import '@/features/common/components/upd-dialog';
 
 import plusLgIcon from '@icons/plus-lg.svg';
 import layersIcon from '@icons/layers.svg';
@@ -28,7 +27,7 @@ import {
 } from '@/features/common/state/context';
 
 // Import user state context
-import { userContext, UserState } from '@/state/user-state';
+import { userContext, UserState } from '@/features/user/state/user';
 
 // Import the custom events
 import {
@@ -36,9 +35,9 @@ import {
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
   NETWORK_CHANGED_EVENT,
-} from '@/state/user-state';
+} from '@/features/user/state/user';
 
-import { Connection, Balances } from '@/types';
+import { Connection, Balances } from '@/features/user/types/current-user';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {

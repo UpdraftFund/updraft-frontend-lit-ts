@@ -9,7 +9,7 @@ import { customElement, state, queryAll, query } from 'lit/decorators.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
-import { watchedTags, unwatchTag } from '@state/watched-tags-state';
+import { watchedTags, unwatchTag } from '@/features/user/state/watched-tags';
 
 import pencilSquare from '@icons/pencil-square.svg';
 import xCircle from '@icons/x-circle.svg';

@@ -11,9 +11,9 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@styles/global.css';
-import '@styles/theme.css';
-import '@styles/reset.css';
+import '@/features/common/styles/global.css';
+import '@/features/common/styles/theme.css';
+import '@/features/common/styles/reset.css';
 
 import { modal, config } from '@/features/common/utils/web3';
 import urqlClient from '@/features/common/utils/urql-client';
@@ -39,8 +39,10 @@ import {
   updraftSettings as updraftSettingsContext,
   RequestBalanceRefresh,
 } from '@/features/common/state/context';
-import { Connection, Balances, UpdraftSettings, Profile } from '@/types';
+import { Connection, Balances } from '@/features/user/types/current-user';
 import { PageLayout } from '@/features/layout/types/layout';
+import { UpdraftSettings } from '@/features/common/types';
+import { Profile } from '@/features/user/types';
 
 import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft.ts';
@@ -52,10 +54,10 @@ import {
   resetState as resetIdeaState,
 } from '@/features/idea/state/idea';
 
-import '@features/layout/components/top-bar';
-import '@/components/shared/search-bar';
-import '@components/layout/left-side-bar';
-import '@components/layout/right-side-bar';
+import '@/features/layout/components/top-bar';
+import '@/features/layout/components/top-bar/search-bar';
+import '@/features/layout/components/left-side-bar';
+import '@/features/layout/components/right-side-bar';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -186,8 +188,15 @@ export class MyApp extends LitElement {
         const search = params.get('search');
         const tab = params.get('tab') || (search ? 'search' : null);
         return html`<discover-page
-          .search=${search}
-          .tab=${tab}
+          .search=${search ?? undefined}
+          .tab=${tab as
+            | 'search'
+            | 'hot-ideas'
+            | 'new-ideas'
+            | 'deadline'
+            | 'followed'
+            | 'tags'
+            | undefined}
         ></discover-page>`;
       },
     },

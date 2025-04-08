@@ -9,7 +9,7 @@ import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import '@components/page-specific/discover/idea-card-large.ts';
+import '@/features/idea/components/idea-card-large.ts';
 
 import { connectionContext } from '@/features/common/state/context.ts';
 import {

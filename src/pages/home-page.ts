@@ -3,12 +3,12 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 
-import '@components/page-specific/home/tracked-changes';
-import '@components/page-specific/home/beginner-tasks';
+import '@/features/home/components/tracked-changes';
+import '@/features/home/components/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import urqlClient from '@/features/common/utils/urql-client';
-import { userContext, type UserState } from '@/state/user-state';
+import { userContext, type UserState } from '@/features/user/state/user';
 
 interface UserIdeasSolutionsResponse {
   createdIdeas: Array<{ id: string; name: string }>;
