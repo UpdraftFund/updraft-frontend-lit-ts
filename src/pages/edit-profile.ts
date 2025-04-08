@@ -8,22 +8,22 @@ import dayjs from 'dayjs';
 
 import pencilSquare from '@icons/pencil-square.svg';
 
-import { dialogStyles } from '@styles/dialog-styles';
+import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@layout/page-heading';
-import '@/components/page-specific/profile/activity-feed';
-import '@/components/shared/transaction-watcher';
-import '@/components/shared/upd-dialog';
-import '@/components/shared/share-dialog';
+import '@/features/common/components/page-heading';
+import '@/features/user/components/activity-feed';
+import '@/features/common/components/transaction-watcher';
+import '@/features/common/components/upd-dialog';
+import '@/features/common/components/share-dialog';
 import {
   TransactionWatcher,
   TransactionSuccess,
-} from '@/components/shared/transaction-watcher';
-import { UpdDialog } from '@/components/shared/upd-dialog';
-import { ShareDialog } from '@/components/shared/share-dialog';
+} from '@/features/common/components/transaction-watcher';
+import { UpdDialog } from '@/features/common/components/upd-dialog';
+import { ShareDialog } from '@/features/common/components/share-dialog';
 import { SlDialog } from '@shoelace-style/shoelace';
 import {
   SaveableForm,
@@ -39,7 +39,11 @@ import {
   defaultFunderReward,
   connectionContext,
 } from '@/features/common/state/context';
-import { userContext, UserState, setUserProfile } from '@/state/user-state';
+import {
+  userContext,
+  UserState,
+  setUserProfile,
+} from '@/features/user/state/user';
 import { UpdraftSettings, Connection } from '@/types';
 import { modal } from '@/features/common/utils/web3';
 
