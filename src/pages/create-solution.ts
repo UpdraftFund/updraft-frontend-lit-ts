@@ -1,7 +1,7 @@
 import {
   formToJson,
   SaveableForm,
-} from '@/components/base/saveable-form';
+} from '@/features/common/components/saveable-form';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css } from 'lit';
 import { parseUnits, toHex, trim } from 'viem';
@@ -12,7 +12,7 @@ import {
   balanceContext,
   RequestBalanceRefresh,
   updraftSettings as updraftSettingsContext,
-} from '@/context';
+} from '@/features/common/state/context';
 import { userContext, UserState } from '@/state/user-state';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
@@ -41,9 +41,10 @@ import '@/components/shared/label-with-hint';
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@/contracts/updraft';
 
-import { UpdraftSettings, Balances } from '@/types';
+import { UpdraftSettings } from '@/features/common/types';
+import { Balances } from '@/features/user/types';
 import { IdeaDocument } from '@gql';
-import urqlClient from '@/urql-client';
+import urqlClient from '@/features/common/utils/urql-client';
 
 interface SolutionFormData {
   deadline: string;
@@ -305,7 +306,10 @@ export class CreateSolution extends SaveableForm {
 
   protected async handleSubmit(event: Event) {
     event.preventDefault();
-    const formData = formToJson('create-solution', solutionSchema) as SolutionFormData;
+    const formData = formToJson(
+      'create-solution',
+      solutionSchema
+    ) as SolutionFormData;
 
     try {
       // Convert deadline to Unix timestamp
@@ -318,7 +322,9 @@ export class CreateSolution extends SaveableForm {
       const goal = parseUnits(formData.goal || '0', 18);
 
       // Don't allow overlapping transactions
-      if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
+      if (
+        this.submitTransaction.transactionTask.status !== TaskStatus.PENDING
+      ) {
         this.submitTransaction.hash = await updraft.write('createSolution', [
           this.ideaId,
           formData['funding-token'],

@@ -11,11 +11,15 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import '@components/page-specific/discover/idea-card-large.ts';
 
-import { connectionContext } from '@/context.ts';
-import { isWatched, watchedTags, watchTag } from '@state/watched-tags-state';
+import { connectionContext } from '@/features/common/state/context.ts';
+import {
+  isWatched,
+  watchedTags,
+  watchTag,
+} from '../features/user/state/watched-tags.ts';
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
 
-import urqlClient from '@/urql-client.ts';
+import urqlClient from '@/features/common/utils/urql-client.ts';
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,

@@ -15,8 +15,8 @@ import '@styles/global.css';
 import '@styles/theme.css';
 import '@styles/reset.css';
 
-import { modal, config } from '@/web3';
-import urqlClient from '@/urql-client';
+import { modal, config } from '@/features/common/utils/web3';
+import urqlClient from '@/features/common/utils/urql-client';
 import { fromHex } from 'viem';
 import makeBlockie from 'ethereum-blockies-base64';
 
@@ -30,7 +30,7 @@ import {
   USER_CONNECTED_EVENT,
   USER_DISCONNECTED_EVENT,
   dispatchUserEvent,
-} from '@/state/user-state';
+} from '@/features/user/state/user';
 
 import {
   user,
@@ -38,9 +38,9 @@ import {
   balanceContext,
   updraftSettings as updraftSettingsContext,
   RequestBalanceRefresh,
-} from '@/context';
+} from '@/features/common/state/context';
 import { Connection, Balances, UpdraftSettings, Profile } from '@/types';
-import { PageLayout } from '@/types/layout';
+import { PageLayout } from '@/features/layout/types/layout';
 
 import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft.ts';
@@ -50,15 +50,12 @@ import {
   ideaContext,
   getIdeaState,
   resetState as resetIdeaState,
-} from '@/state/idea-state';
+} from '@/features/idea/state/idea';
 
-import '@components/layout/top-bar';
+import '@features/layout/components/top-bar';
 import '@/components/shared/search-bar';
 import '@components/layout/left-side-bar';
 import '@components/layout/right-side-bar';
-
-// Import our new user-profile component
-import '@/components/shared/user-profile';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');

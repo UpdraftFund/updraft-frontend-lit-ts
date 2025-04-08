@@ -12,13 +12,13 @@ import '@layout/page-heading';
 import '@/components/shared/label-with-hint';
 import '@/components/shared/upd-dialog';
 import { UpdDialog } from '@/components/shared/upd-dialog';
-import { SaveableForm } from '@components/base/saveable-form';
+import { SaveableForm } from '@/features/common/components/saveable-form';
 
 import {
   balanceContext,
   RequestBalanceRefresh,
   updraftSettings,
-} from '@/context';
+} from '@/features/common/state/context';
 import { UpdraftSettings, Balances } from '@/types';
 
 @customElement('create-idea')

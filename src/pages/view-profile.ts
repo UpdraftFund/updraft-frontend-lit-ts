@@ -12,13 +12,13 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@layout/page-heading';
 import '@/components/page-specific/profile/activity-feed';
 
-import { connectionContext } from '@/context';
+import { connectionContext } from '@/features/common/state/context';
 import { userContext, UserState } from '@/state/user-state';
 import { followUser, isFollowed, unfollowUser } from '@state/follow-state.ts';
 import { markComplete } from '@state/beginner-tasks-state.ts';
 import { Connection } from '@/types';
 
-import urqlClient from '@/urql-client';
+import urqlClient from '@/features/common/utils/urql-client';
 import { ProfileDocument } from '@gql';
 
 @customElement('view-profile')

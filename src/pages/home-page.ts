@@ -7,7 +7,7 @@ import '@components/page-specific/home/tracked-changes';
 import '@components/page-specific/home/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import urqlClient from '@/urql-client';
+import urqlClient from '@/features/common/utils/urql-client';
 import { userContext, type UserState } from '@/state/user-state';
 
 interface UserIdeasSolutionsResponse {
