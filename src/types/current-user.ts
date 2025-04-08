@@ -1,5 +1,5 @@
 export type CurrentUser = {
-  name: string;
+  name?: string;
   image?: string;
   avatar: string;
   team?: string;

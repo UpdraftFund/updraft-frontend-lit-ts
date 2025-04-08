@@ -8,7 +8,7 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput } from '@shoelace-style/shoelace';
 
-import '@layout/page-heading';
+import '@components/top-bar/page-heading.ts';
 import '@/components/shared/label-with-hint';
 import '@/components/shared/upd-dialog';
 import { UpdDialog } from '@/components/shared/upd-dialog';

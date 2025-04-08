@@ -9,8 +9,8 @@ import '@shoelace-style/shoelace/dist/components/menu/menu.js';
 import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
-import '@/components/shared/upd-dialog';
-import { UpdDialog } from '@/components/shared/upd-dialog';
+import '@components/shared/upd-dialog';
+import { UpdDialog } from '@components/shared/upd-dialog';
 
 import plusLgIcon from '@icons/plus-lg.svg';
 import layersIcon from '@icons/layers.svg';
@@ -28,7 +28,7 @@ import {
 } from '@/context';
 
 // Import user state context
-import { userContext, UserState } from '@/state/user-state';
+import { userContext, UserState } from '@state/user-state';
 
 // Import the custom events
 import {
@@ -36,7 +36,7 @@ import {
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
   NETWORK_CHANGED_EVENT,
-} from '@/state/user-state';
+} from '@state/user-state';
 
 import { Connection, Balances } from '@/types';
 
@@ -292,8 +292,8 @@ export class ProfileArea extends SignalWatcher(LitElement) {
               }
             }}
             ?loading=${this.userState?.isConnecting}
-            >Connect Wallet</sl-button
-          >
+            >Connect Wallet
+          </sl-button>
         `;
   }
 }

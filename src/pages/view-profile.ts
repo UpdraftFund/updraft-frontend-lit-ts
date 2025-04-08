@@ -9,7 +9,8 @@ import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@layout/page-heading';
+
+import '@components/top-bar/page-heading';
 import '@/components/page-specific/profile/activity-feed';
 
 import { connectionContext } from '@/context';

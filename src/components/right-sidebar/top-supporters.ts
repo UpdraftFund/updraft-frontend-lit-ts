@@ -10,6 +10,8 @@ import urqlClient from '@/urql-client';
 import { IdeaContributionsDocument } from '@gql';
 import { shortNum } from '@/utils';
 
+import { Profile } from '@/types';
+
 interface Supporter {
   id: string;
   profile?: string;
@@ -89,31 +91,29 @@ export class TopSupporters extends LitElement {
 
       if (!result.data?.ideaContributions) return [];
 
-      return result.data.ideaContributions.map(
-        (contribution: any): Supporter => {
-          let name = contribution.funder.id;
-          let avatar = makeBlockie(contribution.funder.id);
+      return result.data.ideaContributions.map((contribution): Supporter => {
+        let name = contribution.funder.id;
+        let avatar = makeBlockie(contribution.funder.id);
 
-          if (contribution.funder.profile) {
-            try {
-              const profile = JSON.parse(
-                fromHex(contribution.funder.profile as `0x${string}`, 'string')
-              );
-              name = profile.name || profile.team || contribution.funder.id;
-              avatar = profile.image || avatar;
-            } catch (e) {
-              console.error('Error parsing profile', e);
-            }
+        if (contribution.funder.profile) {
+          try {
+            const profile: Profile = JSON.parse(
+              fromHex(contribution.funder.profile as `0x${string}`, 'string')
+            );
+            name = profile.name || profile.team || contribution.funder.id;
+            avatar = profile.image || avatar;
+          } catch (e) {
+            console.error('Error parsing profile', e);
           }
-
-          return {
-            id: contribution.funder.id,
-            name,
-            avatar,
-            contribution: contribution.contribution,
-          };
         }
-      );
+
+        return {
+          id: contribution.funder.id,
+          name,
+          avatar,
+          contribution: contribution.contribution,
+        };
+      });
     },
     () => [this.ideaId]
   );

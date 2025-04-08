@@ -7,8 +7,8 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import '@/components/right-sidebar/hot-ideas';
-import '@/components/page-specific/idea/related-ideas';
-import '@/components/page-specific/idea/top-supporters';
+import '@components/right-sidebar/related-ideas';
+import '@components/right-sidebar/top-supporters';
 import '@/components/right-sidebar/watched-tags';
 import '@/components/right-sidebar/popular-tags';
 

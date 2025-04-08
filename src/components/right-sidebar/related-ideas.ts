@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import '@components/shared/idea-card-small.ts';
+import '@components/shared/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 @customElement('related-ideas')

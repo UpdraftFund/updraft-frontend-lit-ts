@@ -2,7 +2,7 @@ import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
-import '@layout/profile-area';
+import '@components/top-bar/profile-area';
 
 import updraftLogo from '@assets/images/updraft-logo-46.png';
 import listIcon from '@icons/list.svg';

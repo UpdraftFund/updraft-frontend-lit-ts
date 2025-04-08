@@ -8,7 +8,7 @@ import urqlClient from '@/urql-client';
 import '@components/page-specific/home/tracked-changes';
 import '@components/page-specific/home/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@components/shared/search-bar';
+import '@components/top-bar/search-bar';
 
 import { userContext, type UserState } from '@/state/user-state';
 import { topBarContent } from '@/state/layout-state';

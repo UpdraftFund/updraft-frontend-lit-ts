@@ -1,7 +1,4 @@
-import {
-  formToJson,
-  SaveableForm,
-} from '@/components/base/saveable-form';
+import { formToJson, SaveableForm } from '@/components/base/saveable-form';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css } from 'lit';
 import { parseUnits, toHex, trim } from 'viem';
@@ -32,7 +29,7 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
 import { dialogStyles } from '@/styles/dialog-styles';
 
-import '@layout/page-heading';
+import '@components/top-bar/page-heading';
 import '@/components/shared/transaction-watcher';
 import '@/components/shared/upd-dialog';
 import '@/components/shared/share-dialog';
@@ -305,7 +302,10 @@ export class CreateSolution extends SaveableForm {
 
   protected async handleSubmit(event: Event) {
     event.preventDefault();
-    const formData = formToJson('create-solution', solutionSchema) as SolutionFormData;
+    const formData = formToJson(
+      'create-solution',
+      solutionSchema
+    ) as SolutionFormData;
 
     try {
       // Convert deadline to Unix timestamp
@@ -318,7 +318,9 @@ export class CreateSolution extends SaveableForm {
       const goal = parseUnits(formData.goal || '0', 18);
 
       // Don't allow overlapping transactions
-      if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
+      if (
+        this.submitTransaction.transactionTask.status !== TaskStatus.PENDING
+      ) {
         this.submitTransaction.hash = await updraft.write('createSolution', [
           this.ideaId,
           formData['funding-token'],

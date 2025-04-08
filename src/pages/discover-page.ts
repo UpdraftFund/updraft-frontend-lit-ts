@@ -10,7 +10,7 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import '@components/page-specific/discover/idea-card-large';
 import '@components/page-specific/discover/discover-tabs';
-import '@components/shared/search-bar';
+import '@components/top-bar/search-bar';
 
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
 
