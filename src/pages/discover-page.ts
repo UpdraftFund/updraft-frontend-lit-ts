@@ -3,17 +3,19 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 import { SignalWatcher } from '@lit-labs/signals';
-import { repeat } from 'lit/directives/repeat.js';
 
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import '@components/page-specific/discover/idea-card-large.ts';
+import '@components/page-specific/discover/idea-card-large';
+import '@components/page-specific/discover/discover-tabs';
+import '@components/shared/search-bar';
 
-import { connectionContext } from '@/context.ts';
-import { isWatched, watchedTags, watchTag } from '@state/watched-tags-state';
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
+
+import { connectionContext } from '@/context';
+import { topBarContent } from '@/state/layout-state';
 
 import urqlClient from '@/urql-client.ts';
 import {
@@ -167,30 +169,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   private queryType?: QueryType;
   private tags: string[] = [];
 
-  private renderTagList() {
-    return html`
-      <div class="tag-list">
-        ${repeat(
-          this.tags,
-          (tag) => tag,
-          (tag) => html`
-            <span class="tag-with-button">
-              <span class="tag">${tag}</span>
-              <sl-button
-                pill
-                size="small"
-                @click=${() => watchTag(tag)}
-                ?disabled=${watchedTags.get().has(tag)}
-              >
-                ${isWatched(tag) ? 'Watched' : 'Watch Tag'}
-              </sl-button>
-            </span>
-          `
-        )}
-      </div>
-    `;
-  }
-
   private setTabFromUrl = () => {
     const urlParams = new URLSearchParams(window.location.search);
     this.search = urlParams.get('search') || undefined;
@@ -260,6 +238,10 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   }
 
   render() {
+    topBarContent.set(
+      html` <discover-tabs></discover-tabs>
+        <search-bar></search-bar>`
+    );
     return html`
       <div class="container">
         <main>
@@ -269,7 +251,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                 const data = (result.data?.[result.entity] ||
                   []) as ResultType[];
                 return html`
-                  ${this.queryType === 'tags' ? this.renderTagList() : ''}
                   ${data.map((item: ResultType) => {
                     switch (result.entity) {
                       case 'ideas':
