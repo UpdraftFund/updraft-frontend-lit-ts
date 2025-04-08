@@ -42,7 +42,6 @@ import {
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@/web3.ts';
 import { shortNum } from '@/utils.ts';
-import { setTags } from '@/state/idea-state';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -197,19 +196,6 @@ export class IdeaPage extends LitElement {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
       if (ideaData) {
-        // Update the idea state with the tags and dispatch an event
-        if (ideaData.tags) {
-          setTags(ideaData.tags);
-
-          // Dispatch a custom event that related-ideas can listen for
-          this.dispatchEvent(
-            new CustomEvent('idea-tags-loaded', {
-              detail: { tags: ideaData.tags },
-              bubbles: true,
-              composed: true,
-            })
-          );
-        }
         return ideaData as Idea;
       } else {
         throw new Error(`Idea ${ideaId} not found.`);
@@ -268,19 +254,21 @@ export class IdeaPage extends LitElement {
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
-      } catch (e: any) {
-        if (e.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        } else if (e.message.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (e.message.includes('exceeds allowance')) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(this.updraftSettings.updAddress);
-          this.approveTransaction.hash = await upd.write('approve', [
-            this.ideaId,
-            total,
-          ]);
+      } catch (e) {
+        if (e instanceof Error) {
+          if (e.message.startsWith('connection')) {
+            modal.open({ view: 'Connect' });
+          } else if (e.message.includes('exceeds balance')) {
+            this.updDialog.show();
+          } else if (e.message.includes('exceeds allowance')) {
+            this.approveTransaction.reset();
+            this.approveDialog.show();
+            const upd = new Upd(this.updraftSettings.updAddress);
+            this.approveTransaction.hash = await upd.write('approve', [
+              this.ideaId,
+              total,
+            ]);
+          }
         }
         console.error(e);
       }
