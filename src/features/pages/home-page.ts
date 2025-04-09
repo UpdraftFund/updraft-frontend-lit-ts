@@ -6,7 +6,7 @@ import { consume } from '@lit/context';
 import '@pages/home/components/tracked-changes';
 import '@pages/home/components/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@components/top-bar/search-bar';
+import '@components/navigation/search-bar';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { userContext, type UserState } from '@/features/user/state/user';
