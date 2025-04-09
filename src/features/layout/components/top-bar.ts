@@ -83,9 +83,7 @@ export class TopBar extends SignalWatcher(LitElement) {
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
       <slot>${topBarContent}</slot>
-      <profile-area
-        .hideCreateIdeaButton=${this.hideCreateIdeaButton}
-      ></profile-area>
+      <profile-area></profile-area>
     `;
   }
 }
