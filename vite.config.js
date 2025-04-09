@@ -22,6 +22,10 @@ export default defineConfig({
         __dirname,
         'src/features/navigation/components'
       ),
+      '@components/layout': resolve(
+        __dirname,
+        'src/features/layout/components'
+      ),
       '@styles/idea': resolve(__dirname, 'src/features/idea/styles'),
       '@styles/solution': resolve(__dirname, 'src/features/solution/styles'),
       '@styles/common': resolve(__dirname, 'src/features/common/styles'),
