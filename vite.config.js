@@ -2,14 +2,10 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  build: {
-    target: 'esnext',
-    sourcemap: true,
-  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@components/idea': resolve(__dirname, 'src/features/idea/components'), // Point to idea components
+      '@components/idea': resolve(__dirname, 'src/features/idea/components'),
       '@components/solution': resolve(
         __dirname,
         'src/features/solution/components'
@@ -18,13 +14,13 @@ export default defineConfig({
         __dirname,
         'src/features/common/components'
       ),
-      '@components/navigation': resolve(
-        __dirname,
-        'src/features/navigation/components'
-      ),
       '@components/layout': resolve(
         __dirname,
         'src/features/layout/components'
+      ),
+      '@components/navigation': resolve(
+        __dirname,
+        'src/features/navigation/components'
       ),
       '@styles/idea': resolve(__dirname, 'src/features/idea/styles'),
       '@styles/solution': resolve(__dirname, 'src/features/solution/styles'),
@@ -41,15 +37,11 @@ export default defineConfig({
       '@state/navigation': resolve(__dirname, 'src/features/navigation/state'),
       '@state/user': resolve(__dirname, 'src/features/user/state'),
       '@state/home': resolve(__dirname, 'src/features/home/state'),
+      '@pages': resolve(__dirname, 'src/features/pages'),
       '@layout': resolve(__dirname, 'src/features/layout/components'),
       '@icons': resolve(__dirname, 'src/assets/icons'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
-      '@styles': resolve(__dirname, 'src/features/common/styles'),
-      '@utils': resolve(__dirname, 'src/features/common/utils'),
       '@gql': resolve(__dirname, '.graphclient'),
     },
-  },
-  define: {
-    'process.env': {},
   },
 });

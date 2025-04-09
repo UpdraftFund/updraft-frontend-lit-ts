@@ -170,7 +170,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/home-page');
+        await import('@pages/home-page');
         return true;
       },
       render: () => html`<home-page></home-page>`,
@@ -180,7 +180,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/discover-page');
+        await import('@pages/discover-page');
         return true;
       },
       render: () => {
@@ -205,7 +205,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating to a new idea
         resetIdeaState();
-        await import('./pages/idea-page');
+        await import('@pages/idea-page');
         return true;
       },
       render: ({ id }) => html`<idea-page .ideaId=${id as string}></idea-page>`,
@@ -215,7 +215,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/create-idea');
+        await import('@pages/create-idea');
         return true;
       },
       render: () => html`<create-idea></create-idea>`,
@@ -225,7 +225,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/create-idea');
+        await import('@pages/create-idea');
         return true;
       },
       render: () => html`<create-idea direct-submit></create-idea>`,
@@ -235,7 +235,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/edit-profile');
+        await import('@pages/edit-profile');
         return true;
       },
       render: () => html`<edit-profile></edit-profile>`,
@@ -245,7 +245,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/edit-profile');
+        await import('@pages/edit-profile');
         return true;
       },
       render: ({ entity }) =>
@@ -256,7 +256,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/view-profile');
+        await import('@pages/view-profile');
         return true;
       },
       render: ({ address }) =>
@@ -267,7 +267,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         // Reset idea state when navigating away from idea page
         resetIdeaState();
-        await import('./pages/create-solution');
+        await import('@pages/create-solution');
         return true;
       },
       render: ({ ideaId }) => {
