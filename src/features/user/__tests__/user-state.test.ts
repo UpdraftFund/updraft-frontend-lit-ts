@@ -1,5 +1,19 @@
 import { expect } from '@open-wc/testing';
-import { userAddress, userProfile, isConnecting, connectionError, networkName, resetState, setUserAddress, setUserProfile, setIsConnecting, setConnectionError, setNetworkName, isConnected, hasProfile } from '../user-state';
+import {
+  userAddress,
+  userProfile,
+  isConnecting,
+  connectionError,
+  networkName,
+  resetState,
+  setUserAddress,
+  setUserProfile,
+  setIsConnecting,
+  setConnectionError,
+  setNetworkName,
+  isConnected,
+  hasProfile,
+} from '@/features/user/state/user';
 
 describe('User State Module', () => {
   // Reset state before each test to ensure a clean state
@@ -26,7 +40,7 @@ describe('User State Module', () => {
       const profile = {
         name: 'Test User',
         image: 'test-image.png',
-        avatar: 'test-avatar.png'
+        avatar: 'test-avatar.png',
       };
       setUserProfile(profile);
       expect(userProfile.get()).to.deep.equal(profile);
@@ -62,7 +76,7 @@ describe('User State Module', () => {
       setUserProfile({
         name: 'Test User',
         image: 'test-image.png',
-        avatar: 'test-avatar.png'
+        avatar: 'test-avatar.png',
       });
       expect(hasProfile.get()).to.be.true;
     });
@@ -75,7 +89,7 @@ describe('User State Module', () => {
       setUserProfile({
         name: 'Test User',
         image: 'test-image.png',
-        avatar: 'test-avatar.png'
+        avatar: 'test-avatar.png',
       });
       setIsConnecting(true);
       setConnectionError('Error');

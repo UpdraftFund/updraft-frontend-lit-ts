@@ -1,5 +1,5 @@
 import { LitElement, css } from 'lit';
-import { html, SignalWatcher } from '@lit-labs/signals';
+import { html as signalsHtml, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property, state } from 'lit/decorators.js';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
@@ -12,7 +12,7 @@ import { IdeasByTagsDocument } from '@gql';
 import { ideaContext, IdeaState } from '@/features/idea/state/idea';
 
 @customElement('related-ideas')
-export class RelatedIdeas extends LitElement {
+export class RelatedIdeas extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -193,31 +193,33 @@ export class RelatedIdeas extends LitElement {
   );
 
   render() {
-    return html`
+    return signalsHtml`
       <div>
         <h2>Related Ideas</h2>
         ${this._getRelatedIdeasTask.render({
-          pending: () => html`<sl-spinner></sl-spinner>`,
+          pending: () => signalsHtml`<sl-spinner></sl-spinner>`,
           complete: (data) => {
             const ideas = data?.ideas || [];
 
-            return html`
-              ${ideas.length > 0
-                ? html`
+            return signalsHtml`
+              ${
+                ideas.length > 0
+                  ? signalsHtml`
                     <div class="related-ideas-list">
                       ${ideas.map(
-                        (idea) => html`
+                        (idea) => signalsHtml`
                           <idea-card-small .idea=${idea}></idea-card-small>
                         `
                       )}
                     </div>
                   `
-                : html` <div class="no-ideas">No related ideas found</div> `}
+                  : signalsHtml` <div class="no-ideas">No related ideas found</div> `
+              }
             `;
           },
           error: (err: unknown) => {
             console.error('Error rendering related ideas:', err);
-            return html` <div class="error">Error loading related ideas</div> `;
+            return signalsHtml` <div class="error">Error loading related ideas</div> `;
           },
         })}
       </div>

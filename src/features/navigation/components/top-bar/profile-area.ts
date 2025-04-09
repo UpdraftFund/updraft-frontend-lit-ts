@@ -10,6 +10,7 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@/features/common/components/upd-dialog';
+import { UpdDialog } from '@/features/common/components/upd-dialog';
 
 import plusLgIcon from '@icons/plus-lg.svg';
 import layersIcon from '@icons/layers.svg';

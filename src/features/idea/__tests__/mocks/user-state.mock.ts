@@ -1,7 +1,7 @@
 import { signal, computed } from '@lit-labs/signals';
 import { createContext } from '@lit/context';
 import type { Address } from 'viem';
-import type { CurrentUser } from '@/types/current-user';
+import type { CurrentUser } from '@/features/user/types/current-user';
 
 // Define custom events for user state changes
 export const USER_CONNECTED_EVENT = 'user-connected';
@@ -79,7 +79,9 @@ export const connectWallet = async (): Promise<void> => {
     setUserAddress('0x1234567890123456789012345678901234567890' as Address);
     setConnectionError(null);
   } catch (error) {
-    setConnectionError(error instanceof Error ? error.message : 'Unknown error');
+    setConnectionError(
+      error instanceof Error ? error.message : 'Unknown error'
+    );
   } finally {
     setIsConnecting(false);
   }

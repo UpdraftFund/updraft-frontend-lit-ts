@@ -13,7 +13,8 @@ import fire from '@icons/fire.svg';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
 import { updraftSettings } from '@/features/common/state/context';
-import { Solution, UpdraftSettings } from '@/types';
+import { Solution } from '@/features/solution/types';
+import { UpdraftSettings } from '@/features/common/types';
 
 import { shortNum } from '@/features/common/utils/utils';
 
