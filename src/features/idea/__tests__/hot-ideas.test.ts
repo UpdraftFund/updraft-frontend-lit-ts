@@ -6,7 +6,7 @@ import mockUrqlClient from './mocks/urql-client.mock';
 // We'll use the ideaContext in a future test
 
 // Import the component under test
-import '../components/right-side-bar/hot-ideas';
+import '../components/hot-ideas';
 
 describe('HotIdeas Component', () => {
   let element: HTMLElement;
