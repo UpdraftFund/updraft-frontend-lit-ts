@@ -11,13 +11,16 @@ import '@layout/app-layout';
 
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import '@shoelace-style/shoelace/dist/themes/dark.css';
-import '@styles/global.css';
-import '@styles/theme.css';
-import '@styles/reset.css';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
+import '@/features/common/styles/global.css';
+import '@/features/common/styles/theme.css';
+import '@/features/common/styles/reset.css';
 
-import { modal, config } from '@/web3';
-
-import { Connection, Balances, UpdraftSettings, Profile } from '@/types';
+import { modal, config } from '@/features/common/utils/web3';
+import urqlClient from '@/features/common/utils/urql-client';
 
 import {
   user,
@@ -25,14 +28,21 @@ import {
   balanceContext,
   RequestBalanceRefresh,
   updraftSettings,
-} from '@/context';
+} from '@/features/common/state/context';
+import { Connection, Balances } from '@/features/user/types/current-user';
+import { UpdraftSettings } from '@/features/common/types';
+import { Profile } from '@/features/user/types';
 
-import { nav } from '@state/layout-state.ts';
+import { nav } from '@/features/user/state/layout-state.ts';
 
-import urqlClient from '@/urql-client';
 import { ProfileDocument } from '@gql';
-import { updraft } from '@contracts/updraft.ts';
-import { setUserProfile } from '@state/user-state.ts';
+import { updraft } from '@/contracts/updraft.ts';
+
+import '@/features/layout/components/top-bar';
+import '@/features/navigation/components/top-bar/search-bar';
+import '@/features/layout/components/left-side-bar';
+import '@/features/layout/components/right-side-bar';
+import { setUserProfile } from '@state/user/user.ts';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -74,7 +84,8 @@ export class MyApp extends LitElement {
         nav.set('idea');
         return true;
       },
-      render: ({ id }) => html`<idea-page .ideaId=${id}></idea-page>`,
+      render: ({ id }) =>
+        html` <idea-page .ideaId=${id as string}></idea-page>`,
     },
     {
       path: '/create-idea',
@@ -112,7 +123,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ address }) =>
-        html`<view-profile .address=${address}></view-profile>`,
+        html` <view-profile .address=${address as string}></view-profile>`,
     },
     {
       path: '/create-solution/:ideaId',

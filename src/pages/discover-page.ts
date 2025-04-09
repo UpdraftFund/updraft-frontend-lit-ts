@@ -8,16 +8,16 @@ import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import '@components/page-specific/discover/idea-card-large';
 import '@components/page-specific/discover/discover-tabs';
 import '@components/top-bar/search-bar';
+import '@/features/idea/components/idea-card-large.ts';
 
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
 
-import { connectionContext } from '@/context';
-import { topBarContent } from '@/state/layout-state';
+import { connectionContext } from '@/features/common/state/context';
+import { topBarContent } from '@/features/user/state/layout-state';
 
-import urqlClient from '@/urql-client.ts';
+import urqlClient from '@/features/common/utils/urql-client.ts';
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,

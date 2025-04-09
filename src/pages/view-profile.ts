@@ -9,17 +9,20 @@ import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@/features/common/components/page-heading';
+import '@/features/user/components/activity-feed';
 
-import '@components/top-bar/page-heading';
-import '@/components/page-specific/profile/activity-feed';
+import { connectionContext } from '@/features/common/state/context';
+import { userContext, UserState } from '@/features/user/state/user';
+import {
+  followUser,
+  isFollowed,
+  unfollowUser,
+} from '@/features/user/components/follow';
+import { markComplete } from '@/features/home/state/beginner-tasks';
+import { Connection } from '@/features/user/types/current-user';
 
-import { connectionContext } from '@/context';
-import { userContext, UserState } from '@/state/user-state';
-import { followUser, isFollowed, unfollowUser } from '@state/follow-state.ts';
-import { markComplete } from '@state/beginner-tasks-state.ts';
-import { Connection } from '@/types';
-
-import urqlClient from '@/urql-client';
+import urqlClient from '@/features/common/utils/urql-client';
 import { ProfileDocument } from '@gql';
 
 @customElement('view-profile')

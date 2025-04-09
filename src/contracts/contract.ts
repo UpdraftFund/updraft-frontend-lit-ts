@@ -1,9 +1,12 @@
 import { Abi } from 'abitype';
 import { readContract, simulateContract, writeContract } from '@wagmi/core';
-import { config } from '@/web3';
+import { config } from '@/features/common/utils/web3';
 
 export class Contract {
-  constructor(public abi: Abi, private _address: `0x${string}` = '0x0') {}
+  constructor(
+    public abi: Abi,
+    private _address: `0x${string}` = '0x0'
+  ) {}
 
   get address(): `0x${string}` {
     return this._address;

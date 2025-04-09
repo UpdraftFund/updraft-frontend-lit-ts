@@ -1,4 +1,7 @@
-import { formToJson, SaveableForm } from '@/components/base/saveable-form';
+import {
+  formToJson,
+  SaveableForm,
+} from '@/features/common/components/saveable-form';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css } from 'lit';
 import { parseUnits, toHex, trim } from 'viem';
@@ -9,17 +12,17 @@ import {
   balanceContext,
   RequestBalanceRefresh,
   updraftSettings as updraftSettingsContext,
-} from '@/context';
-import { userContext, UserState } from '@/state/user-state';
+} from '@/features/common/state/context';
+import { userContext, UserState } from '@/features/user/state/user';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
 import {
   TransactionSuccess,
   TransactionWatcher,
-} from '@/components/shared/transaction-watcher';
-import { ShareDialog } from '@/components/shared/share-dialog';
-import { UpdDialog } from '@/components/shared/upd-dialog';
+} from '@/features/common/components/transaction-watcher';
+import { ShareDialog } from '@/features/common/components/share-dialog';
+import { UpdDialog } from '@/features/common/components/upd-dialog';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -27,20 +30,21 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
 
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
-import { dialogStyles } from '@/styles/dialog-styles';
+import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
-import '@components/top-bar/page-heading';
-import '@/components/shared/transaction-watcher';
-import '@/components/shared/upd-dialog';
-import '@/components/shared/share-dialog';
-import '@/components/shared/label-with-hint';
+import '@/features/common/components/page-heading';
+import '@/features/common/components/transaction-watcher';
+import '@/features/common/components/upd-dialog';
+import '@/features/common/components/share-dialog';
+import '@/features/common/components/label-with-hint';
 
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@/contracts/updraft';
 
-import { UpdraftSettings, Balances } from '@/types';
+import { UpdraftSettings } from '@/features/common/types';
+import { Balances } from '@/features/user/types/current-user';
 import { IdeaDocument } from '@gql';
-import urqlClient from '@/urql-client';
+import urqlClient from '@/features/common/utils/urql-client';
 
 interface SolutionFormData {
   deadline: string;

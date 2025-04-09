@@ -1,6 +1,6 @@
 import { Abi } from 'abitype';
 
-import { config } from '@/web3';
+import { config } from '@/features/common/utils/web3';
 import updraftAddresses from './updraftAddresses.json';
 import abi from './abis/Updraft.json';
 import { Contract } from './contract';

@@ -10,41 +10,44 @@ import { UpdraftSettings, Connection, CurrentUser } from '@/types';
 
 import pencilSquare from '@icons/pencil-square.svg';
 
-import { dialogStyles } from '@styles/dialog-styles';
+import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-
-import '@components/top-bar/page-heading';
-import '@/components/page-specific/profile/activity-feed';
-import '@/components/shared/transaction-watcher';
-import '@/components/shared/upd-dialog';
-import '@/components/shared/share-dialog';
+import '@/features/common/components/page-heading';
+import '@/features/user/components/activity-feed';
+import '@/features/common/components/transaction-watcher';
+import '@/features/common/components/upd-dialog';
+import '@/features/common/components/share-dialog';
 import {
   TransactionWatcher,
   TransactionSuccess,
-} from '@/components/shared/transaction-watcher';
-import { UpdDialog } from '@/components/shared/upd-dialog';
-import { ShareDialog } from '@/components/shared/share-dialog';
+} from '@/features/common/components/transaction-watcher';
+import { UpdDialog } from '@/features/common/components/upd-dialog';
+import { ShareDialog } from '@/features/common/components/share-dialog';
 import { SlDialog } from '@shoelace-style/shoelace';
 import {
   SaveableForm,
   loadForm,
   formToJson,
-} from '@components/base/saveable-form';
+} from '@/features/common/components/saveable-form';
 
-import { topBarContent } from '@state/layout-state';
-import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
+import { topBarContent } from '@/features/user/state/layout-state';
+import { updraft } from '@/contracts/updraft';
+import { Upd } from '@/contracts/upd';
 import {
   user,
   updraftSettings as updraftSettingsContext,
   defaultFunderReward,
   connectionContext,
-} from '@/context';
-import { userContext, UserState, setUserProfile } from '@/state/user-state';
-import { modal } from '@/web3';
+} from '@/features/common/state/context';
+import {
+  userContext,
+  UserState,
+  setUserProfile,
+} from '@/features/user/state/user';
+import { modal } from '@/features/common/utils/web3';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
@@ -222,8 +225,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       }
 
       // Update both legacy user state and new user state
-      const updatedProfile = {
-        name: profileData.name || profileData.team,
+      const updatedProfile: CurrentUser = {
+        name: profileData.name || profileData.team || '',
         image:
           this.uploadedImage ||
           this.userState?.profile?.image ||
@@ -313,8 +316,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           ]);
         }
       } catch (e) {
+        console.error('Profile update error:', e);
         if (e instanceof Error) {
-          console.error('Profile update error:', e);
           if (
             e.message?.startsWith('connection') ||
             e.message?.includes('getChainId')
@@ -419,8 +422,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       Array.isArray(this.userState.profile.links)
     ) {
       this.links = this.userState.profile.links
-        .filter((link) => link && link.trim() !== '')
-        .map((link, index) => ({
+        .filter((link: string) => link && link.trim() !== '')
+        .map((link: string, index: number) => ({
           name: `link${index + 1}`,
           value: link,
         }));
@@ -430,8 +433,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       const userData = user.get();
       if (userData && userData.links) {
         this.links = userData.links
-          .filter((link) => link && link.trim() !== '')
-          .map((link, index) => ({
+          .filter((link: string) => link && link.trim() !== '')
+          .map((link: string, index: number) => ({
             name: `link${index + 1}`,
             value: link,
           }));
@@ -555,7 +558,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           ></transaction-watcher>
         </main>
         <!-- ${this.connection.address
-          ? html`<activity-feed
+          ? html` <activity-feed
               .userId=${this.connection.address}
               .userName=${user.get().name}
             ></activity-feed>`

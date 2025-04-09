@@ -9,15 +9,43 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@components': resolve(__dirname, 'src/components'),
-      '@layout': resolve(__dirname, 'src/components/layout'),
-      '@styles': resolve(__dirname, 'src/styles'),
-      '@assets': resolve(__dirname, 'src/assets'),
+      '@components/idea': resolve(__dirname, 'src/features/idea/components'), // Point to idea components
+      '@components/solution': resolve(
+        __dirname,
+        'src/features/solution/components'
+      ),
+      '@components/common': resolve(
+        __dirname,
+        'src/features/common/components'
+      ),
+      '@components/navigation': resolve(
+        __dirname,
+        'src/features/navigation/components'
+      ),
+      '@components/layout': resolve(
+        __dirname,
+        'src/features/layout/components'
+      ),
+      '@styles/idea': resolve(__dirname, 'src/features/idea/styles'),
+      '@styles/solution': resolve(__dirname, 'src/features/solution/styles'),
+      '@styles/common': resolve(__dirname, 'src/features/common/styles'),
+      '@styles/layout': resolve(__dirname, 'src/features/layout/styles'),
+      '@styles/navigation': resolve(
+        __dirname,
+        'src/features/navigation/styles'
+      ),
+      '@state/idea': resolve(__dirname, 'src/features/idea/state'),
+      '@state/solution': resolve(__dirname, 'src/features/solution/state'),
+      '@state/common': resolve(__dirname, 'src/features/common/state'),
+      '@state/layout': resolve(__dirname, 'src/features/layout/state'),
+      '@state/navigation': resolve(__dirname, 'src/features/navigation/state'),
+      '@state/user': resolve(__dirname, 'src/features/user/state'),
+      '@state/home': resolve(__dirname, 'src/features/home/state'),
+      '@layout': resolve(__dirname, 'src/features/layout/components'),
       '@icons': resolve(__dirname, 'src/assets/icons'),
-      '@pages': resolve(__dirname, 'src/pages'),
-      '@state': resolve(__dirname, 'src/state'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
-      '@contracts': resolve(__dirname, 'src/contracts'),
+      '@styles': resolve(__dirname, 'src/features/common/styles'),
+      '@utils': resolve(__dirname, 'src/features/common/utils'),
       '@gql': resolve(__dirname, '.graphclient'),
     },
   },

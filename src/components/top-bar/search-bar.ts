@@ -35,6 +35,6 @@ export class SearchBar extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'search-bar': SearchBar;
+    'search-bar2': SearchBar;
   }
 }

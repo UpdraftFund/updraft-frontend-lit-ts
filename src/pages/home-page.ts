@@ -3,15 +3,15 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 
-import urqlClient from '@/urql-client';
-
-import '@components/page-specific/home/tracked-changes';
-import '@components/page-specific/home/beginner-tasks';
+import '@/features/home/components/tracked-changes';
+import '@/features/home/components/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@components/top-bar/search-bar';
 
-import { userContext, type UserState } from '@/state/user-state';
-import { topBarContent } from '@/state/layout-state';
+import urqlClient from '@/features/common/utils/urql-client';
+import { userContext, type UserState } from '@/features/user/state/user';
+
+import { topBarContent } from '@/features/user/state/layout-state';
 
 interface UserIdeasSolutionsResponse {
   createdIdeas: Array<{ id: string; name: string }>;
