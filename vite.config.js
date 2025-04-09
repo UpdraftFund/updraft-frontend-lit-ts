@@ -22,6 +22,10 @@ export default defineConfig({
         __dirname,
         'src/features/navigation/components'
       ),
+      '@components/home': resolve(
+        __dirname,
+        'src/features/pages/home/components'
+      ),
       '@styles/idea': resolve(__dirname, 'src/features/idea/styles'),
       '@styles/solution': resolve(__dirname, 'src/features/solution/styles'),
       '@styles/common': resolve(__dirname, 'src/features/common/styles'),
@@ -36,7 +40,7 @@ export default defineConfig({
       '@state/layout': resolve(__dirname, 'src/features/layout/state'),
       '@state/navigation': resolve(__dirname, 'src/features/navigation/state'),
       '@state/user': resolve(__dirname, 'src/features/user/state'),
-      '@state/home': resolve(__dirname, 'src/features/home/state'),
+      '@state/home': resolve(__dirname, 'src/features/pages/home/state'),
       '@pages': resolve(__dirname, 'src/features/pages'),
       '@layout': resolve(__dirname, 'src/features/layout/components'),
       '@icons': resolve(__dirname, 'src/assets/icons'),

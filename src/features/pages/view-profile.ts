@@ -19,7 +19,7 @@ import {
   isFollowed,
   unfollowUser,
 } from '@/features/user/components/follow';
-import { markComplete } from '@/features/home/state/beginner-tasks';
+import { markComplete } from '@pages/home/state/beginner-tasks';
 import { Connection } from '@/features/user/types/current-user';
 
 import urqlClient from '@/features/common/utils/urql-client';

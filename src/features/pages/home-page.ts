@@ -3,8 +3,8 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 
-import '@/features/home/components/tracked-changes';
-import '@/features/home/components/beginner-tasks';
+import '@pages/home/components/tracked-changes';
+import '@pages/home/components/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@components/top-bar/search-bar';
 

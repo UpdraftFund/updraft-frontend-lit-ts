@@ -7,7 +7,7 @@ import '@shoelace-style/shoelace/dist/components/button/button';
 import {
   allTasksComplete,
   isComplete,
-} from '@/features/home/state/beginner-tasks';
+} from '@pages/home/state/beginner-tasks.ts';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
