@@ -39,6 +39,8 @@
       "@state/home/*": ["src/features/home/state/*"],
       "@pages/*": ["src/features/pages/*"],
       "@layout/*": ["src/features/layout/components/*"],
+      "@utils/*": ["src/features/common/utils/*"],
+      "@styles/*": ["src/features/common/styles/*"],
       "@icons/*": ["src/assets/icons/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
       "@gql": [".graphclient"]

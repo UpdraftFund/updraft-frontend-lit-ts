@@ -40,6 +40,8 @@ export default defineConfig({
       '@pages': resolve(__dirname, 'src/features/pages'),
       '@layout': resolve(__dirname, 'src/features/layout/components'),
       '@icons': resolve(__dirname, 'src/assets/icons'),
+      '@utils': resolve(__dirname, 'src/features/common/utils'),
+      '@styles': resolve(__dirname, 'src/features/common/styles'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
       '@gql': resolve(__dirname, '.graphclient'),
     },
