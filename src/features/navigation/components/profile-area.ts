@@ -37,7 +37,7 @@ import {
   NETWORK_CHANGED_EVENT,
 } from '@state/user/user.ts';
 
-import { Connection, Balances } from '@/features/user/types/current-user.ts';
+import { Connection, Balances } from '@/types';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {
