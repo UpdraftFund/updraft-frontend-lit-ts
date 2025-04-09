@@ -34,6 +34,12 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       line-height: 1.5;
       margin-bottom: 1.5rem;
     }
+
+    .button-upd-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
   `;
 
   render() {
@@ -92,8 +98,10 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     You'll need at least 5 UPD to complete the rest of the
                     tasks. Swap some ETH for UPD.
                   </p>
-                  <sl-button variant="primary">Swap for UPD</sl-button>
-                  <div>🪁 525 UPD</div>
+                  <div class="button-upd-container">
+                    <sl-button variant="primary">Swap for UPD</sl-button>
+                    <div>🪁 525 UPD</div>
+                  </div>
                 </sl-card>
               `}
           ${isComplete('support-idea')
