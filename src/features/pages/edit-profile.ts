@@ -31,8 +31,8 @@ import {
   formToJson,
 } from '@/features/common/components/saveable-form';
 
-import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
+import { updraft } from '@/contracts/updraft';
+import { Upd } from '@/contracts/upd';
 import {
   user,
   updraftSettings as updraftSettingsContext,
@@ -44,7 +44,7 @@ import {
   UserState,
   setUserProfile,
 } from '@/features/user/state/user';
-import { UpdraftSettings, Connection } from '@/types';
+import { UpdraftSettings, Connection, CurrentUser } from '@/types';
 import { modal } from '@/features/common/utils/web3';
 
 import ideaSchema from '@schemas/idea-schema.json';
@@ -217,14 +217,14 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
       const profileData = {
         ...formToJson('edit-profile', profileSchema),
-      } as any;
+      } as CurrentUser;
       if (this.uploadedImage) {
         profileData.image = this.uploadedImage;
       }
 
       // Update both legacy user state and new user state
-      const updatedProfile = {
-        name: profileData.name || profileData.team,
+      const updatedProfile: CurrentUser = {
+        name: profileData.name || profileData.team || '',
         image:
           this.uploadedImage ||
           this.userState?.profile?.image ||
@@ -313,24 +313,26 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             toHex(JSON.stringify(profileData)),
           ]);
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error('Profile update error:', e);
-        if (
-          e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId')
-        ) {
-          // Open the wallet connection modal if there's a connection issue
-          await this.openConnectModal();
-        } else if (e.message?.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (e.message?.includes('exceeds allowance')) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(this.updraftSettings.updAddress);
-          this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address,
-            parseUnits('1', 29),
-          ]);
+        if (e instanceof Error) {
+          if (
+            e.message?.startsWith('connection') ||
+            e.message?.includes('getChainId')
+          ) {
+            // Open the wallet connection modal if there's a connection issue
+            await this.openConnectModal();
+          } else if (e.message?.includes('exceeds balance')) {
+            this.updDialog.show();
+          } else if (e.message?.includes('exceeds allowance')) {
+            this.approveTransaction.reset();
+            this.approveDialog.show();
+            const upd = new Upd(this.updraftSettings.updAddress);
+            this.approveTransaction.hash = await upd.write('approve', [
+              updraft.address,
+              parseUnits('1', 29),
+            ]);
+          }
         }
       }
     }
@@ -554,7 +556,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           ></transaction-watcher>
         </main>
         <!-- ${this.connection.address
-          ? html`<activity-feed
+          ? html` <activity-feed
               .userId=${this.connection.address}
               .userName=${user.get().name}
             ></activity-feed>`

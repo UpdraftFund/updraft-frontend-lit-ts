@@ -5,7 +5,7 @@ import '@/features/navigation/components/top-bar/profile-area';
 import '@/features/navigation/components/top-bar/search-bar';
 import '@/features/navigation/components/top-bar/discover-tabs';
 
-import updraftLogo from '@assets/images/updraft-logo-46.png';
+import updraftLogo from '@/assets/images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 

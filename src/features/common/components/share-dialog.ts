@@ -7,7 +7,7 @@ import linkIcon from '@icons/link-45deg.svg';
 import xIcon from '@icons/twitter-x.svg';
 import warpcastIcon from '@icons/farcaster.svg';
 import share from '@icons/share.svg';
-import shareThisImage from '@assets/images/share-this-140.png';
+import shareThisImage from '@/assets/images/share-this-140.png';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
@@ -60,7 +60,7 @@ export class ShareDialog extends LitElement {
     try {
       await navigator.clipboard.writeText(this.url);
       this.clipboardTip.content = 'Copied!';
-    } catch (err) {
+    } catch {
       this.clipboardTip.content = 'Failed to copy';
     }
     this.showClipboardTip();

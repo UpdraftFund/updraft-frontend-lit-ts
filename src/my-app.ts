@@ -45,7 +45,7 @@ import { UpdraftSettings } from '@/features/common/types';
 import { Profile } from '@/features/user/types';
 
 import { ProfileDocument } from '@gql';
-import { updraft } from '@contracts/updraft.ts';
+import { updraft } from '@/contracts/updraft.ts';
 
 // Import idea state
 import {
