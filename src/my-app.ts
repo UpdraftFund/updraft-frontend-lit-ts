@@ -54,7 +54,7 @@ export class MyApp extends LitElement {
     {
       path: '/',
       enter: async () => {
-        await import('./pages/home-page');
+        await import('@pages/home-page');
         nav.set('home');
         return true;
       },
@@ -63,7 +63,7 @@ export class MyApp extends LitElement {
     {
       path: '/discover',
       enter: async () => {
-        await import('./pages/discover-page');
+        await import('@pages/discover-page');
         nav.set('discover');
         return true;
       },
@@ -80,7 +80,7 @@ export class MyApp extends LitElement {
     {
       path: '/idea/:id',
       enter: async () => {
-        await import('./pages/idea-page');
+        await import('@pages/idea-page');
         nav.set('idea');
         return true;
       },
@@ -90,7 +90,7 @@ export class MyApp extends LitElement {
     {
       path: '/create-idea',
       enter: async () => {
-        await import('./pages/create-idea');
+        await import('@pages/create-idea');
         nav.set('create-idea');
         return true;
       },
@@ -99,7 +99,7 @@ export class MyApp extends LitElement {
     {
       path: '/edit-profile',
       enter: async () => {
-        await import('./pages/edit-profile');
+        await import('@pages/edit-profile');
         nav.set('edit-profile');
         return true;
       },
@@ -108,7 +108,7 @@ export class MyApp extends LitElement {
     {
       path: '/submit-profile-and-create-:entity',
       enter: async () => {
-        await import('./pages/edit-profile');
+        await import('@pages/edit-profile');
         nav.set('edit-profile');
         return true;
       },
@@ -118,7 +118,7 @@ export class MyApp extends LitElement {
     {
       path: '/profile/:address',
       enter: async () => {
-        await import('./pages/view-profile');
+        await import('@pages/view-profile');
         nav.set('view-profile');
         return true;
       },
@@ -128,12 +128,14 @@ export class MyApp extends LitElement {
     {
       path: '/create-solution/:ideaId',
       enter: async () => {
-        await import('./pages/create-solution');
+        await import('@pages/create-solution');
         nav.set('create-solution');
         return true;
       },
       render: ({ ideaId }) => {
-        return html`<create-solution .ideaId=${ideaId}></create-solution>`;
+        return html`<create-solution
+          .ideaId=${ideaId as string}
+        ></create-solution>`;
       },
     },
   ]);
