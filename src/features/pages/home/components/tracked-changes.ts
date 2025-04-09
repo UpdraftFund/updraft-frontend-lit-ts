@@ -122,8 +122,7 @@ export class TrackedChanges extends LitElement {
 
     .empty-state {
       text-align: center;
-      padding: 2rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
       font-style: italic;
     }
   `;
@@ -337,7 +336,7 @@ export class TrackedChanges extends LitElement {
 
   render() {
     return html`
-      <h2>Tracked Changes</h2>
+      <h2>Updates</h2>
       ${this.changes.render({
         pending: () => html`
           <div class="loading-container">
