@@ -20,6 +20,7 @@ import {
 } from '@/features/common/state/context';
 import { Connection } from '@/features/user/types/current-user';
 import { Solution } from '@/features/solution/types';
+import { nav } from '@state/layout/layout';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import {
@@ -254,7 +255,6 @@ export class LeftSideBar extends LitElement {
   @consume({ context: connectionContext, subscribe: true })
   connection!: Connection;
 
-  @property({ reflect: true }) location?: string;
   @property({ type: Boolean, reflect: true }) collapsed = false;
   @property({ type: Boolean, reflect: true }) expanded = false;
 
@@ -387,7 +387,7 @@ export class LeftSideBar extends LitElement {
       <nav>
         <ul>
           <li>
-            <a href="/" class=${this.location === 'home' ? 'active' : ''}>
+            <a href="/" class=${nav.get() === 'home' ? 'active' : ''}>
               <sl-icon src=${house}></sl-icon>
               <span class="label">Home</span>
             </a>
@@ -395,7 +395,7 @@ export class LeftSideBar extends LitElement {
           <li>
             <a
               href="/discover?tab=hot-ideas"
-              class=${this.location === 'discover' ? 'active' : ''}
+              class=${nav.get() === 'discover' ? 'active' : ''}
             >
               <sl-icon src=${compass}></sl-icon>
               <span class="label">Discover</span>
