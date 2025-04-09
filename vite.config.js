@@ -50,4 +50,7 @@ export default defineConfig({
       '@gql': resolve(__dirname, '.graphclient'),
     },
   },
+  define: {
+    'process.env': {},
+  },
 });
