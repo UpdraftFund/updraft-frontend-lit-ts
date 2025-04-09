@@ -1,5 +1,5 @@
 import { LitElement, css } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
@@ -13,7 +13,6 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@components/common/upd-dialog.ts';
 import { UpdDialog } from '@components/common/upd-dialog.ts';
 
-import plusLgIcon from '@icons/plus-lg.svg';
 import layersIcon from '@icons/layers.svg';
 import creditCardIcon from '@icons/credit-card.svg';
 import reconnectIcon from '@icons/arrow-clockwise.svg';
@@ -41,8 +40,6 @@ import { Connection, Balances } from '@/types';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {
-  @property() hideCreateIdeaButton = false;
-
   static styles = css`
     :host,
     .trigger-content {
@@ -215,23 +212,6 @@ export class ProfileArea extends SignalWatcher(LitElement) {
 
     return isConnected && address
       ? html`
-          ${this.hideCreateIdeaButton
-            ? null
-            : html`
-                <a
-                  href="/create-idea"
-                  title="Create Idea"
-                  style="display: flex; align-items: center; flex-direction: column; text-align: center;"
-                >
-                  <sl-icon
-                    style="width: 2rem; height: 2rem;"
-                    src="${plusLgIcon}"
-                  ></sl-icon>
-                  <span style="text-underline-position: under;"
-                    >Create Idea</span
-                  >
-                </a>
-              `}
           <sl-dropdown
             distance="12"
             skidding="22"

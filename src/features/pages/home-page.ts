@@ -8,6 +8,8 @@ import '@pages/home/components/beginner-tasks';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@components/navigation/search-bar';
 
+import '@components/navigation/create-idea-button';
+
 import urqlClient from '@/features/common/utils/urql-client';
 import { userContext, type UserState } from '@/features/user/state/user';
 
@@ -168,7 +170,10 @@ export class HomePage extends LitElement {
   });
 
   render() {
-    topBarContent.set(html` <search-bar></search-bar>`);
+    topBarContent.set(
+      html` <search-bar></search-bar>
+        <create-idea-button></create-idea-button>`
+    );
     return html`
       <div class="container">
         <main>
