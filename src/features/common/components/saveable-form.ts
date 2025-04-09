@@ -1,7 +1,7 @@
 import { LitElement } from 'lit';
 import { query } from 'lit/decorators.js';
 
-import Ajv from 'ajv';
+import Ajv, { SchemaObject } from 'ajv';
 
 /**
  * SaveableForm provides form saving/loading behavior.
@@ -41,8 +41,8 @@ export class SaveableForm extends LitElement {
       if (savedForm) {
         for (const [name, value] of Object.entries(JSON.parse(savedForm))) {
           const field = this.form.querySelector(`[name="${name}"]`);
-          if (field) {
-            (field as any).value = value;
+          if (field && 'value' in field) {
+            field.value = <string>value;
           }
         }
       }
@@ -68,7 +68,10 @@ export class SaveableForm extends LitElement {
   }
 
   private handleBlurEvent = (event: Event) => {
-    const target = event.composedPath()[0] as { name?: string; value?: any };
+    const target = event.composedPath()[0] as {
+      name?: string;
+      value?: unknown;
+    };
     if (target && target.name && typeof target.value === 'string') {
       this.saveForm();
     }
@@ -96,7 +99,7 @@ export function loadForm(form: string): Record<string, string> | null {
  */
 export function formToJson(
   forms: string | string[], // Updated parameter name
-  schema: any,
+  schema: SchemaObject,
   validate: boolean = false
 ): Record<string, unknown> {
   // Normalize input to always handle as an array
@@ -116,7 +119,10 @@ export function formToJson(
   }
 
   const json: Record<string, unknown> = {};
-  const properties = Object.entries(schema.properties || {}) as [string, any][];
+  const properties = Object.entries(schema.properties || {}) as [
+    string,
+    SchemaObject,
+  ][];
 
   for (const [key, schemaProperty] of properties) {
     switch (schemaProperty.type) {

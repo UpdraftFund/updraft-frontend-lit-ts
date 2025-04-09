@@ -165,7 +165,7 @@ export class ActivityFeed extends LitElement {
               <div class="activity-list">
                 ${activities.map(
                   (activity) => html`
-                    <activity-card .activity=${activity as any}></activity-card>
+                    <activity-card .activity=${activity}></activity-card>
                   `
                 )}
               </div>

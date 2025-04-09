@@ -26,7 +26,12 @@ export const isConnected = computed(() => userAddress.get() !== null);
 export const hasProfile = computed(() => userProfile.get() !== null);
 
 // Helper function to dispatch custom events
-export const dispatchUserEvent = (eventName: string, detail?: any) => {
+export const dispatchUserEvent = (
+  eventName: string,
+  detail?:
+    | { address?: `0x${string}`; profile?: CurrentUser; networkName?: string }
+    | undefined
+) => {
   console.log(`Dispatching ${eventName} event with detail:`, detail);
   const event = new CustomEvent(eventName, {
     bubbles: true,
