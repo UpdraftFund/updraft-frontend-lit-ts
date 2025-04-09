@@ -81,6 +81,48 @@ export default {
             'src/components/right-sidebar/__tests__/mocks/fire.svg'
           ),
         },
+        {
+          find: '@components/idea',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/features/idea/components'
+          ),
+        },
+        {
+          find: '@components/solution',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/features/solution/components'
+          ),
+        },
+        {
+          find: '@components/common',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/features/common/components'
+          ),
+        },
+        {
+          find: '@components/layout',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/features/layout/components'
+          ),
+        },
+        {
+          find: '@components/navigation',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/features/navigation/components'
+          ),
+        },
+        {
+          find: '@layout',
+          replacement: path.resolve(
+            process.cwd(),
+            'src/features/layout/components'
+          ),
+        },
         // Standard path aliases for other imports
         { find: '@/', replacement: path.resolve(process.cwd(), 'src/') },
       ],
