@@ -8,8 +8,6 @@ import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import '@components/page-specific/discover/discover-tabs';
-import '@components/top-bar/search-bar';
 import '@/features/idea/components/idea-card-large.ts';
 
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';

@@ -25,7 +25,6 @@
       "@components/common/*": ["src/features/common/components/*"],
       "@components/layout/*": ["src/features/layout/components/*"],
       "@components/navigation/*": ["src/features/navigation/components/*"],
-      "@layout/*": ["src/features/layout/components/*"],
       "@styles/idea/*": ["src/features/idea/styles/*"],
       "@styles/solution/*": ["src/features/solution/styles/*"],
       "@styles/common/*": ["src/features/common/styles/*"],
@@ -38,8 +37,8 @@
       "@state/navigation/*": ["src/features/navigation/state/*"],
       "@state/user/*": ["src/features/user/state/*"],
       "@state/home/*": ["src/features/home/state/*"],
-      "@styles/*": ["src/features/common/styles/*"],
-      "@utils/*": ["src/features/common/utils/*"],
+      "@pages/*": ["src/features/pages/*"],
+      "@layout/*": ["src/features/layout/components/*"],
       "@icons/*": ["src/assets/icons/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
       "@gql": [".graphclient"]
