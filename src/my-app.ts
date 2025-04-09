@@ -33,7 +33,7 @@ import { Connection, Balances } from '@/features/user/types/current-user';
 import { UpdraftSettings } from '@/features/common/types';
 import { Profile } from '@/features/user/types';
 
-import { nav } from '@/features/user/state/layout-state.ts';
+import { nav } from '@state/layout/layout.ts';
 
 import { ProfileDocument } from '@gql';
 import { updraft } from '@/contracts/updraft.ts';

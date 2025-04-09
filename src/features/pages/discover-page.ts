@@ -13,7 +13,7 @@ import '@/features/idea/components/idea-card-large.ts';
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
 
 import { connectionContext } from '@/features/common/state/context';
-import { topBarContent } from '@/features/user/state/layout-state';
+import { topBarContent } from '@state/layout/layout.ts';
 
 import urqlClient from '@/features/common/utils/urql-client.ts';
 import {

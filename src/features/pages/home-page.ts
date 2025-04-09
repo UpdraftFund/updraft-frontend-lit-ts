@@ -11,7 +11,7 @@ import '@components/top-bar/search-bar';
 import urqlClient from '@/features/common/utils/urql-client';
 import { userContext, type UserState } from '@/features/user/state/user';
 
-import { topBarContent } from '@/features/user/state/layout-state';
+import { topBarContent } from '@state/layout/layout.ts';
 
 interface UserIdeasSolutionsResponse {
   createdIdeas: Array<{ id: string; name: string }>;

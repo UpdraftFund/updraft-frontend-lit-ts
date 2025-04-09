@@ -33,7 +33,7 @@ import {
   formToJson,
 } from '@/features/common/components/saveable-form';
 
-import { topBarContent } from '@/features/user/state/layout-state';
+import { topBarContent } from '@state/layout/layout.ts';
 import { updraft } from '@/contracts/updraft';
 import { Upd } from '@/contracts/upd';
 import {
