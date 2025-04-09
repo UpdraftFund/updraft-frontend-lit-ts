@@ -1,4 +1,5 @@
 // Type definitions for Web Test Runner and @open-wc/testing
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 declare global {
   // Mocha test functions
@@ -8,7 +9,7 @@ declare global {
   function it(name: string, fn: () => void | Promise<void>): void;
   function before(fn: () => void): void;
   function after(fn: () => void): void;
-  
+
   // Chai assertions
   namespace Chai {
     interface Assertion {
