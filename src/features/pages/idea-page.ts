@@ -41,7 +41,7 @@ import {
 } from '@/features/common/state/context';
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@/features/common/utils/web3';
-import { shortNum } from '@/features/common/utils/utils';
+import { shortNum } from '@utils/short-num.ts';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {

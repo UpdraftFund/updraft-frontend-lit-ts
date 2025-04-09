@@ -10,7 +10,6 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
-
 import '@/features/common/components/upd-dialog';
 import { UpdDialog } from '@/features/common/components/upd-dialog';
 
@@ -21,7 +20,7 @@ import reconnectIcon from '@icons/arrow-clockwise.svg';
 import getUpdIcon from '@icons/plus-circle.svg';
 
 import { modal } from '@/features/common/utils/web3';
-import { shortNum } from '@/features/common/utils/utils';
+import { shortNum } from '@utils/short-num.ts';
 import {
   user,
   connectionContext,
