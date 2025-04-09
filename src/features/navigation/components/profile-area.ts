@@ -10,8 +10,8 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
-import '@/features/common/components/upd-dialog';
-import { UpdDialog } from '@/features/common/components/upd-dialog';
+import '@components/common/upd-dialog.ts';
+import { UpdDialog } from '@components/common/upd-dialog.ts';
 
 import plusLgIcon from '@icons/plus-lg.svg';
 import layersIcon from '@icons/layers.svg';
@@ -19,25 +19,25 @@ import creditCardIcon from '@icons/credit-card.svg';
 import reconnectIcon from '@icons/arrow-clockwise.svg';
 import getUpdIcon from '@icons/plus-circle.svg';
 
-import { modal } from '@/features/common/utils/web3';
+import { modal } from '@utils/web3.ts';
 import { shortNum } from '@utils/short-num.ts';
 import {
   user,
   connectionContext,
   balanceContext,
   RequestBalanceRefresh,
-} from '@/features/common/state/context';
+} from '@state/common/context.ts';
 
-import { userContext, UserState } from '@/features/user/state/user';
+import { userContext, UserState } from '@state/user/user.ts';
 
 import {
   USER_CONNECTED_EVENT,
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
   NETWORK_CHANGED_EVENT,
-} from '@/features/user/state/user';
+} from '@state/user/user.ts';
 
-import { Connection, Balances } from '@/features/user/types/current-user';
+import { Connection, Balances } from '@/features/user/types/current-user.ts';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {

@@ -39,7 +39,7 @@ import { ProfileDocument } from '@gql';
 import { updraft } from '@/contracts/updraft.ts';
 
 import '@/features/layout/components/top-bar';
-import '@/features/navigation/components/top-bar/search-bar';
+import '@components/navigation/search-bar.ts';
 import '@/features/layout/components/left-side-bar';
 import '@/features/layout/components/right-side-bar';
 import { setUserProfile } from '@state/user/user.ts';

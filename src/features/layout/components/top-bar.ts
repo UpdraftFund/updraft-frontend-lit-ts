@@ -2,9 +2,9 @@ import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
-import '@/features/navigation/components/top-bar/profile-area';
-import '@/features/navigation/components/top-bar/search-bar';
-import '@/features/navigation/components/top-bar/discover-tabs';
+import '@components/navigation/profile-area.ts';
+import '@components/navigation/search-bar.ts';
+import '@components/navigation/discover-tabs.ts';
 
 import updraftLogo from '@/assets/images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';

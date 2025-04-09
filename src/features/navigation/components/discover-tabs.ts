@@ -48,18 +48,22 @@ export class DiscoverTabs extends LitElement {
       // Update URL and navigate to discover page if needed
       const currentPath = window.location.pathname;
       const isDiscoverPage = currentPath === '/discover';
-      const url = new URL(isDiscoverPage ? window.location.href : `${window.location.origin}/discover`);
-      
+      const url = new URL(
+        isDiscoverPage
+          ? window.location.href
+          : `${window.location.origin}/discover`
+      );
+
       // Set the tab parameter
       url.searchParams.set('tab', tabName);
-      
+
       // Preserve search parameter if it exists
       if (this.search) {
         url.searchParams.set('search', this.search);
       } else {
         url.searchParams.delete('search');
       }
-      
+
       // Navigate to the new URL
       if (isDiscoverPage) {
         // If already on discover page, just update the URL
@@ -106,10 +110,16 @@ export class DiscoverTabs extends LitElement {
           .active=${this.tab !== undefined && this.tab === 'new-ideas'}
           >New Ideas</sl-tab
         >
-        <sl-tab slot="nav" panel="deadline" .active=${this.tab !== undefined && this.tab === 'deadline'}
+        <sl-tab
+          slot="nav"
+          panel="deadline"
+          .active=${this.tab !== undefined && this.tab === 'deadline'}
           >Deadline</sl-tab
         >
-        <sl-tab slot="nav" panel="followed" .active=${this.tab !== undefined && this.tab === 'followed'}
+        <sl-tab
+          slot="nav"
+          panel="followed"
+          .active=${this.tab !== undefined && this.tab === 'followed'}
           >Followed</sl-tab
         >
         ${this.search
