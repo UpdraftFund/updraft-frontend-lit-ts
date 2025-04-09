@@ -11,7 +11,7 @@ import '../components/hot-ideas';
 describe('HotIdeas Component', () => {
   let element: HTMLElement;
   let queryStub: sinon.SinonStub;
-  let mockIdeas = [
+  const mockIdeas = [
     {
       id: '1',
       title: 'Test Idea 1',

@@ -8,5 +8,5 @@ export const setHotIdeas = stub();
 
 // Create mock for the getIdeaState function
 export const getIdeaState = () => ({
-  hotIdeas: []
+  hotIdeas: [],
 });
