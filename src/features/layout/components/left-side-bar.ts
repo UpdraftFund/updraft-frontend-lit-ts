@@ -1,5 +1,6 @@
 import { customElement, property } from 'lit/decorators.js';
-import { css, html, LitElement } from 'lit';
+import { css, LitElement } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
@@ -29,7 +30,7 @@ import {
 } from '@gql';
 
 @customElement('left-side-bar')
-export class LeftSideBar extends LitElement {
+export class LeftSideBar extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: flex;
