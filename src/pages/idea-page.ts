@@ -31,8 +31,8 @@ import { TransactionWatcher } from '@/features/common/components/transaction-wat
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { IdeaDocument } from '@gql';
-import { IdeaContract } from '@contracts/idea';
-import { Upd } from '@contracts/upd';
+import { IdeaContract } from '@/contracts/idea';
+import { Upd } from '@/contracts/upd';
 import {
   balanceContext,
   defaultFunderReward,
@@ -268,21 +268,23 @@ export class IdeaPage extends LitElement {
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
-      } catch (e: any) {
-        if (e.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        } else if (e.message.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (e.message.includes('exceeds allowance')) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(this.updraftSettings.updAddress);
-          this.approveTransaction.hash = await upd.write('approve', [
-            this.ideaId,
-            total,
-          ]);
+      } catch (e) {
+        if (e instanceof Error) {
+          if (e.message.startsWith('connection')) {
+            modal.open({ view: 'Connect' });
+          } else if (e.message.includes('exceeds balance')) {
+            this.updDialog.show();
+          } else if (e.message.includes('exceeds allowance')) {
+            this.approveTransaction.reset();
+            this.approveDialog.show();
+            const upd = new Upd(this.updraftSettings.updAddress);
+            this.approveTransaction.hash = await upd.write('approve', [
+              this.ideaId,
+              total,
+            ]);
+          }
+          console.error(e);
         }
-        console.error(e);
       }
     } else {
       this.form.reportValidity(); // Show validation messages
