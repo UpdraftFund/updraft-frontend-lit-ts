@@ -53,4 +53,7 @@ export default defineConfig({
   define: {
     'process.env': {},
   },
+  build: {
+    target: 'es2022', // Should match tsconfig.json target
+  },
 });
