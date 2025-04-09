@@ -31,9 +31,6 @@
       "@styles/common/*": ["src/features/common/styles/*"],
       "@styles/layout/*": ["src/features/layout/styles/*"],
       "@styles/navigation/*": ["src/features/navigation/styles/*"],
-      "@assets/*": ["src/assets/*"],
-      "@icons/*": ["src/assets/icons/*"],
-      "@pages/*": ["src/pages/*"],
       "@state/idea/*": ["src/features/idea/state/*"],
       "@state/solution/*": ["src/features/solution/state/*"],
       "@state/common/*": ["src/features/common/state/*"],
@@ -41,8 +38,10 @@
       "@state/navigation/*": ["src/features/navigation/state/*"],
       "@state/user/*": ["src/features/user/state/*"],
       "@state/home/*": ["src/features/home/state/*"],
+      "@styles/*": ["src/features/common/styles/*"],
+      "@utils/*": ["src/features/common/utils/*"],
+      "@icons/*": ["src/assets/icons/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
-      "@contracts/*": ["src/contracts/*"],
       "@gql": [".graphclient"]
     }
   },
