@@ -96,7 +96,8 @@ export type { Idea, IdeaContribution } from '@gql';
 6. Build components in `components/`.
 7. Write tests in `__tests__/`.
 8. Expose public API via `index.ts` if needed.
-9. Consider adding paths to `tsconfig.json` to access your components and state via `@components` and `@state`.
+9. Consider adding paths to `tsconfig.json` and `vite.config.js` to access your components and state via `@components`
+   and `@state`.
 10. Consider adding imports to `src/types/index.ts` to access your types via `@/types`
 
 ---
