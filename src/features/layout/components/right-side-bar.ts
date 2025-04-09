@@ -6,7 +6,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import '@/features/idea/components/right-side-bar/hot-ideas';
+import '@/features/idea/components/hot-ideas';
 import '@/features/idea/components/related-ideas';
 import '@/features/idea/components/top-supporters';
 import '@/features/tags/components/watched-tags';
