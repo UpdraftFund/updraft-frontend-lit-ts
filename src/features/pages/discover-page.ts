@@ -69,14 +69,15 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
 
     .tag {
-      font-weight: 500;
-      font-size: 1.3rem;
-      color: var(--subtle-text);
+      font-weight: 600;
+      font-size: 1.2rem;
+      color: var(--section-heading);
     }
 
     .tag-with-button {
       display: flex;
       gap: 0.5rem;
+      align-items: baseline;
     }
   `;
 
@@ -162,7 +163,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
           this.tags,
           (tag) => html`
             <span class="tag-with-button">
-              <span class="tag">${tag}</span>
+              <h2 class="tag">${tag}</h2>
               <sl-button
                 pill
                 size="small"
