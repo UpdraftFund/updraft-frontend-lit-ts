@@ -10,8 +10,8 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-import gift from '@icons/gift.svg';
-import fire from '@icons/fire.svg';
+import gift from '@icons/common/gift.svg';
+import fire from '@icons/idea/fire.svg';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
@@ -31,8 +31,8 @@ import { TransactionWatcher } from '@/features/common/components/transaction-wat
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { IdeaDocument } from '@gql';
-import { IdeaContract } from '@/contracts/idea';
-import { Upd } from '@/contracts/upd';
+import { IdeaContract } from '@contracts/idea';
+import { Upd } from '@contracts/upd';
 import {
   balanceContext,
   defaultFunderReward,

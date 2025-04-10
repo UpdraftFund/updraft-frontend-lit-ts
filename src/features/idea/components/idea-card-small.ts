@@ -7,9 +7,9 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-import seedling from '@icons/seedling.svg';
-import gift from '@icons/gift.svg';
-import fire from '@icons/fire.svg';
+import seedling from '@icons/common/seedling.svg';
+import gift from '@icons/common/gift.svg';
+import fire from '@icons/idea/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
@@ -56,7 +56,7 @@ export class IdeaCardSmall extends LitElement {
     p {
       margin-top: 0.5rem;
       font-size: 0.75rem;
-      color: var(--sl-color-gray-600);
+      color: var(--subtle-text);
     }
 
     .info-row {

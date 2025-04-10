@@ -2,7 +2,7 @@ import { customElement, query } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { consume } from '@lit/context';
 
-import calculator from '@icons/calculator.svg';
+import calculator from '@icons/common/calculator.svg';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 

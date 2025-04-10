@@ -39,7 +39,7 @@ import '@/features/common/components/share-dialog';
 import '@/features/common/components/label-with-hint';
 
 import solutionSchema from '@schemas/solution-schema.json';
-import { updraft } from '@/contracts/updraft';
+import { updraft } from '@contracts/updraft';
 
 import { UpdraftSettings } from '@/features/common/types';
 import { Balances } from '@/features/user/types/current-user';

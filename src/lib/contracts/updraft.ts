@@ -1,9 +1,9 @@
 import { Abi } from 'abitype';
 
-import { config } from '@/features/common/utils/web3';
+import { config } from '@utils/web3.ts';
 import updraftAddresses from './updraftAddresses.json';
 import abi from './abis/Updraft.json';
-import { Contract } from './contract';
+import { Contract } from './contract.ts';
 
 interface AddressMap {
   [chainName: string]: `0x${string}`;

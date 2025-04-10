@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 
 import { UpdraftSettings, Connection, CurrentUser } from '@/types';
 
-import pencilSquare from '@icons/pencil-square.svg';
+import pencilSquare from '@icons/user/pencil-square.svg';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
@@ -34,8 +34,8 @@ import {
 } from '@/features/common/components/saveable-form';
 
 import { topBarContent } from '@state/layout/layout.ts';
-import { updraft } from '@/contracts/updraft';
-import { Upd } from '@/contracts/upd';
+import { updraft } from '@contracts/updraft';
+import { Upd } from '@contracts/upd';
 import {
   user,
   updraftSettings as updraftSettingsContext,

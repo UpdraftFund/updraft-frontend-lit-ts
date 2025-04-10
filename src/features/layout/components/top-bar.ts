@@ -6,13 +6,13 @@ import '@components/navigation/profile-area.ts';
 import '@components/navigation/search-bar.ts';
 import '@components/navigation/discover-tabs.ts';
 
-import updraftLogo from '@/assets/images/updraft-logo-46.png';
+import updraftLogo from '@images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
 import { topBarContent } from '@state/layout/layout.ts';
 
-import listIcon from '@icons/list.svg';
+import listIcon from '@icons/navigation/list.svg';
 
 @customElement('top-bar')
 export class TopBar extends SignalWatcher(LitElement) {

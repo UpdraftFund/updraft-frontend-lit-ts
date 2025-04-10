@@ -11,8 +11,8 @@ import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
 import { watchedTags, unwatchTag } from '@/features/user/state/watched-tags';
 
-import pencilSquare from '@icons/pencil-square.svg';
-import xCircle from '@icons/x-circle.svg';
+import pencilSquare from '@icons/user/pencil-square.svg';
+import xCircle from '@icons/common/x-circle.svg';
 
 @customElement('watched-tags')
 export class WatchedTags extends LitElement {

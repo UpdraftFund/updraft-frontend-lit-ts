@@ -4,10 +4,10 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
-import compass from '@icons/compass.svg';
-import house from '@icons/house.svg';
-import chevronLeft from '@icons/chevron-left.svg';
-import chevronRight from '@icons/chevron-right.svg';
+import compass from '@icons/navigation/compass.svg';
+import house from '@icons/navigation/house.svg';
+import chevronLeft from '@icons/navigation/chevron-left.svg';
+import chevronRight from '@icons/navigation/chevron-right.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';

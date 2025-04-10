@@ -38,11 +38,17 @@
       "@state/navigation/*": ["src/features/navigation/state/*"],
       "@state/user/*": ["src/features/user/state/*"],
       "@state/home/*": ["src/features/pages/home/state/*"],
+      "@icons/common/*": ["src/features/common/assets/icons/*"],
+      "@icons/idea/*": ["src/features/idea/assets/icons/*"],
+      "@icons/navigation/*": ["src/features/navigation/assets/icons/*"],
+      "@icons/solution/*": ["src/features/solution/assets/icons/*"],
+      "@icons/user/*": ["src/features/user/assets/icons/*"],
+      "@images/*": ["src/features/common/assets/images/*"],
       "@pages/*": ["src/features/pages/*"],
       "@layout/*": ["src/features/layout/components/*"],
       "@utils/*": ["src/features/common/utils/*"],
       "@styles/*": ["src/features/common/styles/*"],
-      "@icons/*": ["src/assets/icons/*"],
+      "@contracts/*": ["src/lib/contracts/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
       "@gql": [".graphclient"]
     }
