@@ -20,14 +20,8 @@ export class DiscoverTabs extends LitElement {
 
   private handleTab(e: CustomEvent) {
     const tabName = e?.detail?.name as QueryType;
-
     const url = new URL(window.location.href);
     url.searchParams.set('tab', tabName);
-
-    if (this.tab !== 'search') {
-      url.searchParams.delete('search');
-    }
-
     window.history.pushState({}, '', url.toString());
   }
 
@@ -46,9 +40,6 @@ export class DiscoverTabs extends LitElement {
         </sl-tab>
         <sl-tab slot="nav" panel="followed" .active=${this.tab === 'followed'}
           >Followed
-        </sl-tab>
-        <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}
-          >Search
         </sl-tab>
       </sl-tab-group>
     `;

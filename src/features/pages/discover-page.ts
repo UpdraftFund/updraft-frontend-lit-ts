@@ -1,4 +1,4 @@
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
@@ -160,16 +160,16 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   @consume({ context: connectionContext, subscribe: true })
   connection!: Connection;
 
-  @property() tab?: QueryType;
-  @property() search?: string;
+  @state() tab: QueryType = 'hot-ideas';
+  @state() search: string | null = null;
 
   private queryType?: QueryType;
   private tags: string[] = [];
 
   private setTabFromUrl = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    this.search = urlParams.get('search') || undefined;
-    this.tab = (urlParams.get('tab') as QueryType) || undefined;
+    const url = new URL(window.location.href);
+    this.search = url.searchParams.get('search') || null;
+    this.tab = url.searchParams.get('tab') as QueryType;
 
     // If there's a search term and no tab is specified, set tab to 'search'
     if (this.search && !this.tab) {
@@ -179,10 +179,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     // If tab is 'search' but there's no search term, default to 'hot-ideas'
     if (this.tab === 'search' && !this.search) {
       this.tab = 'hot-ideas';
-      // Update URL to reflect the new tab
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', this.tab);
-      window.history.replaceState({}, '', url.toString());
     }
 
     // If no tab is specified, default to 'hot-ideas'
@@ -238,7 +234,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     topBarContent.set(
       html` <div>
           <discover-tabs .tab=${this.tab}></discover-tabs>
-          <search-bar></search-bar>
+          <search-bar .search=${this.search}></search-bar>
         </div>
         <create-idea-button></create-idea-button>`
     );
