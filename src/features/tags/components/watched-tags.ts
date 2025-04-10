@@ -3,7 +3,8 @@
  * It allows users to view and edit their watched tags.
  ***/
 
-import { LitElement, html, css } from 'lit';
+import { LitElement, css } from 'lit';
+import { SignalWatcher, html } from '@lit-labs/signals';
 import { customElement, state, queryAll, query } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
@@ -15,7 +16,7 @@ import pencilSquare from '@icons/user/pencil-square.svg';
 import xCircle from '@icons/common/x-circle.svg';
 
 @customElement('watched-tags')
-export class WatchedTags extends LitElement {
+export class WatchedTags extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
