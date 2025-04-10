@@ -1,6 +1,6 @@
 import { Abi } from 'abitype';
 import { readContract, simulateContract, writeContract } from '@wagmi/core';
-import { config } from '@/features/common/utils/web3';
+import { config } from '@utils/web3.ts';
 
 export class Contract {
   constructor(

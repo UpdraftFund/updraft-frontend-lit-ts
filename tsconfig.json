@@ -44,6 +44,7 @@
       "@layout/*": ["src/features/layout/components/*"],
       "@utils/*": ["src/features/common/utils/*"],
       "@styles/*": ["src/features/common/styles/*"],
+      "@contracts/*": ["src/lib/contracts/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
       "@gql": [".graphclient"]
     }

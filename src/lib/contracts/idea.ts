@@ -1,7 +1,7 @@
 import { Abi } from 'abitype';
 
 import abi from './abis/Idea.json';
-import { Contract } from './contract';
+import { Contract } from './contract.ts';
 
 export class IdeaContract extends Contract {
   constructor(address: `0x${string}`) {

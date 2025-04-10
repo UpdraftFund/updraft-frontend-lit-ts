@@ -34,8 +34,8 @@ import {
 } from '@/features/common/components/saveable-form';
 
 import { topBarContent } from '@state/layout/layout.ts';
-import { updraft } from '@/contracts/updraft';
-import { Upd } from '@/contracts/upd';
+import { updraft } from '@contracts/updraft';
+import { Upd } from '@contracts/upd';
 import {
   user,
   updraftSettings as updraftSettingsContext,

@@ -36,7 +36,7 @@ import { Profile } from '@/features/user/types';
 import { nav } from '@state/layout/layout.ts';
 
 import { ProfileDocument } from '@gql';
-import { updraft } from '@/contracts/updraft.ts';
+import { updraft } from '@contracts/updraft.ts';
 
 import '@/features/layout/components/top-bar';
 import '@components/navigation/search-bar.ts';

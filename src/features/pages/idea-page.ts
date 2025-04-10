@@ -31,8 +31,8 @@ import { TransactionWatcher } from '@/features/common/components/transaction-wat
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { IdeaDocument } from '@gql';
-import { IdeaContract } from '@/contracts/idea';
-import { Upd } from '@/contracts/upd';
+import { IdeaContract } from '@contracts/idea';
+import { Upd } from '@contracts/upd';
 import {
   balanceContext,
   defaultFunderReward,

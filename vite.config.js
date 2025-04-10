@@ -47,6 +47,7 @@ export default defineConfig({
       '@layout': resolve(__dirname, 'src/features/layout/components'),
       '@utils': resolve(__dirname, 'src/features/common/utils'),
       '@styles': resolve(__dirname, 'src/features/common/styles'),
+      '@contracts': resolve(__dirname, 'src/lib/contracts'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
       '@gql': resolve(__dirname, '.graphclient'),
     },
