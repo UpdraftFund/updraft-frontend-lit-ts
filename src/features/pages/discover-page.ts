@@ -3,6 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 import { SignalWatcher } from '@lit-labs/signals';
+import { repeat } from 'lit/directives/repeat.js';
 
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
@@ -20,10 +21,11 @@ import {
   QueryType,
 } from '@/types';
 
-import { connectionContext } from '@/features/common/state/context';
-import { topBarContent } from '@state/layout/layout';
+import { connectionContext } from '@state/common/context';
+import { rightSidebarContent, topBarContent } from '@state/layout/layout';
+import { watchTag, isWatched } from '@state/user/watched-tags';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,
@@ -69,11 +71,11 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     .tag {
       font-weight: 500;
       font-size: 1.3rem;
+      color: var(--subtle-text);
     }
 
     .tag-with-button {
       display: flex;
-      align-items: center;
       gap: 0.5rem;
     }
   `;
@@ -103,19 +105,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         .map((tag) => tag.replace(/[\[\]]/g, ''))
         .slice(0, 5); // only get up to 5 matches
       const defaultTag = this.tags[0] || '';
-
-      // If no tags are found, return a default structure with empty strings
-      if (this.tags.length === 0) {
-        return {
-          tag1: '',
-          tag2: '',
-          tag3: '',
-          tag4: '',
-          tag5: '',
-          detailed: true,
-        };
-      }
-
       return {
         tag1: this.tags[0] || defaultTag,
         tag2: this.tags[1] || defaultTag,
@@ -166,9 +155,32 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   private queryType?: QueryType;
   private tags: string[] = [];
 
+  private renderTagList() {
+    return html`
+      <div class="tag-list">
+        ${repeat(
+          this.tags,
+          (tag) => html`
+            <span class="tag-with-button">
+              <span class="tag">${tag}</span>
+              <sl-button
+                pill
+                size="small"
+                @click=${() => watchTag(tag)}
+                ?disabled=${isWatched(tag)}
+              >
+                ${isWatched(tag) ? 'Watched' : 'Watch Tag'}
+              </sl-button>
+            </span>
+          `
+        )}
+      </div>
+    `;
+  }
+
   private setTabFromUrl = () => {
     const url = new URL(window.location.href);
-    this.search = url.searchParams.get('search') || null;
+    this.search = url.searchParams.get('search');
     this.tab = url.searchParams.get('tab') as QueryType;
 
     // If there's a search term and no tab is specified, set tab to 'search'
@@ -238,6 +250,10 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         </div>
         <create-idea-button></create-idea-button>`
     );
+    rightSidebarContent.set(
+      html` <watched-tags></watched-tags>
+        <popular-tags></popular-tags>`
+    );
     return html`
       <div class="container">
         <main>
@@ -247,6 +263,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                 const data = (result.data?.[result.entity] ||
                   []) as ResultType[];
                 return html`
+                  ${this.queryType === 'tags' ? this.renderTagList() : html``}
                   ${data.map((item: ResultType) => {
                     switch (result.entity) {
                       case 'ideas':
@@ -268,8 +285,9 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
                     }
                   })}
                 `;
+              } else {
+                return html``;
               }
-              return '';
             },
             initial: () => html` <loading-spinner></loading-spinner>`,
             error: (error) => html`<p>Error: ${error}</p>`,
