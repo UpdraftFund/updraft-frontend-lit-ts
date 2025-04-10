@@ -3,6 +3,7 @@ import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import plusLgIcon from '@icons/plus-lg.svg';
 
 @customElement('create-idea-button')
@@ -24,7 +25,13 @@ export class CreateIdeaButton extends LitElement {
 
   render() {
     return html`
-      <sl-icon-button src="${plusLgIcon}" href="/create-idea"></sl-icon-button>
+      <sl-tooltip content="create an idea">
+        <sl-icon-button
+          src="${plusLgIcon}"
+          href="/create-idea"
+          label="create an idea"
+        ></sl-icon-button>
+      </sl-tooltip>
     `;
   }
 }
