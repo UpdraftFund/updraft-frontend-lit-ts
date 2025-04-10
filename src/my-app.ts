@@ -55,7 +55,7 @@ export class MyApp extends LitElement {
       path: '/',
       enter: async () => {
         await import('@pages/home-page');
-        //nav.set('home');
+        nav.set('home');
         return true;
       },
       render: () => html`<home-page></home-page>`,
@@ -64,7 +64,7 @@ export class MyApp extends LitElement {
       path: '/discover',
       enter: async () => {
         await import('@pages/discover-page');
-        //nav.set('discover');
+        nav.set('discover');
         return true;
       },
       render: () => {
