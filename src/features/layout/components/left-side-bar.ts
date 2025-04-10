@@ -21,7 +21,7 @@ import {
 } from '@/features/common/state/context';
 import { Connection } from '@/features/user/types/current-user';
 import { Solution } from '@/features/solution/types';
-import { nav } from '@state/layout/layout';
+import { nav } from '@state/navigation/navigation.ts';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import {
