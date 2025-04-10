@@ -86,7 +86,7 @@ export class TopBar extends SignalWatcher(LitElement) {
       <a href="/" title="Updraft Home">
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
-      <slot>${topBarContent}</slot>
+      <slot>${topBarContent.get()}</slot>
       <profile-area></profile-area>
     `;
   }

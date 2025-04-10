@@ -12,6 +12,8 @@ import '@/features/idea/components/top-supporters';
 import '@/features/tags/components/watched-tags';
 import '@/features/tags/components/popular-tags';
 
+import { rightSidebarContent } from '@state/layout/layout.ts';
+
 @customElement('right-side-bar')
 export class RightSideBar extends LitElement {
   static styles = css`
@@ -99,6 +101,7 @@ export class RightSideBar extends LitElement {
   render() {
     return html`
       <div class="sidebar-content">
+        <slot>${rightSidebarContent.get()}</slot>
         ${this.showHotIdeas ? html`<hot-ideas></hot-ideas>` : ''}
         ${this.ideaId
           ? html`
