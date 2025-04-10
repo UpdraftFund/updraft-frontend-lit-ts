@@ -3,8 +3,9 @@
  * https://www.figma.com/design/lfPeBM41v53XQZLkYRUt5h/Updraft?node-id=920-7089&m=dev
  ***/
 
-import { LitElement, html, css } from 'lit';
+import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { SignalWatcher, html } from '@lit-labs/signals';
 
 import '@/features/idea/components/hot-ideas';
 import '@/features/idea/components/related-ideas';
@@ -15,7 +16,7 @@ import '@/features/tags/components/popular-tags';
 import { rightSidebarContent } from '@state/layout/layout.ts';
 
 @customElement('right-side-bar')
-export class RightSideBar extends LitElement {
+export class RightSideBar extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -25,7 +26,7 @@ export class RightSideBar extends LitElement {
       overflow-y: auto;
     }
 
-    .sidebar-content {
+    slot {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
@@ -57,9 +58,6 @@ export class RightSideBar extends LitElement {
       }
     }
   `;
-
-  @property({ type: Boolean, reflect: true, attribute: 'show-hot-ideas' })
-  showHotIdeas = false;
 
   @property({
     type: Boolean,
@@ -100,19 +98,13 @@ export class RightSideBar extends LitElement {
 
   render() {
     return html`
-      <div class="sidebar-content">
-        <slot>${rightSidebarContent.get()}</slot>
-        ${this.showHotIdeas ? html`<hot-ideas></hot-ideas>` : ''}
-        ${this.ideaId
-          ? html`
-              <top-supporters .ideaId=${this.ideaId}></top-supporters>
-              <related-ideas .ideaId=${this.ideaId}></related-ideas>
-            `
-          : html`
-              <watched-tags></watched-tags>
-              <popular-tags></popular-tags>
-            `}
-      </div>
+      <slot>${rightSidebarContent.get()}</slot>
+      ${this.ideaId
+        ? html`
+            <top-supporters .ideaId=${this.ideaId}></top-supporters>
+            <related-ideas .ideaId=${this.ideaId}></related-ideas>
+          `
+        : html``}
     `;
   }
 }
