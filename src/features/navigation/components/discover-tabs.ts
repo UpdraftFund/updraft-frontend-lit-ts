@@ -89,36 +89,21 @@ export class DiscoverTabs extends LitElement {
     // Don't set any tab as active if this.tab is undefined
     return html`
       <sl-tab-group @sl-tab-show=${this.handleTab}>
-        <sl-tab
-          slot="nav"
-          panel="hot-ideas"
-          .active=${this.tab !== undefined && this.tab === 'hot-ideas'}
+        <sl-tab slot="nav" panel="hot-ideas" .active=${this.tab === 'hot-ideas'}
           >Hot Ideas</sl-tab
         >
-        <sl-tab
-          slot="nav"
-          panel="new-ideas"
-          .active=${this.tab !== undefined && this.tab === 'new-ideas'}
+        <sl-tab slot="nav" panel="new-ideas" .active=${this.tab === 'new-ideas'}
           >New Ideas</sl-tab
         >
-        <sl-tab
-          slot="nav"
-          panel="deadline"
-          .active=${this.tab !== undefined && this.tab === 'deadline'}
+        <sl-tab slot="nav" panel="deadline" .active=${this.tab === 'deadline'}
           >Deadline</sl-tab
         >
-        <sl-tab
-          slot="nav"
-          panel="followed"
-          .active=${this.tab !== undefined && this.tab === 'followed'}
+        <sl-tab slot="nav" panel="followed" .active=${this.tab === 'followed'}
           >Followed</sl-tab
         >
         ${this.search
           ? html`
-              <sl-tab
-                slot="nav"
-                panel="search"
-                .active=${this.tab !== undefined && this.tab === 'search'}
+              <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}
                 >Search</sl-tab
               >
             `
