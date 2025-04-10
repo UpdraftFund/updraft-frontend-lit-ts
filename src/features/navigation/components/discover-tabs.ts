@@ -4,13 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 
-type QueryType =
-  | 'hot-ideas'
-  | 'new-ideas'
-  | 'deadline'
-  | 'followed'
-  | 'search'
-  | 'tags';
+import { QueryType } from '@/types';
 
 @customElement('discover-tabs')
 export class DiscoverTabs extends LitElement {
@@ -23,66 +17,18 @@ export class DiscoverTabs extends LitElement {
   `;
 
   @property({ type: String }) tab?: QueryType;
-  @property({ type: String }) search?: string;
 
   private handleTab(e: CustomEvent) {
     const tabName = e?.detail?.name as QueryType;
-    if (tabName) {
-      // Create a custom event to notify parent components
-      const event = new CustomEvent('tab-changed', {
-        detail: { tab: tabName },
-        bubbles: true,
-        composed: true,
-      });
-      this.dispatchEvent(event);
 
-      // Update URL and navigate to discover page if needed
-      const currentPath = window.location.pathname;
-      const isDiscoverPage = currentPath === '/discover';
-      const url = new URL(
-        isDiscoverPage
-          ? window.location.href
-          : `${window.location.origin}/discover`
-      );
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabName);
 
-      // Set the tab parameter
-      url.searchParams.set('tab', tabName);
-
-      // Preserve search parameter if it exists
-      if (this.search) {
-        url.searchParams.set('search', this.search);
-      } else {
-        url.searchParams.delete('search');
-      }
-
-      // Navigate to the new URL
-      if (isDiscoverPage) {
-        // If already on discover page, just update the URL
-        if (window.location.href !== url.toString()) {
-          window.history.pushState({}, '', url.toString());
-        }
-      } else {
-        // If not on discover page, navigate to discover page
-        window.location.href = url.toString();
-      }
+    if (this.tab !== 'search') {
+      url.searchParams.delete('search');
     }
-  }
 
-  connectedCallback() {
-    super.connectedCallback();
-    // Listen for navigation events
-    this._onPopState = this._onPopState.bind(this);
-    window.addEventListener('popstate', this._onPopState);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    window.removeEventListener('popstate', this._onPopState);
-  }
-
-  private _onPopState() {
-    // Force re-render when navigation occurs
-    this.requestUpdate();
+    window.history.pushState({}, '', url.toString());
   }
 
   render() {
@@ -90,24 +36,20 @@ export class DiscoverTabs extends LitElement {
     return html`
       <sl-tab-group @sl-tab-show=${this.handleTab}>
         <sl-tab slot="nav" panel="hot-ideas" .active=${this.tab === 'hot-ideas'}
-          >Hot Ideas</sl-tab
-        >
+          >Hot Ideas
+        </sl-tab>
         <sl-tab slot="nav" panel="new-ideas" .active=${this.tab === 'new-ideas'}
-          >New Ideas</sl-tab
-        >
+          >New Ideas
+        </sl-tab>
         <sl-tab slot="nav" panel="deadline" .active=${this.tab === 'deadline'}
-          >Deadline</sl-tab
-        >
+          >Deadline
+        </sl-tab>
         <sl-tab slot="nav" panel="followed" .active=${this.tab === 'followed'}
-          >Followed</sl-tab
-        >
-        ${this.search
-          ? html`
-              <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}
-                >Search</sl-tab
-              >
-            `
-          : ''}
+          >Followed
+        </sl-tab>
+        <sl-tab slot="nav" panel="search" .active=${this.tab === 'search'}
+          >Search
+        </sl-tab>
       </sl-tab-group>
     `;
   }

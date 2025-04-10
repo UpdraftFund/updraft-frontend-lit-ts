@@ -12,7 +12,13 @@ import '@components/idea/idea-card-large';
 import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
 
-import { Connection, Idea, Solution, IdeaContribution } from '@/types';
+import {
+  Connection,
+  Idea,
+  Solution,
+  IdeaContribution,
+  QueryType,
+} from '@/types';
 
 import { connectionContext } from '@/features/common/state/context';
 import { topBarContent } from '@state/layout/layout.ts';
@@ -26,14 +32,6 @@ import {
   IdeasFullTextDocument,
   IdeasByTagsDocument,
 } from '@gql';
-
-type QueryType =
-  | 'hot-ideas'
-  | 'new-ideas'
-  | 'deadline'
-  | 'followed'
-  | 'search'
-  | 'tags';
 
 type ResultType = Idea[] | Solution[] | IdeaContribution[];
 
@@ -239,7 +237,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   render() {
     topBarContent.set(
       html` <div>
-          <discover-tabs></discover-tabs>
+          <discover-tabs .tab=${this.tab}></discover-tabs>
           <search-bar></search-bar>
         </div>
         <create-idea-button></create-idea-button>`
