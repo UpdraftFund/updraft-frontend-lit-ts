@@ -2,15 +2,15 @@ import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
-import '@components/navigation/profile-area.ts';
-import '@components/navigation/search-bar.ts';
-import '@components/navigation/discover-tabs.ts';
+import '@components/navigation/profile-area';
+import '@components/navigation/search-bar';
+import '@components/navigation/discover-tabs';
 
 import updraftLogo from '@images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
-import { topBarContent } from '@state/layout/layout.ts';
+import { topBarContent } from '@state/layout/layout';
 
 import listIcon from '@icons/navigation/list.svg';
 

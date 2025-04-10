@@ -13,7 +13,7 @@ import '@/features/idea/components/top-supporters';
 import '@/features/tags/components/watched-tags';
 import '@/features/tags/components/popular-tags';
 
-import { rightSidebarContent } from '@state/layout/layout.ts';
+import { rightSidebarContent } from '@state/layout/layout';
 
 @customElement('right-side-bar')
 export class RightSideBar extends SignalWatcher(LitElement) {

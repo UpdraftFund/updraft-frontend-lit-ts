@@ -6,7 +6,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { formatUnits } from 'viem';
 
 import { TrackedChangesDocument } from '@gql';
-import urqlClient from '@utils/urql-client.ts';
+import urqlClient from '@utils/urql-client';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';

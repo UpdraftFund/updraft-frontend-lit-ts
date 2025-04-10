@@ -4,12 +4,12 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 
-import '@components/idea/idea-card-small.ts';
+import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { IdeasByTagsDocument } from '@gql';
-import { ideaContext, IdeaState } from '@state/idea/idea.ts';
+import { ideaContext, IdeaState } from '@state/idea/idea';
 
 @customElement('related-ideas')
 export class RelatedIdeas extends SignalWatcher(LitElement) {

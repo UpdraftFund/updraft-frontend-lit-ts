@@ -6,7 +6,7 @@ import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 
-import { showLeftSidebar, showRightSidebar } from '@state/layout/layout.ts';
+import { showLeftSidebar, showRightSidebar } from '@state/layout/layout';
 
 @customElement('app-layout')
 export class AppLayout extends SignalWatcher(LitElement) {

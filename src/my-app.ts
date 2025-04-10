@@ -33,16 +33,16 @@ import { Connection, Balances } from '@/features/user/types/current-user';
 import { UpdraftSettings } from '@/features/common/types';
 import { Profile } from '@/features/user/types';
 
-import { nav } from '@state/layout/layout.ts';
+import { nav } from '@state/layout/layout';
 
 import { ProfileDocument } from '@gql';
-import { updraft } from '@contracts/updraft.ts';
+import { updraft } from '@contracts/updraft';
 
 import '@/features/layout/components/top-bar';
-import '@components/navigation/search-bar.ts';
+import '@components/navigation/search-bar';
 import '@/features/layout/components/left-side-bar';
 import '@/features/layout/components/right-side-bar';
-import { setUserProfile } from '@state/user/user.ts';
+import { setUserProfile } from '@state/user/user';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');

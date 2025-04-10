@@ -21,9 +21,9 @@ import {
 } from '@/types';
 
 import { connectionContext } from '@/features/common/state/context';
-import { topBarContent } from '@state/layout/layout.ts';
+import { topBarContent } from '@state/layout/layout';
 
-import urqlClient from '@/features/common/utils/urql-client.ts';
+import urqlClient from '@/features/common/utils/urql-client';
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,

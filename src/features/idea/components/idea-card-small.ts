@@ -20,7 +20,7 @@ import {
 import { Idea } from '@/features/idea/types';
 import { UpdraftSettings } from '@/features/common/types';
 
-import { shortNum } from '@utils/short-num.ts';
+import { shortNum } from '@utils/short-num';
 
 @customElement('idea-card-small')
 export class IdeaCardSmall extends LitElement {

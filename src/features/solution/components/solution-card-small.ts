@@ -16,7 +16,7 @@ import { updraftSettings } from '@/features/common/state/context';
 import { Solution } from '@/features/solution/types';
 import { UpdraftSettings } from '@/features/common/types';
 
-import { shortNum } from '@utils/short-num.ts';
+import { shortNum } from '@utils/short-num';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends LitElement {

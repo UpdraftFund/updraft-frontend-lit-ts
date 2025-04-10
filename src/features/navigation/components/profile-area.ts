@@ -10,16 +10,16 @@ import '@shoelace-style/shoelace/dist/components/menu-item/menu-item.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
-import '@components/common/upd-dialog.ts';
-import { UpdDialog } from '@components/common/upd-dialog.ts';
+import '@components/common/upd-dialog';
+import { UpdDialog } from '@components/common/upd-dialog';
 
 import layersIcon from '@icons/navigation/layers.svg';
 import creditCardIcon from '@icons/navigation/credit-card.svg';
 import reconnectIcon from '@icons/navigation/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
-import { modal } from '@utils/web3.ts';
-import { shortNum } from '@utils/short-num.ts';
+import { modal } from '@utils/web3';
+import { shortNum } from '@utils/short-num';
 import {
   user,
   connectionContext,
@@ -27,14 +27,14 @@ import {
   RequestBalanceRefresh,
 } from '@state/common/context.ts';
 
-import { userContext, UserState } from '@state/user/user.ts';
+import { userContext, UserState } from '@state/user/user';
 
 import {
   USER_CONNECTED_EVENT,
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
   NETWORK_CHANGED_EVENT,
-} from '@state/user/user.ts';
+} from '@state/user/user';
 
 import { Connection, Balances } from '@/types';
 

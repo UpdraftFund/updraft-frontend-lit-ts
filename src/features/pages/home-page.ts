@@ -13,7 +13,7 @@ import '@components/navigation/create-idea-button';
 import urqlClient from '@/features/common/utils/urql-client';
 import { userContext, type UserState } from '@/features/user/state/user';
 
-import { rightSidebarContent, topBarContent } from '@state/layout/layout.ts';
+import { rightSidebarContent, topBarContent } from '@state/layout/layout';
 
 interface UserIdeasSolutionsResponse {
   createdIdeas: Array<{ id: string; name: string }>;
