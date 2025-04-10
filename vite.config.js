@@ -42,6 +42,16 @@ export default defineConfig({
       '@state/user': resolve(__dirname, 'src/features/user/state'),
       '@state/home': resolve(__dirname, 'src/features/pages/home/state'),
       '@icons/common': resolve(__dirname, 'src/features/common/assets/icons'),
+      '@icons/idea': resolve(__dirname, 'src/features/idea/assets/icons'),
+      '@icons/navigation': resolve(
+        __dirname,
+        'src/features/navigation/assets/icons'
+      ),
+      '@icons/solution': resolve(
+        __dirname,
+        'src/features/solution/assets/icons'
+      ),
+      '@icons/user': resolve(__dirname, 'src/features/user/assets/icons'),
       '@images': resolve(__dirname, 'src/features/common/assets/images'),
       '@pages': resolve(__dirname, 'src/features/pages'),
       '@layout': resolve(__dirname, 'src/features/layout/components'),

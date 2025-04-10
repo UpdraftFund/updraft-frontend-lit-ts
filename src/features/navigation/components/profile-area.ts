@@ -13,10 +13,10 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@components/common/upd-dialog.ts';
 import { UpdDialog } from '@components/common/upd-dialog.ts';
 
-import layersIcon from '@icons/common/layers.svg';
-import creditCardIcon from '@icons/common/credit-card.svg';
-import reconnectIcon from '@icons/common/arrow-clockwise.svg';
-import getUpdIcon from '@icons/common/plus-circle.svg';
+import layersIcon from '@icons/navigation/layers.svg';
+import creditCardIcon from '@icons/navigation/credit-card.svg';
+import reconnectIcon from '@icons/navigation/arrow-clockwise.svg';
+import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3.ts';
 import { shortNum } from '@utils/short-num.ts';

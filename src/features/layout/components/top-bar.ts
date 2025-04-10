@@ -12,7 +12,7 @@ import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
 import { topBarContent } from '@state/layout/layout.ts';
 
-import listIcon from '@icons/common/list.svg';
+import listIcon from '@icons/navigation/list.svg';
 
 @customElement('top-bar')
 export class TopBar extends SignalWatcher(LitElement) {

@@ -11,7 +11,7 @@ dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
 import gift from '@icons/common/gift.svg';
-import fire from '@icons/common/fire.svg';
+import fire from '@icons/idea/fire.svg';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 

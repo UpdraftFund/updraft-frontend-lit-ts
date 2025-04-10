@@ -10,7 +10,7 @@ import urqlClient from '@/features/common/utils/urql-client';
 import { IdeasBySharesDocument } from '@gql';
 import { Idea } from '@/features/idea/types';
 
-import fire from '@icons/common/fire.svg';
+import fire from '@icons/idea/fire.svg';
 
 @customElement('hot-ideas')
 export class HotIdeas extends LitElement {

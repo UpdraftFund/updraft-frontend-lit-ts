@@ -9,7 +9,7 @@ dayjs.extend(relativeTime);
 
 import seedling from '@icons/common/seedling.svg';
 import gift from '@icons/common/gift.svg';
-import fire from '@icons/common/fire.svg';
+import fire from '@icons/idea/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
