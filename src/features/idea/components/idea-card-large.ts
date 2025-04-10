@@ -42,11 +42,6 @@ export class IdeaCardLarge extends LitElement {
         box-shadow 0.2s ease;
     }
 
-    .idea-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--sl-shadow-small);
-    }
-
     .idea-header {
       margin-bottom: 1rem;
     }
