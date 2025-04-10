@@ -10,8 +10,8 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-import gift from '@icons/gift.svg';
-import fire from '@icons/fire.svg';
+import gift from '@icons/common/gift.svg';
+import fire from '@icons/common/fire.svg';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 

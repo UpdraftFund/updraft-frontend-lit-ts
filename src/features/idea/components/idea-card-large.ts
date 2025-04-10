@@ -6,9 +6,9 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
-import seedling from '@icons/seedling.svg';
-import gift from '@icons/gift.svg';
-import fire from '@icons/fire.svg';
+import seedling from '@icons/common/seedling.svg';
+import gift from '@icons/common/gift.svg';
+import fire from '@icons/common/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/card/card.js';

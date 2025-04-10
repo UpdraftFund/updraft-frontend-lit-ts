@@ -3,11 +3,11 @@ import { css, html, LitElement } from 'lit';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
-import linkIcon from '@icons/link-45deg.svg';
-import xIcon from '@icons/twitter-x.svg';
-import warpcastIcon from '@icons/farcaster.svg';
-import share from '@icons/share.svg';
-import shareThisImage from '@/assets/images/share-this-140.png';
+import linkIcon from '@icons/common/link-45deg.svg';
+import xIcon from '@icons/common/twitter-x.svg';
+import warpcastIcon from '@icons/common/farcaster.svg';
+import share from '@icons/common/share.svg';
+import shareThisImage from '@images/share-this-140.png';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';

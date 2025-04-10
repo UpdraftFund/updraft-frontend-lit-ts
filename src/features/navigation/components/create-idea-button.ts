@@ -4,7 +4,7 @@ import { customElement } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
-import plusLgIcon from '@icons/plus-lg.svg';
+import plusLgIcon from '@icons/common/plus-lg.svg';
 
 @customElement('create-idea-button')
 export class CreateIdeaButton extends LitElement {

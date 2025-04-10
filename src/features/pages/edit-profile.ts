@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 
 import { UpdraftSettings, Connection, CurrentUser } from '@/types';
 
-import pencilSquare from '@icons/pencil-square.svg';
+import pencilSquare from '@icons/common/pencil-square.svg';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
