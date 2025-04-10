@@ -4,8 +4,6 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
-import compass from '@icons/navigation/compass.svg';
-import house from '@icons/navigation/house.svg';
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 
@@ -13,6 +11,8 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@/features/common/components/section-heading';
 import '@/features/idea/components/idea-card-small';
+import '@/features/solution/components/solution-card-small';
+import '@/features/navigation/components/left-nav';
 
 import {
   connectionContext,
@@ -21,7 +21,6 @@ import {
 } from '@/features/common/state/context';
 import { Connection } from '@/features/user/types/current-user';
 import { Solution } from '@/features/solution/types';
-import { nav } from '@state/navigation/navigation.ts';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import {
@@ -53,37 +52,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       padding: 0;
       flex-basis: 64px !important;
       box-sizing: border-box;
-    }
-
-    nav ul {
-      list-style: none;
-      padding: 0;
-      margin: 1rem 0;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 1rem;
-      padding: 0.75rem;
-      white-space: nowrap;
-    }
-
-    nav a.active {
-      color: var(--accent);
-      background: var(--subtle-background);
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-      color: var(--accent);
-    }
-
-    sl-icon {
-      font-size: 24px;
     }
 
     section-heading {
@@ -125,16 +93,10 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       right: -12px;
     }
 
-    :host([collapsed]) .label,
     :host([collapsed]) section-heading,
     :host([collapsed]) .my-ideas,
     :host([collapsed]) .my-solutions {
       display: none;
-    }
-
-    :host([collapsed]) nav a {
-      justify-content: center;
-      padding: 0.75rem 0;
     }
 
     /* Tablet breakpoint - auto-collapse sidebar but allow manual expansion */
@@ -145,16 +107,10 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         flex-basis: 64px !important;
       }
 
-      :host .label,
       :host section-heading,
       :host .my-ideas,
       :host .my-solutions {
         display: none;
-      }
-
-      :host nav a {
-        justify-content: center;
-        padding: 0.75rem 0;
       }
 
       /* When expanded, show full sidebar */
@@ -164,16 +120,10 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         flex-basis: 250px !important;
       }
 
-      :host([expanded]) .label,
       :host([expanded]) section-heading,
       :host([expanded]) .my-ideas,
       :host([expanded]) .my-solutions {
         display: block;
-      }
-
-      :host([expanded]) nav a {
-        justify-content: flex-start;
-        padding: 0.75rem;
       }
     }
 
@@ -204,16 +154,10 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       }
 
       /* Show all content in drawer mode */
-      :host .label,
       :host section-heading,
       :host .my-ideas,
       :host .my-solutions {
         display: block;
-      }
-
-      :host nav a {
-        justify-content: flex-start;
-        padding: 0.75rem;
       }
 
       .toggle-button {
@@ -385,25 +329,10 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
           label="Toggle sidebar"
         ></sl-icon>
       </div>
-      <nav>
-        <ul>
-          <li>
-            <a href="/" class=${nav.get() === 'home' ? 'active' : ''}>
-              <sl-icon src=${house}></sl-icon>
-              <span class="label">Home</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="/discover?tab=hot-ideas"
-              class=${nav.get() === 'discover' ? 'active' : ''}
-            >
-              <sl-icon src=${compass}></sl-icon>
-              <span class="label">Discover</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <left-nav
+        .collapsed=${this.collapsed}
+        .expanded=${this.expanded}
+      ></left-nav>
       <section-heading>My Ideas</section-heading>
       <div class="my-ideas">
         ${this.ideaContributions.render({
