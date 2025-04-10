@@ -174,11 +174,11 @@ export class HomePage extends LitElement {
       html` <search-bar></search-bar>
         <create-idea-button></create-idea-button>`
     );
-    rightSidebarContent.set(
-      html` <hot-ideas></hot-ideas>
-        <watched-tags></watched-tags>
-        <popular-tags></popular-tags>`
-    );
+    rightSidebarContent.set(html`
+      <hot-ideas></hot-ideas>
+      <popular-tags></popular-tags>
+      <watched-tags></watched-tags>
+    `);
     return html`
       <div class="container">
         <main>

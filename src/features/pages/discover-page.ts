@@ -250,10 +250,10 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         </div>
         <create-idea-button></create-idea-button>`
     );
-    rightSidebarContent.set(
-      html` <watched-tags></watched-tags>
-        <popular-tags></popular-tags>`
-    );
+    rightSidebarContent.set(html`
+      <popular-tags></popular-tags>
+      <watched-tags></watched-tags>
+    `);
     return html`
       <div class="container">
         <main>
