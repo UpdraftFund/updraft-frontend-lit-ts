@@ -56,7 +56,7 @@ export class IdeaCardSmall extends LitElement {
     p {
       margin-top: 0.5rem;
       font-size: 0.75rem;
-      color: var(--sl-color-gray-600);
+      color: var(--subtle-text);
     }
 
     .info-row {
