@@ -8,7 +8,9 @@ import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import '@/features/idea/components/idea-card-large.ts';
+import '@components/idea/idea-card-large';
+import '@components/navigation/search-bar';
+import '@components/navigation/create-idea-button';
 
 import { Connection, Idea, Solution, IdeaContribution } from '@/types';
 
@@ -236,8 +238,11 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   render() {
     topBarContent.set(
-      html` <discover-tabs></discover-tabs>
-        <search-bar></search-bar>`
+      html` <div>
+          <discover-tabs></discover-tabs>
+          <search-bar></search-bar>
+        </div>
+        <create-idea-button></create-idea-button>`
     );
     return html`
       <div class="container">

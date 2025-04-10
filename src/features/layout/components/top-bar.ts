@@ -41,13 +41,6 @@ export class TopBar extends SignalWatcher(LitElement) {
     img {
       border-radius: 50%;
     }
-    slot {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-    }
     .menu-button {
       display: none;
     }
@@ -60,6 +53,17 @@ export class TopBar extends SignalWatcher(LitElement) {
     sl-icon-button {
       color: var(--main-foreground);
       font-size: 1.5rem;
+    }
+    slot {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+    }
+    slot div {
+      display: flex;
+      align-items: center;
     }
   `;
 

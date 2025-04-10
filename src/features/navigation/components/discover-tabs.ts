@@ -17,17 +17,8 @@ export class DiscoverTabs extends LitElement {
   static styles = css`
     :host {
       display: flex;
-      align-items: center;
       justify-content: center;
-      width: 100%;
-    }
-
-    sl-tab-group::part(base) {
-      width: 100%;
-    }
-
-    sl-tab-group::part(nav) {
-      justify-content: center;
+      flex: 1;
     }
   `;
 
