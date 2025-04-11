@@ -70,14 +70,14 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
     .tag {
       font-weight: 600;
-      font-size: 1.2rem;
+      font-size: 1.75rem;
       color: var(--section-heading);
     }
 
     .tag-with-button {
       display: flex;
       gap: 0.5rem;
-      align-items: baseline;
+      align-items: center;
     }
   `;
 
