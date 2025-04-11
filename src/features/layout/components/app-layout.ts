@@ -113,10 +113,8 @@ export class AppLayout extends SignalWatcher(LitElement) {
         ${showLeftSidebar ? html` <left-side-bar></left-side-bar>` : html``}
         <div class="content-wrapper">
           <slot class="main-content"></slot>
-          ${showRightSidebar
-            ? html` <right-side-bar></right-side-bar>`
-            : html``}
         </div>
+        ${showRightSidebar ? html` <right-side-bar></right-side-bar>` : html``}
       </div>
     `;
   }
