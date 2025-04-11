@@ -19,11 +19,7 @@ import {
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
 } from '@/features/user/state/user';
-import {
-  followUser,
-  isFollowed,
-  unfollowUser,
-} from '@/features/user/components/follow';
+import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
 import { markComplete } from '@pages/home/state/beginner-tasks';
 
 import urqlClient from '@/features/common/utils/urql-client';
