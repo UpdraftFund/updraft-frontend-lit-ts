@@ -96,10 +96,7 @@ export class PopularTags extends LitElement {
               <div class="tags-container">
                 ${this.topTags.map(
                   (tag) => html`
-                    <a
-                      class="tag"
-                      href="/discover?tab=search&search=[${tag.id}]"
-                    >
+                    <a class="tag" href="/discover?search=[${tag.id}]">
                       ${tag.id}
                     </a>
                   `

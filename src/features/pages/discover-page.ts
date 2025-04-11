@@ -184,19 +184,14 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     this.search = url.searchParams.get('search');
     this.tab = url.searchParams.get('tab') as QueryType;
 
-    // If there's a search term and no tab is specified, set tab to 'search'
-    if (this.search && !this.tab) {
-      this.tab = 'search';
-    }
-
-    // If tab is 'search' but there's no search term, default to 'hot-ideas'
-    if (this.tab === 'search' && !this.search) {
-      this.tab = 'hot-ideas';
-    }
-
-    // If no tab is specified, default to 'hot-ideas'
     if (!this.tab) {
-      this.tab = 'hot-ideas';
+      // If there's a search term and no tab is specified, set tab to 'search'
+      if (this.search) {
+        this.tab = 'search';
+      } else {
+        // If no tab or search is specified, default to 'hot-ideas'
+        this.tab = 'hot-ideas';
+      }
     }
   };
 

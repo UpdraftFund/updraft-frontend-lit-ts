@@ -186,9 +186,7 @@ export class IdeaCardLarge extends LitElement {
               <div class="tags">
                 ${tags.map(
                   (tag) => html`
-                    <a href="/discover?tab=search&search=[${tag}]" class="tag"
-                      >${tag}</a
-                    >
+                    <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
                   `
                 )}
               </div>
