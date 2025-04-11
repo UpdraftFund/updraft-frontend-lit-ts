@@ -66,7 +66,7 @@ export const dispatchUserEvent = (
 export const setUserAddress = (address: Address | null): void => {
   console.log('setUserAddress called with:', address);
   userAddress.set(address);
-  
+
   if (address) {
     dispatchUserEvent(USER_CONNECTED_EVENT, { address });
     // Fetch profile for this address
@@ -87,7 +87,7 @@ export const setUserProfile = (profile: CurrentUser | null): void => {
         const blockieImage = makeBlockie(addr);
         profile.image = blockieImage;
         profile.avatar = blockieImage;
-        
+
         console.log('Generated blockie for profile:', profile);
         userProfile.set(profile);
         dispatchUserEvent(USER_PROFILE_UPDATED_EVENT, { profile });
@@ -95,12 +95,12 @@ export const setUserProfile = (profile: CurrentUser | null): void => {
     });
   } else {
     // If an upload happened through edit-profile, ensure both image and avatar are in sync
-    if (profile && (profile.image && !profile.avatar)) {
+    if (profile && profile.image && !profile.avatar) {
       profile.avatar = profile.image;
-    } else if (profile && (profile.avatar && !profile.image)) {
+    } else if (profile && profile.avatar && !profile.image) {
       profile.image = profile.avatar;
     }
-    
+
     console.log('Setting user profile:', profile);
     userProfile.set(profile);
     if (profile) {
@@ -179,35 +179,40 @@ export const disconnectWallet = async (): Promise<void> => {
 // Fetch user profile using GraphQL
 export const fetchUserProfile = async (userId: string): Promise<void> => {
   if (!userId) return;
-  
+
   isLoadingProfile.set(true);
   profileError.set(null);
   dispatchUserEvent(PROFILE_LOADING_EVENT);
-  
+
   try {
     console.log('Fetching profile for:', userId);
     const result = await urqlClient.query(ProfileDocument, { userId });
-    
+
     if (result.error) {
       throw new Error(result.error.message);
     }
-    
+
     if (result.data?.user?.profile) {
       const profileData = JSON.parse(
         fromHex(result.data.user.profile as `0x${string}`, 'string')
       );
-      
+
       // Ensure we have both blockies image and avatar if none provided
       if (!profileData.image || !profileData.avatar) {
-        const { default: makeBlockie } = await import('ethereum-blockies-base64');
+        const { default: makeBlockie } = await import(
+          'ethereum-blockies-base64'
+        );
         const blockieImage = makeBlockie(userId);
-        
+
         if (!profileData.image) profileData.image = blockieImage;
         if (!profileData.avatar) profileData.avatar = blockieImage;
-        
-        console.log('Updated profile with blockies in fetchUserProfile:', profileData);
+
+        console.log(
+          'Updated profile with blockies in fetchUserProfile:',
+          profileData
+        );
       }
-      
+
       setUserProfile(profileData);
       dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: profileData });
     } else {
@@ -216,9 +221,9 @@ export const fetchUserProfile = async (userId: string): Promise<void> => {
       const blockieImage = makeBlockie(userId);
       const minimalProfile = {
         avatar: blockieImage,
-        image: blockieImage
+        image: blockieImage,
       };
-      
+
       setUserProfile(minimalProfile);
       dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: minimalProfile });
     }
@@ -233,59 +238,71 @@ export const fetchUserProfile = async (userId: string): Promise<void> => {
 };
 
 // Set up profile task (should be called from a controller component)
-export const setupProfileTask = (host: ReactiveControllerHost): Task<[string | null], CurrentUser | null> => {
+export const setupProfileTask = (
+  host: ReactiveControllerHost
+): Task<[string | null], CurrentUser | null> => {
   // Log the profile task setup
   console.log('Setting up profile task on host:', host);
   profileTask = new Task(host, {
     task: async ([address]) => {
       if (!address) return null;
-      
+
       isLoadingProfile.set(true);
       profileError.set(null);
       dispatchUserEvent(PROFILE_LOADING_EVENT);
-      
+
       try {
-        const result = await urqlClient.query(ProfileDocument, { userId: address });
-        
+        const result = await urqlClient.query(ProfileDocument, {
+          userId: address,
+        });
+
         if (result.error) {
           throw new Error(result.error.message);
         }
-        
+
         if (result.data?.user?.profile) {
           const profileData = JSON.parse(
             fromHex(result.data.user.profile as `0x${string}`, 'string')
           );
-          
+
           // Ensure we have both blockies image and avatar if none provided
           if (!profileData.image || !profileData.avatar) {
-            const { default: makeBlockie } = await import('ethereum-blockies-base64');
+            const { default: makeBlockie } = await import(
+              'ethereum-blockies-base64'
+            );
             const blockieImage = makeBlockie(address);
-            
+
             if (!profileData.image) profileData.image = blockieImage;
             if (!profileData.avatar) profileData.avatar = blockieImage;
-            
-            console.log('Updated profile with blockies image in task:', profileData);
+
+            console.log(
+              'Updated profile with blockies image in task:',
+              profileData
+            );
           }
-          
+
           setUserProfile(profileData);
           dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: profileData });
           return profileData;
         } else {
           // User exists but has no profile - create minimal profile with blockies avatar and image
-          const { default: makeBlockie } = await import('ethereum-blockies-base64');
+          const { default: makeBlockie } = await import(
+            'ethereum-blockies-base64'
+          );
           const blockieImage = makeBlockie(address);
           const minimalProfile = {
             avatar: blockieImage,
-            image: blockieImage
+            image: blockieImage,
           };
-          
+
           setUserProfile(minimalProfile);
           dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: minimalProfile });
           return minimalProfile;
         }
       } catch (err) {
         console.error('Error fetching user profile:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Unknown error';
         profileError.set(errorMessage);
         dispatchUserEvent(PROFILE_ERROR_EVENT, { error: errorMessage });
         throw err;
@@ -293,14 +310,17 @@ export const setupProfileTask = (host: ReactiveControllerHost): Task<[string | n
         isLoadingProfile.set(false);
       }
     },
-    args: () => [userAddress.get()] as const
+    args: () => [userAddress.get()] as const,
   });
-  
+
   return profileTask;
 };
 
 // Get the current profile task
-export const getProfileTask = (): Task<[string | null], CurrentUser | null> | null => {
+export const getProfileTask = (): Task<
+  [string | null],
+  CurrentUser | null
+> | null => {
   return profileTask;
 };
 
@@ -326,7 +346,7 @@ watchAccount(config, {
     if (currentAddress !== newAddress) {
       setUserAddress(newAddress);
       // Profile fetch is now handled within setUserAddress
-      
+
       // When disconnecting (address becomes null), also clear the profile
       if (newAddress === null) {
         setUserProfile(null);
@@ -348,7 +368,7 @@ export const initializeUserState = async (): Promise<void> => {
     console.log('User state initialized, current state:', {
       address: userAddress.get(),
       isConnected: isConnected.get(),
-      profile: userProfile.get() ? 'has profile' : 'no profile'
+      profile: userProfile.get() ? 'has profile' : 'no profile',
     });
   } catch (error) {
     console.error('Error initializing user state:', error);
@@ -409,7 +429,7 @@ export const getUserState = (): UserState => {
     address: state.address,
     isConnected: state.isConnected,
     profile: state.profile ? 'profile exists' : 'no profile',
-    hasProfile: state.hasProfile
+    hasProfile: state.hasProfile,
   });
   return state;
 };

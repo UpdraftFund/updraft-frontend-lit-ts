@@ -28,6 +28,7 @@ import { markComplete } from '@pages/home/state/beginner-tasks';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { ProfileDocument } from '@gql';
+import { topBarContent } from '@state/layout';
 
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
@@ -137,8 +138,27 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
   @property() address!: string;
 
+  private async loadProfile(address: string) {
+    if (!address) return;
+    
+    try {
+      const profile = await fetchUserProfile(address);
+      userProfile.set(profile);
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+    }
+  }
+
   connectedCallback() {
     super.connectedCallback();
+
+    // Load profile if not already loaded
+    if (!userProfile.get() && this.address) {
+      this.loadProfile(this.address);
+    }
+
+    // Set page title
+    topBarContent.set(html`<page-heading>Profile</page-heading>`);
 
     // Add listeners for user state events to trigger updates
     document.addEventListener(
@@ -157,6 +177,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    topBarContent.set(html``);
 
     // Remove event listeners
     document.removeEventListener(

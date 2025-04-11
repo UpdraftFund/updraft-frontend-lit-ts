@@ -126,6 +126,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         margin-top: 0.5rem;
       }
 
+      .link-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
       @media (max-width: 1078px) {
         activity-feed {
           flex: 0 0 0; /* Collapse the sidebar */
@@ -185,6 +191,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       USER_PROFILE_UPDATED_EVENT,
       this.handleUserStateChanged
     );
+
+    topBarContent.set(html`<page-heading>Edit Your Profile</page-heading>`);
   }
 
   disconnectedCallback() {
@@ -203,6 +211,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       USER_PROFILE_UPDATED_EVENT,
       this.handleUserStateChanged
     );
+
+    topBarContent.set(html``); // Clear header when leaving page
   }
 
   private handleUserStateChanged = () => {
@@ -215,32 +225,41 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   }
 
   private restoreLinks() {
-    const savedForm = loadForm(this.form.name);
-    if (savedForm) {
-      this.links = Object.entries(savedForm)
-        .filter(([key, value]) => key.startsWith('link') && value.trim() !== '')
-        .map(([name, value]) => ({ name, value }));
+    // Get both profile sources
+    const profileSources = [userProfile.get(), user.get()];
+    
+    // Find first non-empty links array
+    const links = profileSources
+      .find(source => source?.links?.length)?.links || [];
+    
+    this.links = links
+      .filter((link) => link !== undefined && link !== null)
+      .map((link, i) => ({
+        name: `link-${i}`,
+        value: link,
+      }));
+    
+    if (!this.links.length) {
+      this.addEmptyLink();
     }
-    this.addEmptyLink();
   }
 
   private addEmptyLink() {
     this.links = [
       ...this.links,
-      { name: `link${this.links.length + 1}`, value: '' },
+      { name: `link-${this.links.length}`, value: '' },
     ];
   }
 
-  private handleLinkInput(event: InputEvent, index: number) {
-    const inputElement = event.target as HTMLInputElement;
-    this.links[index] = { ...this.links[index], value: inputElement.value };
+  private removeLink(index: number) {
+    this.links = this.links.filter((_, i) => i !== index);
+  }
 
-    // If the user is typing into the last link input and it's not empty, add a new blank link
-    if (index === this.links.length - 1 && inputElement.value.trim() !== '') {
-      this.addEmptyLink();
-    } else {
-      this.links = [...this.links];
-    }
+  private handleLinkInput(event: InputEvent, index: number) {
+    const input = event.target as HTMLInputElement;
+    this.links = this.links.map((link, i) =>
+      i === index ? { ...link, value: input.value } : link
+    );
   }
 
   private handleImageError(event: Event) {
@@ -272,36 +291,24 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleSubmit() {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
+      const currentProfile = userProfile.get();
+      const legacyUser = user.get();
+      
       const profileData = {
         ...formToJson('edit-profile', profileSchema),
+        links: this.links.map(link => link.value),
+        // Preserve existing image unless new one uploaded
+        image: this.uploadedImage || currentProfile?.image || legacyUser?.image
       } as CurrentUser;
-      if (this.uploadedImage) {
-        profileData.image = this.uploadedImage;
-      }
-
-      // Get current profile from signals
-      const currentProfile = userProfile.get();
-
-      // Update both legacy user state and new user state
-      // Make sure image and avatar are both updated with the same value for consistency
-      const avatarImage: string =
-        this.uploadedImage ||
-        currentProfile?.image ||
-        currentProfile?.avatar ||
-        user.get().avatar ||
-        '';
 
       const updatedProfile: CurrentUser = {
         name: profileData.name || profileData.team || '',
-        image: avatarImage,
-        avatar: avatarImage, // Avatar is required and not undefined due to earlier assignment
-        team: profileData.team || currentProfile?.team || user.get().team,
-        about: profileData.about || currentProfile?.about || user.get().about,
-        news: profileData.news || currentProfile?.news || user.get().news,
-        links:
-          this.links.map((link) => link.value) ||
-          currentProfile?.links ||
-          user.get().links,
+        image: profileData.image,
+        avatar: profileData.image, // Use same value for both
+        team: profileData.team || currentProfile?.team || legacyUser?.team,
+        about: profileData.about || currentProfile?.about || legacyUser?.about,
+        news: profileData.news || currentProfile?.news || legacyUser?.news,
+        links: profileData.links || []
       };
 
       // Update legacy user state for backward compatibility
@@ -488,27 +495,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     const currentProfile = userProfile.get();
 
     // Initialize links from user profile data if available
-    if (currentProfile?.links && Array.isArray(currentProfile.links)) {
-      this.links = currentProfile.links
-        .filter((link: string) => link && link.trim() !== '')
-        .map((link: string, index: number) => ({
-          name: `link${index + 1}`,
-          value: link,
-        }));
-      console.log('Initialized links from user profile signal:', this.links);
-    } else if (user.get().links && Array.isArray(user.get().links)) {
-      // Fallback to legacy user state if needed
-      const userData = user.get();
-      if (userData && userData.links) {
-        this.links = userData.links
-          .filter((link: string) => link && link.trim() !== '')
-          .map((link: string, index: number) => ({
-            name: `link${index + 1}`,
-            value: link,
-          }));
-        console.log('Initialized links from legacy user state:', this.links);
-      }
-    }
+    this.restoreLinks();
 
     // Always ensure we have at least one empty link field
     if (
@@ -519,7 +506,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     }
 
     // Restore any form data that might have been saved locally
-    this.restoreLinks();
+    // this.restoreLinks();
 
     // Initialize all form fields with user profile data
     setTimeout(() => {
@@ -531,8 +518,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   }
 
   render() {
-    topBarContent.set(html` <page-heading>Edit Your Profile</page-heading>`);
-
     // Get current profile and address from signals
     const currentProfile = userProfile.get();
     const currentAddress = userAddress.get();
@@ -591,24 +576,36 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
               <p>Links</p>
               ${this.links.map(
                 (link, index) => html`
-                  <sl-input
-                    class="link-input"
-                    autocomplete="url"
-                    name=${link.name}
-                    value=${link.value}
-                    @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
-                  >
-                    <img
-                      slot="prefix"
-                      src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
-                      @error=${(e: Event) => this.handleImageError(e)}
-                      alt="Logo for ${link.value}"
-                      width="16px"
-                      height="16px"
-                    />
-                  </sl-input>
+                  <div class="link-container">
+                    <sl-input
+                      class="link-input"
+                      autocomplete="url"
+                      name=${link.name}
+                      value=${link.value}
+                      @input=${(e: InputEvent) =>
+                        this.handleLinkInput(e, index)}
+                    >
+                      <img
+                        slot="prefix"
+                        src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
+                        @error=${(e: Event) => this.handleImageError(e)}
+                        alt="Logo for ${link.value}"
+                        width="16px"
+                        height="16px"
+                      />
+                    </sl-input>
+                    <sl-button
+                      variant="text"
+                      @click=${() => this.removeLink(index)}
+                    >
+                      Remove
+                    </sl-button>
+                  </div>
                 `
               )}
+              <sl-button variant="text" @click=${this.addEmptyLink}>
+                + Add Link
+              </sl-button>
             </div>
             <sl-button variant="primary" @click=${this.handleSubmit}>
               Submit Profile

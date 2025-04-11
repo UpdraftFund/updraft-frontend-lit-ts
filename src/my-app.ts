@@ -24,11 +24,11 @@ import {
   updraftSettings as updraftSettingsContext,
 } from '@/features/common/state/context';
 import { UpdraftSettings } from '@/features/common/types';
-import { 
-  initializeUserState, 
-  userContext, 
+import {
+  initializeUserState,
+  userContext,
   getUserState,
-  setupProfileTask
+  setupProfileTask,
 } from '@/features/user/state/user';
 
 import { nav } from '@state/navigation/navigation';
