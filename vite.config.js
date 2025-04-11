@@ -27,6 +27,7 @@ export default defineConfig({
         'src/features/pages/home/components'
       ),
       '@components/tags': resolve(__dirname, 'src/features/tags/components'),
+      '@components/user': resolve(__dirname, 'src/features/user/components'),
       '@styles/idea': resolve(__dirname, 'src/features/idea/styles'),
       '@styles/solution': resolve(__dirname, 'src/features/solution/styles'),
       '@styles/common': resolve(__dirname, 'src/features/common/styles'),

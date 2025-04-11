@@ -11,7 +11,7 @@ import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
 
 import urqlClient from '@utils/urql-client';
-import { userContext, type UserState } from '@state/user';
+import { userContext, type UserState } from '@state/user/user';
 
 import { rightSidebarContent, topBarContent } from '@state/layout';
 

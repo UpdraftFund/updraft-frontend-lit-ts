@@ -42,8 +42,8 @@ import {
   defaultFunderReward,
   connectionContext,
 } from '@state/common/context';
-import { userContext, UserState, setUserProfile } from '@state/user';
-import { modal } from '@components/common/utils/web3';
+import { userContext, UserState, setUserProfile } from '@state/user/user';
+import { modal } from '@utils/web3';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
