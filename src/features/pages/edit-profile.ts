@@ -227,18 +227,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private restoreLinks() {
     // Get both profile sources
     const profileSources = [userProfile.get(), user.get()];
-    
+
     // Find first non-empty links array
-    const links = profileSources
-      .find(source => source?.links?.length)?.links || [];
-    
+    const links =
+      profileSources.find((source) => source?.links?.length)?.links || [];
+
     this.links = links
       .filter((link) => link !== undefined && link !== null)
       .map((link, i) => ({
         name: `link-${i}`,
         value: link,
       }));
-    
+
     if (!this.links.length) {
       this.addEmptyLink();
     }
@@ -293,22 +293,22 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
       const currentProfile = userProfile.get();
       const legacyUser = user.get();
-      
+
       const profileData = {
         ...formToJson('edit-profile', profileSchema),
-        links: this.links.map(link => link.value),
+        links: this.links.map((link) => link.value),
         // Preserve existing image unless new one uploaded
-        image: this.uploadedImage || currentProfile?.image || legacyUser?.image
+        image: this.uploadedImage || currentProfile?.image || legacyUser?.image,
       } as CurrentUser;
 
       const updatedProfile: CurrentUser = {
         name: profileData.name || profileData.team || '',
-        image: profileData.image,
-        avatar: profileData.image, // Use same value for both
+        image: profileData.image || '',
+        avatar: profileData.image || '', // Ensure non-empty string
         team: profileData.team || currentProfile?.team || legacyUser?.team,
         about: profileData.about || currentProfile?.about || legacyUser?.about,
         news: profileData.news || currentProfile?.news || legacyUser?.news,
-        links: profileData.links || []
+        links: profileData.links || [],
       };
 
       // Update legacy user state for backward compatibility
@@ -492,7 +492,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     super.firstUpdated(changedProperties);
 
     // Get current profile from signals
-    const currentProfile = userProfile.get();
+    // const currentProfile = userProfile.get();
 
     // Initialize links from user profile data if available
     this.restoreLinks();

@@ -138,12 +138,21 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
   @property() address!: string;
 
+  private async fetchUserProfile(address: string) {
+    const result = await urqlClient
+      .query(ProfileDocument, { userId: address })
+      .toPromise();
+    return result.data?.user?.profile;
+  }
+
   private async loadProfile(address: string) {
     if (!address) return;
-    
+
     try {
-      const profile = await fetchUserProfile(address);
-      userProfile.set(profile);
+      const profile = await this.fetchUserProfile(address);
+      if (profile) {
+        userProfile.set(profile);
+      }
     } catch (error) {
       console.error('Failed to load profile:', error);
     }
