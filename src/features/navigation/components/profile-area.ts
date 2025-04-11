@@ -16,9 +16,9 @@ import layersIcon from '@icons/navigation/layers.svg';
 import creditCardIcon from '@icons/navigation/credit-card.svg';
 import reconnectIcon from '@icons/navigation/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
-import defaultAvatar from '@icons/common/astronaut.svg';
 
 import { modal } from '@utils/web3';
+import makeBlockie from 'ethereum-blockies-base64';
 
 import {
   isConnected,
@@ -119,7 +119,8 @@ export class ProfileArea extends SignalWatcher(LitElement) {
     const profile = userProfile.get();
     const connectingValue = isConnecting.get();
 
-    const avatar = profile?.avatar || defaultAvatar;
+    // Generate blockie avatar if address exists, or use profile avatar if available
+    const avatar = profile?.avatar || (address ? makeBlockie(address) : '');
     const displayName = profile?.name || (address ? address : 'Connecting...');
 
     return isConnectedValue && address

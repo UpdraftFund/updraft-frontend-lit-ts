@@ -78,9 +78,21 @@ export const setUserAddress = (address: Address | null): void => {
 };
 
 export const setUserProfile = (profile: CurrentUser | null): void => {
-  userProfile.set(profile);
-  if (profile) {
-    dispatchUserEvent(USER_PROFILE_UPDATED_EVENT, { profile });
+  // If we have a profile but it's missing an avatar, generate one from the address
+  if (profile && !profile.avatar && userAddress.get()) {
+    import('ethereum-blockies-base64').then(({ default: makeBlockie }) => {
+      const addr = userAddress.get();
+      if (addr) {
+        profile.avatar = makeBlockie(addr);
+        userProfile.set(profile);
+        dispatchUserEvent(USER_PROFILE_UPDATED_EVENT, { profile });
+      }
+    });
+  } else {
+    userProfile.set(profile);
+    if (profile) {
+      dispatchUserEvent(USER_PROFILE_UPDATED_EVENT, { profile });
+    }
   }
 };
 
@@ -171,12 +183,24 @@ export const fetchUserProfile = async (userId: string): Promise<void> => {
       const profileData = JSON.parse(
         fromHex(result.data.user.profile as `0x${string}`, 'string')
       );
+      
+      // Ensure we have a blockies avatar if none provided
+      if (!profileData.avatar) {
+        const { default: makeBlockie } = await import('ethereum-blockies-base64');
+        profileData.avatar = makeBlockie(userId);
+      }
+      
       setUserProfile(profileData);
       dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: profileData });
     } else {
-      // User exists but has no profile
-      setUserProfile(null);
-      dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: undefined });
+      // User exists but has no profile - create minimal profile with blockies avatar
+      const { default: makeBlockie } = await import('ethereum-blockies-base64');
+      const minimalProfile = {
+        avatar: makeBlockie(userId),
+      };
+      
+      setUserProfile(minimalProfile);
+      dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: minimalProfile });
     }
   } catch (err) {
     console.error('Error fetching user profile:', err);
@@ -211,14 +235,26 @@ export const setupProfileTask = (host: ReactiveControllerHost): Task<[string | n
           const profileData = JSON.parse(
             fromHex(result.data.user.profile as `0x${string}`, 'string')
           );
+          
+          // Ensure we have a blockies avatar if none provided
+          if (!profileData.avatar) {
+            const { default: makeBlockie } = await import('ethereum-blockies-base64');
+            profileData.avatar = makeBlockie(address);
+          }
+          
           setUserProfile(profileData);
           dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: profileData });
           return profileData;
         } else {
-          // User exists but has no profile
-          setUserProfile(null);
-          dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: undefined });
-          return null;
+          // User exists but has no profile - create minimal profile with blockies avatar
+          const { default: makeBlockie } = await import('ethereum-blockies-base64');
+          const minimalProfile = {
+            avatar: makeBlockie(address),
+          };
+          
+          setUserProfile(minimalProfile);
+          dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: minimalProfile });
+          return minimalProfile;
         }
       } catch (err) {
         console.error('Error fetching user profile:', err);
@@ -263,6 +299,11 @@ watchAccount(config, {
     if (currentAddress !== newAddress) {
       setUserAddress(newAddress);
       // Profile fetch is now handled within setUserAddress
+      
+      // When disconnecting (address becomes null), also clear the profile
+      if (newAddress === null) {
+        setUserProfile(null);
+      }
     }
 
     // Update connection status flags
