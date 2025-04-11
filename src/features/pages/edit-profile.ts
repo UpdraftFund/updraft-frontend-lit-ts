@@ -5,7 +5,7 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import { UpdraftSettings, CurrentUser } from '@/types';
+import { CurrentUser, UpdraftSettingsProvider } from '@/types';
 
 import pencilSquare from '@icons/user/pencil-square.svg';
 
@@ -153,7 +153,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         'updraft-settings-provider'
       );
       if (updraftSettingsElement) {
-        return (updraftSettingsElement as any).settings as UpdraftSettings;
+        return (updraftSettingsElement as UpdraftSettingsProvider).settings;
       }
       return null;
     },
@@ -252,11 +252,15 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   // But we need to update both image and avatar fields for consistent display
   private handleAvatarChange(e: CustomEvent) {
     this.uploadedImage = e.detail.imageUrl;
-    
+
     // Sync changes with the user profile to ensure consistency
     const currentProfile = userProfile.get();
     if (currentProfile) {
-      const updatedProfile = { ...currentProfile, image: this.uploadedImage, avatar: this.uploadedImage };
+      const updatedProfile = {
+        ...currentProfile,
+        image: this.uploadedImage,
+        avatar: this.uploadedImage || '', // Ensure avatar is not undefined
+      };
       setUserProfile(updatedProfile);
     }
   }
@@ -280,12 +284,17 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
       // Update both legacy user state and new user state
       // Make sure image and avatar are both updated with the same value for consistency
-      const avatarImage = this.uploadedImage || currentProfile?.image || currentProfile?.avatar || user.get().avatar;
-      
+      const avatarImage: string =
+        this.uploadedImage ||
+        currentProfile?.image ||
+        currentProfile?.avatar ||
+        user.get().avatar ||
+        '';
+
       const updatedProfile: CurrentUser = {
         name: profileData.name || profileData.team || '',
         image: avatarImage,
-        avatar: avatarImage,
+        avatar: avatarImage, // Avatar is required and not undefined due to earlier assignment
         team: profileData.team || currentProfile?.team || user.get().team,
         about: profileData.about || currentProfile?.about || user.get().about,
         news: profileData.news || currentProfile?.news || user.get().news,
@@ -311,8 +320,9 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         // Get UpdraftSettings using either task or fallback to context
         const settings =
           this.updraftSettingsTask.value ||
-          (document.querySelector('updraft-settings-provider') as any)
-            ?.settings;
+          document.querySelector<UpdraftSettingsProvider>(
+            'updraft-settings-provider'
+          )?.settings;
 
         if (this.entity === 'idea') {
           const ideaData = formToJson('create-idea', ideaSchema);
@@ -385,8 +395,9 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             // Get settings for UPD token address
             const settings =
               this.updraftSettingsTask.value ||
-              (document.querySelector('updraft-settings-provider') as any)
-                ?.settings;
+              document.querySelector<UpdraftSettingsProvider>(
+                'updraft-settings-provider'
+              )?.settings;
 
             if (settings) {
               const upd = new Upd(settings.updAddress);
@@ -485,7 +496,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           value: link,
         }));
       console.log('Initialized links from user profile signal:', this.links);
-    } else if (user.get()?.links && Array.isArray(user.get()?.links)) {
+    } else if (user.get().links && Array.isArray(user.get().links)) {
       // Fallback to legacy user state if needed
       const userData = user.get();
       if (userData && userData.links) {

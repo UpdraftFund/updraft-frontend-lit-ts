@@ -8,7 +8,15 @@ export const defaultFunderReward = 250000; // 25% assuming the percent scale set
 
 // DEPRECATED: Legacy user state - use userContext from features/user/state/user instead
 // This is kept for backward compatibility while we transition
-export const user = signal({} as any);
+export const user = signal<{
+  name?: string;
+  team?: string;
+  about?: string;
+  news?: string;
+  links?: string[];
+  avatar?: string;
+  image?: string;
+}>({});
 
 // Layout context for sidebar states
 const storedLeftSidebarState = localStorage.getItem('leftSidebarCollapsed');
