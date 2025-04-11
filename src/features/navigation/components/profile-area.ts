@@ -79,8 +79,8 @@ export class ProfileArea extends SignalWatcher(LitElement) {
       margin-top: 4px;
     }
     img {
-      width: 32px;
-      height: 32px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       object-fit: cover;
     }
