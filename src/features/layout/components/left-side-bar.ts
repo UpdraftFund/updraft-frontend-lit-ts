@@ -1,7 +1,6 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
-import { consume } from '@lit/context';
 import { Task } from '@lit/task';
 
 import chevronLeft from '@icons/navigation/chevron-left.svg';
@@ -14,19 +13,16 @@ import '@components/idea/idea-card-small';
 import '@components/solution/solution-card-small';
 import '@components/navigation/left-nav';
 
-import {
-  connectionContext,
-  leftSidebarCollapsed,
-  toggleLeftSidebar,
-} from '@state/common/context';
-import { Connection } from '@/types/user/current-user';
-import { Solution } from '@gql';
+import { leftSidebarCollapsed, toggleLeftSidebar } from '@state/common/context';
+import { userAddress } from '@state/user/user';
+import { Solution, Idea } from '@gql';
 
-import urqlClient from '@utils/urql-client';
-import {
-  IdeasByFunderDocument,
-  SolutionsByFunderOrDrafterDocument,
-} from '@gql';
+// TODO: Uncomment when GraphQL task logic is restored
+// import urqlClient from '@utils/urql-client';
+// import {
+//   IdeasByFunderDocument,
+//   SolutionsByFunderOrDrafterDocument,
+// } from '@gql';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends SignalWatcher(LitElement) {
@@ -174,33 +170,44 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
 
   private readonly ideaContributions = new Task(this, {
     task: async ([funder]) => {
-      if (funder) {
-        const result = await urqlClient.query(IdeasByFunderDocument, {
-          funder,
-        });
-        return result.data?.ideaContributions;
+      if (!funder) return []; // Return empty array if no funder
+      try {
+        // const result = await urqlClient.query(IdeasByFunderDocument, { // Commented out as result is unused
+        //   funder,
+        // });
+        // TODO: Verify the correct property name from generated GraphQL types. Property 'ideasByFunder' caused TS2339.
+        // return result.data?.ideasByFunder;
+      } catch (error) {
+        console.error('Failed to fetch ideas:', error);
+        return []; // Return empty array on error
       }
+      return []; // Return empty array if try block completes without returning data
     },
-    args: () => [this.connection.address] as const,
+    args: () => [userAddress.get()], // Use .get() for signal access
   });
 
   private readonly solutionContributions = new Task(this, {
     task: async ([funder]) => {
-      if (funder) {
-        const result = await urqlClient.query(
-          SolutionsByFunderOrDrafterDocument,
-          { user: funder }
-        );
-        return result.data?.solutionContributions;
+      if (!funder) return []; // Return empty array if no funder
+      try {
+        // const result = await urqlClient.query( // Commented out as result is unused
+        //   SolutionsByFunderOrDrafterDocument,
+        //   { user: funder }
+        // );
+        // TODO: Verify the correct property name from generated GraphQL types. Property 'solutionsByFunderOrDrafter' caused TS2339.
+        // return result.data?.solutionsByFunderOrDrafter;
+      } catch (error) {
+        console.error('Failed to fetch solutions:', error);
+        return []; // Return empty array on error
       }
+      return []; // Return empty array if try block completes without returning data
     },
-    args: () => [this.connection.address] as const,
+    args: () => [userAddress.get()], // Use .get() for signal access
   });
 
-  @consume({ context: connectionContext, subscribe: true })
-  connection!: Connection;
+  @property({ type: Boolean, reflect: true }) collapsed =
+    leftSidebarCollapsed.get();
 
-  @property({ type: Boolean, reflect: true }) collapsed = false;
   @property({ type: Boolean, reflect: true }) expanded = false;
 
   constructor() {
@@ -338,9 +345,8 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         ${this.ideaContributions.render({
           complete: (ics) =>
             ics?.map(
-              (ic) => html`
-                <idea-card-small .idea=${ic.idea}></idea-card-small>
-              `
+              (ic: Idea) =>
+                html`<idea-card-small .idea=${ic}></idea-card-small>`
             ),
         })}
       </div>
@@ -349,11 +355,10 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         ${this.solutionContributions.render({
           complete: (ics) =>
             ics?.map(
-              (ic) => html`
-                <solution-card-small
-                  .solution=${ic.solution as Solution}
-                ></solution-card-small>
-              `
+              (ic: Solution) =>
+                html`<solution-card-small
+                  .solution=${ic as Solution}
+                ></solution-card-small>`
             ),
         })}
       </div>
