@@ -33,9 +33,23 @@ import {
   SolutionsByDeadlineDocument,
   IdeasFullTextDocument,
   IdeasByTagsDocument,
+  type IdeasBySharesQueryVariables,
+  type IdeasByFundersQueryVariables,
+  type IdeasByStartTimeQueryVariables,
+  type SolutionsByDeadlineQueryVariables,
+  type IdeasFullTextQueryVariables,
+  type IdeasByTagsQueryVariables,
 } from '@gql';
 
 type ResultType = Idea[] | Solution[] | IdeaContribution[];
+
+type DiscoverQueryVariables =
+  | IdeasBySharesQueryVariables
+  | IdeasByFundersQueryVariables
+  | IdeasByStartTimeQueryVariables
+  | SolutionsByDeadlineQueryVariables
+  | IdeasFullTextQueryVariables
+  | IdeasByTagsQueryVariables;
 
 @customElement('discover-page')
 export class DiscoverPage extends SignalWatcher(LitElement) {
@@ -98,20 +112,33 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       funders: JSON.parse(localStorage.getItem('funders') || '[]'),
     }),
     search: () => ({
-      text: this.search,
+      text: this.search ?? '', // Ensure text is always string, default to '' if null
     }),
     tags: () => {
       const tagMatches = this.search?.match(/\[.*?\]/g) || [];
-      this.tags = tagMatches
+      // Extract, remove brackets, filter empty, and take up to 5
+      const validTags = tagMatches
         .map((tag) => tag.replace(/[\[\]]/g, ''))
-        .slice(0, 5); // only get up to 5 matches
-      const defaultTag = this.tags[0] || '';
+        .filter((tag) => tag.length > 0)
+        .slice(0, 5);
+
+      this.tags = [...validTags]; // Store the valid tags found
+
+      // Determine the value to pad with: first valid tag or a space if none exist
+      const padValue = validTags.length > 0 ? validTags[0] : ' ';
+
+      // Create an array of exactly 5 tags, padding with padValue if needed
+      const filledTags = Array.from(
+        { length: 5 },
+        (_, i) => validTags[i] ?? padValue
+      );
+
       return {
-        tag1: this.tags[0] || defaultTag,
-        tag2: this.tags[1] || defaultTag,
-        tag3: this.tags[2] || defaultTag,
-        tag4: this.tags[3] || defaultTag,
-        tag5: this.tags[4] || defaultTag,
+        tag1: filledTags[0],
+        tag2: filledTags[1],
+        tag3: filledTags[2],
+        tag4: filledTags[3],
+        tag5: filledTags[4],
         detailed: true,
       };
     },
@@ -130,19 +157,53 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     task: async ([tab, search]): Promise<
       { data: Record<string, unknown> | undefined; entity: string } | undefined
     > => {
-      this.queryType = tab;
-      if (this.queryType === 'search' && search?.startsWith('[')) {
-        this.queryType = 'tags';
+      // Determine the actual query type based on tab and search content
+      let actualQueryType: QueryType | undefined = tab;
+      if (actualQueryType === 'search' && search?.startsWith('[')) {
+        actualQueryType = 'tags';
       }
-      const query = this.queryType && this.queries[this.queryType];
-      if (query) {
-        const variables = this.variables[this.queryType!]?.() || {};
-        const result = await urqlClient.query(query, variables);
-        return {
-          data: result.data,
-          entity: this.resultEntities[this.queryType!],
-        };
+      this.queryType = actualQueryType; // Store for potential use elsewhere (like renderTagList)
+
+      if (!actualQueryType) {
+        return undefined; // No valid query type determined
       }
+
+      const query = this.queries[actualQueryType];
+      let variables: DiscoverQueryVariables = {}; // Initialize variables
+
+      // Use a switch to explicitly link queryType to variable generation for TS
+      switch (actualQueryType) {
+        case 'hot-ideas':
+          variables = this.variables['hot-ideas']();
+          break;
+        case 'new-ideas':
+          variables = this.variables['new-ideas']();
+          break;
+        case 'deadline':
+          variables = this.variables.deadline();
+          break;
+        case 'followed':
+          variables = this.variables.followed();
+          break;
+        case 'search':
+          variables = this.variables.search();
+          break;
+        case 'tags':
+          variables = this.variables.tags();
+          break;
+        default:
+          // Should not happen if QueryType enum is exhaustive
+          console.error('Unhandled query type:', actualQueryType);
+          return undefined;
+      }
+
+      // Now TS should know 'variables' matches the requirements of 'query'
+      const result = await urqlClient.query(query, variables);
+
+      return {
+        data: result.data,
+        entity: this.resultEntities[actualQueryType],
+      };
     },
     args: () => [this.tab, this.search] as const,
   });
