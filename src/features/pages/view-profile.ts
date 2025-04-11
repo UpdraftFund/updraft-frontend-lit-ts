@@ -13,7 +13,13 @@ import '@/features/common/components/page-heading';
 import '@/features/user/components/activity-feed';
 
 import { connectionContext } from '@/features/common/state/context';
-import { userContext, UserState } from '@/features/user/state/user';
+import { 
+  userContext, 
+  UserState, 
+  userAddress, 
+  isConnected,
+  USER_CONNECTED_EVENT
+} from '@/features/user/state/user';
 import {
   followUser,
   isFollowed,
@@ -137,14 +143,51 @@ export class ViewProfile extends SignalWatcher(LitElement) {
   @consume({ context: userContext, subscribe: true })
   userState!: UserState;
 
+  // Add debug methods to check if userState changes are being received
+  connectedCallback() {
+    super.connectedCallback();
+    console.log('ViewProfile connected, userState:', {
+      address: this.userState?.address,
+      isConnected: this.userState?.isConnected,
+      profile: this.userState?.profile ? 'has profile' : 'no profile'
+    });
+    
+    // Add a listener for user connection events
+    document.addEventListener(USER_CONNECTED_EVENT, this.handleUserConnected);
+  }
+  
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener(USER_CONNECTED_EVENT, this.handleUserConnected);
+  }
+  
+  private handleUserConnected = (event: Event) => {
+    console.log('User connected event received in view-profile:', event);
+    // Force a re-render
+    this.requestUpdate();
+  }
+
   private readonly profile = new Task(this, {
     task: async ([userId]) => {
+      // If viewing the current user and we already have their profile, use it
+      if (
+        this.userState?.isConnected && 
+        userId === this.userState.address && 
+        this.userState.profile
+      ) {
+        console.log('Using cached user profile from userState');
+        return this.userState.profile;
+      }
+      
+      // Otherwise fetch the profile
+      console.log('Fetching profile for:', userId);
       const result = await urqlClient.query(ProfileDocument, { userId });
       if (result.data?.user?.profile) {
         return JSON.parse(
           fromHex(result.data.user.profile as `0x${string}`, 'string')
         );
       }
+      return null;
     },
     args: () => [this.address] as const,
   });
@@ -155,12 +198,30 @@ export class ViewProfile extends SignalWatcher(LitElement) {
   }
 
   private get profileButton() {
-    // Check if the viewed profile belongs to the current user using both legacy and new state
-    const isCurrentUser =
-      (this.userState?.isConnected &&
-        this.address === this.userState.address) ||
-      (this.connection?.connected && this.address === this.connection.address);
+    // Get direct access to the wallet address (not through userState)
+    const walletAddress = userAddress.get()?.toLowerCase() || '';
+    const profileAddress = this.address?.toLowerCase() || '';
+    const walletConnected = isConnected.get();
+    
+    // Determine if the user is viewing their own profile
+    const isCurrentUser = walletConnected && walletAddress === profileAddress;
+    
+    console.log('ProfileButton detailed comparison:', {
+      // Direct signal values
+      walletAddress,
+      walletConnected,
+      // Context values
+      userStateAddress: this.userState?.address?.toLowerCase(),
+      userStateConnected: this.userState?.isConnected,
+      // Profile values
+      profileAddress,
+      // Results
+      isCurrentUser,
+      isCurrentUserViaContext: this.userState?.isConnected && 
+        this.userState?.address?.toLowerCase() === profileAddress
+    });
 
+    // If the address is the current user's address, show Edit Profile button
     if (isCurrentUser) {
       return html`
         <sl-button variant="primary" href="/edit-profile"
@@ -168,6 +229,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
         </sl-button>
       `;
     } else {
+      // Otherwise, show Follow/Unfollow button
       if (isFollowed(this.address)) {
         return html` <sl-button
           variant="primary"
@@ -213,11 +275,59 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     imgElement.src = '/src/assets/icons/link-45deg.svg'; // Fallback icon
   }
 
+  updated(changedProperties: Map<string, unknown>) {
+    // If the address changes, re-run the profile task
+    if (changedProperties.has('address')) {
+      // Force re-evaluation of profile task with new address
+      this.profile.run();
+    }
+  }
+
   render() {
+    // Direct access to the wallet address
+    const directWalletAddr = userAddress.get();
+    const directIsConnected = isConnected.get();
+    
+    // Get via context
+    const contextWalletAddr = this.userState?.address;
+    const contextIsConnected = this.userState?.isConnected;
+    
+    // Profile address
+    const profileAddr = this.address;
+    
+    // Calculate equality
+    const isDirectMatch = directIsConnected && 
+                          directWalletAddr?.toLowerCase() === profileAddr?.toLowerCase();
+    const isContextMatch = contextIsConnected && 
+                           contextWalletAddr?.toLowerCase() === profileAddr?.toLowerCase();
+    
+    console.log('View-profile detailed state:', {
+      // Direct values
+      directWalletAddr,
+      directIsConnected,
+      // Context values
+      contextWalletAddr,
+      contextIsConnected,
+      // Profile
+      profileAddr,
+      // Comparison
+      isDirectMatch,
+      isContextMatch
+    });
+    
     return html`
       <div class="container">
         <main>
+          <!-- Debug Info (remove in production) -->
+          <div style="background-color: #f5f5f5; padding: 10px; margin-bottom: 10px; font-family: monospace; font-size: 12px;">
+            <p>Direct wallet: ${directWalletAddr || 'null'} (connected: ${directIsConnected})</p>
+            <p>Context wallet: ${contextWalletAddr || 'null'} (connected: ${contextIsConnected})</p>
+            <p>Profile: ${profileAddr || 'null'}</p>
+            <p>Is Own Profile: ${isDirectMatch ? 'YES (direct)' : isContextMatch ? 'YES (context)' : 'NO'}</p>
+          </div>
+          
           ${this.profile.render({
+            pending: () => html`<p>Loading profile...</p>`,
             complete: (value) => {
               const { name, team, image, about, news, links } = value || {};
               return html`
@@ -266,6 +376,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   : ''}
               `;
             },
+            error: (error) => html`<p>Error loading profile: ${error.message}</p>`
           })}
         </main>
         ${this.address

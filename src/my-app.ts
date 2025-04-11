@@ -1,10 +1,9 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
-import { Task } from '@lit/task'; // Restore Task import
+import { Task } from '@lit/task';
 import { Router } from '@lit-labs/router';
 import { formatUnits } from 'viem';
-// import makeBlockie from 'ethereum-blockies-base64'; // No longer used here
 
 import '@layout/app-layout';
 
@@ -22,10 +21,15 @@ import urqlClient from '@/features/common/utils/urql-client';
 
 import {
   urqlClientContext,
-  updraftSettings, // Corrected import name
-} from '@/features/common/state/context'; // Keep these
+  updraftSettings as updraftSettingsContext,
+} from '@/features/common/state/context';
 import { UpdraftSettings } from '@/features/common/types';
-import { initializeUserState } from '@/features/user/state/user';
+import { 
+  initializeUserState, 
+  userContext, 
+  getUserState,
+  setupProfileTask
+} from '@/features/user/state/user';
 
 import { nav } from '@state/navigation/navigation';
 
@@ -124,7 +128,7 @@ export class MyApp extends LitElement {
   @provide({ context: urqlClientContext })
   urqlClient = urqlClient;
 
-  @provide({ context: updraftSettings }) // Use the correct context
+  @provide({ context: updraftSettingsContext })
   updraftSettings = {
     percentScale: 0,
     updAddress: '0x',
@@ -132,16 +136,29 @@ export class MyApp extends LitElement {
     minFee: 0,
   } as UpdraftSettings;
 
+  // Explicitly provide user state via context
+  @provide({ context: userContext })
+  userState = getUserState();
+
+  // Make sure the context stays updated
+  updated() {
+    // Update the context provider value when anything changes
+    this.userState = getUserState();
+  }
+
   constructor() {
     super();
-
+    // Setup profile task - this will enable profile fetching
+    console.log('MyApp constructor - setting up profile task');
+    setupProfileTask(this);
     this.setupTheme();
     this.getUpdraftSettings.run();
   }
 
   connectedCallback(): void {
-    super.connectedCallback(); // Call super
-    initializeUserState(); // Initialize user state including reconnect attempt
+    super.connectedCallback();
+    // Initialize user state including reconnect attempt
+    initializeUserState();
   }
 
   private setupTheme() {
