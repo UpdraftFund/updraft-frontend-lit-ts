@@ -1,11 +1,10 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
-import { Task } from '@lit/task';
+import { Task } from '@lit/task'; // Restore Task import
 import { Router } from '@lit-labs/router';
-import { getBalance } from '@wagmi/core';
-import { formatUnits, fromHex } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
+import { formatUnits } from 'viem';
+// import makeBlockie from 'ethereum-blockies-base64'; // No longer used here
 
 import '@layout/app-layout';
 
@@ -19,30 +18,18 @@ import '@/features/common/styles/global.css';
 import '@/features/common/styles/theme.css';
 import '@/features/common/styles/reset.css';
 
-import { modal, config } from '@/features/common/utils/web3';
 import urqlClient from '@/features/common/utils/urql-client';
 
 import {
-  user,
-  connectionContext,
-  balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings,
-} from '@/features/common/state/context';
-import { Connection, Balances } from '@/features/user/types/current-user';
+  urqlClientContext,
+  updraftSettings, // Corrected import name
+} from '@/features/common/state/context'; // Keep these
 import { UpdraftSettings } from '@/features/common/types';
-import { Profile } from '@/features/user/types';
+import { initializeUserState } from '@/features/user/state/user';
 
 import { nav } from '@state/navigation/navigation';
 
-import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft';
-
-import '@/features/layout/components/top-bar';
-import '@components/navigation/search-bar';
-import '@/features/layout/components/left-side-bar';
-import '@/features/layout/components/right-side-bar';
-import { setUserProfile } from '@state/user/user';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -134,76 +121,27 @@ export class MyApp extends LitElement {
     },
   ]);
 
-  @provide({ context: connectionContext }) connection: Connection = {
-    connected: false,
-  };
-  @provide({ context: balanceContext }) balances: Balances = {};
-  @provide({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
+  @provide({ context: urqlClientContext })
+  urqlClient = urqlClient;
+
+  @provide({ context: updraftSettings }) // Use the correct context
+  updraftSettings = {
+    percentScale: 0,
+    updAddress: '0x',
+    percentFee: 0,
+    minFee: 0,
+  } as UpdraftSettings;
 
   constructor() {
     super();
 
-    // Set the theme based on user preference
     this.setupTheme();
+    this.getUpdraftSettings.run();
+  }
 
-    modal.subscribeAccount(async ({ isConnected, address }) => {
-      console.log('modal.subscribeAccount called with address:', address);
-
-      if (address) {
-        this.connection.address = address as `0x${string}`;
-        const result = await urqlClient.query(ProfileDocument, {
-          userId: address,
-        });
-        let profile = {} as Profile;
-        if (result.data?.user?.profile) {
-          profile = JSON.parse(
-            fromHex(result.data.user.profile as `0x${string}`, 'string')
-          );
-        }
-        user.set({
-          ...profile,
-          name: profile.name || profile.team || address,
-          avatar: profile.image || makeBlockie(address),
-        });
-
-        // Update new user state with complete profile data
-        setUserProfile({
-          ...profile,
-          name: profile.name || profile.team || address,
-          avatar: profile.image || makeBlockie(address),
-        });
-
-        // Explicitly close the modal when a connection is successful, but only once
-        try {
-          // Only try to close if we're not already closing
-          if (modal.isOpen()) {
-            console.log('Closing modal after successful connection');
-            await modal.close();
-            console.log('Modal closed after successful connection');
-          }
-        } catch (error) {
-          console.error('Error closing modal:', error);
-        }
-      }
-      this.connection = {
-        ...this.connection,
-        connected: isConnected,
-      };
-    });
-
-    modal.subscribeNetwork(({ caipNetwork }) => {
-      this.connection = {
-        ...this.connection,
-        network: {
-          name: caipNetwork!.name,
-        },
-      };
-      this.getUpdraftSettings.run().then(() => this.refreshBalances.run());
-    });
-
-    this.addEventListener(RequestBalanceRefresh.type, () =>
-      this.refreshBalances.run()
-    );
+  connectedCallback(): void {
+    super.connectedCallback(); // Call super
+    initializeUserState(); // Initialize user state including reconnect attempt
   }
 
   private setupTheme() {
@@ -229,31 +167,6 @@ export class MyApp extends LitElement {
         this.classList.toggle('sl-theme-light', !isDark);
       });
   }
-
-  public refreshBalances = new Task(this, {
-    task: async () => {
-      if (this.connection.address) {
-        const gasToken = await getBalance(config, {
-          address: this.connection.address,
-        });
-        const updraftToken = await getBalance(config, {
-          address: this.connection.address,
-          token: this.updraftSettings.updAddress,
-        });
-        this.balances = {
-          gas: {
-            symbol: gasToken.symbol,
-            balance: gasToken.formatted,
-          },
-          updraft: {
-            symbol: updraftToken.symbol,
-            balance: updraftToken.formatted,
-          },
-        };
-      }
-    },
-    autoRun: false,
-  });
 
   public getUpdraftSettings = new Task(this, {
     task: async () => {

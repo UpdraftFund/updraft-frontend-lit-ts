@@ -1,6 +1,5 @@
 import { LitElement, css } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
-import { consume } from '@lit/context';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -17,26 +16,19 @@ import layersIcon from '@icons/navigation/layers.svg';
 import creditCardIcon from '@icons/navigation/credit-card.svg';
 import reconnectIcon from '@icons/navigation/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
+import defaultAvatar from '@icons/common/astronaut.svg';
 
 import { modal } from '@utils/web3';
-import { shortNum } from '@utils/short-num';
-import {
-  user,
-  connectionContext,
-  balanceContext,
-  RequestBalanceRefresh,
-} from '@state/common/context.ts';
-
-import { userContext, UserState } from '@state/user/user';
 
 import {
-  USER_CONNECTED_EVENT,
-  USER_DISCONNECTED_EVENT,
-  USER_PROFILE_UPDATED_EVENT,
-  NETWORK_CHANGED_EVENT,
+  isConnected,
+  userAddress,
+  networkName,
+  userProfile,
+  isConnecting,
+  connectWallet,
+  disconnectWallet,
 } from '@state/user/user';
-
-import { Connection, Balances } from '@/types';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {
@@ -99,128 +91,43 @@ export class ProfileArea extends SignalWatcher(LitElement) {
       box-shadow: -1px 4px 5px 3px rgba(0, 0, 0, 7%);
     }
   `;
+
   @query('upd-dialog', true) updDialog!: UpdDialog;
-
-  // Legacy connection context for backward compatibility
-  @consume({ context: connectionContext, subscribe: true })
-  connection!: Connection;
-  @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
-
-  // New user state context
-  @consume({ context: userContext, subscribe: true })
-  userState!: UserState;
-
-  requestBalanceRefresh() {
-    this.dispatchEvent(new RequestBalanceRefresh());
-  }
 
   private async reconnect() {
     try {
-      // Use the modal to disconnect
-      await modal.disconnect();
+      await disconnectWallet();
+      console.log('ProfileArea: disconnectWallet completed.');
+    } catch (error) {
+      console.error('Error during disconnect phase of reconnect:', error);
     } finally {
-      // Use the new user state connect method if available
-      if (this.userState?.connect) {
-        await this.userState.connect();
-      } else {
-        // Fallback to using the modal directly
-        modal.open({ view: 'Connect' });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      try {
+        await connectWallet();
+        console.log('ProfileArea: connectWallet called.');
+      } catch (connectError) {
+        console.error('Error during connect phase of reconnect:', connectError);
       }
     }
   }
 
-  private userConnectedHandler = (e: CustomEvent) => {
-    // Update local state when user connects via event
-    if (e.detail?.address) {
-      this.requestUpdate();
-    }
-  };
-
-  private userDisconnectedHandler = () => {
-    // Update local state when user disconnects via event
-    this.requestUpdate();
-  };
-
-  private userProfileUpdatedHandler = (e: CustomEvent) => {
-    // Update local state when user profile is updated via event
-    if (e.detail?.profile) {
-      this.requestUpdate();
-    }
-  };
-
-  private networkChangedHandler = (e: CustomEvent) => {
-    // Update local state when network changes via event
-    if (e.detail?.networkName) {
-      this.requestUpdate();
-    }
-  };
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    // Add event listeners for user state changes
-    document.addEventListener(
-      USER_CONNECTED_EVENT,
-      this.userConnectedHandler as EventListener
-    );
-    document.addEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.userDisconnectedHandler as EventListener
-    );
-    document.addEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.userProfileUpdatedHandler as EventListener
-    );
-    document.addEventListener(
-      NETWORK_CHANGED_EVENT,
-      this.networkChangedHandler as EventListener
-    );
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-
-    // Remove event listeners when component is disconnected
-    document.removeEventListener(
-      USER_CONNECTED_EVENT,
-      this.userConnectedHandler as EventListener
-    );
-    document.removeEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.userDisconnectedHandler as EventListener
-    );
-    document.removeEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.userProfileUpdatedHandler as EventListener
-    );
-    document.removeEventListener(
-      NETWORK_CHANGED_EVENT,
-      this.networkChangedHandler as EventListener
-    );
-  }
-
   render() {
-    // Use the new user state for rendering, but fallback to legacy connection for backward compatibility
-    // Add null checks to prevent errors when userState is not yet initialized
-    const isConnected =
-      this.userState?.isConnected || this.connection.connected;
-    const address = this.userState?.address || this.connection.address;
-    const networkName =
-      this.userState?.networkName || this.connection.network?.name;
-    const avatar = this.userState?.profile?.avatar || user.get().avatar;
-    const name = this.userState?.profile?.name || user.get().name;
+    // Access signal values using .get() in component logic
+    const isConnectedValue = isConnected.get();
+    const address = userAddress.get();
+    const currentNetworkName = networkName.get();
+    const profile = userProfile.get();
+    const connectingValue = isConnecting.get();
 
-    return isConnected && address
+    const avatar = profile?.avatar || defaultAvatar;
+    const displayName = profile?.name || (address ? address : 'Connecting...');
+
+    return isConnectedValue && address
       ? html`
-          <sl-dropdown
-            distance="12"
-            skidding="22"
-            placement="top-end"
-            @sl-show=${this.requestBalanceRefresh}
-          >
+          <sl-dropdown distance="12" skidding="22" placement="top-end">
             <span slot="trigger" class="trigger-content" title="Profile menu">
               <img src="${avatar}" alt="User avatar" />
-              <span class="name">${name}</span>
+              <span class="name">${displayName}</span>
             </span>
             <sl-menu class="menu">
               <sl-menu-item @click=${this.reconnect}>
@@ -231,7 +138,7 @@ export class ProfileArea extends SignalWatcher(LitElement) {
                 <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
                 <div class="menu-item-content">
                   <span>Network</span>
-                  <p class="status">${networkName}</p>
+                  <p class="status">${currentNetworkName || 'Unknown'}</p>
                 </div>
               </sl-menu-item>
               <sl-menu-item
@@ -244,10 +151,7 @@ export class ProfileArea extends SignalWatcher(LitElement) {
               <sl-menu-item>
                 <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
                 <div class="menu-item-content">
-                  <span>Balance</span>
-                  <p class="balance">
-                    ${shortNum(this.balances?.updraft?.balance || '0')} UPD
-                  </p>
+                  <span>Balance (Coming Soon)</span>
                 </div>
               </sl-menu-item>
               <sl-divider></sl-divider>
@@ -262,15 +166,8 @@ export class ProfileArea extends SignalWatcher(LitElement) {
       : html`
           <sl-button
             variant="primary"
-            @click=${() => {
-              if (this.userState?.connect) {
-                this.userState.connect();
-              } else {
-                // Fallback to direct modal open
-                modal.open({ view: 'Connect' });
-              }
-            }}
-            ?loading=${this.userState?.isConnecting}
+            @click=${() => connectWallet()}
+            ?loading=${connectingValue}
             >Connect Wallet
           </sl-button>
         `;

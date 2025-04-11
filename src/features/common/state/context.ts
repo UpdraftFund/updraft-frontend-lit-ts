@@ -1,5 +1,6 @@
 import { createContext } from '@lit/context';
 import { signal } from '@lit-labs/signals';
+import type { Client } from '@urql/core';
 
 import { CurrentUser, Connection, Balances, UpdraftSettings } from '@/types';
 
@@ -25,6 +26,8 @@ export const connectionContext = createContext<Connection>('connection');
 export const balanceContext = createContext<Balances>('balances');
 export const updraftSettings =
   createContext<UpdraftSettings>('updraftSettings');
+
+export const urqlClientContext = createContext<Client>('urql-client');
 
 export class RequestBalanceRefresh extends Event {
   static readonly type = 'request-balance-refresh';
