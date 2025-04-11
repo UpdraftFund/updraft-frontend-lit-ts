@@ -4,12 +4,12 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 import { Task } from '@lit/task';
 
 import { fromHex } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@/features/common/components/page-heading';
 import '@/features/user/components/activity-feed';
+import '@/features/user/components/user-avatar';
 
 import {
   userAddress,
@@ -321,12 +321,11 @@ export class ViewProfile extends SignalWatcher(LitElement) {
               const { name, team, image, about, news, links } = value || {};
               return html`
                 <div class="profile-header">
-                  <div class="avatar">
-                    <img
-                      src="${image || makeBlockie(this.address)}"
-                      alt="Profile avatar"
-                    />
-                  </div>
+                  <user-avatar
+                    .address=${this.address}
+                    .imageUrl=${image || ''}
+                    size="64px"
+                  ></user-avatar>
                   <div>
                     ${name || team
                       ? html` <h1 class="name">${name || team}</h1>`

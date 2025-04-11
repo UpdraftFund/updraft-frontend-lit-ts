@@ -10,6 +10,7 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import '@components/common/upd-dialog';
+import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 
 import layersIcon from '@icons/navigation/layers.svg';
@@ -18,7 +19,6 @@ import reconnectIcon from '@icons/navigation/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3';
-import makeBlockie from 'ethereum-blockies-base64';
 
 import {
   isConnected,
@@ -118,16 +118,17 @@ export class ProfileArea extends SignalWatcher(LitElement) {
     const currentNetworkName = networkName.get();
     const profile = userProfile.get();
     const connectingValue = isConnecting.get();
-
-    // Generate blockie avatar if address exists, or use profile avatar if available
-    const avatar = profile?.avatar || (address ? makeBlockie(address) : '');
     const displayName = profile?.name || (address ? address : 'Connecting...');
 
     return isConnectedValue && address
       ? html`
           <sl-dropdown distance="12" skidding="22" placement="top-end">
             <span slot="trigger" class="trigger-content" title="Profile menu">
-              <img src="${avatar}" alt="User avatar" />
+              <user-avatar
+                .address=${address || ''}
+                .imageUrl=${profile?.image || profile?.avatar || ''}
+                size="42px"
+              ></user-avatar>
               <span class="name">${displayName}</span>
             </span>
             <sl-menu class="menu">
