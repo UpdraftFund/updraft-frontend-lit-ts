@@ -13,8 +13,13 @@ import '@components/idea/idea-card-large';
 import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
 
-import type { Connection } from '@state/common/context';
-import type { Idea, Solution, IdeaContribution, QueryType } from '@gql';
+import {
+  Connection,
+  Idea,
+  Solution,
+  IdeaContribution,
+  QueryType,
+} from '@/types';
 
 import { connectionContext } from '@state/common/context';
 import { rightSidebarContent, topBarContent } from '@state/layout';
