@@ -170,10 +170,10 @@ export class HomePage extends LitElement {
   });
 
   render() {
-    topBarContent.set(
-      html` <search-bar></search-bar>
-        <create-idea-button></create-idea-button>`
-    );
+    topBarContent.set(html`
+      <create-idea-button></create-idea-button>
+      <search-bar></search-bar>
+    `);
     rightSidebarContent.set(html`
       <hot-ideas></hot-ideas>
       <popular-tags></popular-tags>

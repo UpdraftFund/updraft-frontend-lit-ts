@@ -244,13 +244,13 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   }
 
   render() {
-    topBarContent.set(
-      html` <div>
-          <discover-tabs .tab=${this.tab}></discover-tabs>
-          <search-bar .search=${this.search}></search-bar>
-        </div>
-        <create-idea-button></create-idea-button>`
-    );
+    topBarContent.set(html`
+      <create-idea-button></create-idea-button>
+      <div>
+        <discover-tabs .tab=${this.tab}></discover-tabs>
+        <search-bar .search=${this.search}></search-bar>
+      </div>
+    `);
     rightSidebarContent.set(html`
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
