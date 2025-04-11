@@ -43,7 +43,7 @@ export class WatchedTags extends SignalWatcher(LitElement) {
 
     .tag:hover {
       background-color: var(--accent);
-      color: var(--sl-color-neutral-0);
+      color: var(--main-background);
     }
 
     .edit-button {
@@ -51,22 +51,13 @@ export class WatchedTags extends SignalWatcher(LitElement) {
       color: var(--main-foreground);
     }
 
-    .tag-with-remove {
-      position: relative;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
     .tag-with-remove:hover .remove-button,
     .tag-with-remove .remove-button::part(base):hover {
-      color: var(--sl-color-neutral-0);
+      color: var(--main-background);
     }
 
     .remove-button {
-      --sl-font-size-medium: 0.875rem;
-      color: var(--sl-color-danger-900);
-      padding: 0;
+      color: var(--sl-color-danger-800);
     }
 
     .wiggle {
@@ -87,7 +78,10 @@ export class WatchedTags extends SignalWatcher(LitElement) {
     }
 
     .edit-mode .tag {
-      padding-right: 0.5rem;
+      display: flex;
+      font-size: 0.875rem;
+      padding-right: 0rem;
+      align-items: center;
     }
 
     .no-tags-message {
@@ -152,17 +146,22 @@ export class WatchedTags extends SignalWatcher(LitElement) {
             ? html` ${[...tags].map(
                 (tag) => html`
                   <div class="tag-with-remove">
-                    <a class="tag" href="/discover?search=[${tag}]">${tag}</a>
-                    ${this.editMode
-                      ? html`
-                          <sl-icon-button
-                            class="remove-button"
-                            src=${xCircle}
-                            label="Remove tag"
-                            @click=${() => unwatchTag(tag)}
-                          ></sl-icon-button>
-                        `
-                      : html``}
+                    <a class="tag" href="/discover?search=[${tag}]"
+                      >${tag}
+                      ${this.editMode
+                        ? html`
+                            <sl-icon-button
+                              class="remove-button"
+                              src=${xCircle}
+                              label="Remove watched tag"
+                              @click=${(e: Event) => {
+                                e.preventDefault();
+                                unwatchTag(tag);
+                              }}
+                            ></sl-icon-button>
+                          `
+                        : html``}
+                    </a>
                   </div>
                 `
               )}`
