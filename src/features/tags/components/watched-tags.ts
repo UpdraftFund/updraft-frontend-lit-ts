@@ -127,9 +127,8 @@ export class WatchedTags extends SignalWatcher(LitElement) {
 
   render() {
     const tags = watchedTags.get();
-
     return html`
-      <section @click=${(e: Event) => e.stopPropagation()}>
+      <section>
         <h2>
           Watched Tags
           ${tags.size > 0
@@ -137,7 +136,10 @@ export class WatchedTags extends SignalWatcher(LitElement) {
                 class="edit-button"
                 src=${pencilSquare}
                 label="Edit watched tags"
-                @click=${this.handleEditClick}
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  this.handleEditClick();
+                }}
               ></sl-icon-button>`
             : html``}
         </h2>
@@ -156,6 +158,7 @@ export class WatchedTags extends SignalWatcher(LitElement) {
                               label="Remove watched tag"
                               @click=${(e: Event) => {
                                 e.preventDefault();
+                                e.stopPropagation();
                                 unwatchTag(tag);
                               }}
                             ></sl-icon-button>
