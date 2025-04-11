@@ -1,12 +1,11 @@
 import { customElement, state, property, query } from 'lit/decorators.js';
 import { css } from 'lit';
-import { TaskStatus } from '@lit/task';
+import { TaskStatus, Task } from '@lit/task';
 import { SignalWatcher, html } from '@lit-labs/signals';
-import { consume } from '@lit/context';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import { UpdraftSettings, Connection, CurrentUser } from '@/types';
+import { UpdraftSettings, CurrentUser } from '@/types';
 
 import pencilSquare from '@icons/user/pencil-square.svg';
 
@@ -38,12 +37,18 @@ import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
 import {
   user,
-  updraftSettings as updraftSettingsContext,
   defaultFunderReward,
-  connectionContext,
 } from '@state/common/context';
-import { userContext, UserState, setUserProfile } from '@state/user/user';
-import { modal } from '@utils/web3';
+import { 
+  userAddress, 
+  userProfile, 
+  isConnected,
+  setUserProfile,
+  connectWallet,
+  USER_CONNECTED_EVENT,
+  USER_DISCONNECTED_EVENT,
+  USER_PROFILE_UPDATED_EVENT
+} from '@state/user/user';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
@@ -142,11 +147,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
 
-  @consume({ context: connectionContext, subscribe: true })
-  connection!: Connection;
-  @consume({ context: updraftSettingsContext, subscribe: true })
-  updraftSettings!: UpdraftSettings;
-  @consume({ context: userContext, subscribe: true }) userState!: UserState;
+  // Use task to get UpdraftSettings
+  private readonly updraftSettingsTask = new Task(this, {
+    task: async () => {
+      // For now, we'll still use the context-based settings until we have a signal/task implementation
+      const updraftSettingsElement = document.querySelector('updraft-settings-provider');
+      if (updraftSettingsElement) {
+        return (updraftSettingsElement as any).settings as UpdraftSettings;
+      }
+      return null;
+    },
+    args: () => [] as const,
+  });
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('transaction-watcher.submit', true)
@@ -155,6 +167,30 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
+
+  // Listen for user state changes
+  connectedCallback() {
+    super.connectedCallback();
+    
+    // Add listeners for user state events to trigger updates
+    document.addEventListener(USER_CONNECTED_EVENT, this.handleUserStateChanged);
+    document.addEventListener(USER_DISCONNECTED_EVENT, this.handleUserStateChanged);
+    document.addEventListener(USER_PROFILE_UPDATED_EVENT, this.handleUserStateChanged);
+  }
+  
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    
+    // Remove event listeners
+    document.removeEventListener(USER_CONNECTED_EVENT, this.handleUserStateChanged);
+    document.removeEventListener(USER_DISCONNECTED_EVENT, this.handleUserStateChanged);
+    document.removeEventListener(USER_PROFILE_UPDATED_EVENT, this.handleUserStateChanged);
+  }
+  
+  private handleUserStateChanged = () => {
+    // Force a re-render when user state changes
+    this.requestUpdate();
+  }
 
   private handleInput() {
     this.submitTransaction.reset();
@@ -219,44 +255,37 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       if (this.uploadedImage) {
         profileData.image = this.uploadedImage;
       }
-
+      
+      // Get current profile from signals
+      const currentProfile = userProfile.get();
+      
       // Update both legacy user state and new user state
       const updatedProfile: CurrentUser = {
         name: profileData.name || profileData.team || '',
-        image:
-          this.uploadedImage ||
-          this.userState?.profile?.image ||
-          user.get().image,
-        avatar:
-          this.uploadedImage ||
-          this.userState?.profile?.avatar ||
-          user.get().avatar,
-        team:
-          profileData.team || this.userState?.profile?.team || user.get().team,
-        about:
-          profileData.about ||
-          this.userState?.profile?.about ||
-          user.get().about,
-        news:
-          profileData.news || this.userState?.profile?.news || user.get().news,
-        links:
-          this.links.map((link) => link.value) ||
-          this.userState?.profile?.links ||
-          user.get().links,
+        image: this.uploadedImage || currentProfile?.image || user.get().image,
+        avatar: this.uploadedImage || currentProfile?.avatar || user.get().avatar,
+        team: profileData.team || currentProfile?.team || user.get().team,
+        about: profileData.about || currentProfile?.about || user.get().about,
+        news: profileData.news || currentProfile?.news || user.get().news,
+        links: this.links.map((link) => link.value) || currentProfile?.links || user.get().links,
       };
 
       // Update legacy user state for backward compatibility
       user.set(updatedProfile);
 
-      // Update new user state
+      // Update new user state with signals
       setUserProfile(updatedProfile);
 
       try {
-        // Check if user is connected using either the new or legacy connection
-        if (!this.userState?.isConnected && !this.connection?.connected) {
+        // Check if user is connected using the signal
+        if (!isConnected.get()) {
           await this.openConnectModal();
           return;
         }
+        
+        // Get UpdraftSettings using either task or fallback to context
+        const settings = this.updraftSettingsTask.value || 
+          (document.querySelector('updraft-settings-provider') as any)?.settings;
 
         if (this.entity === 'idea') {
           const ideaData = formToJson('create-idea', ideaSchema);
@@ -280,7 +309,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           const params = new URLSearchParams(window.location.search);
           const ideaId = params.get('ideaId');
 
-          if (solutionForm && ideaId) {
+          if (solutionForm && ideaId && settings) {
             // Format the deadline date properly
             const deadlineDate = solutionForm['deadline']
               ? dayjs(solutionForm['deadline']).unix()
@@ -296,7 +325,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
                 deadlineDate,
                 BigInt(
                   (Number(solutionForm['reward']) *
-                    Number(this.updraftSettings.percentScale)) /
+                    Number(settings.percentScale)) /
                     100
                 ),
                 toHex(JSON.stringify(solutionData)),
@@ -325,11 +354,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           } else if (e.message?.includes('exceeds allowance')) {
             this.approveTransaction.reset();
             this.approveDialog.show();
-            const upd = new Upd(this.updraftSettings.updAddress);
-            this.approveTransaction.hash = await upd.write('approve', [
-              updraft.address,
-              parseUnits('1', 29),
-            ]);
+            
+            // Get settings for UPD token address
+            const settings = this.updraftSettingsTask.value || 
+              (document.querySelector('updraft-settings-provider') as any)?.settings;
+              
+            if (settings) {
+              const upd = new Upd(settings.updAddress);
+              this.approveTransaction.hash = await upd.write('approve', [
+                updraft.address,
+                parseUnits('1', 29),
+              ]);
+            }
           }
         }
       }
@@ -357,21 +393,19 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async openConnectModal() {
     try {
       console.log('Opening connect modal');
-      // Use the user state connect method if available, otherwise fall back to direct modal open
-      if (this.userState?.connect) {
-        await this.userState.connect();
-      } else {
-        await modal.open({ view: 'Connect' });
-      }
+      // Use connectWallet from signals
+      await connectWallet();
     } catch (error) {
       console.error('Error opening connect modal:', error);
     }
   }
 
   private initializeFormFields() {
-    console.log('Initializing form fields with user state:', this.userState);
-    console.log('Legacy user state:', user.get());
-
+    console.log('Initializing form fields with user profile signal');
+    
+    // Get current profile from signals
+    const currentProfile = userProfile.get();
+    
     // Get the form elements
     const nameInput = this.shadowRoot?.querySelector(
       'sl-input[name="name"]'
@@ -386,23 +420,21 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       'sl-textarea[name="news"]'
     ) as HTMLTextAreaElement;
 
-    // Set values from user state (prioritize context state over legacy state)
+    // Set values from signals (prioritize signal state over legacy state)
     if (nameInput) {
-      nameInput.value = this.userState?.profile?.name || user.get().name || '';
+      nameInput.value = currentProfile?.name || user.get().name || '';
     }
 
     if (teamInput) {
-      teamInput.value = this.userState?.profile?.team || user.get().team || '';
+      teamInput.value = currentProfile?.team || user.get().team || '';
     }
 
     if (aboutTextarea) {
-      aboutTextarea.value =
-        this.userState?.profile?.about || user.get().about || '';
+      aboutTextarea.value = currentProfile?.about || user.get().about || '';
     }
 
     if (newsTextarea) {
-      newsTextarea.value =
-        this.userState?.profile?.news || user.get().news || '';
+      newsTextarea.value = currentProfile?.news || user.get().news || '';
     }
 
     // Force a re-render to ensure all form fields are updated
@@ -412,18 +444,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
 
+    // Get current profile from signals
+    const currentProfile = userProfile.get();
+    
     // Initialize links from user profile data if available
-    if (
-      this.userState?.profile?.links &&
-      Array.isArray(this.userState.profile.links)
-    ) {
-      this.links = this.userState.profile.links
+    if (currentProfile?.links && Array.isArray(currentProfile.links)) {
+      this.links = currentProfile.links
         .filter((link: string) => link && link.trim() !== '')
         .map((link: string, index: number) => ({
           name: `link${index + 1}`,
           value: link,
         }));
-      console.log('Initialized links from user profile:', this.links);
+      console.log('Initialized links from user profile signal:', this.links);
     } else if (user.get()?.links && Array.isArray(user.get()?.links)) {
       // Fallback to legacy user state if needed
       const userData = user.get();
@@ -453,10 +485,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     setTimeout(() => {
       this.initializeFormFields();
     }, 0);
+    
+    // Start the task to get settings
+    this.updraftSettingsTask.run();
   }
 
   render() {
     topBarContent.set(html` <page-heading>Edit Your Profile</page-heading>`);
+    
+    // Get current profile and address from signals
+    const currentProfile = userProfile.get();
+    const currentAddress = userAddress.get();
+    
     return html`
       <div class="container">
         <main>
@@ -468,7 +508,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             <label class="avatar">
               <img
                 src=${this.uploadedImage ||
-                this.userState?.profile?.avatar ||
+                currentProfile?.avatar ||
                 user.get().avatar}
                 alt="User avatar"
               />
@@ -488,25 +528,25 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
               label="Name"
               required
               autocomplete="name"
-              value=${this.userState?.profile?.name || user.get().name || ''}
+              value=${currentProfile?.name || user.get().name || ''}
             ></sl-input>
             <sl-input
               name="team"
               label="Team"
               autocomplete="organization"
-              value=${this.userState?.profile?.team || user.get().team || ''}
+              value=${currentProfile?.team || user.get().team || ''}
             ></sl-input>
             <sl-textarea
               name="about"
               label="About"
               resize="auto"
-              value=${this.userState?.profile?.about || user.get().about || ''}
+              value=${currentProfile?.about || user.get().about || ''}
             ></sl-textarea>
             <sl-textarea
               name="news"
               label="News"
               resize="auto"
-              value=${this.userState?.profile?.news || user.get().news || ''}
+              value=${currentProfile?.news || user.get().news || ''}
             ></sl-textarea>
             <div class="links-section">
               <p>Links</p>
@@ -553,12 +593,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             @transaction-success=${this.handleSubmitSuccess}
           ></transaction-watcher>
         </main>
-        <!-- ${this.connection.address
+        ${currentAddress
           ? html` <activity-feed
-              .userId=${this.connection.address}
-              .userName=${user.get().name}
+              .userId=${currentAddress}
+              .userName=${currentProfile?.name || user.get().name || ''}
             ></activity-feed>`
-          : ''} -->
+          : ''}
       </div>
     `;
   }
