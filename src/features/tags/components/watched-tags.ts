@@ -18,14 +18,6 @@ import xCircle from '@icons/common/x-circle.svg';
 @customElement('watched-tags')
 export class WatchedTags extends SignalWatcher(LitElement) {
   static styles = css`
-    :host {
-      display: block;
-    }
-
-    .section {
-      position: relative;
-    }
-
     h2 {
       font-size: 1.2rem;
       margin: 0 0 1rem 0;
@@ -55,9 +47,6 @@ export class WatchedTags extends SignalWatcher(LitElement) {
     }
 
     .edit-button {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
       --sl-font-size-medium: 1rem;
       color: var(--main-foreground);
     }
@@ -100,16 +89,19 @@ export class WatchedTags extends SignalWatcher(LitElement) {
     .edit-mode .tag {
       padding-right: 0.5rem;
     }
+
+    .no-tags-message {
+      text-align: center;
+      color: var(--subtle-text);
+      font-style: italic;
+      font-size: 0.9rem;
+    }
   `;
 
   @state() private editMode = false;
 
-  @queryAll('.tag') watchedTagsElements!: NodeListOf<HTMLElement>;
-  @query('.section') watchedTagsSection!: HTMLElement;
-
-  constructor() {
-    super();
-  }
+  @queryAll('.tag') tags!: NodeListOf<HTMLElement>;
+  @query('.tags-container') tagsContainer!: HTMLElement;
 
   connectedCallback() {
     super.connectedCallback();
@@ -123,7 +115,7 @@ export class WatchedTags extends SignalWatcher(LitElement) {
 
   private handleClickOutsideEditArea = (e: MouseEvent) => {
     if (this.editMode) {
-      if (!this.watchedTagsSection.contains(e.target as Node)) {
+      if (!this.tagsContainer.contains(e.target as Node)) {
         this.editMode = false;
       }
     }
@@ -132,7 +124,7 @@ export class WatchedTags extends SignalWatcher(LitElement) {
   private handleEditClick() {
     this.editMode = !this.editMode;
     if (this.editMode) {
-      this.watchedTagsElements.forEach((tag) => {
+      this.tags.forEach((tag) => {
         tag.classList.add('wiggle');
         setTimeout(() => tag.classList.remove('wiggle'), 300);
       });
@@ -143,23 +135,24 @@ export class WatchedTags extends SignalWatcher(LitElement) {
     const tags = watchedTags.get();
 
     return html`
-      <div class="section">
-        <h2>Watched Tags</h2>
-        <sl-icon-button
-          class="edit-button"
-          name="pencil-square"
-          src=${pencilSquare}
-          label="Edit watched tags"
-          @click=${this.handleEditClick}
-        ></sl-icon-button>
+      <section @click=${(e: Event) => e.stopPropagation()}>
+        <h2>
+          Watched Tags
+          ${tags.size > 0
+            ? html` <sl-icon-button
+                class="edit-button"
+                src=${pencilSquare}
+                label="Edit watched tags"
+                @click=${this.handleEditClick}
+              ></sl-icon-button>`
+            : html``}
+        </h2>
         <div class="tags-container ${this.editMode ? 'edit-mode' : ''}">
           ${tags.size > 0
-            ? [...tags].map(
+            ? html` ${[...tags].map(
                 (tag) => html`
                   <div class="tag-with-remove">
-                    <a class="tag" href="/discover?tab=search&search=[${tag}]"
-                      >${tag}</a
-                    >
+                    <a class="tag" href="/discover?search=[${tag}]">${tag}</a>
                     ${this.editMode
                       ? html`
                           <sl-icon-button
@@ -169,13 +162,13 @@ export class WatchedTags extends SignalWatcher(LitElement) {
                             @click=${() => unwatchTag(tag)}
                           ></sl-icon-button>
                         `
-                      : ''}
+                      : html``}
                   </div>
                 `
-              )
-            : html`<div>No watched tags yet</div>`}
+              )}`
+            : html`<p class="no-tags-message">No watched tags</p>`}
         </div>
-      </div>
+      </section>
     `;
   }
 }
