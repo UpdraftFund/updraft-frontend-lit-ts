@@ -22,7 +22,7 @@ import {
 } from '@/types';
 
 import { connectionContext } from '@state/common/context';
-import { rightSidebarContent, topBarContent } from '@state/layout/layout';
+import { rightSidebarContent, topBarContent } from '@state/layout';
 import { watchTag, isWatched } from '@state/user/watched-tags';
 
 import urqlClient from '@utils/urql-client';

@@ -15,25 +15,25 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@/features/common/components/page-heading';
-import '@/features/user/components/activity-feed';
-import '@/features/common/components/transaction-watcher';
-import '@/features/common/components/upd-dialog';
-import '@/features/common/components/share-dialog';
+import '@components/common/page-heading';
+import '@components/user/activity-feed';
+import '@components/common/transaction-watcher';
+import '@components/common/upd-dialog';
+import '@components/common/share-dialog';
 import {
   TransactionWatcher,
   TransactionSuccess,
-} from '@/features/common/components/transaction-watcher';
-import { UpdDialog } from '@/features/common/components/upd-dialog';
-import { ShareDialog } from '@/features/common/components/share-dialog';
+} from '@components/common/transaction-watcher';
+import { UpdDialog } from '@components/common/upd-dialog';
+import { ShareDialog } from '@components/common/share-dialog';
 import { SlDialog } from '@shoelace-style/shoelace';
 import {
   SaveableForm,
   loadForm,
   formToJson,
-} from '@/features/common/components/saveable-form';
+} from '@components/common/saveable-form';
 
-import { topBarContent } from '@state/layout/layout';
+import { topBarContent } from '@state/layout';
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
 import {
@@ -41,13 +41,9 @@ import {
   updraftSettings as updraftSettingsContext,
   defaultFunderReward,
   connectionContext,
-} from '@/features/common/state/context';
-import {
-  userContext,
-  UserState,
-  setUserProfile,
-} from '@/features/user/state/user';
-import { modal } from '@/features/common/utils/web3';
+} from '@state/common/context';
+import { userContext, UserState, setUserProfile } from '@state/user';
+import { modal } from '@components/common/utils/web3';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import profileSchema from '@schemas/profile-schema.json';

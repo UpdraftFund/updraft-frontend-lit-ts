@@ -10,7 +10,7 @@ import updraftLogo from '@images/updraft-logo-46.png';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 
-import { topBarContent } from '@state/layout/layout';
+import { topBarContent } from '@state/layout';
 
 import listIcon from '@icons/navigation/list.svg';
 

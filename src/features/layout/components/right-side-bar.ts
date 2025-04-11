@@ -7,13 +7,13 @@ import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
-import '@/features/idea/components/hot-ideas';
-import '@/features/idea/components/related-ideas';
-import '@/features/idea/components/top-supporters';
-import '@/features/tags/components/watched-tags';
-import '@/features/tags/components/popular-tags';
+import '@components/idea/hot-ideas';
+import '@components/idea/related-ideas';
+import '@components/idea/top-supporters';
+import '@components/tags/watched-tags';
+import '@components/tags/popular-tags';
 
-import { rightSidebarContent } from '@state/layout/layout';
+import { rightSidebarContent } from '@state/layout';
 
 @customElement('right-side-bar')
 export class RightSideBar extends SignalWatcher(LitElement) {

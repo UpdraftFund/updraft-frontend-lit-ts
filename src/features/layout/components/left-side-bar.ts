@@ -9,20 +9,20 @@ import chevronRight from '@icons/navigation/chevron-right.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@/features/common/components/section-heading';
-import '@/features/idea/components/idea-card-small';
-import '@/features/solution/components/solution-card-small';
-import '@/features/navigation/components/left-nav';
+import '@components/common/section-heading';
+import '@components/idea/idea-card-small';
+import '@components/solution/solution-card-small';
+import '@components/navigation/left-nav';
 
 import {
   connectionContext,
   leftSidebarCollapsed,
   toggleLeftSidebar,
-} from '@/features/common/state/context';
-import { Connection } from '@/features/user/types/current-user';
-import { Solution } from '@/features/solution/types';
+} from '@state/common/context';
+import { Connection } from '@/types/user/current-user';
+import { Solution } from '@gql';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import {
   IdeasByFunderDocument,
   SolutionsByFunderOrDrafterDocument,

@@ -10,10 +10,10 @@ import '@components/navigation/search-bar';
 
 import '@components/navigation/create-idea-button';
 
-import urqlClient from '@/features/common/utils/urql-client';
-import { userContext, type UserState } from '@/features/user/state/user';
+import urqlClient from '@utils/urql-client';
+import { userContext, type UserState } from '@state/user';
 
-import { rightSidebarContent, topBarContent } from '@state/layout/layout';
+import { rightSidebarContent, topBarContent } from '@state/layout';
 
 interface UserIdeasSolutionsResponse {
   createdIdeas: Array<{ id: string; name: string }>;
