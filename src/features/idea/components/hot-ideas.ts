@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Task } from '@lit/task';
+import { cache } from 'lit/directives/cache.js';
 
 import '@/features/idea/components/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
@@ -101,10 +102,12 @@ export class HotIdeas extends LitElement {
             return html`<sl-spinner></sl-spinner>`;
           },
           complete: (ideas) => {
-            if (ideas.length === 0) {
-              return html`<div class="no-ideas">No hot ideas found</div>`;
-            }
-            return this.renderHotIdeas(ideas);
+            // use cache for faster rendering of the fetched results
+            return cache(
+              ideas.length === 0
+                ? html` <div class="no-ideas">No hot ideas found</div>`
+                : this.renderHotIdeas(ideas)
+            );
           },
           error: (err) => {
             console.error('Error rendering hot ideas:', err);
