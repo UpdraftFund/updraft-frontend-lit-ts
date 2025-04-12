@@ -54,14 +54,14 @@ export class TopBar extends SignalWatcher(LitElement) {
       color: var(--main-foreground);
       font-size: 1.5rem;
     }
-    slot {
+    .content {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 2rem;
     }
-    slot div {
+    .content div {
       display: flex;
       align-items: center;
     }
