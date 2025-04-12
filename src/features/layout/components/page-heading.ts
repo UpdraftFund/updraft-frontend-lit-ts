@@ -7,9 +7,6 @@ export class PageHeading extends LitElement {
     :host {
       display: inline-block;
       margin-right: auto;
-    }
-
-    span {
       font-size: 2.25rem;
       font-weight: 500;
       margin-left: clamp(0px, calc((100vw - 670px) * 0.5), 200px);
@@ -19,7 +16,7 @@ export class PageHeading extends LitElement {
   `;
 
   render() {
-    return html` <span><slot></slot></span>`;
+    return html` <slot></slot>`;
   }
 }
 
