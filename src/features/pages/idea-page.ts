@@ -42,6 +42,7 @@ import {
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@/features/common/utils/web3';
 import { shortNum } from '@utils/short-num';
+import { rightSidebarContent } from '@state/layout';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -284,6 +285,10 @@ export class IdeaPage extends LitElement {
   }
 
   render() {
+    rightSidebarContent.set(html`
+      <top-supporters .ideaId=${this.ideaId}></top-supporters>
+      <related-ideas .ideaId=${this.ideaId}></related-ideas>
+    `);
     return html`
       <div class="container">
         <main>

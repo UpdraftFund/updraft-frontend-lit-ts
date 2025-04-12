@@ -94,13 +94,6 @@ export class RightSideBar extends SignalWatcher(LitElement) {
 
   render() {
     return html` <div class="content">${rightSidebarContent.get()}</div>`;
-    //   ${this.ideaId
-    //     ? html`
-    //         <top-supporters .ideaId=${this.ideaId}></top-supporters>
-    //         <top-supporters .ideaId=${this.ideaId}></top-supporters>
-    //       `
-    //     : html``}
-    // `;
   }
 }
 
