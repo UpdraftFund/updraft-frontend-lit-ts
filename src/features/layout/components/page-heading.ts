@@ -6,6 +6,7 @@ export class PageHeading extends LitElement {
   static styles = css`
     :host {
       display: inline-block;
+      margin-right: auto;
     }
 
     span {
