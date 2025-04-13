@@ -1,7 +1,22 @@
 query SolutionsByFunderOrDrafter($user: String!, $first: Int = 3, $skip: Int = 0) {
-    solutionContributions(first: $first, skip: $skip, where: {funder: $user }) {
+    # Get solutions where user is a funder
+    fundedSolutions: solutionContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder: $user }
+    ) {
         solution {
             ...SolutionFields
         }
     }
+
+    # Get solutions where user is a drafter
+    draftedSolutions: solutions(
+        first: $first,
+        skip: $skip,
+        where: { drafter: $user }
+    ) {
+        ...SolutionFields
+    }
 }
+

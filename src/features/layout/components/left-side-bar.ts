@@ -185,13 +185,35 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
   });
 
   private readonly solutionContributions = new Task(this, {
-    task: async ([funder]) => {
-      if (funder) {
+    task: async ([user]) => {
+      if (user) {
         const result = await urqlClient.query(
           SolutionsByFunderOrDrafterDocument,
-          { user: funder }
+          { user }
         );
-        return result.data?.solutionContributions;
+
+        // Get solutions from both queries
+        const fundedSolutions =
+          result.data?.fundedSolutions?.map(
+            (contribution) => contribution.solution
+          ) || [];
+        const draftedSolutions = result.data?.draftedSolutions || [];
+
+        // Combine and deduplicate solutions based on their ID
+        const solutionMap = new Map();
+
+        // Add funded solutions to map
+        fundedSolutions.forEach((solution) => {
+          solutionMap.set(solution.id, solution);
+        });
+
+        // Add drafted solutions to map (will overwrite any duplicates)
+        draftedSolutions.forEach((solution) => {
+          solutionMap.set(solution.id, solution);
+        });
+
+        // Convert map values back to array
+        return Array.from(solutionMap.values());
       }
     },
     args: () => [this.connection.address] as const,
@@ -347,11 +369,11 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       <section-heading>My Solutions</section-heading>
       <div class="my-solutions">
         ${this.solutionContributions.render({
-          complete: (ics) =>
-            ics?.map(
-              (ic) => html`
+          complete: (solutions) =>
+            solutions?.map(
+              (solution) => html`
                 <solution-card-small
-                  .solution=${ic.solution as Solution}
+                  .solution=${solution as Solution}
                 ></solution-card-small>
               `
             ),
