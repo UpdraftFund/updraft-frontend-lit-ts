@@ -60,21 +60,6 @@ export class HotIdeas extends LitElement {
     this.unsubHotIdeas = hotIdeasSub.unsubscribe;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-    this.unsubHotIdeas?.();
-  }
-
   private handleVisibilityChange = () => {
     if (document.hidden) {
       this.unsubHotIdeas?.();
@@ -91,6 +76,21 @@ export class HotIdeas extends LitElement {
         )}
       </div>
     `;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.subscribe();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+    this.unsubHotIdeas?.();
   }
 
   render() {
