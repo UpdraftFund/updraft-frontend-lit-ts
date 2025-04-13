@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
-import { Task } from '@lit/task';
+import { customElement, state } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 
 import '@/features/idea/components/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
@@ -41,11 +41,46 @@ export class HotIdeas extends LitElement {
     }
   `;
 
+  @state() private hotIdeas?: Idea[];
   private unsubHotIdeas?: () => void;
+
+  private subscribe() {
+    this.unsubHotIdeas?.();
+
+    const hotIdeasSub = urqlClient
+      .query(IdeasBySharesDocument, {})
+      .subscribe((result) => {
+        if (result.data?.ideas) {
+          this.hotIdeas = result.data.ideas as Idea[];
+        } else {
+          this.hotIdeas = [];
+        }
+      });
+
+    this.unsubHotIdeas = hotIdeasSub.unsubscribe;
+  }
+
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.unsubHotIdeas?.();
+    } else {
+      this.subscribe();
+    }
+  };
+
+  private renderHotIdeas(ideas: Idea[]) {
+    return html`
+      <div class="hot-ideas-list">
+        ${ideas.map(
+          (idea) => html` <idea-card-small .idea=${idea}></idea-card-small> `
+        )}
+      </div>
+    `;
+  }
 
   connectedCallback() {
     super.connectedCallback();
-    this._getHotIdeasTask.run();
+    this.subscribe();
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
@@ -58,37 +93,6 @@ export class HotIdeas extends LitElement {
     this.unsubHotIdeas?.();
   }
 
-  private handleVisibilityChange = () => {
-    if (document.visibilityState === 'visible') {
-      this._getHotIdeasTask.run();
-    }
-  };
-
-  private _getHotIdeasTask = new Task(
-    this,
-    async () => {
-      const result = await urqlClient
-        .query(IdeasBySharesDocument, {})
-        .toPromise();
-      if (result.data?.ideas) {
-        const ideas = result.data.ideas as Idea[];
-        return ideas;
-      }
-      return [] as Idea[];
-    },
-    () => []
-  );
-
-  private renderHotIdeas(ideas: Idea[]) {
-    return html`
-      <div class="hot-ideas-list">
-        ${ideas.map(
-          (idea) => html` <idea-card-small .idea=${idea}></idea-card-small> `
-        )}
-      </div>
-    `;
-  }
-
   render() {
     return html`
       <div>
@@ -96,20 +100,13 @@ export class HotIdeas extends LitElement {
           <sl-icon src=${fire}></sl-icon>
           Hot Ideas
         </h2>
-        ${this._getHotIdeasTask.render({
-          pending: () => {
-            return html`<sl-spinner></sl-spinner>`;
-          },
-          complete: (ideas) => {
-            if (ideas.length === 0) {
-              return html`<div class="no-ideas">No hot ideas found</div>`;
-            }
-            return this.renderHotIdeas(ideas);
-          },
-          error: (err) => {
-            console.error('Error rendering hot ideas:', err);
-          },
-        })}
+        ${this.hotIdeas === undefined
+          ? html` <sl-spinner></sl-spinner>`
+          : cache(
+              this.hotIdeas.length === 0
+                ? html` <div class="no-ideas">No hot ideas found</div>`
+                : this.renderHotIdeas(this.hotIdeas)
+            )}
       </div>
     `;
   }

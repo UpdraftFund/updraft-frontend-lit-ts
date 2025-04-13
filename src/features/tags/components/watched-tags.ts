@@ -127,47 +127,48 @@ export class WatchedTags extends SignalWatcher(LitElement) {
 
   render() {
     const tags = watchedTags.get();
-
     return html`
-      <section @click=${(e: Event) => e.stopPropagation()}>
-        <h2>
-          Watched Tags
-          ${tags.size > 0
-            ? html` <sl-icon-button
-                class="edit-button"
-                src=${pencilSquare}
-                label="Edit watched tags"
-                @click=${this.handleEditClick}
-              ></sl-icon-button>`
-            : html``}
-        </h2>
-        <div class="tags-container ${this.editMode ? 'edit-mode' : ''}">
-          ${tags.size > 0
-            ? html` ${[...tags].map(
-                (tag) => html`
-                  <div class="tag-with-remove">
-                    <a class="tag" href="/discover?search=[${tag}]"
-                      >${tag}
-                      ${this.editMode
-                        ? html`
-                            <sl-icon-button
-                              class="remove-button"
-                              src=${xCircle}
-                              label="Remove watched tag"
-                              @click=${(e: Event) => {
-                                e.preventDefault();
-                                unwatchTag(tag);
-                              }}
-                            ></sl-icon-button>
-                          `
-                        : html``}
-                    </a>
-                  </div>
-                `
-              )}`
-            : html`<p class="no-tags-message">No watched tags</p>`}
-        </div>
-      </section>
+      <h2>
+        Watched Tags
+        ${tags.size > 0
+          ? html` <sl-icon-button
+              class="edit-button"
+              src=${pencilSquare}
+              label="Edit watched tags"
+              @click=${(e: Event) => {
+                e.stopPropagation();
+                this.handleEditClick();
+              }}
+            ></sl-icon-button>`
+          : html``}
+      </h2>
+      <div class="tags-container ${this.editMode ? 'edit-mode' : ''}">
+        ${tags.size > 0
+          ? html` ${[...tags].map(
+              (tag) => html`
+                <div class="tag-with-remove">
+                  <a class="tag" href="/discover?search=[${tag}]"
+                    >${tag}
+                    ${this.editMode
+                      ? html`
+                          <sl-icon-button
+                            class="remove-button"
+                            src=${xCircle}
+                            label="Remove watched tag"
+                            @click=${(e: Event) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              unwatchTag(tag);
+                            }}
+                          ></sl-icon-button>
+                        `
+                      : html``}
+                  </a>
+                </div>
+              `
+            )}`
+          : html`<p class="no-tags-message">No watched tags</p>`}
+      </div>
     `;
   }
 }

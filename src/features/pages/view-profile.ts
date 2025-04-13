@@ -7,7 +7,7 @@ import { fromHex } from 'viem';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@/features/common/components/page-heading';
+import '@layout/page-heading';
 import '@/features/user/components/activity-feed';
 import '@/features/user/components/user-avatar';
 

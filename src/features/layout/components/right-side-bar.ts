@@ -26,7 +26,7 @@ export class RightSideBar extends SignalWatcher(LitElement) {
       overflow-y: auto;
     }
 
-    slot {
+    .content {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
@@ -68,10 +68,6 @@ export class RightSideBar extends SignalWatcher(LitElement) {
 
   @property() ideaId?: string;
 
-  constructor() {
-    super();
-  }
-
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener(
@@ -97,15 +93,7 @@ export class RightSideBar extends SignalWatcher(LitElement) {
   };
 
   render() {
-    return html`
-      <slot>${rightSidebarContent.get()}</slot>
-      ${this.ideaId
-        ? html`
-            <top-supporters .ideaId=${this.ideaId}></top-supporters>
-            <related-ideas .ideaId=${this.ideaId}></related-ideas>
-          `
-        : html``}
-    `;
+    return html` <div class="content">${rightSidebarContent.get()}</div>`;
   }
 }
 

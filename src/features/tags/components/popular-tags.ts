@@ -5,6 +5,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 
 import urqlClient from '@/features/common/utils/urql-client';
 import { TopTagsDocument } from '@gql';
@@ -49,25 +50,6 @@ export class PopularTags extends LitElement {
   @state() private topTags?: TagCount[];
   private unsubTopTags?: () => void;
 
-  constructor() {
-    super();
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubTopTags?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-  }
-
   private subscribe() {
     this.unsubTopTags?.();
 
@@ -87,6 +69,21 @@ export class PopularTags extends LitElement {
     }
   };
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.subscribe();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubTopTags?.();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+  }
+
   render() {
     return html`
       ${this.topTags
@@ -94,17 +91,19 @@ export class PopularTags extends LitElement {
             <div class="section">
               <h2>Popular Tags</h2>
               <div class="tags-container">
-                ${this.topTags.map(
-                  (tag) => html`
-                    <a class="tag" href="/discover?search=[${tag.id}]">
-                      ${tag.id}
-                    </a>
-                  `
+                ${cache(
+                  this.topTags.map(
+                    (tag) => html`
+                      <a class="tag" href="/discover?search=[${tag.id}]">
+                        ${tag.id}
+                      </a>
+                    `
+                  )
                 )}
               </div>
             </div>
           `
-        : ''}
+        : html``}
     `;
   }
 }

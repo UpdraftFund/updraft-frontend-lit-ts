@@ -8,7 +8,7 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput } from '@shoelace-style/shoelace';
 
-import '@/features/common/components/page-heading';
+import '@layout/page-heading.ts';
 import '@/features/common/components/label-with-hint';
 import '@/features/common/components/upd-dialog';
 import { UpdDialog } from '@/features/common/components/upd-dialog';
@@ -21,6 +21,7 @@ import {
 } from '@/features/common/state/context';
 import { Balances } from '@/features/user/types/current-user';
 import { UpdraftSettings } from '@/features/common/types';
+import { topBarContent } from '@state/layout';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
@@ -161,10 +162,10 @@ export class CreateIdea extends SaveableForm {
   }
 
   render() {
+    topBarContent.set(html` <page-heading>Create a new Idea</page-heading> `);
     return html`
       <div class="container">
         <main>
-          <page-heading>Create a new Idea</page-heading>
           <form name="create-idea" @submit=${this.handleFormSubmit}>
             <sl-input name="name" required autocomplete="off">
               <label-with-hint
@@ -185,14 +186,17 @@ export class CreateIdea extends SaveableForm {
               <label-with-hint
                 slot="label"
                 label="Tags"
-                hint="Enter up to five tags separated by spaces to help people find your idea.                    Use hyphens for multi-word-tags."
+                hint="Enter up to five tags separated by spaces to help people find your idea. 
+                Use hyphens for multi-word-tags."
               >
               </label-with-hint>
             </sl-input>
             <div class="deposit-container">
               <label-with-hint
                 label="Deposit*"
-                hint="The initial UPD tokens you will deposit. The more you deposit, the more you                         stand to earn from supporters of your idea. As a creator, you can always withdraw your                         full initial deposit minus the anti-spam fee of 1 UPD or 1% (whichever is greater)."
+                hint="The initial UPD tokens you will deposit. The more you deposit, the more you stand
+                to earn from supporters of your idea. As a creator, you can always withdraw your full
+                initial deposit minus the anti-spam fee of 1 UPD or 1% (whichever is greater)."
               >
               </label-with-hint>
               <div class="deposit-row">
@@ -221,8 +225,8 @@ export class CreateIdea extends SaveableForm {
             <input type="hidden" name="reward" value="50" />
             <a href="/submit-profile-and-create-idea" rel="next">
               <sl-button variant="primary" @click=${this.nextButtonClick}
-                >Next: Create your Profile</sl-button
-              >
+                >Next: Create your Profile
+              </sl-button>
             </a>
           </form>
           <upd-dialog></upd-dialog>

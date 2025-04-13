@@ -32,7 +32,7 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
-import '@/features/common/components/page-heading';
+import '@layout/page-heading';
 import '@/features/common/components/transaction-watcher';
 import '@/features/common/components/upd-dialog';
 import '@/features/common/components/share-dialog';

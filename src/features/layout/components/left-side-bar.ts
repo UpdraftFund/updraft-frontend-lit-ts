@@ -187,23 +187,42 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
   });
 
   private readonly solutionContributions = new Task(this, {
-    task: async ([funder]) => {
-      if (!funder) return []; // Return empty array if no funder
-      try {
-        // const result = await urqlClient.query( // Commented out as result is unused
-        //   SolutionsByFunderOrDrafterDocument,
-        //   { user: funder }
-        // );
-        // TODO: Verify the correct property name from generated GraphQL types. Property 'solutionsByFunderOrDrafter' caused TS2339.
-        // return result.data?.solutionsByFunderOrDrafter;
-      } catch (error) {
-        console.error('Failed to fetch solutions:', error);
-        return []; // Return empty array on error
+    task: async ([user]) => {
+      if (user) {
+        const result = await urqlClient.query(
+          SolutionsByFunderOrDrafterDocument,
+          { user }
+        );
+
+        // Get solutions from both queries
+        const fundedSolutions =
+          result.data?.fundedSolutions?.map(
+            (contribution) => contribution.solution
+          ) || [];
+        const draftedSolutions = result.data?.draftedSolutions || [];
+
+        // Combine and deduplicate solutions based on their ID
+        const solutionMap = new Map();
+
+        // Add funded solutions to map
+        fundedSolutions.forEach((solution) => {
+          solutionMap.set(solution.id, solution);
+        });
+
+        // Add drafted solutions to map (will overwrite any duplicates)
+        draftedSolutions.forEach((solution) => {
+          solutionMap.set(solution.id, solution);
+        });
+
+        // Convert map values back to array
+        return Array.from(solutionMap.values());
       }
-      return []; // Return empty array if try block completes without returning data
     },
-    args: () => [userAddress.get()], // Use .get() for signal access
+    args: () => [this.connection.address] as const,
   });
+
+  @consume({ context: connectionContext, subscribe: true })
+  connection!: Connection;
 
   @property({ type: Boolean, reflect: true }) collapsed =
     leftSidebarCollapsed.get();
@@ -353,12 +372,13 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       <section-heading>My Solutions</section-heading>
       <div class="my-solutions">
         ${this.solutionContributions.render({
-          complete: (ics) =>
-            ics?.map(
-              (ic: Solution) =>
-                html`<solution-card-small
-                  .solution=${ic as Solution}
-                ></solution-card-small>`
+          complete: (solutions) =>
+            solutions?.map(
+              (solution) => html`
+                <solution-card-small
+                  .solution=${solution as Solution}
+                ></solution-card-small>
+              `
             ),
         })}
       </div>
