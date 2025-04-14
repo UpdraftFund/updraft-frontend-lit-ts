@@ -1,22 +1,26 @@
-import { customElement } from 'lit/decorators.js';
-import { css, LitElement } from 'lit';
-import { html, SignalWatcher } from '@lit-labs/signals';
-import { Task } from '@lit/task';
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
 import { consume } from '@lit/context';
 
 import '@components/common/section-heading';
 import '@components/solution/solution-card-small';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import { connectionContext } from '@state/common/context';
 import { Connection } from '@/types/user/current-user';
 
 import urqlClient from '@utils/urql-client';
 import { SolutionsByFunderOrDrafterDocument } from '@gql';
+import { Solution } from '@/types';
 
 @customElement('my-solutions')
-export class MySolutions extends SignalWatcher(LitElement) {
+export class MySolutions extends LitElement {
   @consume({ context: connectionContext, subscribe: true })
   connection?: Connection;
+
+  @state() private solutions?: Solution[];
+  private unsubSolutions?: () => void;
 
   static styles = css`
     :host {
@@ -31,63 +35,95 @@ export class MySolutions extends SignalWatcher(LitElement) {
     solution-card-small {
       width: 100%;
     }
+
+    .loading {
+      padding: 1rem;
+      color: var(--sl-color-neutral-500);
+    }
   `;
 
-  private solutionsTask = new Task(this, {
-    task: async ([user]) => {
-      if (user) {
-        const result = await urqlClient.query(
-          SolutionsByFunderOrDrafterDocument,
-          { user }
-        );
+  private subscribe() {
+    // Clean up previous subscription if it exists
+    this.unsubSolutions?.();
 
-        // Get solutions from both queries
-        const fundedSolutions =
-          result.data?.fundedSolutions?.map(
-            (contribution) => contribution.solution
-          ) || [];
-        const draftedSolutions = result.data?.draftedSolutions || [];
+    if (!this.connection?.address) return;
 
-        // Combine and deduplicate solutions based on their ID
-        const solutionMap = new Map();
+    const solutionsSub = urqlClient
+      .query(SolutionsByFunderOrDrafterDocument, {
+        user: this.connection.address,
+      })
+      .subscribe((result) => {
+        if (result.data) {
+          // Get solutions from both queries
+          const fundedSolutions =
+            result.data.fundedSolutions?.map(
+              (contribution) => contribution.solution
+            ) || [];
+          const draftedSolutions = result.data.draftedSolutions || [];
 
-        // Add funded solutions to map
-        fundedSolutions.forEach((solution) => {
-          solutionMap.set(solution.id, solution);
-        });
+          // Combine and deduplicate solutions based on their ID
+          const solutionMap = new Map();
 
-        // Add drafted solutions to map (will overwrite any duplicates)
-        draftedSolutions.forEach((solution) => {
-          solutionMap.set(solution.id, solution);
-        });
+          // Add funded solutions to map
+          fundedSolutions.forEach((solution) => {
+            solutionMap.set(solution.id, solution);
+          });
 
-        // Convert map values back to array
-        return Array.from(solutionMap.values());
-      }
-    },
-    args: () => [this.connection?.address],
-  });
+          // Add drafted solutions to map (will overwrite any duplicates)
+          draftedSolutions.forEach((solution) => {
+            solutionMap.set(solution.id, solution);
+          });
+
+          // Convert map values back to array
+          this.solutions = Array.from(solutionMap.values());
+        } else {
+          this.solutions = [];
+        }
+      });
+
+    this.unsubSolutions = solutionsSub.unsubscribe;
+  }
+
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.unsubSolutions?.();
+    } else {
+      this.subscribe();
+    }
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.connection?.address) {
+      this.subscribe();
+    }
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubSolutions?.();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+  }
 
   render() {
     return html`
       <section-heading>My Solutions</section-heading>
       <div class="content">
-        ${this.solutionsTask.render({
-          pending: () => html`Loading your solutions...`,
-          complete: (solutions) => {
-            return solutions?.map(
-              (solution) =>
-                html` <solution-card-small
-                  .solution=${solution}
-                ></solution-card-small>`
-            );
-          },
-          error: (error) => {
-            console.group('Error loading my-solutions');
-            console.dir(error);
-            console.groupEnd();
-          },
-        })}
+        ${this.solutions === undefined
+          ? html` <sl-spinner></sl-spinner>`
+          : cache(
+              this.solutions.map(
+                (solution) => html`
+                  <solution-card-small
+                    .solution=${solution}
+                  ></solution-card-small>
+                `
+              )
+            )}
       </div>
     `;
   }
