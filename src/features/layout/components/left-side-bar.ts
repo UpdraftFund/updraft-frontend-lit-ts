@@ -268,10 +268,19 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     return html`
       <div class="toggle-button" @click=${this.handleToggle}>
         <sl-icon
-          src=${leftSidebarCollapsed.get() ? chevronRight : chevronLeft}
+          src=${(window.innerWidth <= 1024 &&
+            window.innerWidth > 768 &&
+            !this.expanded) ||
+          (window.innerWidth > 1024 && this.collapsed)
+            ? chevronRight
+            : chevronLeft}
+          label="Toggle sidebar"
         ></sl-icon>
       </div>
-      <left-nav></left-nav>
+      <left-nav
+        .collapsed=${this.collapsed}
+        .expanded=${this.expanded}
+      ></left-nav>
       ${this.connection?.address
         ? html`
             <my-ideas></my-ideas>
