@@ -1,14 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { consume } from '@lit/context';
 
 import '@components/common/section-heading.ts';
 import '@components/solution/solution-card-small.ts';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import { connectionContext } from '@state/common/context.ts';
-import { Connection } from '@/types/user/current-user.ts';
+import { userAddress } from '@state/user/user';
 
 import urqlClient from '@utils/urql-client.ts';
 import { SolutionsByFunderOrDrafterDocument } from '@gql';
@@ -16,9 +14,6 @@ import { Solution } from '@/types';
 
 @customElement('my-solutions')
 export class MySolutions extends LitElement {
-  @consume({ context: connectionContext, subscribe: true })
-  connection?: Connection;
-
   @state() private solutions?: Solution[];
   private unsubSolutions?: () => void;
 
@@ -46,42 +41,42 @@ export class MySolutions extends LitElement {
     // Clean up previous subscription if it exists
     this.unsubSolutions?.();
 
-    if (!this.connection?.address) return;
+    if (userAddress.get()) {
+      const solutionsSub = urqlClient
+        .query(SolutionsByFunderOrDrafterDocument, {
+          user: userAddress.get() as string,
+        })
+        .subscribe((result) => {
+          if (result.data) {
+            // Get solutions from both queries
+            const fundedSolutions =
+              result.data.fundedSolutions?.map(
+                (contribution) => contribution.solution
+              ) || [];
+            const draftedSolutions = result.data.draftedSolutions || [];
 
-    const solutionsSub = urqlClient
-      .query(SolutionsByFunderOrDrafterDocument, {
-        user: this.connection.address,
-      })
-      .subscribe((result) => {
-        if (result.data) {
-          // Get solutions from both queries
-          const fundedSolutions =
-            result.data.fundedSolutions?.map(
-              (contribution) => contribution.solution
-            ) || [];
-          const draftedSolutions = result.data.draftedSolutions || [];
+            // Combine and deduplicate solutions based on their ID
+            const solutionMap = new Map();
 
-          // Combine and deduplicate solutions based on their ID
-          const solutionMap = new Map();
+            // Add funded solutions to map
+            fundedSolutions.forEach((solution) => {
+              solutionMap.set(solution.id, solution);
+            });
 
-          // Add funded solutions to map
-          fundedSolutions.forEach((solution) => {
-            solutionMap.set(solution.id, solution);
-          });
+            // Add drafted solutions to map (will overwrite any duplicates)
+            draftedSolutions.forEach((solution) => {
+              solutionMap.set(solution.id, solution);
+            });
 
-          // Add drafted solutions to map (will overwrite any duplicates)
-          draftedSolutions.forEach((solution) => {
-            solutionMap.set(solution.id, solution);
-          });
+            // Convert map values back to array
+            this.solutions = Array.from(solutionMap.values());
+          } else {
+            this.solutions = [];
+          }
+        });
 
-          // Convert map values back to array
-          this.solutions = Array.from(solutionMap.values());
-        } else {
-          this.solutions = [];
-        }
-      });
-
-    this.unsubSolutions = solutionsSub.unsubscribe;
+      this.unsubSolutions = solutionsSub.unsubscribe;
+    }
   }
 
   private handleVisibilityChange = () => {
@@ -94,10 +89,13 @@ export class MySolutions extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    if (this.connection?.address) {
+    if (userAddress.get()) {
       this.subscribe();
+      document.addEventListener(
+        'visibilitychange',
+        this.handleVisibilityChange
+      );
     }
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   disconnectedCallback() {
