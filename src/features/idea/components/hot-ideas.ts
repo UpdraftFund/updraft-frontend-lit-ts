@@ -6,7 +6,7 @@ import '@/features/idea/components/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import { IdeasBySharesDocument } from '@gql';
 import { Idea } from '@/features/idea/types';
 

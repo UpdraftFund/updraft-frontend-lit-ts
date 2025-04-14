@@ -29,7 +29,7 @@ import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import { IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
@@ -40,7 +40,7 @@ import {
   updraftSettings,
 } from '@/features/common/state/context';
 import { UpdraftSettings, Balances, Idea } from '@/types';
-import { modal } from '@/features/common/utils/web3';
+import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import { rightSidebarContent } from '@state/layout';
 

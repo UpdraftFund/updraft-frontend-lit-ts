@@ -4,7 +4,7 @@ import { initialState, Task, TaskStatus } from '@lit/task';
 import { waitForTransactionReceipt } from '@wagmi/core';
 import { TransactionReceipt } from 'viem';
 
-import { config } from '@/features/common/utils/web3';
+import { config } from '@utils/web3';
 
 export class TransactionSuccess extends Event {
   static readonly type = 'transaction-success';

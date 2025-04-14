@@ -6,7 +6,7 @@ import type { Address } from 'viem';
 import type { CurrentUser } from '@/features/user/types/current-user';
 
 // Import the wallet connection modal
-import { modal } from '@/features/common/utils/web3';
+import { modal } from '@utils/web3.ts';
 
 // Define custom events for user state changes
 export const USER_CONNECTED_EVENT = 'user-connected';

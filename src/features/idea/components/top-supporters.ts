@@ -6,7 +6,7 @@ import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import { IdeaContributionsDocument } from '@gql';
 import { shortNum } from '@utils/short-num';
 

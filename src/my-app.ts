@@ -19,8 +19,8 @@ import '@/features/common/styles/global.css';
 import '@/features/common/styles/theme.css';
 import '@/features/common/styles/reset.css';
 
-import { modal, config } from '@/features/common/utils/web3';
-import urqlClient from '@/features/common/utils/urql-client';
+import { modal, config } from '@utils/web3';
+import urqlClient from '@utils/urql-client';
 
 import {
   user,

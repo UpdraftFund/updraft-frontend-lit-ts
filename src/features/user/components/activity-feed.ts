@@ -3,7 +3,7 @@ import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
 
 import { UserActivityDocument } from '@gql';
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import '@/features/user/components/activity-card';
 
 // Import Shoelace components

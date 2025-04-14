@@ -22,7 +22,7 @@ import {
 import { markComplete } from '@pages/home/state/beginner-tasks';
 import { Connection } from '@/features/user/types/current-user';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
 
 @customElement('view-profile')

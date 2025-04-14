@@ -48,8 +48,8 @@
       "@images/*": ["src/features/common/assets/images/*"],
       "@pages/*": ["src/features/pages/*"],
       "@layout/*": ["src/features/layout/components/*"],
-      "@utils/*": ["src/features/common/utils/*"],
       "@styles/*": ["src/features/common/styles/*"],
+      "@utils/*": ["src/lib/utils/*"],
       "@contracts/*": ["src/lib/contracts/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
       "@gql": [".graphclient"]
