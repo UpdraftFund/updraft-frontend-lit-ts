@@ -2,17 +2,15 @@ import { customElement, property } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { consume } from '@lit/context';
-import { Task } from '@lit/task';
 
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@components/common/section-heading';
-import '@components/idea/idea-card-small';
-import '@components/solution/solution-card-small';
 import '@components/navigation/left-nav';
+import '@components/ideas/my-ideas';
+import '@components/solutions/my-solutions';
 
 import {
   connectionContext,
@@ -20,16 +18,12 @@ import {
   toggleLeftSidebar,
 } from '@state/common/context';
 import { Connection } from '@/types/user/current-user';
-import { Solution } from '@gql';
-
-import urqlClient from '@utils/urql-client';
-import {
-  IdeasByFunderDocument,
-  SolutionsByFunderOrDrafterDocument,
-} from '@gql';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends SignalWatcher(LitElement) {
+  @consume({ context: connectionContext, subscribe: true })
+  connection?: Connection;
+
   static styles = css`
     :host {
       display: flex;
@@ -52,20 +46,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       padding: 0;
       flex-basis: 64px !important;
       box-sizing: border-box;
-    }
-
-    section-heading {
-      color: var(--section-heading);
-      padding: 0 1rem;
-    }
-
-    .my-ideas {
-      padding: 1rem 1.4rem 0;
-      box-sizing: border-box;
-    }
-
-    idea-card-small {
-      width: 100%;
     }
 
     .toggle-button {
@@ -93,9 +73,8 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       right: -12px;
     }
 
-    :host([collapsed]) section-heading,
-    :host([collapsed]) .my-ideas,
-    :host([collapsed]) .my-solutions {
+    :host([collapsed]) my-ideas,
+    :host([collapsed]) my-solutions {
       display: none;
     }
 
@@ -107,9 +86,8 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         flex-basis: 64px !important;
       }
 
-      :host section-heading,
-      :host .my-ideas,
-      :host .my-solutions {
+      :host my-ideas,
+      :host my-solutions {
         display: none;
       }
 
@@ -120,9 +98,8 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         flex-basis: 250px !important;
       }
 
-      :host([expanded]) section-heading,
-      :host([expanded]) .my-ideas,
-      :host([expanded]) .my-solutions {
+      :host([expanded]) my-ideas,
+      :host([expanded]) my-solutions {
         display: block;
       }
     }
@@ -154,9 +131,8 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       }
 
       /* Show all content in drawer mode */
-      :host section-heading,
-      :host .my-ideas,
-      :host .my-solutions {
+      :host my-ideas,
+      :host my-solutions {
         display: block;
       }
 
@@ -171,56 +147,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       }
     }
   `;
-
-  private readonly ideaContributions = new Task(this, {
-    task: async ([funder]) => {
-      if (funder) {
-        const result = await urqlClient.query(IdeasByFunderDocument, {
-          funder,
-        });
-        return result.data?.ideaContributions;
-      }
-    },
-    args: () => [this.connection.address] as const,
-  });
-
-  private readonly solutionContributions = new Task(this, {
-    task: async ([user]) => {
-      if (user) {
-        const result = await urqlClient.query(
-          SolutionsByFunderOrDrafterDocument,
-          { user }
-        );
-
-        // Get solutions from both queries
-        const fundedSolutions =
-          result.data?.fundedSolutions?.map(
-            (contribution) => contribution.solution
-          ) || [];
-        const draftedSolutions = result.data?.draftedSolutions || [];
-
-        // Combine and deduplicate solutions based on their ID
-        const solutionMap = new Map();
-
-        // Add funded solutions to map
-        fundedSolutions.forEach((solution) => {
-          solutionMap.set(solution.id, solution);
-        });
-
-        // Add drafted solutions to map (will overwrite any duplicates)
-        draftedSolutions.forEach((solution) => {
-          solutionMap.set(solution.id, solution);
-        });
-
-        // Convert map values back to array
-        return Array.from(solutionMap.values());
-      }
-    },
-    args: () => [this.connection.address] as const,
-  });
-
-  @consume({ context: connectionContext, subscribe: true })
-  connection!: Connection;
 
   @property({ type: Boolean, reflect: true }) collapsed = false;
   @property({ type: Boolean, reflect: true }) expanded = false;
@@ -342,43 +268,16 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     return html`
       <div class="toggle-button" @click=${this.handleToggle}>
         <sl-icon
-          src=${(window.innerWidth <= 1024 &&
-            window.innerWidth > 768 &&
-            !this.expanded) ||
-          (window.innerWidth > 1024 && this.collapsed)
-            ? chevronRight
-            : chevronLeft}
-          label="Toggle sidebar"
+          src=${leftSidebarCollapsed.get() ? chevronRight : chevronLeft}
         ></sl-icon>
       </div>
-      <left-nav
-        .collapsed=${this.collapsed}
-        .expanded=${this.expanded}
-      ></left-nav>
-      <section-heading>My Ideas</section-heading>
-      <div class="my-ideas">
-        ${this.ideaContributions.render({
-          complete: (ics) =>
-            ics?.map(
-              (ic) => html`
-                <idea-card-small .idea=${ic.idea}></idea-card-small>
-              `
-            ),
-        })}
-      </div>
-      <section-heading>My Solutions</section-heading>
-      <div class="my-solutions">
-        ${this.solutionContributions.render({
-          complete: (solutions) =>
-            solutions?.map(
-              (solution) => html`
-                <solution-card-small
-                  .solution=${solution as Solution}
-                ></solution-card-small>
-              `
-            ),
-        })}
-      </div>
+      <left-nav></left-nav>
+      ${this.connection?.address
+        ? html`
+            <my-ideas></my-ideas>
+            <my-solutions></my-solutions>
+          `
+        : ''}
     `;
   }
 }
