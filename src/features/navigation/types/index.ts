@@ -1,4 +1,4 @@
-export type QueryType =
+export type DiscoverQueryType =
   | 'hot-ideas'
   | 'new-ideas'
   | 'deadline'
