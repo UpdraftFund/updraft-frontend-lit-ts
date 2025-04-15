@@ -29,7 +29,7 @@
 ### Data Management
 
 - **@graphprotocol/client-urql**: GraphQL client integration
-- **urql**: GraphQL client
+- **urql**: GraphQL client (use subscription/query observable pattern for data fetching; prefer this over Task for GraphQL)
 - **graphql**: GraphQL implementation
 
 ### Web3 Integration
@@ -137,8 +137,8 @@ We avoid using Context for:
 
 ### Data Fetching
 
-- GraphQL with urql client
-- Task pattern for async operations
+- GraphQL with urql client (prefer urql's subscription/query observable pattern for reactivity and cache integration)
+- Task pattern for async operations (use for smart contract reads or non-urql async work)
 - Signal-based data dependencies
 - Error handling and loading states
 

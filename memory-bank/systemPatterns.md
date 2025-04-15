@@ -144,40 +144,73 @@ export class PerformantList extends SignalWatcher(LitElement) {
 
 ## Data Fetching Patterns
 
-### Task for Async Operations
+### urql Subscriptions for GraphQL Data
 
-The application uses `@lit/task` to handle asynchronous operations with automatic loading, error, and success states:
+For GraphQL data fetching, prefer using urql's subscription/query observable pattern over @lit/task. This approach leverages urql's built-in caching and reactivity, and is more compatible with the subscription paradigm than Task, which is better suited for one-off async operations (such as smart contract reads).
+
+**Pattern:**
 
 ```typescript
-import { Task } from '@lit/task';
-import { signal } from '@lit-labs/signals';
+import { LitElement, html } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { urqlClient } from '@/state/urql';
+import { IdeasBySharesDocument } from '@/graphql/generated';
 
-// State that affects data fetching
-const selectedTab = signal('hot');
+@customElement('hot-ideas')
+export class HotIdeas extends LitElement {
+  @state() private hotIdeas?: Idea[];
+  private unsubHotIdeas?: () => void;
 
-class DataComponent extends SignalWatcher(LitElement) {
-  private dataTask = new Task(
-    this,
-    async ([tab]) => {
-      // Fetch data based on signal values
-      const result = await fetchData(tab);
-      return result.data;
-    },
-    // Signal-based dependency array
-    () => [selectedTab.get()]
-  );
-
-  render() {
-    return html`
-      ${this.dataTask.render({
-        pending: () => html`<div>Loading...</div>`,
-        complete: (data) => html`<div class="results">...</div>`,
-        error: (e) => html`<div>Error: ${e.message}</div>`,
-      })}
-    `;
+  private subscribe() {
+    this.unsubHotIdeas?.();
+    const hotIdeasSub = urqlClient
+      .query(IdeasBySharesDocument, {})
+      .subscribe((result) => {
+        if (result.data?.ideas) {
+          this.hotIdeas = result.data.ideas as Idea[];
+        } else {
+          this.hotIdeas = [];
+        }
+      });
+    this.unsubHotIdeas = hotIdeasSub.unsubscribe;
   }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.subscribe();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubHotIdeas?.();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+  }
+
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.unsubHotIdeas?.();
+    } else {
+      this.subscribe();
+    }
+  };
+
+  // ...render logic...
 }
 ```
+
+**Why this pattern?**
+
+- urql subscriptions provide real-time updates and leverage urql's cache.
+- Task is not reactive to urql's cache updates and is better for one-off async operations (e.g., smart contract reads).
+- This pattern ensures the UI stays in sync with backend data and is more maintainable.
+
+### Task for Async Operations (Smart Contracts)
+
+Continue to use `@lit/task` for async operations that are not compatible with urql's subscription model, such as direct smart contract reads.
 
 ## Routing Pattern
 

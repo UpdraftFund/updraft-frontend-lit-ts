@@ -4,11 +4,14 @@
 
 The current development focus is on implementing and optimizing the use of Lit Signals for state management throughout the application. This includes ensuring that all components follow the best practices outlined in the `docs/lit-signals-best-practices.md` document.
 
+A new focus is the adoption of urql's subscription/query observable pattern for GraphQL data fetching, replacing the use of @lit/task for these cases. Task remains appropriate for smart contract reads and other one-off async operations.
+
 ## Recent Changes
 
 - Added comprehensive documentation on Lit Signals best practices
 - Initial project structure and configuration set up
 - Core dependencies installed and configured
+- Adopted urql subscription/query observable pattern for GraphQL data fetching, replacing Task for these cases
 
 ## Lit Signals Implementation
 
@@ -61,6 +64,11 @@ The current approach is to:
 2. Use centralized state patterns for shared data
 3. Implement Task-based async operations for data fetching
 4. Apply the appropriate signal or context pattern based on use case
+
+### Data Fetching Approach
+
+- Use urql subscriptions/observables for GraphQL data fetching to leverage cache and reactivity
+- Use @lit/task for smart contract reads and non-urql async operations
 
 ## Current Challenges
 

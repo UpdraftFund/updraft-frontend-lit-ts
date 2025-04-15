@@ -11,6 +11,7 @@ The Updraft frontend application is in the early development stages, with core a
 - TypeScript configuration
 - Linting and formatting setup
 - Initial documentation of Lit Signals best practices
+- urql subscriptions/observables now used for GraphQL data fetching (replacing Task for these cases)
 
 ## What's In Progress
 
@@ -58,6 +59,7 @@ The Updraft frontend application is in the early development stages, with core a
 ## Known Issues
 
 - No significant issues identified yet as the project is in early stages
+- Task is now reserved for smart contract reads and non-urql async operations; urql subscription pattern is preferred for GraphQL
 
 ## Next Milestones
 
