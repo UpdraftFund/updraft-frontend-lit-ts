@@ -20,8 +20,6 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
-// TODO: Remove
-// import '@/components/page-specific/idea/side-bar';
 import '@components/navigation/create-idea-button';
 import '@/features/common/components/upd-dialog';
 import '@/features/common/components/share-dialog';
