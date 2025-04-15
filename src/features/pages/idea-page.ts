@@ -20,8 +20,7 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
-// TODO: Remove
-// import '@/components/page-specific/idea/side-bar';
+import '@components/navigation/create-idea-button';
 import '@/features/common/components/upd-dialog';
 import '@/features/common/components/share-dialog';
 import '@/features/common/components/transaction-watcher';
@@ -29,7 +28,7 @@ import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import { IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
@@ -40,9 +39,9 @@ import {
   updraftSettings,
 } from '@/features/common/state/context';
 import { UpdraftSettings, Balances, Idea } from '@/types';
-import { modal } from '@/features/common/utils/web3';
+import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
-import { rightSidebarContent } from '@state/layout';
+import { rightSidebarContent, topBarContent } from '@state/layout';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -288,6 +287,10 @@ export class IdeaPage extends LitElement {
     rightSidebarContent.set(html`
       <top-supporters .ideaId=${this.ideaId}></top-supporters>
       <related-ideas .ideaId=${this.ideaId}></related-ideas>
+    `);
+    topBarContent.set(html`
+      <create-idea-button></create-idea-button>
+      <search-bar></search-bar>
     `);
     return html`
       <div class="container">

@@ -44,7 +44,7 @@ import { updraft } from '@contracts/updraft';
 import { UpdraftSettings } from '@/features/common/types';
 import { Balances } from '@/features/user/types/current-user';
 import { IdeaDocument } from '@gql';
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 
 interface SolutionFormData {
   deadline: string;

@@ -8,13 +8,8 @@ import { fromHex } from 'viem';
 // Import user profile type
 import type { CurrentUser } from '@/features/user/types/current-user';
 
-// Import the wallet connection modal and wagmi config
-import { modal, config } from '@/features/common/utils/web3';
-import { disconnect, watchAccount, reconnect } from '@wagmi/core';
-
-// Import urqlClient for GraphQL queries
-import urqlClient from '@/features/common/utils/urql-client';
-import { ProfileDocument } from '@gql';
+// Import the wallet connection modal
+import { modal } from '@utils/web3.ts';
 
 // Define custom events for user state changes
 export const USER_CONNECTED_EVENT = 'user-connected';

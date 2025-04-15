@@ -4,7 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 
-import { QueryType } from '@/types';
+import { DiscoverQueryType } from '@/types';
 
 @customElement('discover-tabs')
 export class DiscoverTabs extends LitElement {
@@ -16,10 +16,10 @@ export class DiscoverTabs extends LitElement {
     }
   `;
 
-  @property({ type: String }) tab?: QueryType;
+  @property({ type: String }) tab?: DiscoverQueryType;
 
   private handleTab(e: CustomEvent) {
-    const tabName = e?.detail?.name as QueryType;
+    const tabName = e?.detail?.name as DiscoverQueryType;
     const url = new URL(window.location.href);
     url.searchParams.set('tab', tabName);
     window.history.pushState({}, '', url.toString());

@@ -22,7 +22,7 @@ import {
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
 import { markComplete } from '@pages/home/state/beginner-tasks';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
 import { topBarContent } from '@state/layout';
 

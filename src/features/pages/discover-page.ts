@@ -1,13 +1,14 @@
 import { customElement, state } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { Task } from '@lit/task';
 import { consume } from '@lit/context';
 import { SignalWatcher } from '@lit-labs/signals';
 import { repeat } from 'lit/directives/repeat.js';
+import { cache } from 'lit/directives/cache.js';
 
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import '@components/idea/idea-card-large';
 import '@components/navigation/search-bar';
@@ -18,7 +19,7 @@ import {
   Idea,
   Solution,
   IdeaContribution,
-  QueryType,
+  DiscoverQueryType,
 } from '@/types';
 
 import { connectionContext } from '@state/common/context';
@@ -33,23 +34,21 @@ import {
   SolutionsByDeadlineDocument,
   IdeasFullTextDocument,
   IdeasByTagsDocument,
-  type IdeasBySharesQueryVariables,
-  type IdeasByFundersQueryVariables,
-  type IdeasByStartTimeQueryVariables,
-  type SolutionsByDeadlineQueryVariables,
-  type IdeasFullTextQueryVariables,
-  type IdeasByTagsQueryVariables,
+  IdeasBySharesQuery,
+  IdeasByStartTimeQuery,
+  SolutionsByDeadlineQuery,
+  IdeasByFundersQuery,
+  IdeasFullTextQuery,
+  IdeasByTagsQuery,
 } from '@gql';
 
-type ResultType = Idea[] | Solution[] | IdeaContribution[];
-
-type DiscoverQueryVariables =
-  | IdeasBySharesQueryVariables
-  | IdeasByFundersQueryVariables
-  | IdeasByStartTimeQueryVariables
-  | SolutionsByDeadlineQueryVariables
-  | IdeasFullTextQueryVariables
-  | IdeasByTagsQueryVariables;
+type AnyResult =
+  | IdeasBySharesQuery
+  | IdeasByStartTimeQuery
+  | SolutionsByDeadlineQuery
+  | IdeasByFundersQuery
+  | IdeasFullTextQuery
+  | IdeasByTagsQuery;
 
 @customElement('discover-page')
 export class DiscoverPage extends SignalWatcher(LitElement) {
@@ -95,6 +94,17 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   `;
 
+  @consume({ context: connectionContext, subscribe: true })
+  connection?: Connection;
+
+  @state() private search: string | null = null;
+  @state() private tab: DiscoverQueryType = 'hot-ideas';
+  @state() private tags: string[] = [];
+  @state() private results?: Idea[] | Solution[] | IdeaContribution[];
+  @state() private isLoading: boolean = false;
+
+  private unsubscribeQuery?: () => void;
+
   private readonly queries = {
     'hot-ideas': IdeasBySharesDocument,
     'new-ideas': IdeasByStartTimeDocument,
@@ -104,118 +114,75 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     tags: IdeasByTagsDocument,
   } as const;
 
-  private readonly variables = {
-    'hot-ideas': () => ({ detailed: true }),
-    'new-ideas': () => ({}),
-    deadline: () => ({}),
-    followed: () => ({
-      funders: JSON.parse(localStorage.getItem('funders') || '[]'),
-    }),
-    search: () => ({
-      text: this.search ?? '', // Ensure text is always string, default to '' if null
-    }),
-    tags: () => {
-      const tagMatches = this.search?.match(/\[.*?\]/g) || [];
-      // Extract, remove brackets, filter empty, and take up to 5
-      const validTags = tagMatches
-        .map((tag) => tag.replace(/[\[\]]/g, ''))
-        .filter((tag) => tag.length > 0)
-        .slice(0, 5);
+  private getVariablesForQuery(queryType: DiscoverQueryType) {
+    switch (queryType) {
+      case 'hot-ideas':
+        return { detailed: true };
+      case 'new-ideas':
+        return {};
+      case 'deadline':
+        return {};
+      case 'followed':
+        return {
+          funders: JSON.parse(localStorage.getItem('funders') || '[]'),
+        };
+      case 'search':
+        return {
+          text: this.search ?? '', // Ensure text is always string, default to '' if null
+        };
+      case 'tags':
+        return {
+          tag1: this.tags[0] || '',
+          tag2: this.tags[1] || this.tags[0] || '',
+          tag3: this.tags[2] || this.tags[0] || '',
+          tag4: this.tags[3] || this.tags[0] || '',
+          tag5: this.tags[4] || this.tags[0] || '',
+          detailed: true,
+        };
+      default:
+        return {};
+    }
+  }
 
-      this.tags = [...validTags]; // Store the valid tags found
+  private getResultsFromData(data: AnyResult, queryType: DiscoverQueryType) {
+    // Mapping of query types to their corresponding data properties
+    switch (queryType) {
+      case 'hot-ideas':
+        return (data as IdeasBySharesQuery).ideas as Idea[];
+      case 'new-ideas':
+        return (data as IdeasByStartTimeQuery).ideas as Idea[];
+      case 'deadline':
+        return (data as SolutionsByDeadlineQuery).solutions as Solution[];
+      case 'followed':
+        return (data as IdeasByFundersQuery)
+          .ideaContributions as IdeaContribution[];
+      case 'search':
+        return (data as IdeasFullTextQuery).ideaSearch as Idea[];
+      case 'tags':
+        return (data as IdeasByTagsQuery).ideas as Idea[];
+    }
+  }
 
-      // Determine the value to pad with: first valid tag or a space if none exist
-      const padValue = validTags.length > 0 ? validTags[0] : ' ';
+  private subscribe(queryType: DiscoverQueryType) {
+    // Clean up previous subscription if it exists
+    this.unsubscribeQuery?.();
 
-      // Create an array of exactly 5 tags, padding with padValue if needed
-      const filledTags = Array.from(
-        { length: 5 },
-        (_, i) => validTags[i] ?? padValue
-      );
+    this.isLoading = true;
+    this.results = undefined;
 
-      return {
-        tag1: filledTags[0],
-        tag2: filledTags[1],
-        tag3: filledTags[2],
-        tag4: filledTags[3],
-        tag5: filledTags[4],
-        detailed: true,
-      };
-    },
-  };
-
-  private readonly resultEntities: Record<QueryType, string> = {
-    'hot-ideas': 'ideas',
-    'new-ideas': 'ideas',
-    deadline: 'solutions',
-    followed: 'ideaContributions',
-    search: 'ideaSearch',
-    tags: 'ideas',
-  };
-
-  private readonly results = new Task(this, {
-    task: async ([tab, search]): Promise<
-      { data: Record<string, unknown> | undefined; entity: string } | undefined
-    > => {
-      // Determine the actual query type based on tab and search content
-      let actualQueryType: QueryType | undefined = tab;
-      if (actualQueryType === 'search' && search?.startsWith('[')) {
-        actualQueryType = 'tags';
+    const query = this.queries[queryType];
+    const variables = this.getVariablesForQuery(queryType);
+    const querySub = urqlClient.query(query, variables).subscribe((result) => {
+      this.isLoading = false;
+      if (result.data) {
+        this.results = this.getResultsFromData(result.data, queryType);
+      } else {
+        this.results = [];
       }
-      this.queryType = actualQueryType; // Store for potential use elsewhere (like renderTagList)
+    });
 
-      if (!actualQueryType) {
-        return undefined; // No valid query type determined
-      }
-
-      const query = this.queries[actualQueryType];
-      let variables: DiscoverQueryVariables = {}; // Initialize variables
-
-      // Use a switch to explicitly link queryType to variable generation for TS
-      switch (actualQueryType) {
-        case 'hot-ideas':
-          variables = this.variables['hot-ideas']();
-          break;
-        case 'new-ideas':
-          variables = this.variables['new-ideas']();
-          break;
-        case 'deadline':
-          variables = this.variables.deadline();
-          break;
-        case 'followed':
-          variables = this.variables.followed();
-          break;
-        case 'search':
-          variables = this.variables.search();
-          break;
-        case 'tags':
-          variables = this.variables.tags();
-          break;
-        default:
-          // Should not happen if QueryType enum is exhaustive
-          console.error('Unhandled query type:', actualQueryType);
-          return undefined;
-      }
-
-      // Now TS should know 'variables' matches the requirements of 'query'
-      const result = await urqlClient.query(query, variables);
-
-      return {
-        data: result.data,
-        entity: this.resultEntities[actualQueryType],
-      };
-    },
-    args: () => [this.tab, this.search] as const,
-  });
-
-  @consume({ context: connectionContext, subscribe: true })
-  connection!: Connection;
-
-  @state() tab: QueryType = 'hot-ideas';
-  @state() search: string | null = null;
-
-  private queryType?: QueryType;
-  private tags: string[] = [];
+    this.unsubscribeQuery = querySub.unsubscribe;
+  }
 
   private renderTagList() {
     return html`
@@ -243,23 +210,75 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   private setTabFromUrl = () => {
     const url = new URL(window.location.href);
     this.search = url.searchParams.get('search');
-    this.tab = url.searchParams.get('tab') as QueryType;
+    this.tab = url.searchParams.get('tab') as DiscoverQueryType;
 
     if (!this.tab) {
       // If there's a search term and no tab is specified, set tab to 'search'
-      if (this.search) {
-        this.tab = 'search';
+      if (this.search && this.search.trim() !== '') {
+        if (this.search.startsWith('[')) {
+          this.tab = 'tags';
+          const tagMatches = this.search?.match(/\[.*?]/g) || [];
+          this.tags = tagMatches
+            .map((tag) => tag.replace(/[\[\]]/g, ''))
+            .slice(0, 5); // only get up to 5 matches
+        } else {
+          this.tab = 'search';
+        }
       } else {
         // If no tab or search is specified, default to 'hot-ideas'
         this.tab = 'hot-ideas';
       }
     }
+
+    this.subscribe(this.tab);
   };
+
+  private renderQueryResults() {
+    if (this.isLoading) {
+      return html` <sl-spinner></sl-spinner>`;
+    }
+
+    if (!this.results?.length) {
+      return html`<p>No results found</p>`;
+    }
+
+    // Type handling based on the current tab/query type
+    if (
+      this.tab === 'hot-ideas' ||
+      this.tab === 'new-ideas' ||
+      this.tab === 'search' ||
+      this.tab === 'tags'
+    ) {
+      // Ideas result type
+      return html`${repeat(
+        this.results as Idea[],
+        (idea) => idea.id,
+        (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
+      )}`;
+    } else if (this.tab === 'deadline') {
+      // Solutions result type
+      return html`${repeat(
+        this.results as Solution[],
+        (solution) => solution.id,
+        (solution) =>
+          html` <solution-card .solution=${solution}></solution-card>`
+      )}`;
+    } else if (this.tab === 'followed') {
+      // IdeaContribution result type
+      return html`${repeat(
+        this.results as IdeaContribution[],
+        (contribution) => contribution.id,
+        (contribution) =>
+          html` <idea-card-large .idea=${contribution.idea}></idea-card-large>`
+      )}`;
+    }
+  }
 
   connectedCallback() {
     super.connectedCallback();
     this.setTabFromUrl();
     window.addEventListener('popstate', this.setTabFromUrl);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
     // Listen for URL changes that aren't caught by popstate
     // This is needed for when users click on tags in idea cards
@@ -269,7 +288,12 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   disconnectedCallback() {
     window.removeEventListener('popstate', this.setTabFromUrl);
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
     this._teardownUrlChangeListener();
+    this.unsubscribeQuery?.();
     super.disconnectedCallback();
   }
 
@@ -299,6 +323,14 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   }
 
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.unsubscribeQuery?.();
+    } else {
+      this.subscribe(this.tab);
+    }
+  };
+
   render() {
     topBarContent.set(html`
       <create-idea-button></create-idea-button>
@@ -311,44 +343,12 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
     `);
+
     return html`
       <div class="container">
         <main>
-          ${this.results.render({
-            complete: (result) => {
-              if (result) {
-                const data = (result.data?.[result.entity] ||
-                  []) as ResultType[];
-                return html`
-                  ${this.queryType === 'tags' ? this.renderTagList() : html``}
-                  ${data.map((item: ResultType) => {
-                    switch (result.entity) {
-                      case 'ideas':
-                        return html` <idea-card-large
-                          .idea=${item}
-                        ></idea-card-large>`;
-                      case 'ideaSearch':
-                        return html` <idea-card-large
-                          .idea=${item}
-                        ></idea-card-large>`;
-                      case 'solutions':
-                        return html` <solution-card
-                          .solution=${item}
-                        ></solution-card>`;
-                      case 'ideaContributions':
-                        return html` <idea-card-large
-                          .idea=${(item as unknown as IdeaContribution).idea}
-                        ></idea-card-large>`;
-                    }
-                  })}
-                `;
-              } else {
-                return html``;
-              }
-            },
-            initial: () => html` <loading-spinner></loading-spinner>`,
-            error: (error) => html`<p>Error: ${error}</p>`,
-          })}
+          ${this.tab === 'tags' ? this.renderTagList() : html``}
+          ${cache(this.renderQueryResults())}
         </main>
       </div>
     `;

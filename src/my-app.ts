@@ -17,7 +17,7 @@ import '@/features/common/styles/global.css';
 import '@/features/common/styles/theme.css';
 import '@/features/common/styles/reset.css';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 
 import {
   urqlClientContext,

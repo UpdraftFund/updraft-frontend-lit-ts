@@ -7,7 +7,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
-import urqlClient from '@/features/common/utils/urql-client';
+import urqlClient from '@utils/urql-client';
 import { TopTagsDocument } from '@gql';
 import { TagCount } from '@/types';
 
