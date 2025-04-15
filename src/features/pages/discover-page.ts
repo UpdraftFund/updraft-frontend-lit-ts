@@ -114,45 +114,35 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     tags: IdeasByTagsDocument,
   } as const;
 
-  private readonly variables = {
-    'hot-ideas': () => ({ detailed: true }),
-    'new-ideas': () => ({}),
-    deadline: () => ({}),
-    followed: () => ({
-      funders: JSON.parse(localStorage.getItem('funders') || '[]'),
-    }),
-    search: () => ({
-      text: this.search ?? '', // Ensure text is always string, default to '' if null
-    }),
-    tags: () => {
-      const tagMatches = this.search?.match(/\[.*?\]/g) || [];
-      // Extract, remove brackets, filter empty, and take up to 5
-      const validTags = tagMatches
-        .map((tag) => tag.replace(/[\[\]]/g, ''))
-        .filter((tag) => tag.length > 0)
-        .slice(0, 5);
-
-      this.tags = [...validTags]; // Store the valid tags found
-
-      // Determine the value to pad with: first valid tag or a space if none exist
-      const padValue = validTags.length > 0 ? validTags[0] : ' ';
-
-      // Create an array of exactly 5 tags, padding with padValue if needed
-      const filledTags = Array.from(
-        { length: 5 },
-        (_, i) => validTags[i] ?? padValue
-      );
-
-      return {
-        tag1: filledTags[0],
-        tag2: filledTags[1],
-        tag3: filledTags[2],
-        tag4: filledTags[3],
-        tag5: filledTags[4],
-        detailed: true,
-      };
-    },
-  };
+  private getVariablesForQuery(queryType: DiscoverQueryType) {
+    switch (queryType) {
+      case 'hot-ideas':
+        return { detailed: true };
+      case 'new-ideas':
+        return {};
+      case 'deadline':
+        return {};
+      case 'followed':
+        return {
+          funders: JSON.parse(localStorage.getItem('funders') || '[]'),
+        };
+      case 'search':
+        return {
+          text: this.search ?? '', // Ensure text is always string, default to '' if null
+        };
+      case 'tags':
+        return {
+          tag1: this.tags[0] || '',
+          tag2: this.tags[1] || this.tags[0] || '',
+          tag3: this.tags[2] || this.tags[0] || '',
+          tag4: this.tags[3] || this.tags[0] || '',
+          tag5: this.tags[4] || this.tags[0] || '',
+          detailed: true,
+        };
+      default:
+        return {};
+    }
+  }
 
   private getResultsFromData(data: AnyResult, queryType: DiscoverQueryType) {
     // Mapping of query types to their corresponding data properties
@@ -181,7 +171,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     this.results = undefined;
 
     const query = this.queries[queryType];
-    const variables = this.variables[queryType]();
+    const variables = this.getVariablesForQuery(queryType);
     const querySub = urqlClient.query(query, variables).subscribe((result) => {
       this.isLoading = false;
       if (result.data) {
@@ -227,6 +217,10 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       if (this.search && this.search.trim() !== '') {
         if (this.search.startsWith('[')) {
           this.tab = 'tags';
+          const tagMatches = this.search?.match(/\[.*?]/g) || [];
+          this.tags = tagMatches
+            .map((tag) => tag.replace(/[\[\]]/g, ''))
+            .slice(0, 5); // only get up to 5 matches
         } else {
           this.tab = 'search';
         }
