@@ -11,7 +11,7 @@ import { connectionContext } from '@state/common/context';
 import { Connection } from '@/types/user/current-user';
 
 import urqlClient from '@utils/urql-client';
-import { IdeasByFunderDocument, IdeasByFunderQuery } from '@gql';
+import { IdeasByFunderDocument, type IdeasByFunderQuery } from '@gql';
 
 @customElement('my-ideas')
 export class MyIdeas extends LitElement {
