@@ -22,6 +22,7 @@ import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 // TODO: Remove
 // import '@/components/page-specific/idea/side-bar';
+import '@components/navigation/create-idea-button';
 import '@/features/common/components/upd-dialog';
 import '@/features/common/components/share-dialog';
 import '@/features/common/components/transaction-watcher';
@@ -42,7 +43,7 @@ import {
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
-import { rightSidebarContent } from '@state/layout';
+import { rightSidebarContent, topBarContent } from '@state/layout';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
@@ -288,6 +289,10 @@ export class IdeaPage extends LitElement {
     rightSidebarContent.set(html`
       <top-supporters .ideaId=${this.ideaId}></top-supporters>
       <related-ideas .ideaId=${this.ideaId}></related-ideas>
+    `);
+    topBarContent.set(html`
+      <create-idea-button></create-idea-button>
+      <search-bar></search-bar>
     `);
     return html`
       <div class="container">
