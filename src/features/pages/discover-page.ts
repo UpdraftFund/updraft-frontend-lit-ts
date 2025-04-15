@@ -272,8 +272,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
           html` <idea-card-large .idea=${contribution.idea}></idea-card-large>`
       )}`;
     }
-
-    return html`<p>Unknown result type</p>`;
   }
 
   connectedCallback() {
