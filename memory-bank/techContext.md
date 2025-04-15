@@ -47,22 +47,47 @@
 
 ## Project Structure
 
+The project uses a **vertical slice architecture**. Each feature is self-contained in its own folder under `src/features`, with its own components, state, queries, types, assets, and tests. The `src/lib/` folder contains shared utilities and contract logic used across features.
+
 ```
 /
 ├── src/
-│   ├── components/
-│   │   ├── my-component/        # Component-specific files
-│   │   │   ├── my-component.ts
-│   │   │   ├── my-component.css
-│   │   │   └── my-component.test.ts
-│   │   └── page-specific/       # Page-specific components
-│   ├── state/                   # Signal-based state management
-│   └── utils/                   # Utility functions
+│   ├── features/
+│   │   ├── idea/
+│   │   ├── solution/
+│   │   ├── user/
+│   │   ├── tags/
+│   │   ├── navigation/
+│   │   ├── layout/
+│   │   ├── common/
+│   │   └── pages/
+│   │       ├── home/
+│   │       └── discover/
+│   └── lib/
+│       ├── utils/
+│       └── contracts/
 ├── docs/                        # Documentation files
 ├── public/                      # Static assets
 ├── dist/                        # Build output
-├── .graphclient/               # Generated GraphQL client code
-└── updraft-schemas/            # GraphQL schemas (submodule)
+├── .graphclient/                # Generated GraphQL client code
+└── updraft-schemas/             # GraphQL schemas (submodule)
+```
+
+### Vite and TypeScript Aliases
+
+The project uses extensive aliasing in both `vite.config.js` and `tsconfig.json` to support modular imports and feature isolation. Example aliases:
+
+- `@components/idea` → `src/features/idea/components`
+- `@state/user` → `src/features/user/state`
+- `@icons/solution` → `src/features/solution/assets/icons`
+- `@pages` → `src/features/pages`
+- `@utils` → `src/lib/utils`
+
+This enables clean imports such as:
+
+```typescript
+import { IdeaCardLarge } from '@components/idea/idea-card-large';
+import { userState } from '@state/user/user';
 ```
 
 ## Development Workflow

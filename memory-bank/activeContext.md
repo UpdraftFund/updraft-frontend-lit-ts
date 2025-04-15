@@ -2,7 +2,15 @@
 
 ## Current Focus
 
-The current development focus is on implementing and optimizing the use of Lit Signals for state management throughout the application. This includes ensuring that all components follow the best practices outlined in the `docs/lit-signals-best-practices.md` document.
+The current development focus is on fully adopting the **vertical slice architecture**. The application has been refactored so that each feature (e.g., idea, solution, user, tags, navigation, layout, common, and pages/home/discover) is self-contained in its own folder under `src/features`. Each feature manages its own components, state, queries, types, assets, and tests. This structure is now the standard for all new work and documentation.
+
+Vite and TypeScript aliases have been updated to support this modular structure, enabling clean and intention-revealing imports for each feature slice.
+
+The ongoing focus includes:
+
+- Ensuring all new code and refactors follow the vertical slice pattern
+- Migrating any remaining shared or legacy code into appropriate feature slices
+- Maintaining and updating documentation to reflect this architecture
 
 A new focus is the adoption of urql's subscription/query observable pattern for GraphQL data fetching, replacing the use of @lit/task for these cases. Task remains appropriate for smart contract reads and other one-off async operations.
 

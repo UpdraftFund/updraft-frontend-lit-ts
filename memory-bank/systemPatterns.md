@@ -2,7 +2,62 @@
 
 ## Architecture Overview
 
-The Updraft frontend application is built on a component-based architecture using Lit and Web Components. The application uses a reactive state management approach with Lit Signals at its core.
+The Updraft frontend application is now organized using a **vertical slice architecture**. Each feature is self-contained within the `src/features` directory, encapsulating its own state, components, queries, types, assets, and tests. This modular approach improves maintainability, scalability, and feature isolation.
+
+### Vertical Slice Pattern
+
+```
+src/
+  features/
+    <feature>/
+      components/   # UI components for the feature
+      state/        # Signal-based state management for the feature
+      queries/      # GraphQL queries/mutations for the feature
+      types/        # TypeScript types for the feature
+      assets/       # Icons, images, etc. for the feature
+      __tests__/    # Unit and integration tests for the feature
+```
+
+#### Example (Idea Feature):
+
+```
+src/features/idea/
+  components/
+  state/
+  queries/
+  types/
+  assets/
+  __tests__/
+```
+
+### Pages as Feature Slices
+
+The `pages` feature contains subfolders for each major page (e.g., `home`, `discover`), each following the same vertical slice structure:
+
+```
+src/features/pages/home/
+  components/
+  state/
+  queries/
+  __tests__/
+```
+
+## Vite and TypeScript Aliases
+
+To support modular imports and maintain clear boundaries between features, the project uses extensive aliasing in both `vite.config.js` and `tsconfig.json`. Aliases are defined for each feature's components, state, styles, icons, and more. Example aliases:
+
+- `@components/idea` → `src/features/idea/components`
+- `@state/user` → `src/features/user/state`
+- `@icons/solution` → `src/features/solution/assets/icons`
+- `@pages` → `src/features/pages`
+- `@utils` → `src/lib/utils`
+
+This allows for clean, intention-revealing imports such as:
+
+```typescript
+import { IdeaCardLarge } from '@components/idea/idea-card-large';
+import { userState } from '@state/user/user';
+```
 
 ## Component Architecture
 
