@@ -9,7 +9,7 @@ import { fromHex } from 'viem';
 import type { CurrentUser } from '@/features/user/types/current-user';
 
 // Import the wallet connection modal
-import { modal, config } from '@utils/web3.ts';
+import { modal, config } from '@utils/web3';
 import { disconnect, watchAccount, reconnect } from '@wagmi/core';
 
 // Import urqlClient for GraphQL queries

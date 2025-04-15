@@ -2,13 +2,13 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
-import '@components/common/section-heading.ts';
-import '@components/solution/solution-card-small.ts';
+import '@components/common/section-heading';
+import '@components/solution/solution-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import { userAddress } from '@state/user/user';
 
-import urqlClient from '@utils/urql-client.ts';
+import urqlClient from '@utils/urql-client';
 import { SolutionsByFunderOrDrafterDocument } from '@gql';
 import { Solution } from '@/types';
 
