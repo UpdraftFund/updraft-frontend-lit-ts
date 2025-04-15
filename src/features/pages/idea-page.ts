@@ -196,6 +196,13 @@ export class IdeaPage extends LitElement {
       const result = await urqlClient.query(IdeaDocument, { ideaId });
       const ideaData = result.data?.idea;
       if (ideaData) {
+        rightSidebarContent.set(html`
+          <top-supporters .ideaId=${this.ideaId}></top-supporters>
+          <related-ideas
+            .ideaId=${this.ideaId}
+            .tags=${ideaData.tags}
+          ></related-ideas>
+        `);
         return ideaData as Idea;
       } else {
         throw new Error(`Idea ${ideaId} not found.`);
@@ -284,10 +291,6 @@ export class IdeaPage extends LitElement {
   }
 
   render() {
-    rightSidebarContent.set(html`
-      <top-supporters .ideaId=${this.ideaId}></top-supporters>
-      <related-ideas .ideaId=${this.ideaId}></related-ideas>
-    `);
     topBarContent.set(html`
       <create-idea-button></create-idea-button>
       <search-bar></search-bar>
@@ -413,8 +416,6 @@ export class IdeaPage extends LitElement {
           >
           </transaction-watcher>
         </main>
-        <!-- TODO: Remove -->
-        <!-- <idea-side-bar></idea-side-bar> -->
       </div>
     `;
   }
