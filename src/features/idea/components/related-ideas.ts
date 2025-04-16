@@ -93,6 +93,12 @@ export class RelatedIdeas extends LitElement {
     );
   }
 
+  updated(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has('ideaId')) {
+      this.subscribe();
+    }
+  }
+
   render() {
     return html`
       <div>
