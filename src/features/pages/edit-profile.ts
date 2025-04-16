@@ -14,7 +14,7 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@layout/page-heading.ts';
+import '@layout/page-heading';
 import '@components/user/activity-feed';
 import '@components/common/transaction-watcher';
 import '@components/user/user-avatar';
