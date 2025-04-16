@@ -1,8 +1,7 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
 import { consume } from '@lit/context';
-import { cache } from 'lit/directives/cache.js';
-
+import { Task } from '@lit/task';
 import { fromHex, formatUnits, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -19,7 +18,6 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 import '@components/navigation/create-idea-button';
@@ -55,6 +53,11 @@ export class IdeaPage extends LitElement {
         flex: auto;
         overflow: hidden;
       }
+
+      /* TODO: Remove
+      idea-side-bar {
+        flex: 0 0 300px;
+      } */
 
       main {
         flex: 1;
@@ -152,29 +155,17 @@ export class IdeaPage extends LitElement {
         color: var(--sl-color-neutral-0);
       }
 
-      .error-container {
-        display: flex;
-        flex-direction: column;
-        padding: 2rem;
-        gap: 1rem;
-      }
-
-      .error-container h2 {
-        color: var(--sl-color-danger-600);
-        margin: 0;
-      }
-
-      .error-container p {
-        max-width: 500px;
-      }
-
-      sl-button {
-        max-width: fit-content;
-      }
-
       sl-dialog::part(body) {
         padding-top: 0;
       }
+
+      /* TODO: Remove
+      @media (max-width: 1130px) {
+        idea-side-bar {
+          flex: 0 0 0;
+          pointer-events: none;
+        }
+      } */
     `,
   ];
 
@@ -190,9 +181,6 @@ export class IdeaPage extends LitElement {
   @state() private depositError: string | null = null;
   @state() private antiSpamFee: string = '1'; // 1 UPD
   @state() private needUpd: boolean = false;
-  @state() private idea?: Idea; // the fetched idea
-  @state() private error: string | null = null;
-  @state() private loaded: boolean = false;
 
   @consume({ context: balanceContext, subscribe: true })
   userBalances!: Balances;
@@ -203,45 +191,25 @@ export class IdeaPage extends LitElement {
   //TODO: each url should include a network
   //@property() network!: string;
 
-  private unsubIdea?: () => void;
-
-  private subscribe() {
-    // Clean up any existing subscription
-    this.unsubIdea?.();
-
-    if (this.ideaId) {
-      this.loaded = false;
-      this.error = null;
-      const ideaSub = urqlClient
-        .query(IdeaDocument, { ideaId: this.ideaId })
-        .subscribe((result) => {
-          this.loaded = true;
-          this.idea = result.data?.idea as Idea;
-          if (this.idea) {
-            rightSidebarContent.set(html`
-              <top-supporters .ideaId=${this.ideaId}></top-supporters>
-              <related-ideas
-                .ideaId=${this.ideaId}
-                .tags=${this.idea.tags}
-              ></related-ideas>
-            `);
-          }
-          if (result.error) {
-            this.error = result.error.message;
-          }
-        });
-      this.unsubIdea = ideaSub.unsubscribe;
-    }
-  }
-
-  private handleVisibilityChange = () => {
-    // Pause subscription when tab is hidden
-    if (document.hidden) {
-      this.unsubIdea?.();
-    } else {
-      this.subscribe();
-    }
-  };
+  private readonly idea = new Task(this, {
+    task: async ([ideaId]) => {
+      const result = await urqlClient.query(IdeaDocument, { ideaId });
+      const ideaData = result.data?.idea;
+      if (ideaData) {
+        rightSidebarContent.set(html`
+          <top-supporters .ideaId=${this.ideaId}></top-supporters>
+          <related-ideas
+            .ideaId=${this.ideaId}
+            .tags=${ideaData.tags}
+          ></related-ideas>
+        `);
+        return ideaData as Idea;
+      } else {
+        throw new Error(`Idea ${ideaId} not found.`);
+      }
+    },
+    args: () => [this.ideaId],
+  });
 
   private handleSupportFocus() {
     this.dispatchEvent(new RequestBalanceRefresh());
@@ -322,151 +290,6 @@ export class IdeaPage extends LitElement {
     this.shareDialog.show();
   }
 
-  private renderIdea() {
-    if (this.idea) {
-      const {
-        startTime,
-        funderReward,
-        shares,
-        creator,
-        tags,
-        description,
-        name,
-      } = this.idea;
-
-      let pctFunderReward;
-      if (funderReward != defaultFunderReward && this.updraftSettings) {
-        pctFunderReward =
-          (funderReward * 100) / this.updraftSettings.percentScale;
-      }
-
-      const profile = JSON.parse(
-        fromHex(creator.profile as `0x${string}`, 'string')
-      );
-      const date = dayjs(startTime * 1000);
-      const interest = shortNum(formatUnits(shares, 18));
-
-      return html`
-        <h1 class="heading">Idea: ${name}</h1>
-        <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
-        <span class="created">
-          Created ${date.format('MMM D, YYYY [at] h:mm A UTC')}
-          (${date.fromNow()})
-        </span>
-        <div class="reward-fire">
-          <!--          TODO: don't show funder reward if it's the default value-->
-          ${pctFunderReward
-            ? html`
-                <span class="reward">
-                  <sl-icon src=${gift}></sl-icon>
-                  ${pctFunderReward.toFixed(0)}% funder reward
-                </span>
-              `
-            : html``}
-          <span class="fire"> <sl-icon src=${fire}></sl-icon>${interest} </span>
-        </div>
-        <form @submit=${this.handleSubmit}>
-          <div class="support">
-            <sl-input
-              name="support"
-              required
-              autocomplete="off"
-              @focus=${this.handleSupportFocus}
-              @input=${this.handleSupportInput}
-            >
-            </sl-input>
-            <span>UPD</span>
-            ${this.needUpd
-              ? html`
-                  <sl-button
-                    variant="primary"
-                    @click=${() => this.updDialog.show()}
-                  >
-                    Get more UPD
-                  </sl-button>
-                `
-              : html`
-                  <sl-button variant="primary" type="submit">
-                    Support this Idea
-                  </sl-button>
-                `}
-            ${this.antiSpamFee
-              ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-              : html``}
-          </div>
-          ${this.depositError
-            ? html` <div class="error">${this.depositError}</div>`
-            : html``}
-        </form>
-        <p>${description}</p>
-        ${tags
-          ? html`
-              <div class="tags">
-                ${tags.map(
-                  (tag) => html`
-                    <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                  `
-                )}
-              </div>
-            `
-          : html``}
-        <sl-button
-          class="add-solution-button"
-          href="/create-solution/${this.ideaId}"
-          variant="primary"
-          >Add Solution
-        </sl-button>
-
-        <share-dialog action="supported an Idea" .topic=${name}></share-dialog>
-      `;
-    } else {
-      if (this.error) {
-        return html`
-          <div class="error-container">
-            <h2>Error Loading Idea</h2>
-            <p>${this.error}</p>
-            <sl-button variant="primary" @click=${this.subscribe}
-              >Retry
-            </sl-button>
-          </div>
-        `;
-      } else if (this.loaded) {
-        return html`
-          <div class="error-container">
-            <h2>Idea Not Found</h2>
-            <p>Check the id in the URL.</p>
-            <sl-button href="/discover" variant="primary"
-              >Browse Ideas
-            </sl-button>
-          </div>
-        `;
-      } else {
-        return html` <sl-spinner></sl-spinner>`;
-      }
-    }
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubIdea?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-  }
-
-  updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('ideaId')) {
-      this.subscribe();
-    }
-  }
-
   render() {
     topBarContent.set(html`
       <create-idea-button></create-idea-button>
@@ -475,7 +298,107 @@ export class IdeaPage extends LitElement {
     return html`
       <div class="container">
         <main>
-          ${cache(this.renderIdea())}
+          ${this.idea.render({
+            complete: (idea: Idea) => {
+              const {
+                startTime,
+                funderReward,
+                shares,
+                creator,
+                tags,
+                description,
+              } = idea;
+              let pctFunderReward;
+              if (funderReward != defaultFunderReward && this.updraftSettings) {
+                pctFunderReward =
+                  (funderReward * 100) / this.updraftSettings.percentScale;
+              }
+              const profile = JSON.parse(
+                fromHex(creator.profile as `0x${string}`, 'string')
+              );
+              const date = dayjs(startTime * 1000);
+              const interest = shortNum(formatUnits(shares, 18));
+              return html`
+                <h1 class="heading">Idea: ${idea.name}</h1>
+                <a href="/profile/${creator.id}"
+                  >by ${profile.name || creator.id}</a
+                >
+                <span class="created"
+                  >Created ${date.format('MMM D, YYYY [at] h:mm A UTC')}
+                  (${date.fromNow()})</span
+                >
+                <div class="reward-fire">
+                  <!-- ${pctFunderReward
+                    ? html`
+                        <span class="reward">
+                          <sl-icon src=${gift}></sl-icon>
+                          ${pctFunderReward.toFixed(0)}% funder reward
+                        </span>
+                      `
+                    : ''} -->
+                  <span class="fire"
+                    ><sl-icon src=${fire}></sl-icon>${interest}</span
+                  >
+                </div>
+                <form @submit=${this.handleSubmit}>
+                  <div class="support">
+                    <sl-input
+                      name="support"
+                      required
+                      autocomplete="off"
+                      @focus=${this.handleSupportFocus}
+                      @input=${this.handleSupportInput}
+                    >
+                    </sl-input>
+                    <span>UPD</span>
+                    ${this.needUpd
+                      ? html`
+                          <sl-button
+                            variant="primary"
+                            @click=${() => this.updDialog.show()}
+                            >Get more UPD
+                          </sl-button>
+                        `
+                      : html`
+                          <sl-button variant="primary" type="submit">
+                            Support this Idea
+                          </sl-button>
+                        `}
+                    ${this.antiSpamFee
+                      ? html` <span
+                          >Anti-Spam Fee: ${this.antiSpamFee} UPD</span
+                        >`
+                      : ''}
+                  </div>
+                  ${this.depositError
+                    ? html` <div class="error">${this.depositError}</div>`
+                    : ''}
+                </form>
+                <p>${description}</p>
+                ${tags
+                  ? html`
+                      <div class="tags">
+                        ${tags.map(
+                          (tag) => html`
+                            <a href="/discover?search=[${tag}]" class="tag"
+                              >${tag}</a
+                            >
+                          `
+                        )}
+                      </div>
+                    `
+                  : ''}
+                <a href="/create-solution/${this.ideaId}" rel="next">
+                  <sl-button variant="primary">Add Solution</sl-button>
+                </a>
+
+                <share-dialog
+                  action="supported an Idea"
+                  .topic=${idea.name}
+                ></share-dialog>
+              `;
+            },
+          })}
           <upd-dialog></upd-dialog>
           <sl-dialog label="Set Allowance">
             <p>
