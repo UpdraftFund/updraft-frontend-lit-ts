@@ -1,10 +1,12 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { Task } from '@lit/task';
+import { customElement, property, state } from 'lit/decorators.js';
+import { cache } from 'lit/directives/cache.js';
+
 import { fromHex, formatUnits } from 'viem';
 import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import urqlClient from '@utils/urql-client';
 import { IdeaContributionsDocument } from '@gql';
@@ -75,93 +77,174 @@ export class TopSupporters extends LitElement {
     }
   `;
 
-  @property({ type: String })
-  ideaId = '';
+  @property({ type: String }) ideaId = '';
+  @state() private supporters?: Supporter[];
+  private unsubscribe?: () => void;
 
-  private fetchSupporters = new Task(
-    this,
-    async ([ideaId]) => {
-      if (!ideaId) return [];
+  // private fetchSupporters = new Task(
+  //   this,
+  //   async ([ideaId]) => {
+  //     if (!ideaId) return [];
+  //
+  //     const result = await urqlClient.query(IdeaContributionsDocument, {
+  //       ideaId,
+  //       first: 5,
+  //       skip: 0,
+  //     });
+  //
+  //     if (!result.data?.ideaContributions) return [];
+  //
+  //     return result.data.ideaContributions.map((contribution): Supporter => {
+  //       let name = contribution.funder.id;
+  //       let avatar = makeBlockie(contribution.funder.id);
+  //
+  //       if (contribution.funder.profile) {
+  //         try {
+  //           const profile: Profile = JSON.parse(
+  //             fromHex(contribution.funder.profile as `0x${string}`, 'string')
+  //           );
+  //           name = profile.name || profile.team || contribution.funder.id;
+  //           avatar = profile.image || avatar;
+  //         } catch (e) {
+  //           console.error('Error parsing profile', e);
+  //         }
+  //       }
+  //
+  //       return {
+  //         id: contribution.funder.id,
+  //         name,
+  //         avatar,
+  //         contribution: contribution.contribution,
+  //       };
+  //     });
+  //   },
+  //   () => [this.ideaId]
+  // );
 
-      const result = await urqlClient.query(IdeaContributionsDocument, {
-        ideaId,
+  private subscribe() {
+    // Disconnect any previous subscriptions
+    this.unsubscribe?.();
+
+    if (!this.ideaId) {
+      this.supporters = [];
+      return;
+    }
+
+    const supportersSub = urqlClient
+      .query(IdeaContributionsDocument, {
+        ideaId: this.ideaId,
         first: 5,
         skip: 0,
-      });
+      })
+      .subscribe((result) => {
+        if (!result.data?.ideaContributions) {
+          this.supporters = [];
+        } else {
+          this.supporters = result.data.ideaContributions.map(
+            (contribution) => {
+              let name = contribution.funder.id;
+              let avatar = makeBlockie(contribution.funder.id);
 
-      if (!result.data?.ideaContributions) return [];
+              if (contribution.funder.profile) {
+                try {
+                  const profile: Profile = JSON.parse(
+                    fromHex(
+                      contribution.funder.profile as `0x${string}`,
+                      'string'
+                    )
+                  );
+                  name = profile.name || profile.team || contribution.funder.id;
+                  avatar = profile.image || avatar;
+                } catch (e) {
+                  console.error('Error parsing profile', e);
+                }
+              }
 
-      return result.data.ideaContributions.map((contribution): Supporter => {
-        let name = contribution.funder.id;
-        let avatar = makeBlockie(contribution.funder.id);
-
-        if (contribution.funder.profile) {
-          try {
-            const profile: Profile = JSON.parse(
-              fromHex(contribution.funder.profile as `0x${string}`, 'string')
-            );
-            name = profile.name || profile.team || contribution.funder.id;
-            avatar = profile.image || avatar;
-          } catch (e) {
-            console.error('Error parsing profile', e);
-          }
+              return {
+                id: contribution.funder.id,
+                name,
+                avatar,
+                contribution: contribution.contribution,
+              };
+            }
+          );
         }
-
-        return {
-          id: contribution.funder.id,
-          name,
-          avatar,
-          contribution: contribution.contribution,
-        };
       });
-    },
-    () => [this.ideaId]
-  );
+
+    this.unsubscribe = supportersSub.unsubscribe;
+  }
+
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.unsubscribe?.();
+    } else {
+      this.subscribe();
+    }
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.ideaId) {
+      this.subscribe();
+    }
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubscribe?.();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+  }
+
+  updated(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has('ideaId')) {
+      this.subscribe();
+    }
+  }
 
   render() {
     return html`
       <div>
         <h2>Top Supporters</h2>
-        ${this.fetchSupporters.render({
-          pending: () => html`<sl-spinner></sl-spinner>`,
-          error: (error: unknown) =>
-            html`<div class="no-supporters">
-              Error: ${error instanceof Error ? error.message : String(error)}
-            </div>`,
-          complete: (supporters) => {
-            if (supporters.length === 0) {
-              return html`<div class="no-supporters">No supporters yet</div>`;
-            }
-
-            return html`
-              <div class="supporters-list">
-                ${supporters.map(
-                  (supporter) => html`
-                    <div class="supporter">
-                      <sl-avatar
-                        image="${supporter.avatar}"
-                        label="Avatar for ${supporter.name}"
-                      ></sl-avatar>
-                      <div class="supporter-info">
-                        <a
-                          href="/profile/${supporter.id}"
-                          class="supporter-name"
-                          >${supporter.name}</a
-                        >
-                        <div class="supporter-contribution">
-                          ${shortNum(
-                            formatUnits(BigInt(supporter.contribution), 18)
-                          )}
-                          UPD
-                        </div>
-                      </div>
+        ${this.supporters === undefined
+          ? html` <sl-spinner></sl-spinner>`
+          : cache(
+              this.supporters.length === 0
+                ? html` <div class="no-supporters">No supporters yet</div>`
+                : html`
+                    <div class="supporters-list">
+                      ${this.supporters.map(
+                        (supporter) => html`
+                          <div class="supporter">
+                            <sl-avatar
+                              image="${supporter.avatar}"
+                              label="Avatar for ${supporter.name}"
+                            ></sl-avatar>
+                            <div class="supporter-info">
+                              <a
+                                href="/profile/${supporter.id}"
+                                class="supporter-name"
+                                >${supporter.name}</a
+                              >
+                              <div class="supporter-contribution">
+                                ${shortNum(
+                                  formatUnits(
+                                    BigInt(supporter.contribution),
+                                    18
+                                  )
+                                )}
+                                UPD
+                              </div>
+                            </div>
+                          </div>
+                        `
+                      )}
                     </div>
                   `
-                )}
-              </div>
-            `;
-          },
-        })}
+            )}
       </div>
     `;
   }
