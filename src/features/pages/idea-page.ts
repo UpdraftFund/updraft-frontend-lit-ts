@@ -461,6 +461,12 @@ export class IdeaPage extends LitElement {
     );
   }
 
+  updated(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has('ideaId')) {
+      this.subscribe();
+    }
+  }
+
   render() {
     topBarContent.set(html`
       <create-idea-button></create-idea-button>
