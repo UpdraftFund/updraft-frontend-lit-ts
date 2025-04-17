@@ -1,5 +1,5 @@
 query SolutionsByIdea($first: Int = 5, $skip: Int = 0, $ideaId: String!, $detailed: Boolean = false) {
-    solutions(first: $first, skip: $skip, where: { idea: $ideaId }) {
+    solutions(first: $first, skip: $skip, where: { idea: $ideaId }, orderBy: progress, orderDirection: desc) {
         ... @skip(if: $detailed) {
             ...SolutionFields
         }
