@@ -431,14 +431,16 @@ export class CreateSolution extends SaveableForm {
               <label-with-hint
                 slot="label"
                 label="Deadline*"
-                hint="Select the deadline for your solution. This is the date by which your funding goal should be reached."
+                hint="Select the deadline for your solution. This is the date 
+                by which your funding goalshould be reached."
               ></label-with-hint>
             </sl-input>
 
             <div class="deposit-container">
               <label-with-hint
                 label="Stake"
-                hint="Use staking to attract more funders. If you fail to reach your funding goal, this amount will be distributed to your funders."
+                hint="Use staking to attract more funders. If you fail to reach 
+                your funding goal, this amount will be distributed to your funders."
               >
               </label-with-hint>
               <div class="deposit-row">
@@ -467,23 +469,14 @@ export class CreateSolution extends SaveableForm {
 
             <input type="hidden" name="reward" value="50" />
 
-            ${this.userState?.isConnected
-              ? html`
-                  <a
-                    href="/submit-profile-and-create-solution?ideaId=${this
-                      .ideaId}"
-                    rel="next"
-                  >
-                    <sl-button variant="primary" @click=${this.nextButtonClick}
-                      >Next: Create your Profile
-                    </sl-button>
-                  </a>
-                `
-              : html`
-                  <sl-button variant="primary" @click=${this.handleSubmit}>
-                    Connect Wallet
-                  </sl-button>
-                `}
+            <input type="hidden" name="ideaId" value="${this.ideaId}" />
+
+            <sl-button
+              href="/submit-profile-and-create-solution"
+              variant="primary"
+              @click=${this.nextButtonClick}
+              >Next: Create your Profile
+            </sl-button>
           </form>
           <sl-dialog label="Set Allowance">
             <p>
