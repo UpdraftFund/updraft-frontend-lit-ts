@@ -1,50 +1,47 @@
-import {
-  formToJson,
-  SaveableForm,
-} from '@/features/common/components/saveable-form';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css } from 'lit';
+import { consume } from '@lit/context';
+
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
-import { TaskStatus } from '@lit/task';
-
-import {
-  balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings as updraftSettingsContext,
-} from '@/features/common/state/context';
-import { userContext, UserState } from '@/features/user/state/user';
-import { consume } from '@lit/context';
-import { Task } from '@lit/task';
-
-import {
-  TransactionSuccess,
-  TransactionWatcher,
-} from '@/features/common/components/transaction-watcher';
-import { ShareDialog } from '@/features/common/components/share-dialog';
-import { UpdDialog } from '@/features/common/components/upd-dialog';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
-
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
-import { dialogStyles } from '@/features/common/styles/dialog-styles';
+import { formToJson, SaveableForm } from '@components/common/saveable-form';
 
+import { dialogStyles } from '@styles/dialog-styles';
+
+import {
+  balanceContext,
+  RequestBalanceRefresh,
+  updraftSettings as updraftSettingsContext,
+} from '@state/common/context';
+import { userContext, UserState } from '@state/user/user';
+import { topBarContent } from '@state/layout';
+
+import {
+  TransactionSuccess,
+  TransactionWatcher,
+} from '@components/common/transaction-watcher';
+import { ShareDialog } from '@components/common/share-dialog';
+import { UpdDialog } from '@components/common/upd-dialog';
 import '@layout/page-heading';
-import '@/features/common/components/transaction-watcher';
-import '@/features/common/components/upd-dialog';
-import '@/features/common/components/share-dialog';
-import '@/features/common/components/label-with-hint';
+import '@components/common/transaction-watcher';
+import '@components/common/upd-dialog';
+import '@components/common/share-dialog';
+import '@components/common/label-with-hint';
 
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@contracts/updraft';
 
-import { UpdraftSettings } from '@/features/common/types';
+import { UpdraftSettings } from '@/types';
 import { Balances } from '@/features/user/types/current-user';
 import { IdeaDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
+import { TaskStatus } from '@lit/task';
 
 interface SolutionFormData {
   deadline: string;
@@ -58,7 +55,6 @@ interface SolutionFormData {
 @customElement('create-solution')
 export class CreateSolution extends SaveableForm {
   @property() ideaId!: string;
-  @state() ideaName: string = '';
 
   @query('sl-range', true) rewardRange!: SlRange;
   @query('upd-dialog', true) updDialog!: UpdDialog;
@@ -81,21 +77,6 @@ export class CreateSolution extends SaveableForm {
 
   private resizeObserver!: ResizeObserver;
 
-  private readonly ideaTask = new Task(this, {
-    task: async ([ideaId]) => {
-      if (!ideaId) return null;
-      const result = await urqlClient.query(IdeaDocument, { ideaId });
-      const ideaData = result.data?.idea;
-      if (ideaData) {
-        this.ideaName = ideaData.name || 'Unnamed Idea';
-        return ideaData;
-      } else {
-        throw new Error(`Idea ${ideaId} not found.`);
-      }
-    },
-    args: () => [this.ideaId],
-  });
-
   static styles = [
     dialogStyles,
     css`
@@ -108,12 +89,6 @@ export class CreateSolution extends SaveableForm {
       main {
         flex: 1;
         box-sizing: border-box;
-      }
-
-      .idea-name {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 1.5rem 3rem;
       }
 
       form {
@@ -215,6 +190,23 @@ export class CreateSolution extends SaveableForm {
     `,
   ];
 
+  private readonly addIdeaToHeading = async () => {
+    if (this.ideaId) {
+      const result = await urqlClient.query(IdeaDocument, {
+        ideaId: this.ideaId,
+      });
+      const ideaData = result.data?.idea;
+      if (ideaData) {
+        topBarContent.set(html`
+          <page-heading
+            >Create a new Solution
+            <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
+          </page-heading>
+        `);
+      }
+    }
+  };
+
   private handleDepositFocus() {
     this.dispatchEvent(new RequestBalanceRefresh());
   }
@@ -250,22 +242,6 @@ export class CreateSolution extends SaveableForm {
       fee = Math.max(minFee, value * this.updraftSettings.percentFee);
     }
     this.antiSpamFee = fee.toFixed(2);
-  }
-
-  private handleTagsInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = input.value;
-    const spacePositions =
-      [...value.matchAll(/\s/g)].map((match) => match.index as number) || [];
-
-    if (spacePositions.length > 4) {
-      const fifthSpaceIndex = spacePositions[4];
-      // Trim input to the fifth space and allow a trailing space
-      input.value = value.slice(0, fifthSpaceIndex + 1);
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
-    } else {
-      input.style.removeProperty('--sl-input-focus-ring-color');
-    }
   }
 
   private handleGoalInput(e: Event) {
@@ -304,7 +280,7 @@ export class CreateSolution extends SaveableForm {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
 
-  protected async handleSubmit(event: Event) {
+  private async handleSubmit(event: Event) {
     event.preventDefault();
     const formData = formToJson(
       'create-solution',
@@ -371,12 +347,21 @@ export class CreateSolution extends SaveableForm {
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
 
+    this.addIdeaToHeading();
+
     this.rewardRange.tooltipFormatter = (value: number) => `${value}%`;
     this.rewardRange.defaultValue = 50;
     this.rewardRange.updateComplete.then(this.syncRangeTooltip);
 
     this.resizeObserver = new ResizeObserver(this.syncRangeTooltip);
     this.resizeObserver.observe(this.rewardRange);
+  }
+
+  constructor() {
+    super();
+    topBarContent.set(html`
+      <page-heading>Create a new Solution</page-heading>
+    `);
   }
 
   disconnectedCallback() {
@@ -386,16 +371,8 @@ export class CreateSolution extends SaveableForm {
 
   render() {
     return html`
-      <page-heading>Create a new Solution</page-heading>
       <div class="container">
         <main>
-          <h1 class="idea-name">
-            ${this.ideaTask.value
-              ? `Solution for: ${this.ideaName}`
-              : this.ideaTask.status === TaskStatus.PENDING
-                ? 'Loading idea...'
-                : `Idea: ${this.ideaId}`}
-          </h1>
           <form name="create-solution" @submit=${this.handleFormSubmit}>
             <sl-input
               name="name"
@@ -421,19 +398,6 @@ export class CreateSolution extends SaveableForm {
                 hint="A description of your solution"
               ></label-with-hint>
             </sl-textarea>
-
-            <sl-input
-              name="tags"
-              @sl-input=${this.handleTagsInput}
-              placeholder="tag1 tag2 tag3"
-            >
-              <label-with-hint
-                slot="label"
-                label="Tags"
-                hint="Enter up to five tags separated by spaces to help people find your solution. Use hyphens for multi-word-tags."
-              >
-              </label-with-hint>
-            </sl-input>
 
             <sl-input
               name="funding-token"
@@ -473,14 +437,13 @@ export class CreateSolution extends SaveableForm {
 
             <div class="deposit-container">
               <label-with-hint
-                label="Deposit*"
-                hint="The initial UPD tokens you will deposit. The more you deposit, the more you                         stand to earn from supporters of your idea. As a creator, you can always withdraw your                         full initial deposit minus the anti-spam fee of 1 UPD or 1% (whichever is greater)."
+                label="Stake"
+                hint="Use staking to attract more funders. If you fail to reach your funding goal, this amount will be distributed to your funders."
               >
               </label-with-hint>
               <div class="deposit-row">
                 <sl-input
-                  name="deposit"
-                  required
+                  name="stake"
                   autocomplete="off"
                   @focus=${this.handleDepositFocus}
                   @input=${this.handleDepositInput}
@@ -512,8 +475,8 @@ export class CreateSolution extends SaveableForm {
                     rel="next"
                   >
                     <sl-button variant="primary" @click=${this.nextButtonClick}
-                      >Next: Create your Profile</sl-button
-                    >
+                      >Next: Create your Profile
+                    </sl-button>
                   </a>
                 `
               : html`
