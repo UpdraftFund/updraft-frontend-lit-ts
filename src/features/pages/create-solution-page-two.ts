@@ -20,7 +20,7 @@ import {
   updraftSettings as updraftSettingsContext,
 } from '@state/common/context';
 import { userContext, UserState } from '@state/user/user';
-import { topBarContent } from '@state/layout';
+import { rightSidebarContent, topBarContent } from '@state/layout';
 
 import {
   TransactionSuccess,
@@ -361,6 +361,7 @@ export class CreateSolution extends SaveableForm {
     topBarContent.set(html`
       <page-heading>Create a new Solution</page-heading>
     `);
+    rightSidebarContent.set(html``);
   }
 
   disconnectedCallback() {
