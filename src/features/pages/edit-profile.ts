@@ -82,7 +82,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       }
 
       .avatar {
-        position: relative; /* Needed for the avatar edit button */
+        position: relative;
         background: var(--main-background);
         border-radius: 50%;
         width: 64px;
@@ -110,7 +110,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         bottom: 0;
         right: 0;
         border-radius: 50%;
-        padding: 0.2rem; /* Add padding for better clickability */
+        padding: 0.2rem;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
 
@@ -517,6 +517,19 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     this.updraftSettingsTask.run();
   }
 
+  private async handleImageUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.uploadedImage = reader.result as string;
+        this.requestUpdate();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   render() {
     // Get current profile and address from signals
     const currentProfile = userProfile.get();
@@ -530,23 +543,26 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             @submit=${this.handleFormSubmit}
             @input=${this.handleInput}
           >
-            <user-avatar
-              .address=${currentAddress || ''}
-              .imageUrl=${this.uploadedImage ||
-              currentProfile?.image ||
-              currentProfile?.avatar ||
-              user.get().avatar ||
-              ''}
-              .editable=${true}
-              @avatar-change=${this.handleAvatarChange}
-              size="64px"
-            >
+            <label class="avatar">
+              <img
+                src=${this.uploadedImage ||
+                currentProfile?.image ||
+                currentProfile?.avatar ||
+                user.get().avatar ||
+                ''}
+                alt="User avatar"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                @change=${this.handleImageUpload}
+              />
               <sl-icon
-                slot="edit-icon"
+                class="edit-icon"
                 src="${pencilSquare}"
                 label="Edit image"
               ></sl-icon>
-            </user-avatar>
+            </label>
             <sl-input
               name="name"
               label="Name"

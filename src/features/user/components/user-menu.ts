@@ -1,5 +1,5 @@
 import { LitElement, css } from 'lit';
-import { customElement, query, property } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 import { balanceContext } from '@/features/common/state/context';
@@ -34,7 +34,6 @@ import {
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {
-  @property() hideCreateIdeaButton = false;
   @consume({ context: balanceContext, subscribe: true }) balances!: {
     [key: string]: { symbol: string; balance: string };
   };
