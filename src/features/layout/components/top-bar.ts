@@ -66,7 +66,7 @@ export class TopBar extends SignalWatcher(LitElement) {
       align-items: center;
     }
     page-heading a {
-      font-size: 1.25rem;
+      font-size: 1rem;
     }
   `;
 
