@@ -2,15 +2,12 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { html, css } from 'lit';
 import { consume } from '@lit/context';
 
-import { parseUnits, toHex, trim } from 'viem';
-import dayjs from 'dayjs';
-
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
 import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
-import { formToJson, SaveableForm } from '@components/common/saveable-form';
+import { SaveableForm } from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
@@ -22,10 +19,7 @@ import {
 import { userContext, UserState } from '@state/user/user';
 import { rightSidebarContent, topBarContent } from '@state/layout';
 
-import {
-  TransactionSuccess,
-  TransactionWatcher,
-} from '@components/common/transaction-watcher';
+import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { ShareDialog } from '@components/common/share-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
 import '@layout/page-heading';
@@ -34,22 +28,9 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
-import solutionSchema from '@schemas/solution-schema.json';
-import { updraft } from '@contracts/updraft';
-
 import { UpdraftSettings, Balances } from '@/types';
 import { IdeaDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
-import { TaskStatus } from '@lit/task';
-
-interface SolutionFormData {
-  deadline: string;
-  deposit: string;
-  goal: string;
-  'funding-token': string;
-  reward: string;
-  [key: string]: string;
-}
 
 @customElement('create-solution-page-two')
 export class CreateSolution extends SaveableForm {
@@ -160,6 +141,12 @@ export class CreateSolution extends SaveableForm {
         color: red;
         font-size: 0.8rem;
         padding-top: 0.25rem;
+      }
+
+      /* Keep the calendar control close to the date */
+      sl-input[name='deadline']::part(form-control-input) {
+        box-sizing: content-box;
+        width: calc(14ch + var(--sl-input-spacing-medium) * 2);
       }
 
       sl-input[name='deposit'] {
@@ -279,57 +266,6 @@ export class CreateSolution extends SaveableForm {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
 
-  private async handleSubmit(event: Event) {
-    event.preventDefault();
-    const formData = formToJson(
-      'create-solution',
-      solutionSchema
-    ) as SolutionFormData;
-
-    try {
-      // Convert deadline to Unix timestamp
-      const deadline = formData.deadline
-        ? dayjs(formData.deadline).unix()
-        : Math.floor(Date.now() / 1000) + 86400; // Default to 24 hours from now
-
-      // Parse deposit and goal amounts
-      const deposit = parseUnits(formData.deposit || '0', 18);
-      const goal = parseUnits(formData.goal || '0', 18);
-
-      // Don't allow overlapping transactions
-      if (
-        this.submitTransaction.transactionTask.status !== TaskStatus.PENDING
-      ) {
-        this.submitTransaction.hash = await updraft.write('createSolution', [
-          this.ideaId,
-          formData['funding-token'],
-          deposit,
-          goal,
-          deadline,
-          BigInt(
-            (Number(formData.reward) *
-              Number(this.updraftSettings.percentScale)) /
-              100
-          ),
-          toHex(JSON.stringify(formData)),
-        ]);
-      }
-    } catch (error) {
-      console.error('Error submitting solution:', error);
-    }
-  }
-
-  private async handleSubmitSuccess(t: TransactionSuccess) {
-    const address = t.receipt?.logs?.[0]?.topics?.[1];
-    if (address) {
-      const solutionData = formToJson('create-solution', solutionSchema);
-      this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${this.ideaId}`;
-      this.shareDialog.topic = solutionData.name as string;
-      this.shareDialog.action = 'created a Solution';
-      this.shareDialog.show();
-    }
-  }
-
   private nextButtonClick(e: MouseEvent) {
     const form = this.form;
     if (!form.checkValidity()) {
@@ -337,10 +273,6 @@ export class CreateSolution extends SaveableForm {
       form.reportValidity(); // Show validation messages
       return;
     }
-
-    // Save the form data to localStorage for the profile creation step
-    const formData = formToJson('create-solution', solutionSchema);
-    localStorage.setItem('create-solution-form', JSON.stringify(formData));
   }
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -377,7 +309,7 @@ export class CreateSolution extends SaveableForm {
             <h2>Funding details</h2>
 
             <sl-input
-              name="funding-token"
+              name="fundingToken"
               required
               autocomplete="off"
               @input=${this.handleFundingTokenInput}
@@ -441,7 +373,6 @@ export class CreateSolution extends SaveableForm {
                 : ''}
             </div>
 
-            <input type="hidden" name="reward" value="50" />
             <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
             <span>
@@ -458,22 +389,7 @@ export class CreateSolution extends SaveableForm {
               </sl-button>
             </span>
           </form>
-          <sl-dialog label="Set Allowance">
-            <p>
-              Before you can submit your solution, you need to sign a
-              transaction to allow Updraft to spend your UPD tokens.
-            </p>
-            <transaction-watcher
-              class="approve"
-              @transaction-success=${this.handleSubmit}
-            ></transaction-watcher>
-          </sl-dialog>
-          <transaction-watcher
-            class="submit"
-            @transaction-success=${this.handleSubmitSuccess}
-          ></transaction-watcher>
           <upd-dialog></upd-dialog>
-          <share-dialog></share-dialog>
         </main>
       </div>
     `;
