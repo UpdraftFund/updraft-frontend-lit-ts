@@ -13,9 +13,9 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import '@/features/common/styles/global.css';
-import '@/features/common/styles/theme.css';
-import '@/features/common/styles/reset.css';
+import '@styles/global.css';
+import '@styles/theme.css';
+import '@styles/reset.css';
 
 import urqlClient from '@utils/urql-client';
 
@@ -123,6 +123,19 @@ export class MyApp extends LitElement {
         ></create-solution>`;
       },
     },
+    // {
+    //   path: '/create-solution-page-two/:ideaId',
+    //   enter: async () => {
+    //     await import('@pages/create-solution-page-two');
+    //     nav.set('create-solution-page-two');
+    //     return true;
+    //   },
+    //   render: ({ ideaId }) => {
+    //     return html`<create-solution-page-two
+    //       .ideaId=${ideaId as string}
+    //     ></create-solution-page-two>`;
+    //   },
+    // },
   ]);
 
   @provide({ context: urqlClientContext })

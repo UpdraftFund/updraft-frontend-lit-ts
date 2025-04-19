@@ -1,7 +1,9 @@
-:root {
+:root, .sl-theme-light, .sl-theme-dark {
   font-family: 'Noto Sans', sans-serif;
   --sl-spacing-medium: 1.25rem;
   --sl-font-weight-semibold: 400;
   --sl-button-font-size-medium: 1rem;
   --sl-input-height-medium: 39px;
+  --sl-input-border-radius-medium: 20px;
+  --sl-input-required-content: unset;
 }

@@ -81,46 +81,6 @@ export class TopSupporters extends LitElement {
   @state() private supporters?: Supporter[];
   private unsubscribe?: () => void;
 
-  // private fetchSupporters = new Task(
-  //   this,
-  //   async ([ideaId]) => {
-  //     if (!ideaId) return [];
-  //
-  //     const result = await urqlClient.query(IdeaContributionsDocument, {
-  //       ideaId,
-  //       first: 5,
-  //       skip: 0,
-  //     });
-  //
-  //     if (!result.data?.ideaContributions) return [];
-  //
-  //     return result.data.ideaContributions.map((contribution): Supporter => {
-  //       let name = contribution.funder.id;
-  //       let avatar = makeBlockie(contribution.funder.id);
-  //
-  //       if (contribution.funder.profile) {
-  //         try {
-  //           const profile: Profile = JSON.parse(
-  //             fromHex(contribution.funder.profile as `0x${string}`, 'string')
-  //           );
-  //           name = profile.name || profile.team || contribution.funder.id;
-  //           avatar = profile.image || avatar;
-  //         } catch (e) {
-  //           console.error('Error parsing profile', e);
-  //         }
-  //       }
-  //
-  //       return {
-  //         id: contribution.funder.id,
-  //         name,
-  //         avatar,
-  //         contribution: contribution.contribution,
-  //       };
-  //     });
-  //   },
-  //   () => [this.ideaId]
-  // );
-
   private subscribe() {
     // Disconnect any previous subscriptions
     this.unsubscribe?.();

@@ -27,3 +27,4 @@ dist-ssr
 /.graphclient/
 
 tmp.txt
+.aider*
