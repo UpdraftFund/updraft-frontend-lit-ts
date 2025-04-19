@@ -1,23 +1,23 @@
+declare global {
+  interface HTMLElementTagNameMap {
+    'my-ideas': MyIdeas;
+  }
+}
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
-import { consume } from '@lit/context';
 
 import '@components/common/section-heading';
 import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import { connectionContext } from '@state/common/context';
-import { Connection } from '@/types/user/current-user';
+import { userAddress } from '@state/user/user';
 
 import urqlClient from '@utils/urql-client';
-import { IdeasByFunderDocument, type IdeasByFunderQuery } from '@gql';
+import { IdeasByFunderDocument, IdeasByFunderQuery } from '@gql';
 
 @customElement('my-ideas')
 export class MyIdeas extends LitElement {
-  @consume({ context: connectionContext, subscribe: true })
-  connection?: Connection;
-
   @state() private ideasQueryResult?: IdeasByFunderQuery;
   private unsubIdeas?: () => void;
 
@@ -45,16 +45,16 @@ export class MyIdeas extends LitElement {
     // Clean up previous subscription if it exists
     this.unsubIdeas?.();
 
-    if (!this.connection?.address) return;
-
-    const ideasSub = urqlClient
-      .query(IdeasByFunderDocument, {
-        funder: this.connection.address,
-      })
-      .subscribe((result) => {
-        this.ideasQueryResult = result.data;
-      });
-    this.unsubIdeas = ideasSub.unsubscribe;
+    if (userAddress.get()) {
+      const ideasSub = urqlClient
+        .query(IdeasByFunderDocument, {
+          funder: userAddress.get() as string,
+        })
+        .subscribe((result) => {
+          this.ideasQueryResult = result.data;
+        });
+      this.unsubIdeas = ideasSub.unsubscribe;
+    }
   }
 
   private handleVisibilityChange = () => {
@@ -67,10 +67,13 @@ export class MyIdeas extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    if (this.connection?.address) {
+    if (userAddress.get()) {
       this.subscribe();
+      document.addEventListener(
+        'visibilitychange',
+        this.handleVisibilityChange
+      );
     }
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   disconnectedCallback() {

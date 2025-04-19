@@ -2,7 +2,7 @@ import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
-import '@components/navigation/profile-area';
+import '@components/user/user-menu';
 import '@components/navigation/search-bar';
 import '@components/navigation/discover-tabs';
 

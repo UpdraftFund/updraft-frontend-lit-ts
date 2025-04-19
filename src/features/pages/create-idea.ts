@@ -7,7 +7,7 @@ import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput } from '@shoelace-style/shoelace';
 
-import '@layout/page-heading.ts';
+import '@layout/page-heading';
 import '@components/common/label-with-hint';
 import '@components/common/upd-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';

@@ -4,6 +4,10 @@
 
 The Updraft frontend application serves as the user interface for the Updraft Fund platform. It provides a modern, reactive, and accessible way for users to interact with the Updraft ecosystem.
 
+## Product Architecture Principle
+
+The application is built using a **vertical slice architecture**: each feature is self-contained in its own folder under `src/features`, with its own components, state, queries, types, assets, and tests. This approach ensures maintainability, scalability, and clear feature boundaries. Vite and TypeScript aliases are used to support modular and intention-revealing imports for each feature slice.
+
 ## Problem Statement
 
 Traditional financial platforms often have complex, slow, and outdated user interfaces that make it difficult for users to interact effectively. The Web3 space specifically suffers from poor user experiences that create barriers to entry. The Updraft frontend aims to solve these issues by providing:
