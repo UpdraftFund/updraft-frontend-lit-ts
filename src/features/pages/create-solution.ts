@@ -4,16 +4,11 @@ import { html, css } from 'lit';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/range/range.js';
 import { formToJson, SaveableForm } from '@components/common/saveable-form';
 
-import { dialogStyles } from '@styles/dialog-styles';
 import { rightSidebarContent, topBarContent } from '@state/layout';
 
 import '@layout/page-heading';
-import '@components/common/transaction-watcher';
-import '@components/common/upd-dialog';
-import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
 import solutionSchema from '@schemas/solution-schema.json';
@@ -25,52 +20,47 @@ import urqlClient from '@utils/urql-client';
 export class CreateSolution extends SaveableForm {
   @property() ideaId!: string;
 
-  static styles = [
-    dialogStyles,
-    css`
-      :host {
-        width: 100%;
-      }
+  static styles = css`
+    :host {
+      width: 100%;
+    }
 
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      margin: 1.5rem 3rem;
+    }
+
+    sl-input,
+    sl-textarea {
+      width: 100%;
+    }
+
+    sl-button {
+      max-width: fit-content;
+    }
+
+    /* Responsive behavior for smaller screens */
+    @media (max-width: 768px) {
       form {
-        display: flex;
-        flex-direction: column;
-        gap: 1.2rem;
-        margin: 1.5rem 3rem;
+        margin: 1rem;
       }
-
-      sl-input,
-      sl-textarea {
-        width: 100%;
-      }
-
-      sl-button {
-        max-width: fit-content;
-      }
-
-      /* Responsive behavior for smaller screens */
-      @media (max-width: 768px) {
-        form {
-          margin: 1rem;
-        }
-      }
-    `,
-  ];
+    }
+  `;
 
   private readonly addIdeaToHeading = async () => {
-    if (this.ideaId) {
-      const result = await urqlClient.query(IdeaDocument, {
-        ideaId: this.ideaId,
-      });
-      const ideaData = result.data?.idea;
-      if (ideaData) {
-        topBarContent.set(html`
-          <page-heading
-            >Create a new Solution
-            <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
-          </page-heading>
-        `);
-      }
+    const result = await urqlClient.query(IdeaDocument, {
+      ideaId: this.ideaId,
+    });
+    const ideaData = result.data?.idea;
+    if (ideaData) {
+      topBarContent.set(html`
+        <page-heading
+          >Create a new Solution
+          <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
+        </page-heading>
+      `);
     }
   };
 
@@ -118,7 +108,7 @@ export class CreateSolution extends SaveableForm {
         <sl-textarea name="description" required resize="auto">
           <label-with-hint
             slot="label"
-            label="Description"
+            label="Description*"
             hint="A description of your solution"
           ></label-with-hint>
         </sl-textarea>

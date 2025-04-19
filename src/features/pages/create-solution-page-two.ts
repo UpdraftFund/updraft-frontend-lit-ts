@@ -37,8 +37,7 @@ import '@components/common/label-with-hint';
 import solutionSchema from '@schemas/solution-schema.json';
 import { updraft } from '@contracts/updraft';
 
-import { UpdraftSettings } from '@/types';
-import { Balances } from '@/features/user/types/current-user';
+import { UpdraftSettings, Balances } from '@/types';
 import { IdeaDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
 import { TaskStatus } from '@lit/task';
@@ -49,7 +48,6 @@ interface SolutionFormData {
   goal: string;
   'funding-token': string;
   reward: string;
-
   [key: string]: string;
 }
 
@@ -374,31 +372,8 @@ export class CreateSolution extends SaveableForm {
     return html`
       <div class="container">
         <main>
-          <form name="create-solution" @submit=${this.handleFormSubmit}>
-            <sl-input
-              name="name"
-              required
-              autocomplete="off"
-              placeholder="My Solution Name"
-            >
-              <label-with-hint
-                slot="label"
-                label="Name*"
-                hint="A short name for your solution"
-              ></label-with-hint>
-            </sl-input>
-
-            <sl-textarea
-              name="description"
-              resize="auto"
-              placeholder="Describe your solution in detail..."
-            >
-              <label-with-hint
-                slot="label"
-                label="Description"
-                hint="A description of your solution"
-              ></label-with-hint>
-            </sl-textarea>
+          <form name="create-solution-two" @submit=${this.handleFormSubmit}>
+            <h2>Funding details</h2>
 
             <sl-input
               name="funding-token"
@@ -419,7 +394,6 @@ export class CreateSolution extends SaveableForm {
               required
               autocomplete="off"
               @input=${this.handleGoalInput}
-              placeholder="1000"
             >
               <label-with-hint
                 slot="label"
@@ -432,16 +406,15 @@ export class CreateSolution extends SaveableForm {
               <label-with-hint
                 slot="label"
                 label="Deadline*"
-                hint="Select the deadline for your solution. This is the date 
-                by which your funding goalshould be reached."
+                hint="The date by which your funding goal should be reached"
               ></label-with-hint>
             </sl-input>
 
             <div class="deposit-container">
               <label-with-hint
                 label="Stake"
-                hint="Use staking to attract more funders. If you fail to reach 
-                your funding goal, this amount will be distributed to your funders."
+                hint="Add a stake to attract more funders. If don't reach your 
+                funding goal, this amount will be distributed to your funders."
               >
               </label-with-hint>
               <div class="deposit-row">
@@ -450,7 +423,6 @@ export class CreateSolution extends SaveableForm {
                   autocomplete="off"
                   @focus=${this.handleDepositFocus}
                   @input=${this.handleDepositInput}
-                  placeholder="10"
                 >
                 </sl-input>
                 <span>UPD</span>
@@ -469,15 +441,21 @@ export class CreateSolution extends SaveableForm {
             </div>
 
             <input type="hidden" name="reward" value="50" />
-
             <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
-            <sl-button
-              href="/submit-profile-and-create-solution"
-              variant="primary"
-              @click=${this.nextButtonClick}
-              >Next: Create your Profile
-            </sl-button>
+            <span>
+              <sl-button
+                href="/create-solution/${this.ideaId}"
+                variant="primary"
+                >Previous
+              </sl-button>
+              <sl-button
+                href="/submit-profile-and-create-solution"
+                variant="primary"
+                @click=${this.nextButtonClick}
+                >Next: Create your Profile
+              </sl-button>
+            </span>
           </form>
           <sl-dialog label="Set Allowance">
             <p>
