@@ -132,19 +132,19 @@ export class MyApp extends LitElement {
         ></create-solution>`;
       },
     },
-    // {
-    //   path: '/create-solution-page-two/:ideaId',
-    //   enter: async () => {
-    //     await import('@pages/create-solution-page-two');
-    //     nav.set('create-solution-page-two');
-    //     return true;
-    //   },
-    //   render: ({ ideaId }) => {
-    //     return html`<create-solution-page-two
-    //       .ideaId=${ideaId as string}
-    //     ></create-solution-page-two>`;
-    //   },
-    // },
+    {
+      path: '/create-solution-two/:ideaId',
+      enter: async () => {
+        await import('@pages/create-solution-page-two');
+        nav.set('create-solution-two');
+        return true;
+      },
+      render: ({ ideaId }) => {
+        return html` <create-solution-page-two
+          .ideaId=${ideaId as string}
+        ></create-solution-page-two>`;
+      },
+    },
   ]);
 
   @provide({ context: connectionContext }) connection: Connection = {
