@@ -96,6 +96,14 @@ export class SolutionCardSmall extends LitElement {
     }
 
     // Use BigInt for calculation to handle potentially large numbers safely
+
+    // This is an example of AI farted out code blindly adding complexity
+    // and bloat.
+    // Neither of these numbers is potentially large, and now we're having
+    // to use try/catch to handle unexpected errors in an uneeded conversion
+    // to big int.
+    // It's also checking unnecessarily for division by zero again, when it
+    // already returned 0 for that case above.
     try {
       const funderRewardBigInt = BigInt(this.solution.funderReward || 0);
       const percentScaleBigInt = BigInt(settings.percentScale);
