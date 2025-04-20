@@ -269,20 +269,20 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
   // Now handled by the user-avatar component
   // But we need to update both image and avatar fields for consistent display
-  private handleAvatarChange(e: CustomEvent) {
-    this.uploadedImage = e.detail.imageUrl;
-
-    // Sync changes with the user profile to ensure consistency
-    const currentProfile = userProfile.get();
-    if (currentProfile) {
-      const updatedProfile = {
-        ...currentProfile,
-        image: this.uploadedImage,
-        avatar: this.uploadedImage || '', // Ensure avatar is not undefined
-      };
-      setUserProfile(updatedProfile);
-    }
-  }
+  // private handleAvatarChange(e: CustomEvent) {
+  //   this.uploadedImage = e.detail.imageUrl;
+  //
+  //   // Sync changes with the user profile to ensure consistency
+  //   const currentProfile = userProfile.get();
+  //   if (currentProfile) {
+  //     const updatedProfile = {
+  //       ...currentProfile,
+  //       image: this.uploadedImage,
+  //       avatar: this.uploadedImage || '', // Ensure avatar is not undefined
+  //     };
+  //     setUserProfile(updatedProfile);
+  //   }
+  // }
 
   private handleFormSubmit(e: Event) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
