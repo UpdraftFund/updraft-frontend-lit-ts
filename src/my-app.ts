@@ -24,14 +24,14 @@ import {
   urqlClientContext,
   updraftSettings as updraftSettingsContext,
   balanceContext,
-} from '@/features/common/state/context';
+} from '@state/common/context';
 import { UpdraftSettings } from '@/features/common/types';
 import {
   initializeUserState,
   userContext,
   getUserState,
   setupProfileTask,
-} from '@/features/user/state/user';
+} from '@state/user/user';
 
 import { nav } from '@state/navigation/navigation';
 
@@ -128,19 +128,19 @@ export class MyApp extends LitElement {
         ></create-solution>`;
       },
     },
-    // {
-    //   path: '/create-solution-page-two/:ideaId',
-    //   enter: async () => {
-    //     await import('@pages/create-solution-page-two');
-    //     nav.set('create-solution-page-two');
-    //     return true;
-    //   },
-    //   render: ({ ideaId }) => {
-    //     return html`<create-solution-page-two
-    //       .ideaId=${ideaId as string}
-    //     ></create-solution-page-two>`;
-    //   },
-    // },
+    {
+      path: '/create-solution-two/:ideaId',
+      enter: async () => {
+        await import('@pages/create-solution-page-two');
+        nav.set('create-solution-two');
+        return true;
+      },
+      render: ({ ideaId }) => {
+        return html` <create-solution-page-two
+          .ideaId=${ideaId as string}
+        ></create-solution-page-two>`;
+      },
+    },
   ]);
 
   @provide({ context: urqlClientContext })

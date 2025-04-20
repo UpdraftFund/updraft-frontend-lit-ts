@@ -20,7 +20,7 @@ import {
 } from '@/features/common/state/context';
 import { Balances } from '@/features/user/types/current-user';
 import { UpdraftSettings } from '@/features/common/types';
-import { topBarContent } from '@state/layout';
+import { rightSidebarContent, topBarContent } from '@state/layout';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
@@ -162,6 +162,7 @@ export class CreateIdea extends SaveableForm {
 
   render() {
     topBarContent.set(html` <page-heading>Create a new Idea</page-heading> `);
+    rightSidebarContent.set(html``);
     return html`
       <div class="container">
         <main>
