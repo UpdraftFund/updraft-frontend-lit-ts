@@ -81,12 +81,36 @@ export class SolutionCardSmall extends LitElement {
   `;
 
   @property() solution!: Solution;
-  @consume({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
+  @consume({ context: updraftSettings, subscribe: true })
+  updraftSettings?: UpdraftSettings;
 
   private get displayFunderReward(): number {
-    return (
-      (this.solution.funderReward * 100) / this.updraftSettings.percentScale
-    );
+    // Consume settings safely
+    const settings = this.updraftSettings;
+
+    // Check if settings and a positive percentScale are available
+    if (!settings || !settings.percentScale || settings.percentScale <= 0) {
+      // Log a warning only once or in dev mode if needed, but returning 0 is the key
+      // console.warn('Invalid Updraft settings or non-positive percentScale, defaulting funder reward display to 0%.');
+      return 0; // Return 0% if settings are missing or scale is invalid
+    }
+
+    // Use BigInt for calculation to handle potentially large numbers safely
+    try {
+      const funderRewardBigInt = BigInt(this.solution.funderReward || 0);
+      const percentScaleBigInt = BigInt(settings.percentScale);
+
+      // Multiply by 100n for percentage calculation
+      const rewardPercentageBigInt =
+        percentScaleBigInt !== 0n
+          ? (funderRewardBigInt * 100n) / percentScaleBigInt
+          : 0n; // Explicitly handle division by zero for BigInt
+
+      return Number(rewardPercentageBigInt); // Convert final percentage back to Number
+    } catch (error) {
+      console.error('Error calculating funder reward:', error);
+      return 0; // Return 0 in case of unexpected errors during BigInt conversion/calculation
+    }
   }
 
   // Helper to parse the hex-encoded JSON info field safely
