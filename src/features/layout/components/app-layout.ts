@@ -36,15 +36,14 @@ export class AppLayout extends SignalWatcher(LitElement) {
 
     .main-content {
       flex: 1;
-      overflow-y: auto;
+      display: flex;
+      overflow: hidden;
       padding: 0 0.3rem;
-      background: var(--subtle-background);
-      min-width: 0; /* Allow content to shrink below its minimum content size */
     }
 
     right-side-bar {
       flex: 0 0 300px;
-      overflow-y: auto;
+      overflow: hidden;
       height: 100%;
     }
 
@@ -69,6 +68,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
       }
 
       .main-content {
+        flex-direction: column;
         padding: 1rem;
         order: 1; /* Main content first */
       }
@@ -101,9 +101,9 @@ export class AppLayout extends SignalWatcher(LitElement) {
       <top-bar></top-bar>
       <div class="app-layout">
         ${showLeftSidebar ? html` <left-side-bar></left-side-bar>` : html``}
-        <div class="content-wrapper">
-          <slot class="main-content"></slot>
-        </div>
+        <main class="main-content">
+          <slot></slot>
+        </main>
         ${showRightSidebar ? html` <right-side-bar></right-side-bar>` : html``}
       </div>
     `;
