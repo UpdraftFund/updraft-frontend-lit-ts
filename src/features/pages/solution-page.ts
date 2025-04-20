@@ -1,9 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { consume } from '@lit/context';
-import { type Router } from '@vaadin/router';
 
-import { routerContext } from '@/features/navigation/contexts/router_context';
 import '@/features/layout/app-layout'; // Ensure layout is loaded
 
 // Import sub-components
@@ -11,21 +8,8 @@ import './solution/components/index'; // Use barrel export
 
 @customElement('solution-page')
 export class SolutionPage extends LitElement {
-  @consume({ context: routerContext, subscribe: true })
-  router?: Router;
-
   @property({ type: String })
   solutionId?: string;
-
-  // Lifecycle method to get parameters from router
-  connectedCallback() {
-    super.connectedCallback();
-    // This assumes the route is configured like '/solution/:solutionId'
-    // Ensure router and params exist before accessing
-    this.solutionId = this.router?.location?.params?.solutionId as
-      | string
-      | undefined;
-  }
 
   render() {
     if (!this.solutionId) {
