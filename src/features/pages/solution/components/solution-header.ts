@@ -39,14 +39,14 @@ export class SolutionHeader extends LitElement {
       border-radius: var(--sl-radius-medium);
       background-color: var(--sl-color-neutral-50);
     }
-    .title-section {
+    .top-row {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: flex-start; /* Align items to the start of the cross axis */
       gap: var(--sl-spacing-medium);
     }
-    .title-section h1 {
-      margin: 0;
+    .title-area h1 {
+      margin: 0 0 var(--sl-spacing-2x-small) 0;
       font-size: var(--sl-font-size-2x-large);
       line-height: var(--sl-line-height-dense);
     }
@@ -61,24 +61,32 @@ export class SolutionHeader extends LitElement {
     .idea-link a:hover {
       text-decoration: underline;
     }
-    .meta-section {
+    .status-tag sl-tag {
+      /* Adjust tag size if needed */
+      font-weight: var(--sl-font-weight-semibold);
+    }
+    .bottom-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: var(--sl-spacing-large);
       flex-wrap: wrap; /* Allow wrapping on smaller screens */
+      margin-top: var(--sl-spacing-medium); /* Add some space above this row */
     }
     .creator-info {
       display: flex;
       align-items: center;
       gap: var(--sl-spacing-small);
+      flex-shrink: 0; /* Prevent creator info from shrinking too much */
     }
-    .status-tag sl-tag {
-      --sl-tag-font-size: var(--sl-font-size-medium);
+    .creator-info span {
+      /* Style for the creator name/address */
+      font-weight: var(--sl-font-weight-medium);
     }
     .action-buttons {
       display: flex;
       gap: var(--sl-spacing-small);
+      flex-wrap: wrap; /* Allow buttons to wrap */
     }
   `;
 
@@ -87,8 +95,8 @@ export class SolutionHeader extends LitElement {
 
     return html`
       <div class="header-container">
-        <div class="title-section">
-          <div>
+        <div class="top-row">
+          <div class="title-area">
             <h1>${this._solutionTitle}</h1>
             <div class="idea-link">
               Solution for idea:
@@ -100,19 +108,21 @@ export class SolutionHeader extends LitElement {
           </div>
         </div>
 
-        <div class="meta-section">
+        <div class="bottom-row">
           <div class="creator-info">
             <sl-tooltip content="Solution Drafter">
               <sl-avatar
                 image="${this._creatorAvatar || '/default-avatar.png'}"
                 label="Creator Avatar"
-                initials="${this._creatorName ? '' : '0x12...'}"
+                initials="${this._creatorName
+                  ? ''
+                  : /* formatAddress(this._creatorAddress, 2, 0) */ '0x12...'}"
               ></sl-avatar>
             </sl-tooltip>
-            <span>
-              ${this._creatorName ||
-              /* formatAddress(this._creatorAddress) */ this._creatorAddress}
-            </span>
+            <!-- <user-link userId=${this._creatorAddress}></user-link> -->
+            <span>${this._creatorName ||
+              /* formatAddress(this._creatorAddress) */ this
+                ._creatorAddress}</span>
           </div>
           <div class="action-buttons">
             <!-- TODO: Conditionally render buttons based on user role/status -->

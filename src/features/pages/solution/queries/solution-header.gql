@@ -1,0 +1,17 @@
+# src/features/pages/solution/queries/solution-header.gql
+
+query SolutionHeaderQuery($solutionId: ID!) {
+  solution(id: $solutionId) {
+    id
+    name # Used for the title
+    status
+    idea {
+      id
+      name
+    }
+    drafter {
+      id # Creator address
+      profile # Contains encoded JSON with name, avatar, etc.
+    }
+  }
+}
