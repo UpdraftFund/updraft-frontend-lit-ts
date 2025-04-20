@@ -23,7 +23,7 @@ import {
 } from '@/types';
 
 import { connectionContext } from '@state/common';
-import { rightSidebarContent, topBarContent } from '@state/layout';
+import layout from '@state/layout';
 import { watchTag, isWatched } from '@state/user/watched-tags';
 
 import urqlClient from '@utils/urql-client';
@@ -332,14 +332,16 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   };
 
   render() {
-    topBarContent.set(html`
+    layout.topBarContent.set(html`
       <create-idea-button></create-idea-button>
       <div>
         <discover-tabs .tab=${this.tab}></discover-tabs>
         <search-bar .search=${this.search}></search-bar>
       </div>
     `);
-    rightSidebarContent.set(html`
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(true);
+    layout.rightSidebarContent.set(html`
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
     `);

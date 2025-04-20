@@ -24,17 +24,11 @@ import { markComplete } from '@pages/home/state/beginner-tasks';
 
 import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
-import { topBarContent } from '@state/layout';
+import layout, { topBarContent } from '@state/layout';
 
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
   static styles = css`
-    .container {
-      display: flex;
-      flex: auto;
-      overflow: hidden;
-    }
-
     activity-feed {
       flex: 0 0 789px;
     }
@@ -338,72 +332,74 @@ export class ViewProfile extends SignalWatcher(LitElement) {
   }
 
   render() {
+    layout.topBarContent.set(html`
+      <create-idea-button></create-idea-button>
+      <search-bar></search-bar>
+    `);
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(true);
+    layout.rightSidebarContent.set(
+      html` <activity-feed
+        .userId=${this.address}
+        .userName=${this.profile.value?.name}
+      ></activity-feed>`
+    );
     return html`
-      <div class="container">
-        <main>
-          ${this.profile.render({
-            pending: () => html`<p>Loading profile...</p>`,
-            complete: (value) => {
-              const { name, team, image, about, news, links } = value || {};
-              return html`
-                <div class="profile-header">
-                  <user-avatar
-                    .address=${this.address}
-                    .imageUrl=${image || ''}
-                    size="64px"
-                  ></user-avatar>
-                  <div>
-                    ${name || team
-                      ? html` <h1 class="name">${name || team}</h1>`
-                      : ''}
-                    <div class="address">${this.address}</div>
-                    ${name && team
-                      ? html` <div class="team">${team}</div>`
-                      : ''}
-                  </div>
+      <main>
+        ${this.profile.render({
+          pending: () => html`<p>Loading profile...</p>`,
+          complete: (value) => {
+            const { name, team, image, about, news, links } = value || {};
+            return html`
+              <div class="profile-header">
+                <user-avatar
+                  .address=${this.address}
+                  .imageUrl=${image || ''}
+                  size="64px"
+                ></user-avatar>
+                <div>
+                  ${name || team
+                    ? html` <h1 class="name">${name || team}</h1>`
+                    : ''}
+                  <div class="address">${this.address}</div>
+                  ${name && team ? html` <div class="team">${team}</div>` : ''}
                 </div>
+              </div>
 
-                ${this.profileButton}
-                ${about
-                  ? html`
-                      <div class="about section">
-                        <h2>About</h2>
-                        <p>${about}</p>
-                      </div>
-                    `
-                  : ''}
-                ${news
-                  ? html`
-                      <div class="news section">
-                        <h2>Latest Updates</h2>
-                        <p>${news}</p>
-                      </div>
-                    `
-                  : ''}
-                ${links?.length
-                  ? html`
-                      <div class="links section">
-                        <h2>Links</h2>
-                        ${links.map((link: string) => this.createLink(link))}
-                      </div>
-                    `
-                  : ''}
-              `;
-            },
-            error: (error: unknown) => {
-              const errorMessage =
-                error instanceof Error ? error.message : String(error);
-              return html`<p>Error loading profile: ${errorMessage}</p>`;
-            },
-          })}
-        </main>
-        ${this.address
-          ? html` <activity-feed
-              .userId=${this.address}
-              .userName=${this.profile.value?.name}
-            ></activity-feed>`
-          : ''}
-      </div>
+              ${this.profileButton}
+              ${about
+                ? html`
+                    <div class="about section">
+                      <h2>About</h2>
+                      <p>${about}</p>
+                    </div>
+                  `
+                : ''}
+              ${news
+                ? html`
+                    <div class="news section">
+                      <h2>Latest Updates</h2>
+                      <p>${news}</p>
+                    </div>
+                  `
+                : ''}
+              ${links?.length
+                ? html`
+                    <div class="links section">
+                      <h2>Links</h2>
+                      ${links.map((link: string) => this.createLink(link))}
+                    </div>
+                  `
+                : ''}
+            `;
+          },
+          error: (error: unknown) => {
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            return html`<p>Error loading profile: ${errorMessage}</p>`;
+          },
+        })}
+      </main>
     `;
   }
 }

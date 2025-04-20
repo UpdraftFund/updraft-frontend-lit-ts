@@ -7,6 +7,8 @@ import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import type { SlInput } from '@shoelace-style/shoelace';
 
+import layout from '@state/layout';
+
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
 import '@components/common/upd-dialog';
@@ -20,7 +22,6 @@ import {
 } from '@state/common';
 import { Balances } from '@/features/user/types/current-user';
 import { UpdraftSettings } from '@/features/common/types';
-import { rightSidebarContent, topBarContent } from '@state/layout';
 
 @customElement('create-idea')
 export class CreateIdea extends SaveableForm {
@@ -161,8 +162,12 @@ export class CreateIdea extends SaveableForm {
   }
 
   render() {
-    topBarContent.set(html` <page-heading>Create a new Idea</page-heading> `);
-    rightSidebarContent.set(html``);
+    layout.topBarContent.set(html`
+      <page-heading>Create a new Idea</page-heading>
+    `);
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(false);
+    layout.rightSidebarContent.set(html``);
     return html`
       <div class="container">
         <main>

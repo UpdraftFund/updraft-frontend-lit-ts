@@ -13,7 +13,7 @@ import '@components/navigation/create-idea-button';
 import urqlClient from '@utils/urql-client';
 import { userContext, type UserState } from '@state/user';
 
-import { rightSidebarContent, topBarContent } from '@state/layout';
+import layout from '@state/layout';
 
 interface UserIdeasSolutionsResponse {
   createdIdeas: Array<{ id: string; name: string }>;
@@ -170,11 +170,13 @@ export class HomePage extends LitElement {
   });
 
   render() {
-    topBarContent.set(html`
+    layout.topBarContent.set(html`
       <create-idea-button></create-idea-button>
       <search-bar></search-bar>
     `);
-    rightSidebarContent.set(html`
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(true);
+    layout.rightSidebarContent.set(html`
       <hot-ideas></hot-ideas>
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>

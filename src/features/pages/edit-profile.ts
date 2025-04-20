@@ -33,7 +33,7 @@ import {
   formToJson,
 } from '@components/common/saveable-form';
 
-import { topBarContent } from '@state/layout';
+import layout from '@state/layout';
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
 import { user, defaultFunderReward } from '@state/common';
@@ -191,8 +191,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       USER_PROFILE_UPDATED_EVENT,
       this.handleUserStateChanged
     );
-
-    topBarContent.set(html`<page-heading>Edit Your Profile</page-heading>`);
   }
 
   disconnectedCallback() {
@@ -211,8 +209,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       USER_PROFILE_UPDATED_EVENT,
       this.handleUserStateChanged
     );
-
-    topBarContent.set(html``); // Clear header when leaving page
   }
 
   private handleUserStateChanged = () => {
@@ -534,6 +530,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     // Get current profile and address from signals
     const currentProfile = userProfile.get();
     const currentAddress = userAddress.get();
+
+    layout.topBarContent.set(
+      html` <page-heading>Edit Your Profile</page-heading>`
+    );
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(true);
+    layout.rightSidebarContent.set(
+      html` <activity-feed
+        .userId=${currentAddress}
+        .userName=${currentProfile?.name}
+      ></activity-feed>`
+    );
 
     return html`
       <div class="container">

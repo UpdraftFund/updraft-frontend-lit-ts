@@ -43,19 +43,13 @@ import {
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
-import { rightSidebarContent, topBarContent } from '@state/layout';
+import layout from '@state/layout';
 
 @customElement('idea-page')
 export class IdeaPage extends LitElement {
   static styles = [
     dialogStyles,
     css`
-      .container {
-        display: flex;
-        flex: auto;
-        overflow: hidden;
-      }
-
       main {
         flex: 1;
         box-sizing: border-box;
@@ -218,7 +212,7 @@ export class IdeaPage extends LitElement {
           this.loaded = true;
           this.idea = result.data?.idea as Idea;
           if (this.idea) {
-            rightSidebarContent.set(html`
+            layout.rightSidebarContent.set(html`
               <top-supporters .ideaId=${this.ideaId}></top-supporters>
               <related-ideas
                 .ideaId=${this.ideaId}
@@ -448,6 +442,15 @@ export class IdeaPage extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    layout.topBarContent.set(html`
+      <create-idea-button></create-idea-button>
+      <search-bar></search-bar>
+    `);
+    layout.showLeftSidebar.set(true);
+    // initially set the right side bar to empty html
+    layout.rightSidebarContent.set(html``);
+    layout.showRightSidebar.set(true);
+    // if the idea is found, it will populate the right sidebar
     this.subscribe();
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
@@ -468,32 +471,26 @@ export class IdeaPage extends LitElement {
   }
 
   render() {
-    topBarContent.set(html`
-      <create-idea-button></create-idea-button>
-      <search-bar></search-bar>
-    `);
     return html`
-      <div class="container">
-        <main>
-          ${cache(this.renderIdea())}
-          <upd-dialog></upd-dialog>
-          <sl-dialog label="Set Allowance">
-            <p>
-              Before you can support this Idea, you need to sign a transaction
-              to allow the Idea contract to spend your UPD tokens.
-            </p>
-            <transaction-watcher
-              class="approve"
-              @transaction-success=${this.handleSubmit}
-            ></transaction-watcher>
-          </sl-dialog>
+      <main>
+        ${cache(this.renderIdea())}
+        <upd-dialog></upd-dialog>
+        <sl-dialog label="Set Allowance">
+          <p>
+            Before you can support this Idea, you need to sign a transaction to
+            allow the Idea contract to spend your UPD tokens.
+          </p>
           <transaction-watcher
-            class="submit"
-            @transaction-success=${this.handleTransactionSuccess}
-          >
-          </transaction-watcher>
-        </main>
-      </div>
+            class="approve"
+            @transaction-success=${this.handleSubmit}
+          ></transaction-watcher>
+        </sl-dialog>
+        <transaction-watcher
+          class="submit"
+          @transaction-success=${this.handleTransactionSuccess}
+        >
+        </transaction-watcher>
+      </main>
     `;
   }
 }

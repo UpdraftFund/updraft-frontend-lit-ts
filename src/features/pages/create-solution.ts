@@ -6,7 +6,7 @@ import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import { formToJson, SaveableForm } from '@components/common/saveable-form';
 
-import { rightSidebarContent, topBarContent } from '@state/layout';
+import layout from '@state/layout';
 
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
@@ -56,7 +56,7 @@ export class CreateSolution extends SaveableForm {
     });
     const ideaData = result.data?.idea;
     if (ideaData) {
-      topBarContent.set(html`
+      layout.topBarContent.set(html`
         <page-heading
           >Create a new Solution
           <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
@@ -89,10 +89,12 @@ export class CreateSolution extends SaveableForm {
 
   constructor() {
     super();
-    topBarContent.set(html`
+    layout.topBarContent.set(html`
       <page-heading>Create a new Solution</page-heading>
     `);
-    rightSidebarContent.set(html``);
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(false);
+    layout.rightSidebarContent.set(html``);
   }
 
   render() {

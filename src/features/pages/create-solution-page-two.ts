@@ -17,7 +17,7 @@ import {
   updraftSettings as updraftSettingsContext,
 } from '@state/common';
 import { userContext, UserState } from '@state/user';
-import { rightSidebarContent, topBarContent } from '@state/layout';
+import layout from '@state/layout';
 
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { ShareDialog } from '@components/common/share-dialog';
@@ -178,7 +178,7 @@ export class CreateSolution extends SaveableForm {
       });
       const ideaData = result.data?.idea;
       if (ideaData) {
-        topBarContent.set(html`
+        layout.topBarContent.set(html`
           <page-heading
             >Create a new Solution
             <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
@@ -286,10 +286,12 @@ export class CreateSolution extends SaveableForm {
 
   constructor() {
     super();
-    topBarContent.set(html`
+    layout.topBarContent.set(html`
       <page-heading>Create a new Solution</page-heading>
     `);
-    rightSidebarContent.set(html``);
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(false);
+    layout.rightSidebarContent.set(html``);
   }
 
   disconnectedCallback() {
