@@ -1,7 +1,7 @@
 import { customElement, property } from 'lit/decorators.js';
 import { LitElement, css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
-import { isConnected } from '@state/user/user';
+import { isConnected } from '@state/user';
 
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
@@ -12,7 +12,7 @@ import '@components/navigation/left-nav';
 import '@components/user/my-ideas';
 import '@components/user/my-solutions';
 
-import { leftSidebarCollapsed, toggleLeftSidebar } from '@state/common/context';
+import { leftSidebarCollapsed, toggleLeftSidebar } from '@state/common';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends SignalWatcher(LitElement) {

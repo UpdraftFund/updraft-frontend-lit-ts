@@ -22,7 +22,7 @@ import {
   DiscoverQueryType,
 } from '@/types';
 
-import { connectionContext } from '@state/common/context';
+import { connectionContext } from '@state/common';
 import { rightSidebarContent, topBarContent } from '@state/layout';
 import { watchTag, isWatched } from '@state/user/watched-tags';
 

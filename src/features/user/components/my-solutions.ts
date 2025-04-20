@@ -6,7 +6,7 @@ import '@components/common/section-heading';
 import '@components/solution/solution-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import { userAddress } from '@state/user/user';
+import { userAddress } from '@state/user';
 
 import urqlClient from '@utils/urql-client';
 import { SolutionsByFunderOrDrafterDocument } from '@gql';

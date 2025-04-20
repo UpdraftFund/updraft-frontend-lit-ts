@@ -24,16 +24,12 @@ import {
   urqlClientContext,
   updraftSettings as updraftSettingsContext,
   balanceContext,
-} from '@state/common/context';
+} from '@state/common';
 
-import { nav } from '@state/navigation/navigation';
+import { nav } from '@state/navigation';
 
 import { UpdraftSettings } from '@/features/common/types';
-import {
-  initializeUserState,
-  userContext,
-  getUserState,
-} from '@state/user/user';
+import { initializeUserState, userContext, getUserState } from '@state/user';
 
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';

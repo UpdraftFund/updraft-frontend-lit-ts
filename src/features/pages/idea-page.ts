@@ -39,7 +39,7 @@ import {
   defaultFunderReward,
   RequestBalanceRefresh,
   updraftSettings,
-} from '@/features/common/state/context';
+} from '@state/common';
 import { UpdraftSettings, Balances, Idea } from '@/types';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';

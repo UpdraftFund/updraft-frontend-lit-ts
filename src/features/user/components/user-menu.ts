@@ -2,7 +2,7 @@ import { LitElement, css } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 import { consume } from '@lit/context';
-import { balanceContext } from '@/features/common/state/context';
+import { balanceContext } from '@state/common';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
@@ -30,7 +30,7 @@ import {
   isConnecting,
   connectWallet,
   disconnectWallet,
-} from '@state/user/user';
+} from '@state/user';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {

@@ -15,8 +15,8 @@ import {
   balanceContext,
   RequestBalanceRefresh,
   updraftSettings as updraftSettingsContext,
-} from '@state/common/context';
-import { userContext, UserState } from '@state/user/user';
+} from '@state/common';
+import { userContext, UserState } from '@state/user';
 import { rightSidebarContent, topBarContent } from '@state/layout';
 
 import { TransactionWatcher } from '@components/common/transaction-watcher';

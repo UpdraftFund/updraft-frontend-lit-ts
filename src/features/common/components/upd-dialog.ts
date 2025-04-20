@@ -11,10 +11,7 @@ import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import { SlDialog } from '@shoelace-style/shoelace';
 
-import {
-  balanceContext,
-  RequestBalanceRefresh,
-} from '@/features/common/state/context';
+import { balanceContext, RequestBalanceRefresh } from '@state/common';
 import { Balances } from '@/features/user/types/current-user';
 
 @customElement('upd-dialog')

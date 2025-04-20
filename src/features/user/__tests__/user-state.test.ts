@@ -13,7 +13,7 @@ import {
   setNetworkName,
   isConnected,
   hasProfile,
-} from '@/features/user/state/user';
+} from '@state/user';
 
 describe('User State Module', () => {
   // Reset state before each test to ensure a clean state

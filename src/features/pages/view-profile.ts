@@ -18,7 +18,7 @@ import {
   USER_CONNECTED_EVENT,
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
-} from '@/features/user/state/user';
+} from '@state/user';
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
 import { markComplete } from '@pages/home/state/beginner-tasks';
 

@@ -12,7 +12,7 @@ import fire from '@icons/idea/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
-import { updraftSettings } from '@/features/common/state/context';
+import { updraftSettings } from '@state/common';
 import { Solution } from '@/features/solution/types';
 import { UpdraftSettings } from '@/features/common/types';
 

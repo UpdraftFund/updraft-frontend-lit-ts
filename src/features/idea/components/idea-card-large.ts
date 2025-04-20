@@ -13,10 +13,7 @@ import fire from '@icons/idea/fire.svg';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 
-import {
-  defaultFunderReward,
-  updraftSettings,
-} from '@/features/common/state/context';
+import { defaultFunderReward, updraftSettings } from '@state/common';
 import { Idea } from '@/features/idea/types';
 import { UpdraftSettings } from '@/features/common/types';
 

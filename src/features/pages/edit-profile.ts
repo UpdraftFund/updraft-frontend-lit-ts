@@ -36,7 +36,7 @@ import {
 import { topBarContent } from '@state/layout';
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
-import { user, defaultFunderReward } from '@state/common/context';
+import { user, defaultFunderReward } from '@state/common';
 import {
   userAddress,
   userProfile,
@@ -46,7 +46,7 @@ import {
   USER_CONNECTED_EVENT,
   USER_DISCONNECTED_EVENT,
   USER_PROFILE_UPDATED_EVENT,
-} from '@state/user/user';
+} from '@state/user';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
@@ -355,8 +355,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
           if (solutionForm && ideaId && settings) {
             // Format the deadline date properly
-            const deadlineDate = solutionForm['deadline']
-              ? dayjs(solutionForm['deadline']).unix()
+            const deadlineDate = solutionForm.deadline
+              ? dayjs(solutionForm.deadline).unix()
               : dayjs().add(30, 'days').unix(); // Default to 30 days from now if not set
 
             this.submitTransaction.hash = await updraft.write(

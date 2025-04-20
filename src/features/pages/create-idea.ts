@@ -17,7 +17,7 @@ import {
   balanceContext,
   RequestBalanceRefresh,
   updraftSettings,
-} from '@/features/common/state/context';
+} from '@state/common';
 import { Balances } from '@/features/user/types/current-user';
 import { UpdraftSettings } from '@/features/common/types';
 import { rightSidebarContent, topBarContent } from '@state/layout';
