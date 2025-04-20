@@ -34,12 +34,6 @@ export class AppLayout extends SignalWatcher(LitElement) {
       transition: flex-basis 0.3s ease;
     }
 
-    .content-wrapper {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
-
     .main-content {
       flex: 1;
       overflow-y: auto;
@@ -72,10 +66,6 @@ export class AppLayout extends SignalWatcher(LitElement) {
         flex-direction: column;
         height: auto;
         min-height: calc(100vh - 64px);
-      }
-
-      .content-wrapper {
-        flex-direction: column;
       }
 
       .main-content {
