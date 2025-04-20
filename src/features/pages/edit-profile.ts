@@ -131,7 +131,11 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       .link-container {
         display: flex;
         align-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .remove-link-button {
+        --sl-input-height-medium: 1rem;
       }
 
       @media (max-width: 1078px) {
@@ -230,8 +234,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           value: link,
         }));
       this.links = {
-        ...linksToAdd,
         ...this.links,
+        ...linksToAdd,
       };
     }
     if (!this.links.length) {
@@ -535,6 +539,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
                       />
                     </sl-input>
                     <sl-button
+                      class="remove-link-button"
                       variant="text"
                       @click=${() => this.removeLink(index)}
                     >
