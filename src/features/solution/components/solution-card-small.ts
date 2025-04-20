@@ -124,7 +124,7 @@ export class SolutionCardSmall extends LitElement {
   // Helper to parse the hex-encoded JSON info field safely
 
   // I guess the AI doesn't know about viem's fromHex utility even though we use
-  // it in several other places, so it rolled its own. Will re-roll this same
+  // it in several other places, so it rolled its own. Will it re-roll this same
   // code in every component that needs to parse a json hex blob?
 
   private parseSolutionInfo(): { name?: string; description?: string } {
