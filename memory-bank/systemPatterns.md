@@ -2,7 +2,62 @@
 
 ## Architecture Overview
 
-The Updraft frontend application is built on a component-based architecture using Lit and Web Components. The application uses a reactive state management approach with Lit Signals at its core.
+The Updraft frontend application is now organized using a **vertical slice architecture**. Each feature is self-contained within the `src/features` directory, encapsulating its own state, components, queries, types, assets, and tests. This modular approach improves maintainability, scalability, and feature isolation.
+
+### Vertical Slice Pattern
+
+```
+src/
+  features/
+    <feature>/
+      components/   # UI components for the feature
+      state/        # Signal-based state management for the feature
+      queries/      # GraphQL queries/mutations for the feature
+      types/        # TypeScript types for the feature
+      assets/       # Icons, images, etc. for the feature
+      __tests__/    # Unit and integration tests for the feature
+```
+
+#### Example (Idea Feature):
+
+```
+src/features/idea/
+  components/
+  state/
+  queries/
+  types/
+  assets/
+  __tests__/
+```
+
+### Pages as Feature Slices
+
+The `pages` feature contains subfolders for each major page (e.g., `home`, `discover`), each following the same vertical slice structure:
+
+```
+src/features/pages/home/
+  components/
+  state/
+  queries/
+  __tests__/
+```
+
+## Vite and TypeScript Aliases
+
+To support modular imports and maintain clear boundaries between features, the project uses extensive aliasing in both `vite.config.js` and `tsconfig.json`. Aliases are defined for each feature's components, state, styles, icons, and more. Example aliases:
+
+- `@components/idea` → `src/features/idea/components`
+- `@state/user` → `src/features/user/state`
+- `@icons/solution` → `src/features/solution/assets/icons`
+- `@pages` → `src/features/pages`
+- `@utils` → `src/lib/utils`
+
+This allows for clean, intention-revealing imports such as:
+
+```typescript
+import { IdeaCardLarge } from '@components/idea/idea-card-large';
+import { userState } from '@state/user/user';
+```
 
 ## Component Architecture
 
@@ -144,40 +199,73 @@ export class PerformantList extends SignalWatcher(LitElement) {
 
 ## Data Fetching Patterns
 
-### Task for Async Operations
+### urql Subscriptions for GraphQL Data
 
-The application uses `@lit/task` to handle asynchronous operations with automatic loading, error, and success states:
+For GraphQL data fetching, prefer using urql's subscription/query observable pattern over @lit/task. This approach leverages urql's built-in caching and reactivity, and is more compatible with the subscription paradigm than Task, which is better suited for one-off async operations (such as smart contract reads).
+
+**Pattern:**
 
 ```typescript
-import { Task } from '@lit/task';
-import { signal } from '@lit-labs/signals';
+import { LitElement, html } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { urqlClient } from '@/state/urql';
+import { IdeasBySharesDocument } from '@/graphql/generated';
 
-// State that affects data fetching
-const selectedTab = signal('hot');
+@customElement('hot-ideas')
+export class HotIdeas extends LitElement {
+  @state() private hotIdeas?: Idea[];
+  private unsubHotIdeas?: () => void;
 
-class DataComponent extends SignalWatcher(LitElement) {
-  private dataTask = new Task(
-    this,
-    async ([tab]) => {
-      // Fetch data based on signal values
-      const result = await fetchData(tab);
-      return result.data;
-    },
-    // Signal-based dependency array
-    () => [selectedTab.get()]
-  );
-
-  render() {
-    return html`
-      ${this.dataTask.render({
-        pending: () => html`<div>Loading...</div>`,
-        complete: (data) => html`<div class="results">...</div>`,
-        error: (e) => html`<div>Error: ${e.message}</div>`,
-      })}
-    `;
+  private subscribe() {
+    this.unsubHotIdeas?.();
+    const hotIdeasSub = urqlClient
+      .query(IdeasBySharesDocument, {})
+      .subscribe((result) => {
+        if (result.data?.ideas) {
+          this.hotIdeas = result.data.ideas as Idea[];
+        } else {
+          this.hotIdeas = [];
+        }
+      });
+    this.unsubHotIdeas = hotIdeasSub.unsubscribe;
   }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.subscribe();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubHotIdeas?.();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+  }
+
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.unsubHotIdeas?.();
+    } else {
+      this.subscribe();
+    }
+  };
+
+  // ...render logic...
 }
 ```
+
+**Why this pattern?**
+
+- urql subscriptions provide real-time updates and leverage urql's cache.
+- Task is not reactive to urql's cache updates and is better for one-off async operations (e.g., smart contract reads).
+- This pattern ensures the UI stays in sync with backend data and is more maintainable.
+
+### Task for Async Operations (Smart Contracts)
+
+Continue to use `@lit/task` for async operations that are not compatible with urql's subscription model, such as direct smart contract reads.
 
 ## Routing Pattern
 
@@ -285,3 +373,11 @@ Based on the best practices documentation, the following patterns are enforced:
 - Not manually calling .get() in templates with signalsHtml
 - Not modifying signals directly
 - Not treating signals as just global variables
+
+## Icon and SVG Usage Pattern
+
+- **Do NOT use inline SVGs for icons in components.**
+- All icons must be placed in the feature's `assets/icons` directory (e.g., `src/features/user/assets/icons`).
+- Import SVGs as modules using the appropriate Vite/TypeScript alias (e.g., `import icon from '@user/icons/my-icon.svg'`).
+- Reference icons in templates via the imported module, not as inline SVG or data URIs.
+- This ensures consistency, reusability, and maintainability of icon assets across the codebase.

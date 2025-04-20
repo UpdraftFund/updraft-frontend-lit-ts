@@ -1,12 +1,11 @@
 import { customElement, state, property, query } from 'lit/decorators.js';
 import { css } from 'lit';
-import { TaskStatus } from '@lit/task';
+import { TaskStatus, Task } from '@lit/task';
 import { SignalWatcher, html } from '@lit-labs/signals';
-import { consume } from '@lit/context';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import { UpdraftSettings, Connection, CurrentUser } from '@/types';
+import { CurrentUser, UpdraftSettingsProvider } from '@/types';
 
 import pencilSquare from '@icons/user/pencil-square.svg';
 
@@ -15,9 +14,10 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@layout/page-heading.ts';
+import '@layout/page-heading';
 import '@components/user/activity-feed';
 import '@components/common/transaction-watcher';
+import '@components/user/user-avatar';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import {
@@ -36,14 +36,17 @@ import {
 import { topBarContent } from '@state/layout';
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
+import { user, defaultFunderReward } from '@state/common/context';
 import {
-  user,
-  updraftSettings as updraftSettingsContext,
-  defaultFunderReward,
-  connectionContext,
-} from '@state/common/context';
-import { userContext, UserState, setUserProfile } from '@state/user/user';
-import { modal } from '@utils/web3';
+  userAddress,
+  userProfile,
+  isConnected,
+  setUserProfile,
+  connectWallet,
+  USER_CONNECTED_EVENT,
+  USER_DISCONNECTED_EVENT,
+  USER_PROFILE_UPDATED_EVENT,
+} from '@state/user/user';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
@@ -79,7 +82,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       }
 
       .avatar {
-        position: relative; /* Needed for the avatar edit button */
+        position: relative;
         background: var(--main-background);
         border-radius: 50%;
         width: 64px;
@@ -107,7 +110,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         bottom: 0;
         right: 0;
         border-radius: 50%;
-        padding: 0.2rem; /* Add padding for better clickability */
+        padding: 0.2rem;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
 
@@ -121,6 +124,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
       .links-section .link-input {
         margin-top: 0.5rem;
+      }
+
+      .link-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
       }
 
       @media (max-width: 1078px) {
@@ -142,11 +151,20 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @state() private links: { name: string; value: string }[] = [];
   @state() private uploadedImage: string | undefined;
 
-  @consume({ context: connectionContext, subscribe: true })
-  connection!: Connection;
-  @consume({ context: updraftSettingsContext, subscribe: true })
-  updraftSettings!: UpdraftSettings;
-  @consume({ context: userContext, subscribe: true }) userState!: UserState;
+  // Use task to get UpdraftSettings
+  private readonly updraftSettingsTask = new Task(this, {
+    task: async () => {
+      // For now, we'll still use the context-based settings until we have a signal/task implementation
+      const updraftSettingsElement = document.querySelector(
+        'updraft-settings-provider'
+      );
+      if (updraftSettingsElement) {
+        return (updraftSettingsElement as UpdraftSettingsProvider).settings;
+      }
+      return null;
+    },
+    args: () => [] as const,
+  });
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('transaction-watcher.submit', true)
@@ -156,37 +174,92 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
 
+  // Listen for user state changes
+  connectedCallback() {
+    super.connectedCallback();
+
+    // Add listeners for user state events to trigger updates
+    document.addEventListener(
+      USER_CONNECTED_EVENT,
+      this.handleUserStateChanged
+    );
+    document.addEventListener(
+      USER_DISCONNECTED_EVENT,
+      this.handleUserStateChanged
+    );
+    document.addEventListener(
+      USER_PROFILE_UPDATED_EVENT,
+      this.handleUserStateChanged
+    );
+
+    topBarContent.set(html`<page-heading>Edit Your Profile</page-heading>`);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    // Remove event listeners
+    document.removeEventListener(
+      USER_CONNECTED_EVENT,
+      this.handleUserStateChanged
+    );
+    document.removeEventListener(
+      USER_DISCONNECTED_EVENT,
+      this.handleUserStateChanged
+    );
+    document.removeEventListener(
+      USER_PROFILE_UPDATED_EVENT,
+      this.handleUserStateChanged
+    );
+
+    topBarContent.set(html``); // Clear header when leaving page
+  }
+
+  private handleUserStateChanged = () => {
+    // Force a re-render when user state changes
+    this.requestUpdate();
+  };
+
   private handleInput() {
     this.submitTransaction.reset();
   }
 
   private restoreLinks() {
-    const savedForm = loadForm(this.form.name);
-    if (savedForm) {
-      this.links = Object.entries(savedForm)
-        .filter(([key, value]) => key.startsWith('link') && value.trim() !== '')
-        .map(([name, value]) => ({ name, value }));
+    // Get both profile sources
+    const profileSources = [userProfile.get(), user.get()];
+
+    // Find first non-empty links array
+    const links =
+      profileSources.find((source) => source?.links?.length)?.links || [];
+
+    this.links = links
+      .filter((link) => link !== undefined && link !== null)
+      .map((link, i) => ({
+        name: `link-${i}`,
+        value: link,
+      }));
+
+    if (!this.links.length) {
+      this.addEmptyLink();
     }
-    this.addEmptyLink();
   }
 
   private addEmptyLink() {
     this.links = [
       ...this.links,
-      { name: `link${this.links.length + 1}`, value: '' },
+      { name: `link-${this.links.length}`, value: '' },
     ];
   }
 
-  private handleLinkInput(event: InputEvent, index: number) {
-    const inputElement = event.target as HTMLInputElement;
-    this.links[index] = { ...this.links[index], value: inputElement.value };
+  private removeLink(index: number) {
+    this.links = this.links.filter((_, i) => i !== index);
+  }
 
-    // If the user is typing into the last link input and it's not empty, add a new blank link
-    if (index === this.links.length - 1 && inputElement.value.trim() !== '') {
-      this.addEmptyLink();
-    } else {
-      this.links = [...this.links];
-    }
+  private handleLinkInput(event: InputEvent, index: number) {
+    const input = event.target as HTMLInputElement;
+    this.links = this.links.map((link, i) =>
+      i === index ? { ...link, value: input.value } : link
+    );
   }
 
   private handleImageError(event: Event) {
@@ -194,17 +267,22 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     imgElement.src = '/src/assets/icons/link-45deg.svg'; // Fallback icon
   }
 
-  private handleImageUpload(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.uploadedImage = reader.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
+  // Now handled by the user-avatar component
+  // But we need to update both image and avatar fields for consistent display
+  // private handleAvatarChange(e: CustomEvent) {
+  //   this.uploadedImage = e.detail.imageUrl;
+  //
+  //   // Sync changes with the user profile to ensure consistency
+  //   const currentProfile = userProfile.get();
+  //   if (currentProfile) {
+  //     const updatedProfile = {
+  //       ...currentProfile,
+  //       image: this.uploadedImage,
+  //       avatar: this.uploadedImage || '', // Ensure avatar is not undefined
+  //     };
+  //     setUserProfile(updatedProfile);
+  //   }
+  // }
 
   private handleFormSubmit(e: Event) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
@@ -213,50 +291,45 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleSubmit() {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
+      const currentProfile = userProfile.get();
+      const legacyUser = user.get();
+
       const profileData = {
         ...formToJson('edit-profile', profileSchema),
+        links: this.links.map((link) => link.value),
+        // Preserve existing image unless new one uploaded
+        image: this.uploadedImage || currentProfile?.image || legacyUser?.image,
       } as CurrentUser;
-      if (this.uploadedImage) {
-        profileData.image = this.uploadedImage;
-      }
 
-      // Update both legacy user state and new user state
       const updatedProfile: CurrentUser = {
         name: profileData.name || profileData.team || '',
-        image:
-          this.uploadedImage ||
-          this.userState?.profile?.image ||
-          user.get().image,
-        avatar:
-          this.uploadedImage ||
-          this.userState?.profile?.avatar ||
-          user.get().avatar,
-        team:
-          profileData.team || this.userState?.profile?.team || user.get().team,
-        about:
-          profileData.about ||
-          this.userState?.profile?.about ||
-          user.get().about,
-        news:
-          profileData.news || this.userState?.profile?.news || user.get().news,
-        links:
-          this.links.map((link) => link.value) ||
-          this.userState?.profile?.links ||
-          user.get().links,
+        image: profileData.image || '',
+        avatar: profileData.image || '', // Ensure non-empty string
+        team: profileData.team || currentProfile?.team || legacyUser?.team,
+        about: profileData.about || currentProfile?.about || legacyUser?.about,
+        news: profileData.news || currentProfile?.news || legacyUser?.news,
+        links: profileData.links || [],
       };
 
       // Update legacy user state for backward compatibility
       user.set(updatedProfile);
 
-      // Update new user state
+      // Update new user state with signals
       setUserProfile(updatedProfile);
 
       try {
-        // Check if user is connected using either the new or legacy connection
-        if (!this.userState?.isConnected && !this.connection?.connected) {
+        // Check if user is connected using the signal
+        if (!isConnected.get()) {
           await this.openConnectModal();
           return;
         }
+
+        // Get UpdraftSettings using either task or fallback to context
+        const settings =
+          this.updraftSettingsTask.value ||
+          document.querySelector<UpdraftSettingsProvider>(
+            'updraft-settings-provider'
+          )?.settings;
 
         if (this.entity === 'idea') {
           const ideaData = formToJson('create-idea', ideaSchema);
@@ -280,7 +353,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           const params = new URLSearchParams(window.location.search);
           const ideaId = params.get('ideaId');
 
-          if (solutionForm && ideaId) {
+          if (solutionForm && ideaId && settings) {
             // Format the deadline date properly
             const deadlineDate = solutionForm['deadline']
               ? dayjs(solutionForm['deadline']).unix()
@@ -296,7 +369,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
                 deadlineDate,
                 BigInt(
                   (Number(solutionForm['reward']) *
-                    Number(this.updraftSettings.percentScale)) /
+                    Number(settings.percentScale)) /
                     100
                 ),
                 toHex(JSON.stringify(solutionData)),
@@ -325,11 +398,21 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           } else if (e.message?.includes('exceeds allowance')) {
             this.approveTransaction.reset();
             this.approveDialog.show();
-            const upd = new Upd(this.updraftSettings.updAddress);
-            this.approveTransaction.hash = await upd.write('approve', [
-              updraft.address,
-              parseUnits('1', 29),
-            ]);
+
+            // Get settings for UPD token address
+            const settings =
+              this.updraftSettingsTask.value ||
+              document.querySelector<UpdraftSettingsProvider>(
+                'updraft-settings-provider'
+              )?.settings;
+
+            if (settings) {
+              const upd = new Upd(settings.updAddress);
+              this.approveTransaction.hash = await upd.write('approve', [
+                updraft.address,
+                parseUnits('1', 29),
+              ]);
+            }
           }
         }
       }
@@ -357,20 +440,18 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async openConnectModal() {
     try {
       console.log('Opening connect modal');
-      // Use the user state connect method if available, otherwise fall back to direct modal open
-      if (this.userState?.connect) {
-        await this.userState.connect();
-      } else {
-        await modal.open({ view: 'Connect' });
-      }
+      // Use connectWallet from signals
+      await connectWallet();
     } catch (error) {
       console.error('Error opening connect modal:', error);
     }
   }
 
   private initializeFormFields() {
-    console.log('Initializing form fields with user state:', this.userState);
-    console.log('Legacy user state:', user.get());
+    console.log('Initializing form fields with user profile signal');
+
+    // Get current profile from signals
+    const currentProfile = userProfile.get();
 
     // Get the form elements
     const nameInput = this.shadowRoot?.querySelector(
@@ -386,23 +467,21 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       'sl-textarea[name="news"]'
     ) as HTMLTextAreaElement;
 
-    // Set values from user state (prioritize context state over legacy state)
+    // Set values from signals (prioritize signal state over legacy state)
     if (nameInput) {
-      nameInput.value = this.userState?.profile?.name || user.get().name || '';
+      nameInput.value = currentProfile?.name || user.get().name || '';
     }
 
     if (teamInput) {
-      teamInput.value = this.userState?.profile?.team || user.get().team || '';
+      teamInput.value = currentProfile?.team || user.get().team || '';
     }
 
     if (aboutTextarea) {
-      aboutTextarea.value =
-        this.userState?.profile?.about || user.get().about || '';
+      aboutTextarea.value = currentProfile?.about || user.get().about || '';
     }
 
     if (newsTextarea) {
-      newsTextarea.value =
-        this.userState?.profile?.news || user.get().news || '';
+      newsTextarea.value = currentProfile?.news || user.get().news || '';
     }
 
     // Force a re-render to ensure all form fields are updated
@@ -412,31 +491,11 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
 
+    // Get current profile from signals
+    // const currentProfile = userProfile.get();
+
     // Initialize links from user profile data if available
-    if (
-      this.userState?.profile?.links &&
-      Array.isArray(this.userState.profile.links)
-    ) {
-      this.links = this.userState.profile.links
-        .filter((link: string) => link && link.trim() !== '')
-        .map((link: string, index: number) => ({
-          name: `link${index + 1}`,
-          value: link,
-        }));
-      console.log('Initialized links from user profile:', this.links);
-    } else if (user.get()?.links && Array.isArray(user.get()?.links)) {
-      // Fallback to legacy user state if needed
-      const userData = user.get();
-      if (userData && userData.links) {
-        this.links = userData.links
-          .filter((link: string) => link && link.trim() !== '')
-          .map((link: string, index: number) => ({
-            name: `link${index + 1}`,
-            value: link,
-          }));
-        console.log('Initialized links from legacy user state:', this.links);
-      }
-    }
+    this.restoreLinks();
 
     // Always ensure we have at least one empty link field
     if (
@@ -447,16 +506,35 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     }
 
     // Restore any form data that might have been saved locally
-    this.restoreLinks();
+    // this.restoreLinks();
 
     // Initialize all form fields with user profile data
     setTimeout(() => {
       this.initializeFormFields();
     }, 0);
+
+    // Start the task to get settings
+    this.updraftSettingsTask.run();
+  }
+
+  private async handleImageUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.uploadedImage = reader.result as string;
+        this.requestUpdate();
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   render() {
-    topBarContent.set(html` <page-heading>Edit Your Profile</page-heading>`);
+    // Get current profile and address from signals
+    const currentProfile = userProfile.get();
+    const currentAddress = userAddress.get();
+
     return html`
       <div class="container">
         <main>
@@ -468,8 +546,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             <label class="avatar">
               <img
                 src=${this.uploadedImage ||
-                this.userState?.profile?.avatar ||
-                user.get().avatar}
+                currentProfile?.image ||
+                currentProfile?.avatar ||
+                user.get().avatar ||
+                ''}
                 alt="User avatar"
               />
               <input
@@ -488,48 +568,60 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
               label="Name"
               required
               autocomplete="name"
-              value=${this.userState?.profile?.name || user.get().name || ''}
+              value=${currentProfile?.name || user.get().name || ''}
             ></sl-input>
             <sl-input
               name="team"
               label="Team"
               autocomplete="organization"
-              value=${this.userState?.profile?.team || user.get().team || ''}
+              value=${currentProfile?.team || user.get().team || ''}
             ></sl-input>
             <sl-textarea
               name="about"
               label="About"
               resize="auto"
-              value=${this.userState?.profile?.about || user.get().about || ''}
+              value=${currentProfile?.about || user.get().about || ''}
             ></sl-textarea>
             <sl-textarea
               name="news"
               label="News"
               resize="auto"
-              value=${this.userState?.profile?.news || user.get().news || ''}
+              value=${currentProfile?.news || user.get().news || ''}
             ></sl-textarea>
             <div class="links-section">
               <p>Links</p>
               ${this.links.map(
                 (link, index) => html`
-                  <sl-input
-                    class="link-input"
-                    autocomplete="url"
-                    name=${link.name}
-                    value=${link.value}
-                    @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
-                  >
-                    <img
-                      slot="prefix"
-                      src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
-                      @error=${(e: Event) => this.handleImageError(e)}
-                      alt="Logo for ${link.value}"
-                      width="16px"
-                      height="16px"
-                    />
-                  </sl-input>
+                  <div class="link-container">
+                    <sl-input
+                      class="link-input"
+                      autocomplete="url"
+                      name=${link.name}
+                      value=${link.value}
+                      @input=${(e: InputEvent) =>
+                        this.handleLinkInput(e, index)}
+                    >
+                      <img
+                        slot="prefix"
+                        src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
+                        @error=${(e: Event) => this.handleImageError(e)}
+                        alt="Logo for ${link.value}"
+                        width="16px"
+                        height="16px"
+                      />
+                    </sl-input>
+                    <sl-button
+                      variant="text"
+                      @click=${() => this.removeLink(index)}
+                    >
+                      Remove
+                    </sl-button>
+                  </div>
                 `
               )}
+              <sl-button variant="text" @click=${this.addEmptyLink}>
+                + Add Link
+              </sl-button>
             </div>
             <sl-button variant="primary" @click=${this.handleSubmit}>
               Submit Profile
@@ -553,12 +645,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             @transaction-success=${this.handleSubmitSuccess}
           ></transaction-watcher>
         </main>
-        <!-- ${this.connection.address
+        ${currentAddress
           ? html` <activity-feed
-              .userId=${this.connection.address}
-              .userName=${user.get().name}
+              .userId=${currentAddress}
+              .userName=${currentProfile?.name || user.get().name || ''}
             ></activity-feed>`
-          : ''} -->
+          : ''}
       </div>
     `;
   }

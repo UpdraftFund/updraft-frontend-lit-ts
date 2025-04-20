@@ -1,11 +1,22 @@
 import { createContext } from '@lit/context';
 import { signal } from '@lit-labs/signals';
+import type { Client } from '@urql/core';
 
-import { CurrentUser, Connection, Balances, UpdraftSettings } from '@/types';
+import { Connection, Balances, UpdraftSettings } from '@/types';
 
 export const defaultFunderReward = 250000; // 25% assuming the percent scale set on the Updraft contract is 1,000,000
 
-export const user = signal({} as CurrentUser);
+// DEPRECATED: Legacy user state - use userContext from features/user/state/user instead
+// This is kept for backward compatibility while we transition
+export const user = signal<{
+  name?: string;
+  team?: string;
+  about?: string;
+  news?: string;
+  links?: string[];
+  avatar?: string;
+  image?: string;
+}>({});
 
 // Layout context for sidebar states
 const storedLeftSidebarState = localStorage.getItem('leftSidebarCollapsed');
@@ -21,10 +32,13 @@ export interface LayoutContextType {
 
 export const layoutContext = createContext<LayoutContextType>('layout-context');
 
+// DEPRECATED: Legacy connection context - use userContext from features/user/state/user instead
 export const connectionContext = createContext<Connection>('connection');
 export const balanceContext = createContext<Balances>('balances');
 export const updraftSettings =
   createContext<UpdraftSettings>('updraftSettings');
+
+export const urqlClientContext = createContext<Client>('urql-client');
 
 export class RequestBalanceRefresh extends Event {
   static readonly type = 'request-balance-refresh';

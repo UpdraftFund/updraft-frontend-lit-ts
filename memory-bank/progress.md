@@ -2,7 +2,7 @@
 
 ## Current Status
 
-The Updraft frontend application is in the early development stages, with core architecture and patterns being established. Key documentation for Lit Signals best practices has been created to guide development.
+The Updraft frontend application has completed its migration to a **vertical slice architecture**. All features are now organized under `src/features/<feature>`, with each feature containing its own components, state, queries, types, assets, and tests. Vite and TypeScript aliases are fully aligned with this structure, supporting modular and intention-revealing imports.
 
 ## What Works
 
@@ -11,13 +11,16 @@ The Updraft frontend application is in the early development stages, with core a
 - TypeScript configuration
 - Linting and formatting setup
 - Initial documentation of Lit Signals best practices
+- urql subscriptions/observables now used for GraphQL data fetching (replacing Task for these cases)
+- **Vertical slice architecture is in place for all features**
+- Vite/TS aliases support modular feature imports
 
 ## What's In Progress
 
-- Implementation of core components following Lit Signals patterns
-- State management system setup
+- Implementation of core components following Lit Signals patterns **within the vertical slice structure**
+- State management system setup (feature-based)
 - Web3 connectivity integration
-- UI component development
+- UI component development (feature-based)
 
 ## What's Left to Build
 
@@ -58,6 +61,7 @@ The Updraft frontend application is in the early development stages, with core a
 ## Known Issues
 
 - No significant issues identified yet as the project is in early stages
+- Task is now reserved for smart contract reads and non-urql async operations; urql subscription pattern is preferred for GraphQL
 
 ## Next Milestones
 

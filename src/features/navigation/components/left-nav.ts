@@ -4,7 +4,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import compass from '@icons/navigation/compass.svg';
 import house from '@icons/navigation/house.svg';
 
-import { nav } from '@state/navigation/navigation.ts';
+import { nav } from '@state/navigation/navigation';
 import { customElement, property } from 'lit/decorators.js';
 
 @customElement('left-nav')

@@ -9,8 +9,8 @@ import chevronRight from '@icons/navigation/chevron-right.svg';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@components/navigation/left-nav';
-import '@/features/user/components/my-ideas.ts';
-import '@/features/user/components/my-solutions.ts';
+import '@components/user/my-ideas';
+import '@components/user/my-solutions';
 
 import {
   connectionContext,

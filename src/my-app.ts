@@ -1,11 +1,10 @@
 import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Task } from '@lit/task';
 import { Router } from '@lit-labs/router';
-import { getBalance } from '@wagmi/core';
-import { formatUnits, fromHex } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
+import { formatUnits } from 'viem';
+import { watchAccount } from '@wagmi/core';
 
 import '@layout/app-layout';
 
@@ -19,25 +18,27 @@ import '@styles/global.css';
 import '@styles/theme.css';
 import '@styles/reset.css';
 
-import { modal, config } from '@utils/web3';
 import urqlClient from '@utils/urql-client';
 
 import {
-  user,
-  connectionContext,
+  urqlClientContext,
+  updraftSettings as updraftSettingsContext,
   balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings,
 } from '@state/common/context';
-import { setUserProfile } from '@state/user/user';
+import { UpdraftSettings } from '@/features/common/types';
+import {
+  initializeUserState,
+  userContext,
+  getUserState,
+  setupProfileTask,
+} from '@state/user/user';
+
 import { nav } from '@state/navigation/navigation';
 
-import { Connection, Balances } from '@/features/user/types/current-user';
-import { UpdraftSettings } from '@/features/common/types';
-import { Profile } from '@/features/user/types';
-
-import { ProfileDocument } from '@gql';
 import { updraft } from '@contracts/updraft';
+import { Upd } from '@contracts/upd';
+import { getAccount, getBalance } from '@wagmi/core';
+import { config } from '@utils/web3';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -53,7 +54,7 @@ export class MyApp extends LitElement {
         nav.set('home');
         return true;
       },
-      render: () => html` <home-page></home-page>`,
+      render: () => html`<home-page></home-page>`,
     },
     {
       path: '/discover',
@@ -83,7 +84,7 @@ export class MyApp extends LitElement {
         nav.set('create-idea');
         return true;
       },
-      render: () => html` <create-idea></create-idea>`,
+      render: () => html`<create-idea></create-idea>`,
     },
     {
       path: '/edit-profile',
@@ -92,7 +93,7 @@ export class MyApp extends LitElement {
         nav.set('edit-profile');
         return true;
       },
-      render: () => html` <edit-profile></edit-profile>`,
+      render: () => html`<edit-profile></edit-profile>`,
     },
     {
       path: '/submit-profile-and-create-:entity',
@@ -102,7 +103,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ entity }) =>
-        html` <edit-profile .entity=${entity}></edit-profile>`,
+        html`<edit-profile .entity=${entity}></edit-profile>`,
     },
     {
       path: '/profile/:address',
@@ -122,7 +123,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ ideaId }) => {
-        return html` <create-solution
+        return html`<create-solution
           .ideaId=${ideaId as string}
         ></create-solution>`;
       },
@@ -142,76 +143,57 @@ export class MyApp extends LitElement {
     },
   ]);
 
-  @provide({ context: connectionContext }) connection: Connection = {
-    connected: false,
+  @provide({ context: urqlClientContext })
+  urqlClient = urqlClient;
+
+  @provide({ context: updraftSettingsContext })
+  updraftSettings = {
+    percentScale: 0,
+    updAddress: '0x',
+    percentFee: 0,
+    minFee: 0,
+  } as UpdraftSettings;
+
+  // Explicitly provide user state via context
+  @provide({ context: userContext })
+  userState = getUserState();
+
+  @state()
+  @provide({ context: balanceContext })
+  balances = {
+    eth: { symbol: 'ETH', balance: '0' },
+    updraft: { symbol: 'UPD', balance: '0' },
   };
-  @provide({ context: balanceContext }) balances: Balances = {};
-  @provide({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
+
+  // Make sure the context stays updated
+  updated() {
+    // Update the context provider value when anything changes
+    this.userState = getUserState();
+  }
 
   constructor() {
     super();
-
-    // Set the theme based on user preference
+    // Setup profile task - this will enable profile fetching
+    console.log('MyApp constructor - setting up profile task');
+    setupProfileTask(this);
     this.setupTheme();
-
-    modal.subscribeAccount(async ({ isConnected, address }) => {
-      console.log('modal.subscribeAccount called with address:', address);
-
-      if (address) {
-        this.connection.address = address as `0x${string}`;
-        const result = await urqlClient.query(ProfileDocument, {
-          userId: address,
-        });
-        let profile = {} as Profile;
-        if (result.data?.user?.profile) {
-          profile = JSON.parse(
-            fromHex(result.data.user.profile as `0x${string}`, 'string')
-          );
-        }
-        user.set({
-          ...profile,
-          name: profile.name || profile.team || address,
-          avatar: profile.image || makeBlockie(address),
-        });
-
-        // Update new user state with complete profile data
-        setUserProfile({
-          ...profile,
-          name: profile.name || profile.team || address,
-          avatar: profile.image || makeBlockie(address),
-        });
-
-        // Explicitly close the modal when a connection is successful, but only once
-        try {
-          // Only try to close if we're not already closing
-          if (modal.isOpen()) {
-            console.log('Closing modal after successful connection');
-            await modal.close();
-            console.log('Modal closed after successful connection');
-          }
-        } catch (error) {
-          console.error('Error closing modal:', error);
-        }
-      }
-      this.connection = {
-        ...this.connection,
-        connected: isConnected,
-      };
+    this.getUpdraftSettings.run();
+    window.addEventListener('request-balance-refresh', this.refreshBalances);
+    this.refreshBalances();
+    watchAccount(config, {
+      onChange: () => this.refreshBalances(),
     });
+  }
 
-    modal.subscribeNetwork(({ caipNetwork }) => {
-      this.connection = {
-        ...this.connection,
-        network: {
-          name: caipNetwork!.name,
-        },
-      };
-      this.getUpdraftSettings.run().then(() => this.refreshBalances.run());
-    });
+  connectedCallback(): void {
+    super.connectedCallback();
+    // Initialize user state including reconnect attempt
+    initializeUserState();
+  }
 
-    this.addEventListener(RequestBalanceRefresh.type, () =>
-      this.refreshBalances.run()
-    );
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('request-balance-refresh', this.refreshBalances);
   }
 
   private setupTheme() {
@@ -238,31 +220,6 @@ export class MyApp extends LitElement {
       });
   }
 
-  public refreshBalances = new Task(this, {
-    task: async () => {
-      if (this.connection.address) {
-        const gasToken = await getBalance(config, {
-          address: this.connection.address,
-        });
-        const updraftToken = await getBalance(config, {
-          address: this.connection.address,
-          token: this.updraftSettings.updAddress,
-        });
-        this.balances = {
-          gas: {
-            symbol: gasToken.symbol,
-            balance: gasToken.formatted,
-          },
-          updraft: {
-            symbol: updraftToken.symbol,
-            balance: updraftToken.formatted,
-          },
-        };
-      }
-    },
-    autoRun: false,
-  });
-
   public getUpdraftSettings = new Task(this, {
     task: async () => {
       const percentScaleBigInt = (await updraft.read('percentScale')) as bigint;
@@ -280,8 +237,49 @@ export class MyApp extends LitElement {
     autoRun: false,
   });
 
+  async refreshBalances() {
+    const account = getAccount(config);
+    const address = account?.address as `0x${string}` | undefined;
+    console.log('refreshBalances: address', address);
+    if (!address) {
+      this.balances = {
+        eth: { symbol: 'ETH', balance: '0' },
+        updraft: { symbol: 'UPD', balance: '0' },
+      };
+      return;
+    }
+    // Fetch ETH balance
+    let ethBalance = '0';
+    try {
+      const eth = await getBalance(config, { address });
+      ethBalance = formatUnits(eth.value, eth.decimals);
+    } catch {
+      ethBalance = '0';
+    }
+    console.log('refreshBalances: eth', ethBalance);
+    // Fetch UPD balance
+    let updBalance = '0';
+    try {
+      // Get UPD token address from updraft contract
+      const updraftContract = (await import('@contracts/updraft')).updraft;
+      const updAddress = (await updraftContract.read(
+        'feeToken'
+      )) as `0x${string}`;
+      const upd = new Upd(updAddress);
+      const rawUpd = await upd.read('balanceOf', [address]);
+      updBalance = formatUnits(rawUpd as bigint, 18);
+    } catch {
+      updBalance = '0';
+    }
+    console.log('refreshBalances: upd', updBalance);
+    this.balances = {
+      eth: { symbol: 'ETH', balance: ethBalance },
+      updraft: { symbol: 'UPD', balance: updBalance },
+    };
+  }
+
   render() {
-    return html` <app-layout> ${this.router.outlet()}</app-layout> `;
+    return html` <app-layout> ${this.router.outlet()} </app-layout> `;
   }
 }
 
