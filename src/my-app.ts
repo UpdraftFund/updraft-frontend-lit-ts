@@ -137,6 +137,15 @@ export class MyApp extends LitElement {
         ></create-solution-page-two>`;
       },
     },
+    {
+      path: '/solution/:solutionId',
+      enter: async () => {
+        await import('@pages/solution-page');
+        nav.set('solution');
+        return true;
+      },
+      render: ({ solutionId }) => html` <solution-page .solutionId=${solutionId as string}></solution-page>`,
+    },
   ]);
 
   @provide({ context: urqlClientContext })
