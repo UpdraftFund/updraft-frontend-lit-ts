@@ -36,8 +36,6 @@ import {
   setupProfileTask,
 } from '@state/user/user';
 
-import { nav } from '@state/navigation/navigation';
-
 import { updraft } from '@contracts/updraft';
 import { Upd } from '@contracts/upd';
 import { getAccount, getBalance } from '@wagmi/core';
