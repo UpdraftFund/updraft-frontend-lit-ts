@@ -165,7 +165,9 @@ export class SolutionCardSmall extends LitElement {
     // Calculate percentage using BigInt math to avoid precision issues, then convert
     const progressPercent =
       goalBigInt > 0n
-        ? Number((progressBigInt * 10000n) / goalBigInt) / 100
+        ? // AI code fart: The percentage scale is set in the updraft settings,
+          // so shouldn't be hard-coded to 10000n.
+          Number((progressBigInt * 10000n) / goalBigInt) / 100
         : 0;
 
     if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
