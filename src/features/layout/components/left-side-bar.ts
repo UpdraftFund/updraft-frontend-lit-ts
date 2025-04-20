@@ -1,7 +1,7 @@
 import { customElement, property } from 'lit/decorators.js';
-import { css, LitElement } from 'lit';
+import { LitElement, css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
-import { consume } from '@lit/context';
+import { isConnected } from '@state/user/user';
 
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
@@ -12,17 +12,12 @@ import '@components/navigation/left-nav';
 import '@components/user/my-ideas';
 import '@components/user/my-solutions';
 
-import {
-  connectionContext,
-  leftSidebarCollapsed,
-  toggleLeftSidebar,
-} from '@state/common/context';
-import { Connection } from '@/types/user/current-user';
+import { leftSidebarCollapsed, toggleLeftSidebar } from '@state/common/context';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends SignalWatcher(LitElement) {
-  @consume({ context: connectionContext, subscribe: true })
-  connection?: Connection;
+  @property({ type: Boolean, reflect: true }) collapsed = false;
+  @property({ type: Boolean, reflect: true }) expanded = false;
 
   static styles = css`
     :host {
@@ -147,9 +142,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       }
     }
   `;
-
-  @property({ type: Boolean, reflect: true }) collapsed = false;
-  @property({ type: Boolean, reflect: true }) expanded = false;
 
   constructor() {
     super();
@@ -281,7 +273,7 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         .collapsed=${this.collapsed}
         .expanded=${this.expanded}
       ></left-nav>
-      ${this.connection?.address
+      ${isConnected.get()
         ? html`
             <my-ideas></my-ideas>
             <my-solutions></my-solutions>

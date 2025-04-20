@@ -25,6 +25,9 @@ import {
   updraftSettings as updraftSettingsContext,
   balanceContext,
 } from '@state/common/context';
+
+import { nav } from '@state/navigation/navigation';
+
 import { UpdraftSettings } from '@/features/common/types';
 import {
   initializeUserState,
@@ -54,7 +57,7 @@ export class MyApp extends LitElement {
         nav.set('home');
         return true;
       },
-      render: () => html`<home-page></home-page>`,
+      render: () => html` <home-page></home-page>`,
     },
     {
       path: '/discover',
@@ -84,7 +87,7 @@ export class MyApp extends LitElement {
         nav.set('create-idea');
         return true;
       },
-      render: () => html`<create-idea></create-idea>`,
+      render: () => html` <create-idea></create-idea>`,
     },
     {
       path: '/edit-profile',
@@ -93,7 +96,7 @@ export class MyApp extends LitElement {
         nav.set('edit-profile');
         return true;
       },
-      render: () => html`<edit-profile></edit-profile>`,
+      render: () => html` <edit-profile></edit-profile>`,
     },
     {
       path: '/submit-profile-and-create-:entity',
@@ -103,7 +106,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ entity }) =>
-        html`<edit-profile .entity=${entity}></edit-profile>`,
+        html` <edit-profile .entity=${entity}></edit-profile>`,
     },
     {
       path: '/profile/:address',
@@ -123,7 +126,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ ideaId }) => {
-        return html`<create-solution
+        return html` <create-solution
           .ideaId=${ideaId as string}
         ></create-solution>`;
       },
@@ -279,7 +282,7 @@ export class MyApp extends LitElement {
   }
 
   render() {
-    return html` <app-layout> ${this.router.outlet()} </app-layout> `;
+    return html` <app-layout> ${this.router.outlet()}</app-layout> `;
   }
 }
 

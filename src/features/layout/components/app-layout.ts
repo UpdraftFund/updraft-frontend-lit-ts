@@ -37,7 +37,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
     .main-content {
       flex: 1;
       display: flex;
-      overflow: hidden;
+      overflow-y: auto;
       padding: 0 0.3rem;
     }
 

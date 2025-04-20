@@ -33,6 +33,11 @@ export class CreateSolution extends SaveableForm {
       margin: 1.5rem 3rem;
     }
 
+    sl-input,
+    sl-textarea {
+      width: 100%;
+    }
+
     sl-button {
       max-width: fit-content;
     }
