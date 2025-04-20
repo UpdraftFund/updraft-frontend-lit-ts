@@ -1,32 +1,44 @@
-/* Use --sl-color-<color-name> for dark mode compatibility https://shoelace.style/tokens/color - Tommy */
-:root {
+.sl-theme-light {
+  --sl-color-primary-50: rgb(247 250 251);
+  --sl-color-primary-100: rgb(228 238 243);
+  --sl-color-primary-200: rgb(208 225 235);
+  --sl-color-primary-300: rgb(185 210 225);
+  --sl-color-primary-400: rgb(155 191 212);
+  --sl-color-primary-500: rgb(116 166 195);
+  --sl-color-primary-600: rgb(74 139 177);
+  --sl-color-primary-700: rgb(36 114 160);
+  --sl-color-primary-800: rgb(14 94 140);
+  --sl-color-primary-900: rgb(10 67 100);
+  --sl-color-primary-950: rgb(6 41 62);
+  --subtle-background: #dff5fc;
+}
+
+.sl-theme-dark {
+  --sl-color-primary-50: rgb(6 41 62);
+  --sl-color-primary-100: rgb(10 67 100);
+  --sl-color-primary-200: rgb(14 94 140);
+  --sl-color-primary-300: rgb(36 114 160);
+  --sl-color-primary-400: rgb(74 139 177);
+  --sl-color-primary-500: rgb(116 166 195);
+  --sl-color-primary-600: rgb(155 191 212);
+  --sl-color-primary-700: rgb(185 210 225);
+  --sl-color-primary-800: rgb(208 225 235);
+  --sl-color-primary-900: rgb(228 238 243);
+  --sl-color-primary-950: rgb(247 250 251);
+  --subtle-background: var(--sl-color-primary-100);
+}
+
+/* Use var(--sl-color-{name}-{n}) to have inverted colors for dark and light themes.
+   See https://shoelace.style/tokens/color for built-in theme and palette names. */
+:root, .sl-theme-dark, .sl-theme-light {
+  --sl-input-border-color: var(--sl-color-primary-300);
   --main-background: var(--sl-color-neutral-0);
-  --subtle-background: var(--sl-color-sky-50);
-  --accent: var(--sl-color-blue-600);
+  --accent: var(--sl-color-primary-800);
   --main-foreground: var(--sl-color-neutral-800);
   --subtle-text: var(--sl-color-neutral-600);
   --control-background: var(--sl-color-sky-200);
   --section-heading: var(--sl-color-neutral-500);
   --layout-divider: var(--sl-color-neutral-200);
-
-  --sl-input-border-color: hsla(194, 84%, 63%, 1);
-
-  --sl-color-primary-50: rgb(247 250 252);
-  --sl-color-primary-100: rgb(228 238 243);
-  --sl-color-primary-200: rgb(207 225 235);
-  --sl-color-primary-300: rgb(185 210 225);
-  --sl-color-primary-400: rgb(154 191 212);
-  --sl-color-primary-500: rgb(115 166 195);
-  --sl-color-primary-600: var(--accent);
-  --sl-color-primary-700: rgb(34 114 161);
-  --sl-color-primary-800: rgb(10 94 142);
-  --sl-color-primary-900: rgb(7 67 101);
-  --sl-color-primary-950: rgb(5 41 63);
-
-  --sl-input-border-radius-medium: 20px;
-  --sl-input-required-content: unset;
-
-  /* Custom application variables that work with both themes */
   --danger: var(--sl-color-danger-600);
   --success: var(--sl-color-success-600);
   --attention: var(--sl-color-warning-600);

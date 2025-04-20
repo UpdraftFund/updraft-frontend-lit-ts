@@ -373,3 +373,11 @@ Based on the best practices documentation, the following patterns are enforced:
 - Not manually calling .get() in templates with signalsHtml
 - Not modifying signals directly
 - Not treating signals as just global variables
+
+## Icon and SVG Usage Pattern
+
+- **Do NOT use inline SVGs for icons in components.**
+- All icons must be placed in the feature's `assets/icons` directory (e.g., `src/features/user/assets/icons`).
+- Import SVGs as modules using the appropriate Vite/TypeScript alias (e.g., `import icon from '@user/icons/my-icon.svg'`).
+- Reference icons in templates via the imported module, not as inline SVG or data URIs.
+- This ensures consistency, reusability, and maintainability of icon assets across the codebase.

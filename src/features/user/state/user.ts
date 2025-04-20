@@ -342,16 +342,15 @@ watchAccount(config, {
       setNetworkName(newNetworkName);
     }
 
-    // Update user address if changed
-    if (currentAddress !== newAddress) {
-      setUserAddress(newAddress);
-      // Profile fetch is now handled within setUserAddress
-
-      // When disconnecting (address becomes null), also clear the profile
-      if (newAddress === null) {
-        setUserProfile(null);
+    // Only update user address if newAddress is not null
+    if (newAddress) {
+      if (currentAddress !== newAddress) {
+        setUserAddress(newAddress);
+        // Profile fetch is now handled within setUserAddress
       }
     }
+    // Do NOT clear address/profile if newAddress is null (wallet locked)
+    // Only clear on explicit disconnect (handled in disconnectWallet)
 
     // Update connection status flags
     setIsConnecting(account.isConnecting);

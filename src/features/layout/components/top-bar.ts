@@ -65,6 +65,9 @@ export class TopBar extends SignalWatcher(LitElement) {
       display: flex;
       align-items: center;
     }
+    page-heading a {
+      font-size: 1.25rem;
+    }
   `;
 
   private toggleLeftSidebar() {

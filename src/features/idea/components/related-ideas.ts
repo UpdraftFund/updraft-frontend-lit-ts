@@ -50,7 +50,7 @@ export class RelatedIdeas extends LitElement {
     // Clean up previous subscription if it exists
     this.unsubIdeas?.();
 
-    if (this.ideaId && this.tags.length > 0) {
+    if (this.ideaId && this.tags?.length > 0) {
       const ideasSub = urqlClient
         .query(IdeasByTagsDocument, {
           tag1: this.tags[0],
@@ -65,6 +65,8 @@ export class RelatedIdeas extends LitElement {
         });
 
       this.unsubIdeas = ideasSub.unsubscribe;
+    } else {
+      this.ideas = [];
     }
   }
 
@@ -78,7 +80,7 @@ export class RelatedIdeas extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    if (this.ideaId && this.tags.length > 0) {
+    if (this.ideaId && this.tags?.length > 0) {
       this.subscribe();
     }
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
