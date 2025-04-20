@@ -60,15 +60,9 @@ export class CreateSolution extends SaveableForm {
   static styles = [
     dialogStyles,
     css`
-      .container {
-        display: flex;
-        flex: auto;
+      :host {
+        width: 100%;
         overflow: hidden;
-      }
-
-      main {
-        flex: 1;
-        box-sizing: border-box;
       }
 
       form {
@@ -129,6 +123,7 @@ export class CreateSolution extends SaveableForm {
         color: var(--main-foreground);
         font-size: 0.875rem;
         font-weight: bold;
+        transform: translateX(0.25rem);
       }
 
       .reward-container sl-range::part(tooltip)::after {
@@ -281,7 +276,8 @@ export class CreateSolution extends SaveableForm {
     this.addIdeaToHeading();
 
     this.rewardRange.tooltipFormatter = (value: number) => `${value}%`;
-    this.rewardRange.defaultValue = 50;
+    this.rewardRange.defaultValue = 25;
+    this.rewardRange.max = 80;
     this.rewardRange.updateComplete.then(this.syncRangeTooltip);
 
     this.resizeObserver = new ResizeObserver(this.syncRangeTooltip);
@@ -303,95 +299,99 @@ export class CreateSolution extends SaveableForm {
 
   render() {
     return html`
-      <div class="container">
-        <main>
-          <form name="create-solution-two" @submit=${this.handleFormSubmit}>
-            <h2>Funding details</h2>
+      <form name="create-solution-two" @submit=${this.handleFormSubmit}>
+        <h2>Funding details</h2>
 
-            <sl-input
-              name="fundingToken"
-              required
-              autocomplete="off"
-              @input=${this.handleFundingTokenInput}
-              placeholder="0x..."
-            >
-              <label-with-hint
-                slot="label"
-                label="Funding Token*"
-                hint="The address of the token you want to use to fund your solution"
-              ></label-with-hint>
-            </sl-input>
+        <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
-            <sl-input
-              name="goal"
-              required
-              autocomplete="off"
-              @input=${this.handleGoalInput}
-            >
-              <label-with-hint
-                slot="label"
-                label="Goal*"
-                hint="The amount of funding you want to raise"
-              ></label-with-hint>
-            </sl-input>
+        <sl-input
+          name="fundingToken"
+          required
+          autocomplete="off"
+          @input=${this.handleFundingTokenInput}
+          placeholder="0x..."
+        >
+          <label-with-hint
+            slot="label"
+            label="Funding Token*"
+            hint="The address of the token you want to use to fund your solution"
+          ></label-with-hint>
+        </sl-input>
 
-            <sl-input type="date" name="deadline" required autocomplete="off">
-              <label-with-hint
-                slot="label"
-                label="Deadline*"
-                hint="The date by which your funding goal should be reached"
-              ></label-with-hint>
-            </sl-input>
+        <sl-input
+          name="goal"
+          required
+          autocomplete="off"
+          @input=${this.handleGoalInput}
+        >
+          <label-with-hint
+            slot="label"
+            label="Goal*"
+            hint="The amount of funding you want to raise"
+          ></label-with-hint>
+        </sl-input>
 
-            <div class="deposit-container">
-              <label-with-hint
-                label="Stake"
-                hint="Add a stake to attract more funders. If don't reach your 
+        <sl-input type="date" name="deadline" required autocomplete="off">
+          <label-with-hint
+            slot="label"
+            label="Deadline*"
+            hint="The date by which your funding goal should be reached"
+          ></label-with-hint>
+        </sl-input>
+
+        <div class="deposit-container">
+          <label-with-hint
+            label="Stake"
+            hint="Add a stake to attract more funders. If don't reach your 
                 funding goal, this amount will be distributed to your funders."
-              >
-              </label-with-hint>
-              <div class="deposit-row">
-                <sl-input
-                  name="stake"
-                  autocomplete="off"
-                  @focus=${this.handleDepositFocus}
-                  @input=${this.handleDepositInput}
-                >
-                </sl-input>
-                <span>UPD</span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => this.updDialog.show()}
-                  >Get more UPD
-                </sl-button>
-                ${this.antiSpamFee
-                  ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-                  : ''}
-              </div>
-              ${this.depositError
-                ? html` <div class="error">${this.depositError}</div>`
-                : ''}
-            </div>
-
-            <input type="hidden" name="ideaId" value="${this.ideaId}" />
-
-            <span>
-              <sl-button
-                href="/create-solution/${this.ideaId}"
-                variant="primary"
-                >Previous
-              </sl-button>
-              <sl-button
-                href="/submit-profile-and-create-solution"
-                variant="primary"
-                @click=${this.nextButtonClick}
-                >Next: Create your Profile
-              </sl-button>
-            </span>
-          </form>
-          <upd-dialog></upd-dialog>
-        </main>
-      </div>
+          >
+          </label-with-hint>
+          <div class="deposit-row">
+            <sl-input
+              name="stake"
+              autocomplete="off"
+              @focus=${this.handleDepositFocus}
+              @input=${this.handleDepositInput}
+            >
+            </sl-input>
+            <span>UPD</span>
+            <sl-button variant="primary" @click=${() => this.updDialog.show()}
+              >Get more UPD
+            </sl-button>
+            ${this.antiSpamFee
+              ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
+              : ''}
+          </div>
+          ${this.depositError
+            ? html` <div class="error">${this.depositError}</div>`
+            : ''}
+        </div>
+        <div class="reward-container">
+          <label-with-hint
+            label="Funder Reward"
+            hint="Allow funders to earn a % of the funds contributed by later funders. 
+            A higher reward lets funders earn more but adds less to the solution fund."
+          >
+          </label-with-hint>
+          <div class="range-and-labels">
+            <span class="left-label">More for solution</span>
+            <sl-range name="reward" value="25"></sl-range>
+            <span class="right-label">More for funders</span>
+          </div>
+        </div>
+        <span>
+          <sl-button href="/create-solution/${this.ideaId}" variant="primary"
+            >Previous
+          </sl-button>
+          <sl-button
+            href="/submit-profile-and-create-solution"
+            variant="primary"
+            @click=${this.nextButtonClick}
+            >Next: Create your Profile
+          </sl-button>
+        </span>
+      </form>
+      <upd-dialog></upd-dialog>
     `;
   }
 }
