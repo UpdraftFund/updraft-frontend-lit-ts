@@ -1,64 +1,340 @@
-# Setup
+# Updraft Frontend Development Rules
 
-- We're using yarn as our package manager
-- We're using lit for our frontend framework
-- We're using typescript for our language
-- We're using Shoelace for our UI components
-- We're using wagmi for our wallet connection
-- We're using viem for our blockchain interactions
-- We're consuming data from The Graph GraphQL API https://github.com/graphprotocol/graph-client#readme
-- We're using urql for our graphql client, the related queries are in the `src/queries` directory
-- We're keeping page specific components in the `src/components/page-specific` directory
-- We're keeping shared components in the `src/components/shared` directory
-- We're keeping pages in the `src/pages` directory
-- The app's CSS is in the `src/styles` directory
-- Our right sidebar has interswappable components which are determined by the route and `getPageLyout` in my-app.ts
-- The app routes are defined in my-app.ts, with the Idea page for example being rendered at the path '/idea/:id'
-- We're using web-test-runner for our testing
-- Use Semantic Commit Messages as per https://www.conventionalcommits.org/en/v1.0.0/ with descriptive list of changes if the amount of changes calls for it
-- Use `yarn dev` to start the development server
-- When modifying imports, don't remove existing imports
+## Architecture & Organization
 
-# General Code Style, Formatting & Best Practices
+- **Vertical Slice Architecture**: Organize code by feature domain in the `src/features/` directory:
 
-- Prefer iteration and modularization over code duplication.
-- Always suggest component-level improvements when you notice a better architectural approach, especially regarding data flow, component responsibilities, and code organization.
-- Always declare the type of each variable and function (parameters and return value).
-- Avoid using any.
-- Use JSDoc to document public classes and methods.
-- Use TypeScript for all code; prefer interfaces over types.
-- Create necessary types. Check `src/types` directory for existing types.
-- Avoid any and enums; use explicit types and maps instead.
-- Use functional components with TypeScript interfaces.
-- Enable strict mode in TypeScript for better type safety.
-- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
-- Use Prettier for consistent code formatting.
+  - Each feature (idea, user, solution, etc.) has its own directory with components, state, queries, and tests
+  - Features should be self-contained with minimal cross-feature dependencies
+  - Use feature slices to organize related functionality (`src/features/idea/`, `src/features/user/`, etc.)
 
-# Naming Conventions
+- **Feature Structure**:
 
-- Use PascalCase for classes.
-- Use camelCase for variables, functions, and methods.
-- Use kebab-case for file and directory names.
-- Use UPPERCASE for environment variables.
-- Avoid magic numbers and define constants.
-- Favor named exports for components.
-- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+  - `components/`: UI components for the feature
+  - `state/`: Signal-based state management
+  - `queries/`: GraphQL queries/mutations
+  - `types/`: TypeScript interfaces and types
+  - `assets/`: Icons, images specific to the feature
+  - `__tests__/`: Test files colocated with feature code
 
-# Functions & Logic
+- **When to Create a New Feature**:
+  - Create a new feature slice when functionality spans multiple pages or components
+  - Create a new feature when introducing a distinct domain concept
+  - Extend existing features when adding capabilities to an existing domain
+  - Favor cohesion over arbitrary separation
 
-- Keep functions short and single-purpose (<20 lines).
-- Avoid deeply nested blocks by:
-- Using early returns.
-- Extracting logic into utility functions.
-- Use higher-order functions (map, filter, reduce) to simplify logic.
-- Use arrow functions for simple cases (<3 instructions), named functions otherwise.
-- Use default parameter values instead of null/undefined checks.
-- Use RO-RO (Receive Object, Return Object) for passing and returning multiple parameters.
+## State Management
 
-# Data Handling
+- **GraphQL Data Fetching**:
 
-- Avoid excessive use of primitive types; encapsulate data in composite types.
-- Avoid placing validation inside functions—use classes with internal validation instead.
-- Prefer immutability for data:
-- Use readonly for immutable properties.
-- Use as const for literals that never change.
+  - Use urql's subscription/query observable pattern for GraphQL data:
+
+    ```typescript
+    // Preferred pattern
+    const subscription = urqlClient
+      .query(DocumentName, variables)
+      .subscribe((result) => {
+        /* handle result */
+      });
+    ```
+
+  - Store unsubscribe functions and call them in disconnectedCallback
+  - Handle loading, error, and data states explicitly
+
+- **Signal Usage**: Use Lit Signals for reactive state that changes frequently:
+
+  - UI state (toggles, form values, visibility)
+  - Feature-specific shared state
+  - Derived/computed values
+  - Example:
+
+    ```typescript
+    // src/features/feature/state/feature-signals.ts
+    import { signal, computed } from '@lit-labs/signals';
+    export const count = signal(0);
+    export const doubleCount = computed(() => count.get() * 2);
+    ```
+
+- **Context Usage**: Use Context primarily for:
+
+  - Service instances (urqlClient, web3 providers)
+  - Configuration values that rarely change
+  - Theme variables
+  - Example:
+
+    ```typescript
+    // src/features/common/state/context.ts
+    import { createContext } from '@lit/context';
+    export const urqlClientContext = createContext<Client>('urql-client');
+    ```
+
+## Component Design
+
+- **Component Implementation**:
+
+  - Use SignalWatcher for components that use signals
+  - Extend LitElement for all components
+  - Use decorators (@customElement, @property, @state) consistently
+  - Keep components focused on a single responsibility
+  - Maximum component render method size: 100 lines
+  - Maximum component class size: 300 lines
+
+- **Lifecycle Management**:
+
+  - Initialize subscriptions in connectedCallback
+  - Clean up subscriptions in disconnectedCallback
+  - Use updated() for responding to property changes
+  - Avoid direct constructor logic for setup that requires DOM
+  - Example:
+
+    ```typescript
+    connectedCallback() {
+      super.connectedCallback();
+      this.subscription = urqlClient
+        .query(Query, variables)
+        .subscribe(result => { this.data = result.data; });
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this.subscription?.unsubscribe();
+    }
+    ```
+
+- **DOM Interactions**:
+  - Never use direct DOM manipulation (e.g., innerHTML, appendChild)
+  - Use Lit's declarative templating for all DOM updates
+  - Use @query decorator for element references when needed
+  - Avoid setTimeout/setInterval without cleanup
+
+## Lit Decorators
+
+- **Component Definition**:
+  - Use `@customElement('component-name')` to define custom elements
+  - Class name should match element name in PascalCase: `@customElement('idea-card')` → `class IdeaCard`
+- **Property Decorators**:
+
+  - `@property()`: For reactive properties exposed as attributes
+
+    ```typescript
+    @property({ type: String }) name = '';
+    @property({ type: Boolean, reflect: true }) open = false;
+    @property({ attribute: 'user-id' }) userId = '';
+    ```
+
+  - `@property({ attribute: false })`: For reactive properties not exposed as attributes
+
+    ```typescript
+    @property({ attribute: false }) ideas: Idea[] = [];
+    ```
+
+  - `@state()`: For internal reactive properties
+
+    ```typescript
+    @state() private isLoading = false;
+    ```
+
+- **Query Decorators**:
+
+  - Use `@query()` with cache flag for efficient element lookups
+
+    ```typescript
+    // ✅ Good: Use @query with cache flag
+    @query('sl-dialog', true) private dialog?: HTMLElement;
+
+    // ❌ Bad: Direct DOM querying
+    const dialog = this.shadowRoot?.querySelector('sl-dialog');
+    // or
+    const dialog = document.querySelector('sl-dialog');
+    ```
+
+  - `@queryAll()`: For selecting multiple elements
+
+    ```typescript
+    @queryAll('.item') private items!: NodeListOf<HTMLElement>;
+    ```
+
+- **Context Decorators**:
+
+  - `@provide()`: For providing context to child components
+
+    ```typescript
+    @provide({ context: userContext })
+    get user() { return this._user; }
+    ```
+
+  - `@consume()`: For consuming context from ancestors
+
+    ```typescript
+    @consume({ context: userContext, subscribe: true })
+    user?: UserState;
+    ```
+
+- **Event Decorators**:
+
+  - Use `@eventOptions()` to customize event listener options:
+
+    ```typescript
+    @eventOptions({ passive: true })
+    private handleScroll(e: Event) { /* ... */ }
+    ```
+
+- **Decorators Best Practices**:
+  - Define all properties at the class level with appropriate decorators
+  - Use descriptive property and method names
+  - Specify proper property types and default values
+  - Use the most specific decorator for each use case
+  - Maintain a consistent order: @customElement → @property → @state → @query
+
+## Event Handling
+
+- **Custom Events**:
+
+  - Use CustomEvent with bubbling for cross-component communication
+  - Include detailed event.detail with typed data
+  - Use consistent event naming (e.g., feature-action)
+  - Document all events a component dispatches
+  - Example:
+
+    ```typescript
+    dispatchEvent(
+      new CustomEvent('idea-selected', {
+        bubbles: true,
+        composed: true,
+        detail: { ideaId: this.selectedId },
+      })
+    );
+    ```
+
+- **Event Listeners**:
+  - Add listeners in connectedCallback
+  - Remove listeners in disconnectedCallback
+  - Use bound methods to maintain proper 'this' context
+
+## GraphQL Integration
+
+- **Query Organization**:
+
+  - Colocate queries with their feature (`src/features/idea/queries/`)
+  - Use consistent naming for query files and documents
+  - Define TypeScript types for all query results
+  - Example:
+
+    ```graphql
+    # src/features/idea/queries/hot-ideas.graphql
+    query HotIdeas {
+      ideas(orderBy: shares, orderDirection: desc, first: 10) {
+        id
+        name
+        description
+        tags
+      }
+    }
+    ```
+
+- **The Graph Data Model** (key entity types):
+  - User: Profile data and wallet connection
+  - Idea: Proposals with tags, sharing, and funding
+  - Solution: Implementations of ideas
+  - TagCount: Tracking tag popularity
+  - (See `.graphclient/schema.graphql` for complete model)
+
+## TypeScript Usage
+
+- Use explicit types for all variables, parameters, and return values
+- Avoid `any` and `unknown` types; use proper type definitions
+- Use interfaces over types for object definitions
+- Create barrel exports (index.ts) for feature APIs
+- Use readonly properties for immutable data
+- Define interfaces for component props and events
+- Example:
+
+  ```typescript
+  export interface IdeaCardProps {
+    readonly ideaId: string;
+    readonly showDetails?: boolean;
+    onSelect?: (id: string) => void;
+  }
+  ```
+
+## Code Style & Formatting
+
+- **Naming Conventions**:
+
+  - PascalCase for components, classes, and interfaces
+  - camelCase for variables, functions, and methods
+  - kebab-case for file and directory names
+  - UPPERCASE for constants
+  - Use descriptive names with auxiliary verbs (isLoading, hasError)
+
+- **File Organization**:
+
+  - One component per file
+  - Match filename to component name (idea-card.ts → IdeaCard)
+  - Group related files in feature-specific directories
+  - Use index.ts for public API exports
+
+- **Documentation**:
+
+  - Add JSDoc comments to all public methods, classes, and interfaces
+  - Include param and return type documentation
+  - Document all component properties and events
+  - Include usage examples for complex components
+  - Example:
+
+    ```typescript
+    /**
+     * Displays an idea card with customizable display options
+     * @param {string} ideaId - The ID of the idea to display
+     * @param {boolean} [showDetails=false] - Whether to show expanded details
+     * @returns {TemplateResult} The rendered idea card
+     * @example
+     * <idea-card ideaId="0x123" showDetails></idea-card>
+     */
+    ```
+
+## Testing
+
+- **Component Testing**:
+
+  - Test files should be colocated with component files
+  - Test component rendering, interactions, and edge cases
+  - Mock external dependencies (context, services)
+  - Example:
+
+    ```typescript
+    // src/features/idea/components/idea-card.test.ts
+    it('should render idea details', async () => {
+      const el = await fixture(
+        html`<idea-card .ideaId=${mockIdeaId}></idea-card>`
+      );
+      await elementUpdated(el);
+      expect(el.shadowRoot!.querySelector('.title')?.textContent).to.include(
+        'Test Idea'
+      );
+    });
+    ```
+
+- **Testing Coverage**:
+  - Minimum unit test coverage: 80%
+  - Test all event handlers and custom methods
+  - Test both success and error states
+  - Test accessibility concerns (ARIA attributes, keyboard navigation)
+
+## Accessibility
+
+- Use proper semantic HTML elements
+- Include ARIA attributes where appropriate
+- Ensure keyboard navigation works for all interactive elements
+- Maintain sufficient color contrast
+- Provide text alternatives for non-text content
+- Test with screen readers periodically
+
+## Performance
+
+- Minimize component render cycles
+- Use memoization for expensive computations
+- Optimize GraphQL queries (request only needed fields)
+- Lazy load components for routes
+- Monitor bundle size impact of new dependencies
+- Keep initial page load under 3 seconds on average connections
