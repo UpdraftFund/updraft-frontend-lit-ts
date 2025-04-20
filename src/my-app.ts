@@ -33,7 +33,6 @@ import {
   initializeUserState,
   userContext,
   getUserState,
-  setupProfileTask,
 } from '@state/user/user';
 
 import { updraft } from '@contracts/updraft';
@@ -174,9 +173,7 @@ export class MyApp extends LitElement {
 
   constructor() {
     super();
-    // Setup profile task - this will enable profile fetching
-    console.log('MyApp constructor - setting up profile task');
-    setupProfileTask(this);
+    console.log('MyApp constructor - initializing');
     this.setupTheme();
     this.getUpdraftSettings.run();
     window.addEventListener('request-balance-refresh', this.refreshBalances);

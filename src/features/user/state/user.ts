@@ -1,7 +1,5 @@
 import { signal, computed } from '@lit-labs/signals';
 import { createContext } from '@lit/context';
-import { Task } from '@lit/task';
-import type { ReactiveControllerHost } from 'lit';
 import type { Address } from 'viem';
 import { fromHex } from 'viem';
 
@@ -38,8 +36,8 @@ export const networkName = signal<string | null>(null);
 export const isConnected = computed(() => Boolean(userAddress.get()));
 export const hasProfile = computed(() => userProfile.get() !== null);
 
-// Task to fetch user profile - this will be attached to a controller element
-let profileTask: Task<[string | null], CurrentUser | null> | null = null;
+// Variables to track urql subscription for profile data
+let profileSubscription: { unsubscribe: () => void } | null = null;
 
 // Helper function to dispatch custom events
 export const dispatchUserEvent = (
@@ -69,11 +67,12 @@ export const setUserAddress = (address: Address | null): void => {
 
   if (address) {
     dispatchUserEvent(USER_CONNECTED_EVENT, { address });
-    // Fetch profile for this address
-    fetchUserProfile(address);
+    // Subscribe to profile updates for this address
+    subscribeToProfileUpdates(address);
   } else {
     dispatchUserEvent(USER_DISCONNECTED_EVENT);
     setUserProfile(null);
+    cleanupProfileSubscription();
   }
 };
 
@@ -237,25 +236,27 @@ export const fetchUserProfile = async (userId: string): Promise<void> => {
   }
 };
 
-// Set up profile task (should be called from a controller component)
-export const setupProfileTask = (
-  host: ReactiveControllerHost
-): Task<[string | null], CurrentUser | null> => {
-  // Log the profile task setup
-  console.log('Setting up profile task on host:', host);
-  profileTask = new Task(host, {
-    task: async ([address]) => {
-      if (!address) return null;
+// Subscribe to profile updates when address changes
+export const subscribeToProfileUpdates = (address: string | null): void => {
+  // Clean up any existing subscription
+  if (profileSubscription) {
+    profileSubscription.unsubscribe();
+    profileSubscription = null;
+  }
 
-      isLoadingProfile.set(true);
-      profileError.set(null);
-      dispatchUserEvent(PROFILE_LOADING_EVENT);
+  // If no address, nothing to do
+  if (!address) return;
 
+  // Set loading state
+  isLoadingProfile.set(true);
+  profileError.set(null);
+  dispatchUserEvent(PROFILE_LOADING_EVENT);
+
+  // Create subscription
+  profileSubscription = urqlClient
+    .query(ProfileDocument, { userId: address })
+    .subscribe(async (result) => {
       try {
-        const result = await urqlClient.query(ProfileDocument, {
-          userId: address,
-        });
-
         if (result.error) {
           throw new Error(result.error.message);
         }
@@ -276,14 +277,13 @@ export const setupProfileTask = (
             if (!profileData.avatar) profileData.avatar = blockieImage;
 
             console.log(
-              'Updated profile with blockies image in task:',
+              'Updated profile with blockies image in subscription:',
               profileData
             );
           }
 
           setUserProfile(profileData);
           dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: profileData });
-          return profileData;
         } else {
           // User exists but has no profile - create minimal profile with blockies avatar and image
           const { default: makeBlockie } = await import(
@@ -297,31 +297,25 @@ export const setupProfileTask = (
 
           setUserProfile(minimalProfile);
           dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: minimalProfile });
-          return minimalProfile;
         }
       } catch (err) {
-        console.error('Error fetching user profile:', err);
+        console.error('Error processing profile data:', err);
         const errorMessage =
           err instanceof Error ? err.message : 'Unknown error';
         profileError.set(errorMessage);
         dispatchUserEvent(PROFILE_ERROR_EVENT, { error: errorMessage });
-        throw err;
       } finally {
         isLoadingProfile.set(false);
       }
-    },
-    args: () => [userAddress.get()] as const,
-  });
-
-  return profileTask;
+    });
 };
 
-// Get the current profile task
-export const getProfileTask = (): Task<
-  [string | null],
-  CurrentUser | null
-> | null => {
-  return profileTask;
+// Clean up profile subscription (useful when component unmounts)
+export const cleanupProfileSubscription = (): void => {
+  if (profileSubscription) {
+    profileSubscription.unsubscribe();
+    profileSubscription = null;
+  }
 };
 
 // --- Add Wagmi Watchers ---
