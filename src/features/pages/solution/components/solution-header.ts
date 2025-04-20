@@ -11,10 +11,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js'; // For loa
 
 // GraphQL
 import urqlClient from '@utils/urql-client';
-import {
-  SolutionHeaderQueryDocument,
-  type SolutionHeaderQuery,
-} from '@graphclient'; // Import generated types/query
+import { SolutionDocument } from '@gql'; // Import generated types/query
 
 // TODO: Import actual UserLink and formatAddress when ready
 // import '@/features/user/components/user-link';
@@ -54,9 +51,7 @@ export class SolutionHeader extends LitElement {
     this._unsubscribe(); // Clean up subscription
   }
 
-  protected updated(
-    changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
-  ): void {
+  protected updated(changedProperties: PropertyValueMap<this>): void {
     super.updated(changedProperties);
 
     // Resubscribe if solutionId changes
@@ -78,7 +73,7 @@ export class SolutionHeader extends LitElement {
     this._error = undefined; // Clear previous errors
 
     this._solutionSubscription = urqlClient
-      .query(SolutionHeaderQueryDocument, { solutionId })
+      .query(SolutionDocument, { solutionId })
       .subscribe((result) => {
         this._isLoading = false;
 
@@ -90,8 +85,7 @@ export class SolutionHeader extends LitElement {
 
         if (result.data?.solution) {
           const { solution } = result.data;
-          this._solutionTitle = solution.name || 'Untitled Solution';
-          this._status = solution.status || 'Unknown';
+          this._solutionTitle = solution.idea?.name || 'Untitled Solution';
           this._ideaId = solution.idea?.id || '';
           this._ideaName = solution.idea?.name || 'Unknown Idea';
           this._creatorAddress = solution.drafter?.id || '';
@@ -139,7 +133,8 @@ export class SolutionHeader extends LitElement {
       position: relative; /* For loading overlay */
       min-height: 150px; /* Ensure space for spinner */
     }
-    .loading-overlay, .error-message {
+    .loading-overlay,
+    .error-message {
       position: absolute;
       inset: 0;
       display: flex;
@@ -151,8 +146,8 @@ export class SolutionHeader extends LitElement {
       padding: var(--sl-spacing-large);
     }
     .error-message {
-       color: var(--sl-color-danger-700);
-       font-weight: var(--sl-font-weight-medium);
+      color: var(--sl-color-danger-700);
+      font-weight: var(--sl-font-weight-medium);
     }
     .top-row {
       display: flex;
@@ -208,6 +203,10 @@ export class SolutionHeader extends LitElement {
   // --- Template ---
 
   render() {
+    console.log('SolutionHeader render', {
+      isLoading: this._isLoading,
+      error: this._error,
+    });
     return html`
       <div class="header-container">
         ${this._isLoading
@@ -218,7 +217,6 @@ export class SolutionHeader extends LitElement {
         ${this._error
           ? html`<div class="error-message">${this._error}</div>`
           : ''}
-
         ${!this._isLoading && !this._error
           ? html`
               <div class="top-row">
@@ -232,7 +230,9 @@ export class SolutionHeader extends LitElement {
                   </div>
                 </div>
                 <div class="status-tag">
-                  <sl-tag size="large" variant="primary" pill>${this._status}</sl-tag>
+                  <sl-tag size="large" variant="primary" pill
+                    >${this._status}</sl-tag
+                  >
                 </div>
               </div>
 
@@ -244,11 +244,19 @@ export class SolutionHeader extends LitElement {
                       label="Creator Avatar"
                       initials="${this._creatorName
                         ? ''
-                        : /* formatAddress(this._creatorAddress, 2, 0) */ this._creatorAddress.substring(0, 6)}"
+                        : /* formatAddress(this._creatorAddress, 2, 0) */ this._creatorAddress.substring(
+                            0,
+                            6
+                          )}"
                     ></sl-avatar>
                   </sl-tooltip>
-                  <!-- <user-link userId=${this._creatorAddress}></user-link> -->
-                  <span>${this._creatorName || /* formatAddress(this._creatorAddress) */ this._creatorAddress}</span>
+                  <!-- <user-link userId=${this
+                    ._creatorAddress}></user-link> -->
+                  <span
+                    >${this._creatorName ||
+                    /* formatAddress(this._creatorAddress) */ this
+                      ._creatorAddress}</span
+                  >
                 </div>
                 <div class="action-buttons">
                   <!-- TODO: Conditionally render buttons based on user role/status -->
