@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { formatUnits } from 'viem';
@@ -8,7 +8,6 @@ dayjs.extend(relativeTime);
 
 import seedling from '@icons/common/seedling.svg';
 import gift from '@icons/common/gift.svg';
-import fire from '@icons/idea/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
@@ -17,6 +16,14 @@ import { Solution } from '@/features/solution/types';
 import { UpdraftSettings } from '@/features/common/types';
 
 import { shortNum } from '@utils/short-num';
+
+// Icon imports for status
+import xCircleIcon from '@/features/common/assets/icons/x-circle.svg';
+// Gauge icons - Assuming we'll select one based on progress
+import gaugeMinIcon from '@/features/solution/assets/icons/gauge-min.svg';
+import gaugeLowIcon from '@/features/solution/assets/icons/gauge-low.svg';
+import gaugeMidIcon from '@/features/solution/assets/icons/gauge-mid.svg';
+import gaugeHighIcon from '@/features/solution/assets/icons/gauge-high.svg';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends LitElement {
@@ -82,16 +89,87 @@ export class SolutionCardSmall extends LitElement {
     );
   }
 
-  private get displayShares(): string {
-    return shortNum(formatUnits(this.solution.tokensContributed, 18));
+  // Helper to parse the hex-encoded JSON info field safely
+  private parseSolutionInfo(): { name?: string; description?: string } {
+    try {
+      const hex = this.solution.info;
+      const hexStr = hex.startsWith('0x') ? hex.slice(2) : hex;
+      const bytes = new Uint8Array(
+        hexStr.match(/.{1,2}/g)!.map((b: string) => parseInt(b, 16))
+      );
+      const text = new TextDecoder().decode(bytes);
+      return JSON.parse(text);
+    } catch {
+      return {}; // Return empty object on error
+    }
+  }
+
+  private get solutionTitle(): string {
+    const info = this.parseSolutionInfo();
+    return info.name || 'Untitled Solution';
+  }
+
+  private get solutionDescription(): string | undefined {
+    const info = this.parseSolutionInfo();
+    return info.description;
+  }
+
+  private get statusDisplay(): {
+    text: string;
+    icon: string | TemplateResult;
+  } {
+    const now = dayjs();
+    const deadlineDate = dayjs(this.solution.deadline * 1000);
+
+    // Treat progress and goal as bigints for accuracy and compatibility with formatUnits
+    const progressBigInt = BigInt(this.solution.progress || 0);
+    const goalBigInt = BigInt(this.solution.fundingGoal || 0);
+
+    // Calculate percentage using BigInt math to avoid precision issues, then convert
+    const progressPercent =
+      goalBigInt > 0n
+        ? Number((progressBigInt * 10000n) / goalBigInt) / 100
+        : 0;
+
+    if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
+      return {
+        text: 'Goal Reached',
+        icon: html`<sl-icon
+          name="check-circle-fill"
+          style="color: var(--sl-color-success-600);"
+        ></sl-icon>`,
+      };
+    }
+
+    if (now.isAfter(deadlineDate)) {
+      return { text: 'Goal Failed', icon: xCircleIcon };
+    }
+
+    // Determine which gauge icon to use
+    let gaugeIcon = gaugeMinIcon;
+    if (progressPercent >= 75) {
+      gaugeIcon = gaugeHighIcon;
+    } else if (progressPercent >= 50) {
+      gaugeIcon = gaugeMidIcon;
+    } else if (progressPercent >= 25) {
+      gaugeIcon = gaugeLowIcon;
+    }
+
+    return {
+      text: `${shortNum(formatUnits(this.solution.tokensContributed, 18))} / ${shortNum(formatUnits(goalBigInt, 18))}`,
+      icon: gaugeIcon,
+    };
   }
 
   render() {
     const date = dayjs(this.solution.startTime * 1000);
+    const description = this.solutionDescription;
+    const status = this.statusDisplay;
     return html`
       <a href="/solution/${this.solution.id}">
         <hr />
-        <h3>${this.solution.drafter.profile}</h3>
+        <h3>${this.solutionTitle}</h3>
+        ${description ? html`<p>${description}</p>` : ''}
         <ul class="info-row">
           <li>
             <sl-icon src=${seedling}></sl-icon>
@@ -102,8 +180,10 @@ export class SolutionCardSmall extends LitElement {
             <span>${this.displayFunderReward.toFixed(0)}%</span>
           </li>
           <li>
-            <sl-icon src=${fire}></sl-icon>
-            <span>${this.displayShares}</span>
+            ${typeof status.icon === 'string'
+              ? html`<sl-icon src=${status.icon}></sl-icon>`
+              : status.icon}
+            <span>${status.text}</span>
           </li>
         </ul>
       </a>

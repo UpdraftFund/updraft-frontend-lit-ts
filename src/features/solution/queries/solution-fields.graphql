@@ -8,4 +8,5 @@ fragment SolutionFields on Solution {
     stake
     info
     funderReward
+    progress
 }
