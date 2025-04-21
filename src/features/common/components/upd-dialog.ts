@@ -1,6 +1,6 @@
-import { customElement, query } from 'lit/decorators.js';
-import { css, html, LitElement } from 'lit';
-import { consume } from '@lit/context';
+import { customElement, query, state } from 'lit/decorators.js';
+import { css, LitElement } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
 
 import calculator from '@icons/common/calculator.svg';
 
@@ -9,13 +9,13 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import { SlDialog } from '@shoelace-style/shoelace';
 
-import { balanceContext, RequestBalanceRefresh } from '@state/common';
-import { Balances } from '@/features/user/types/current-user';
+import { getBalance, refreshBalances } from '@state/user/balances';
 
 @customElement('upd-dialog')
-export class UpdDialog extends LitElement {
+export class UpdDialog extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
@@ -24,14 +24,27 @@ export class UpdDialog extends LitElement {
         align-items: center;
         gap: 1rem;
       }
+
+      .balance {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      sl-spinner {
+        font-size: 1rem;
+      }
     `,
   ];
 
   @query('sl-dialog') dialog!: SlDialog;
-  @consume({ context: balanceContext, subscribe: true }) balances!: Balances;
+  @state() private loadingBalance = false;
 
-  private handleRefreshBalance() {
-    this.dispatchEvent(new RequestBalanceRefresh());
+  private handleRecheckBalance() {
+    this.loadingBalance = true;
+    refreshBalances().finally(() => {
+      this.loadingBalance = false;
+    });
   }
 
   async show() {
@@ -40,18 +53,20 @@ export class UpdDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog label="Get more UPD">
+      <sl-dialog open label="Get more UPD">
         <span class="check-balance">
           <p>
             You have
-            <span class="balance"
-              >${this.balances?.updraft?.balance || '0'}</span
-            >
+            <span class="balance">
+              ${this.loadingBalance
+                ? html` <sl-spinner></sl-spinner>`
+                : getBalance('updraft')}
+            </span>
             UPD
           </p>
           <sl-button
             pill
-            @click=${this.handleRefreshBalance}
+            @click=${this.handleRecheckBalance}
             variant="primary"
             size="small"
           >
