@@ -18,12 +18,7 @@ import '@styles/global.css';
 import '@styles/theme.css';
 import '@styles/reset.css';
 
-import urqlClient from '@utils/urql-client';
-
-import {
-  urqlClientContext,
-  updraftSettings as updraftSettingsContext,
-} from '@state/common';
+import { updraftSettings as updraftSettingsContext } from '@state/common';
 import { nav } from '@state/navigation';
 import { refreshBalances } from '@state/user/balances';
 
@@ -135,9 +130,6 @@ export class MyApp extends LitElement {
       },
     },
   ]);
-
-  @provide({ context: urqlClientContext })
-  urqlClient = urqlClient;
 
   @provide({ context: updraftSettingsContext })
   updraftSettings = {

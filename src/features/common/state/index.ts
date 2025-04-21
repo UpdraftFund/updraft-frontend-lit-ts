@@ -1,5 +1,4 @@
 import { createContext } from '@lit/context';
-import type { Client } from '@urql/core';
 
 import { Connection, UpdraftSettings } from '@/types';
 
@@ -9,5 +8,3 @@ export const defaultFunderReward = 250000; // 25% assuming the percent scale set
 export const connectionContext = createContext<Connection>('connection');
 export const updraftSettings =
   createContext<UpdraftSettings>('updraftSettings');
-
-export const urqlClientContext = createContext<Client>('urql-client');
