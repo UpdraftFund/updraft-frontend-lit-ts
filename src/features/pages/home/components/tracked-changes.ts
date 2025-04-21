@@ -64,7 +64,6 @@ export class TrackedChanges extends LitElement {
     }
 
     .change-card-title {
-      font-family: var(--sl-font-sans);
       font-size: 1.5rem;
       font-weight: 600;
       margin: 0;

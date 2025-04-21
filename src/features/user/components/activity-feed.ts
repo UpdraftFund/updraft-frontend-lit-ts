@@ -29,7 +29,6 @@ export class ActivityFeed extends LitElement {
     }
 
     .activity-header {
-      font-family: var(--sl-font-sans);
       font-weight: var(--sl-font-weight-bold);
       font-size: var(--sl-font-size-2x-large);
       line-height: 1.4;

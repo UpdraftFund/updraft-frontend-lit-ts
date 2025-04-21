@@ -61,7 +61,6 @@ export class ActivityCard extends LitElement {
     }
 
     .action {
-      font-family: 'Inter', sans-serif;
       font-weight: 500;
       font-size: 1.125rem;
       line-height: 1.44em;
@@ -69,13 +68,11 @@ export class ActivityCard extends LitElement {
     }
 
     .time {
-      font-family: 'Inter', sans-serif;
       font-size: 0.875rem;
       color: var(--sl-color-neutral-600);
     }
 
     .name {
-      font-family: 'Inter', sans-serif;
       font-weight: 600;
       font-size: 1.25rem;
       line-height: 1.2em;
@@ -108,7 +105,6 @@ export class ActivityCard extends LitElement {
     }
 
     .description {
-      font-family: 'Inter', sans-serif;
       font-size: 0.875rem;
       line-height: 1.5em;
       color: var(--sl-color-neutral-700);
