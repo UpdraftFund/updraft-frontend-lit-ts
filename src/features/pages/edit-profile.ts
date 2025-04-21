@@ -51,6 +51,7 @@ import {
 import { updraftSettings } from '@state/common';
 
 import ideaSchema from '@schemas/idea-schema.json';
+import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
 import { consume } from '@lit/context';
 
@@ -332,27 +333,25 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           }
         } else if (this.entity === 'solution') {
           // Handle solution creation with profile update
-          const solutionData = formToJson('create-solution', ideaSchema);
-          const solutionForm = loadForm('create-solution');
-          const params = new URLSearchParams(window.location.search);
-          const ideaId = params.get('ideaId');
+          const solutionData = formToJson('create-solution', solutionSchema);
+          const solutionForm = loadForm('create-solution-two');
 
-          if (solutionForm && ideaId && settings) {
+          if (solutionForm && settings) {
             // Format the deadline date properly
-            const deadlineDate = solutionForm.deadline
+            const deadline = solutionForm.deadline
               ? dayjs(solutionForm.deadline).unix()
               : dayjs().add(30, 'days').unix(); // Default to 30 days from now if not set
 
             this.submitTransaction.hash = await updraft.write(
               'createSolutionWithProfile',
               [
-                ideaId,
-                solutionForm['funding-token'],
-                parseUnits(solutionForm['deposit'], 18),
-                parseUnits(solutionForm['goal'], 18),
-                deadlineDate,
+                solutionForm.ideaId,
+                solutionForm.fundingToken,
+                parseUnits(solutionForm.stake, 18),
+                parseUnits(solutionForm.goal, 18),
+                deadline,
                 BigInt(
-                  (Number(solutionForm['reward']) *
+                  (Number(solutionForm.reward) *
                     Number(settings.percentScale)) /
                     100
                 ),
