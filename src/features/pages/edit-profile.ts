@@ -59,13 +59,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   static styles = [
     dialogStyles,
     css`
-      .container {
-        display: flex;
-        flex: auto; /* The container takes the remaining available space */
-        overflow: hidden;
-      }
-
-      main {
+      :host {
         flex: 1;
         box-sizing: border-box;
         display: flex;
@@ -139,6 +133,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
       .remove-link-button {
         --sl-input-height-medium: 1rem;
+      }
+
+      .submit-button {
+        width: fit-content;
       }
 
       transaction-watcher.submit {
@@ -467,124 +465,117 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     );
 
     return html`
-      <div class="container">
-        <main>
-          <form
-            name="edit-profile"
-            @submit=${this.handleFormSubmit}
-            @input=${this.handleInput}
-          >
-            <label class="avatar">
-              ${avatar
-                ? html` <img src=${avatar} alt="User avatar" /> `
-                : html`
-                    <sl-icon
-                      class="avatar-placeholder"
-                      src=${personCircle}
-                      label="Avatar placeholder"
-                    ></sl-icon>
-                  `}
-              <input
-                type="file"
-                accept="image/*"
-                @change=${this.handleImageUpload}
-              />
-              <sl-icon
-                class="edit-icon"
-                src="${pencilSquare}"
-                label="Edit image"
-              ></sl-icon>
-            </label>
-            <sl-input
-              name="name"
-              label="Name"
-              required
-              autocomplete="name"
-              value=${currentProfile?.name}
-            ></sl-input>
-            <sl-input
-              name="team"
-              label="Team"
-              autocomplete="organization"
-              value=${currentProfile?.team}
-            ></sl-input>
-            <sl-textarea
-              name="about"
-              label="About"
-              resize="auto"
-              value=${currentProfile?.about}
-            ></sl-textarea>
-            <sl-textarea
-              name="news"
-              label="News"
-              resize="auto"
-              value=${currentProfile?.news}
-            ></sl-textarea>
-            <div class="links-section">
-              <p>Links</p>
-              ${this.links.map(
-                (link, index) => html`
-                  <div class="link-container">
-                    <sl-input
-                      class="link-input"
-                      autocomplete="url"
-                      name=${link.name}
-                      value=${link.value}
-                      @input=${(e: InputEvent) =>
-                        this.handleLinkInput(e, index)}
-                    >
-                      <img
-                        slot="prefix"
-                        src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
-                        @error=${(e: Event) => this.handleImageError(e)}
-                        alt="Logo for ${link.value}"
-                        width="16px"
-                        height="16px"
-                      />
-                    </sl-input>
-                    <sl-button
-                      class="remove-link-button"
-                      variant="text"
-                      @click=${() => this.removeLink(index)}
-                    >
-                      Remove
-                    </sl-button>
-                  </div>
-                `
-              )}
-              <sl-button variant="text" @click=${this.addEmptyLink}>
-                + Add Link
-              </sl-button>
-            </div>
-            <sl-button variant="primary" @click=${this.handleSubmit}>
-              Submit Profile
-              ${this.entity ? 'and Create ' + capitalize(this.entity) : ''}
-            </sl-button>
-          </form>
-          <upd-dialog></upd-dialog>
-          <sl-dialog label="Set Allowance">
-            <p>
-              Before you can submit your profile, you need to sign a transaction
-              to allow Updraft to spend your UPD tokens.
-            </p>
-            <transaction-watcher
-              class="approve"
-              @transaction-success=${this.handleSubmit}
-            ></transaction-watcher>
-          </sl-dialog>
-          <share-dialog></share-dialog>
-          <transaction-watcher
-            class="submit"
-            @transaction-success=${this.handleSubmitSuccess}
-          ></transaction-watcher>
-        </main>
-        ${currentAddress
-          ? html` <activity-feed
-              .userId=${currentAddress}
-              .userName=${currentProfile?.name}
-            ></activity-feed>`
-          : ''}
-      </div>
+      <form
+        name="edit-profile"
+        @submit=${this.handleFormSubmit}
+        @input=${this.handleInput}
+      >
+        <label class="avatar">
+          ${avatar
+            ? html` <img src=${avatar} alt="User avatar" /> `
+            : html`
+                <sl-icon
+                  class="avatar-placeholder"
+                  src=${personCircle}
+                  label="Avatar placeholder"
+                ></sl-icon>
+              `}
+          <input
+            type="file"
+            accept="image/*"
+            @change=${this.handleImageUpload}
+          />
+          <sl-icon
+            class="edit-icon"
+            src="${pencilSquare}"
+            label="Edit image"
+          ></sl-icon>
+        </label>
+        <sl-input
+          name="name"
+          label="Name"
+          required
+          autocomplete="name"
+          value=${currentProfile?.name}
+        ></sl-input>
+        <sl-input
+          name="team"
+          label="Team"
+          autocomplete="organization"
+          value=${currentProfile?.team}
+        ></sl-input>
+        <sl-textarea
+          name="about"
+          label="About"
+          resize="auto"
+          value=${currentProfile?.about}
+        ></sl-textarea>
+        <sl-textarea
+          name="news"
+          label="News"
+          resize="auto"
+          value=${currentProfile?.news}
+        ></sl-textarea>
+        <div class="links-section">
+          <p>Links</p>
+          ${this.links.map(
+            (link, index) => html`
+              <div class="link-container">
+                <sl-input
+                  class="link-input"
+                  autocomplete="url"
+                  name=${link.name}
+                  value=${link.value}
+                  @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
+                >
+                  <img
+                    slot="prefix"
+                    src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
+                    @error=${(e: Event) => this.handleImageError(e)}
+                    alt="Logo for ${link.value}"
+                    width="16px"
+                    height="16px"
+                  />
+                </sl-input>
+                <sl-button
+                  class="remove-link-button"
+                  variant="text"
+                  @click=${() => this.removeLink(index)}
+                >
+                  Remove
+                </sl-button>
+              </div>
+            `
+          )}
+          <sl-button variant="text" @click=${this.addEmptyLink}>
+            + Add Link
+          </sl-button>
+        </div>
+        <sl-button
+          class="submit-button"
+          variant="primary"
+          @click=${this.handleSubmit}
+        >
+          Submit Profile
+          ${this.entity ? 'and Create ' + capitalize(this.entity) : ''}
+        </sl-button>
+      </form>
+      <upd-dialog></upd-dialog>
+      <sl-dialog label="Set Allowance">
+        <p>
+          Before you can submit your profile, you need to sign a transaction to
+          allow Updraft to spend your UPD tokens.
+        </p>
+        <transaction-watcher
+          class="approve"
+          @transaction-success=${this.handleSubmit}
+        ></transaction-watcher>
+      </sl-dialog>
+      <share-dialog></share-dialog>
+      <transaction-watcher
+        class="submit"
+        @transaction-success=${this.handleSubmitSuccess}
+      ></transaction-watcher>
     `;
   }
 }
