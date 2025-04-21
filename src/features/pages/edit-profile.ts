@@ -56,10 +56,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   static styles = [
     dialogStyles,
     css`
-      activity-feed {
-        flex: 0 0 789px; /* Activity feed width is fixed */
-      }
-
       .container {
         display: flex;
         flex: auto; /* The container takes the remaining available space */
@@ -130,13 +126,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         display: flex;
         align-items: center;
         margin-bottom: 1rem;
-      }
-
-      @media (max-width: 1078px) {
-        activity-feed {
-          flex: 0 0 0; /* Collapse the sidebar */
-          pointer-events: none; /* Prevent interaction when hidden */
-        }
       }
 
       transaction-watcher.submit {
@@ -653,12 +642,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             @transaction-success=${this.handleSubmitSuccess}
           ></transaction-watcher>
         </main>
-        ${currentAddress
-          ? html` <activity-feed
-              .userId=${currentAddress}
-              .userName=${currentProfile?.name || user.get().name || ''}
-            ></activity-feed>`
-          : ''}
       </div>
     `;
   }
