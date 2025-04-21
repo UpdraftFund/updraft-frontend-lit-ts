@@ -12,7 +12,7 @@ import '@components/navigation/left-nav';
 import '@components/user/my-ideas';
 import '@components/user/my-solutions';
 
-import { leftSidebarCollapsed, toggleLeftSidebar } from '@state/common';
+import { leftSidebarCollapsed, toggleLeftSidebar } from '@state/layout';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends SignalWatcher(LitElement) {
