@@ -25,13 +25,10 @@ export class ActivityFeed extends LitElement {
       width: 100%;
       max-width: 782px;
       margin: 0 auto;
-      padding: 1rem;
+      padding: 0 1rem;
     }
 
-    .activity-header {
-      font-family: var(--sl-font-sans);
-      font-weight: var(--sl-font-weight-bold);
-      font-size: var(--sl-font-size-2x-large);
+    .activity-heading {
       line-height: 1.4;
       color: var(--sl-color-neutral-900);
       margin: 0;
@@ -55,8 +52,7 @@ export class ActivityFeed extends LitElement {
     }
 
     .empty-state {
-      text-align: center;
-      padding: 2rem;
+      padding: 1rem;
       color: var(--sl-color-neutral-600);
       font-style: italic;
     }
@@ -137,7 +133,7 @@ export class ActivityFeed extends LitElement {
   render() {
     return html`
       <div class="activity-feed">
-        <h2 class="activity-header">Activity</h2>
+        <h2 class="activity-heading">Activity</h2>
 
         ${this.activities.render({
           pending: () => html`
