@@ -160,7 +160,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
-  @query('form', true) form!: HTMLFormElement;
 
   @consume({ context: updraftSettings, subscribe: true })
   updraftSettings!: UpdraftSettings;
