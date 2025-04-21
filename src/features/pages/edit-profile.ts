@@ -240,10 +240,15 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           name: `link-${i}`,
           value: link,
         }));
-      this.links = {
+      this.links = [
         ...this.links,
-        ...linksToAdd,
-      };
+        ...linksToAdd.filter(
+          (linkToAdd) =>
+            !this.links.some(
+              (existingLink) => existingLink.value === linkToAdd.value
+            )
+        ),
+      ];
     }
     if (!this.links.length) {
       this.addEmptyLink();
