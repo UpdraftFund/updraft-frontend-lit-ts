@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { CurrentUser, UpdraftSettings } from '@/types';
 
 import pencilSquare from '@icons/user/pencil-square.svg';
+import personCircle from '@icons/user/person-circle.svg';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
@@ -103,6 +104,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         width: 100%;
         height: 100%;
         border-radius: 50%;
+      }
+
+      .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        color: var(--sl-color-neutral-600);
       }
 
       .avatar .edit-icon {
@@ -451,6 +458,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     // Get current profile and address from signals
     const currentProfile = userProfile.get();
     const currentAddress = userAddress.get();
+    const avatar =
+      this.uploadedImage || currentProfile?.image || currentProfile?.avatar;
 
     layout.topBarContent.set(
       html` <page-heading>Edit Your Profile</page-heading>`
@@ -473,13 +482,15 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             @input=${this.handleInput}
           >
             <label class="avatar">
-              <img
-                src=${this.uploadedImage ||
-                currentProfile?.image ||
-                currentProfile?.avatar ||
-                ''}
-                alt="User avatar"
-              />
+              ${avatar
+                ? html` <img src=${avatar} alt="User avatar" /> `
+                : html`
+                    <sl-icon
+                      class="avatar-placeholder"
+                      src=${personCircle}
+                      label="Avatar placeholder"
+                    ></sl-icon>
+                  `}
               <input
                 type="file"
                 accept="image/*"
