@@ -24,11 +24,12 @@ import {
   urqlClientContext,
   updraftSettings as updraftSettingsContext,
   balanceContext,
+  RequestBalanceRefresh,
 } from '@state/common';
 
 import { nav } from '@state/navigation';
 
-import { UpdraftSettings } from '@/features/common/types';
+import { UpdraftSettings } from '@/types';
 import { initializeUserState, userContext, getUserState } from '@state/user';
 
 import { updraft } from '@contracts/updraft';
@@ -170,27 +171,34 @@ export class MyApp extends LitElement {
   constructor() {
     super();
     console.log('MyApp constructor - initializing');
-    this.setupTheme();
-    this.getUpdraftSettings.run();
-    window.addEventListener('request-balance-refresh', this.refreshBalances);
-    this.refreshBalances();
     watchAccount(config, {
       onChange: () => this.refreshBalances(),
     });
+    this.getUpdraftSettings.run();
+    this.refreshBalances();
   }
 
   connectedCallback(): void {
     super.connectedCallback();
+    // Hey you AI dumbfuck: Ever hear of `this` binding? Don't do this again.
+    // window.addEventListener('request-balance-refresh', this.refreshBalances);
+    this.addEventListener(RequestBalanceRefresh.type, () =>
+      this.refreshBalances()
+    );
+    this.setupTheme();
     // Initialize user state including reconnect attempt
     initializeUserState();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    window.removeEventListener('request-balance-refresh', this.refreshBalances);
+    this.removeEventListener(RequestBalanceRefresh.type, () =>
+      this.refreshBalances()
+    );
   }
 
   private setupTheme() {
+    // TODO: factor out repeated code
     // Apply the appropriate theme class to the document element
     const prefersDark = window.matchMedia?.(
       '(prefers-color-scheme: dark)'
@@ -242,8 +250,7 @@ export class MyApp extends LitElement {
       };
       return;
     }
-    // Fetch ETH balance
-    let ethBalance = '0';
+    let ethBalance;
     try {
       const eth = await getBalance(config, { address });
       ethBalance = formatUnits(eth.value, eth.decimals);
@@ -251,14 +258,10 @@ export class MyApp extends LitElement {
       ethBalance = '0';
     }
     console.log('refreshBalances: eth', ethBalance);
-    // Fetch UPD balance
-    let updBalance = '0';
+    let updBalance;
     try {
       // Get UPD token address from updraft contract
-      const updraftContract = (await import('@contracts/updraft')).updraft;
-      const updAddress = (await updraftContract.read(
-        'feeToken'
-      )) as `0x${string}`;
+      const updAddress = (await updraft.read('feeToken')) as `0x${string}`;
       const upd = new Upd(updAddress);
       const rawUpd = await upd.read('balanceOf', [address]);
       updBalance = formatUnits(rawUpd as bigint, 18);
