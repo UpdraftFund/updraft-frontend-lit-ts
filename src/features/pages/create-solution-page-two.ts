@@ -1,5 +1,6 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { html, css } from 'lit';
+import { css } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -11,11 +12,7 @@ import { SaveableForm } from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
-import {
-  balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings as updraftSettingsContext,
-} from '@state/common';
+import { updraftSettings as updraftSettingsContext } from '@state/common';
 import { userContext, UserState } from '@state/user';
 import layout from '@state/layout';
 
@@ -28,12 +25,13 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
-import { UpdraftSettings, Balances } from '@/types';
+import { UpdraftSettings } from '@/types';
 import { IdeaDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
+import { getBalance, refreshBalances } from '@state/user/balances';
 
 @customElement('create-solution-page-two')
-export class CreateSolution extends SaveableForm {
+export class CreateSolution extends SignalWatcher(SaveableForm) {
   @property() ideaId!: string;
 
   @query('sl-range', true) rewardRange!: SlRange;
@@ -45,8 +43,6 @@ export class CreateSolution extends SaveableForm {
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
 
-  @consume({ context: balanceContext, subscribe: true })
-  userBalances!: Balances;
   @consume({ context: updraftSettingsContext, subscribe: true })
   updraftSettings!: UpdraftSettings;
   @consume({ context: userContext, subscribe: true })
@@ -189,15 +185,13 @@ export class CreateSolution extends SaveableForm {
   };
 
   private handleDepositFocus() {
-    this.dispatchEvent(new RequestBalanceRefresh());
+    refreshBalances();
   }
 
   private handleDepositInput(e: Event) {
     const input = e.target as SlInput;
     const value = Number(input.value);
-    const userBalance = Number(
-      this.userBalances?.updraft?.balance || 'Infinity'
-    );
+    const userBalance = getBalance('updraft');
     const minFee = this.updraftSettings.minFee;
 
     if (isNaN(value)) {

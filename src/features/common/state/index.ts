@@ -2,7 +2,7 @@ import { createContext } from '@lit/context';
 import { signal } from '@lit-labs/signals';
 import type { Client } from '@urql/core';
 
-import { Connection, Balances, UpdraftSettings } from '@/types';
+import { Connection, UpdraftSettings } from '@/types';
 
 export const defaultFunderReward = 250000; // 25% assuming the percent scale set on the Updraft contract is 1,000,000
 
@@ -22,18 +22,10 @@ export const layoutContext = createContext<LayoutContextType>('layout-context');
 
 // DEPRECATED: Legacy connection context - use userContext from features/user/state/user instead
 export const connectionContext = createContext<Connection>('connection');
-export const balanceContext = createContext<Balances>('balances');
 export const updraftSettings =
   createContext<UpdraftSettings>('updraftSettings');
 
 export const urqlClientContext = createContext<Client>('urql-client');
-
-export class RequestBalanceRefresh extends Event {
-  static readonly type = 'request-balance-refresh';
-  constructor() {
-    super(RequestBalanceRefresh.type, { bubbles: true, composed: true });
-  }
-}
 
 // Layout helper functions
 export const toggleLeftSidebar = () => {

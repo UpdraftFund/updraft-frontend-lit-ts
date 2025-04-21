@@ -1,5 +1,6 @@
 import { customElement, query, state } from 'lit/decorators.js';
-import { css, html } from 'lit';
+import { css } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -15,20 +16,14 @@ import '@components/common/upd-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { SaveableForm } from '@components/common/saveable-form';
 
-import {
-  balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings,
-} from '@state/common';
-import { Balances } from '@/features/user/types/current-user';
+import { getBalance, refreshBalances } from '@state/user/balances';
+import { updraftSettings } from '@state/common';
 import { UpdraftSettings } from '@/features/common/types';
 
 @customElement('create-idea')
-export class CreateIdea extends SaveableForm {
+export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('upd-dialog', true) updDialog!: UpdDialog;
 
-  @consume({ context: balanceContext, subscribe: true })
-  userBalances!: Balances;
   @consume({ context: updraftSettings, subscribe: true })
   updraftSettings!: UpdraftSettings;
 
@@ -114,15 +109,13 @@ export class CreateIdea extends SaveableForm {
   }
 
   private handleDepositFocus() {
-    this.dispatchEvent(new RequestBalanceRefresh());
+    refreshBalances();
   }
 
   private handleDepositInput(e: Event) {
     const input = e.target as SlInput;
     const value = Number(input.value);
-    const userBalance = Number(
-      this.userBalances?.updraft?.balance || 'Infinity'
-    );
+    const userBalance = getBalance('updraft');
     const minFee = this.updraftSettings.minFee;
 
     if (isNaN(value)) {

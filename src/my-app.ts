@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
 import { Task } from '@lit/task';
 import { Router } from '@lit-labs/router';
@@ -23,18 +23,14 @@ import urqlClient from '@utils/urql-client';
 import {
   urqlClientContext,
   updraftSettings as updraftSettingsContext,
-  balanceContext,
-  RequestBalanceRefresh,
 } from '@state/common';
-
 import { nav } from '@state/navigation';
+import { refreshBalances } from '@state/user/balances';
 
 import { UpdraftSettings } from '@/types';
 import { initializeUserState, userContext, getUserState } from '@state/user';
 
 import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
-import { getAccount, getBalance } from '@wagmi/core';
 import { config } from '@utils/web3';
 
 if (!('URLPattern' in globalThis)) {
@@ -155,13 +151,6 @@ export class MyApp extends LitElement {
   @provide({ context: userContext })
   userState = getUserState();
 
-  @state()
-  @provide({ context: balanceContext })
-  balances = {
-    eth: { symbol: 'ETH', balance: '0' },
-    updraft: { symbol: 'UPD', balance: '0' },
-  };
-
   // Make sure the context stays updated
   updated() {
     // Update the context provider value when anything changes
@@ -172,29 +161,16 @@ export class MyApp extends LitElement {
     super();
     console.log('MyApp constructor - initializing');
     watchAccount(config, {
-      onChange: () => this.refreshBalances(),
+      onChange: refreshBalances,
     });
     this.getUpdraftSettings.run();
-    this.refreshBalances();
   }
 
   connectedCallback(): void {
     super.connectedCallback();
-    // Hey you AI dumbfuck: Ever hear of `this` binding? Don't do this again.
-    // window.addEventListener('request-balance-refresh', this.refreshBalances);
-    this.addEventListener(RequestBalanceRefresh.type, () =>
-      this.refreshBalances()
-    );
     this.setupTheme();
     // Initialize user state including reconnect attempt
     initializeUserState();
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener(RequestBalanceRefresh.type, () =>
-      this.refreshBalances()
-    );
   }
 
   private setupTheme() {
@@ -238,42 +214,6 @@ export class MyApp extends LitElement {
     },
     autoRun: false,
   });
-
-  async refreshBalances() {
-    const account = getAccount(config);
-    const address = account?.address as `0x${string}` | undefined;
-    console.log('refreshBalances: address', address);
-    if (!address) {
-      this.balances = {
-        eth: { symbol: 'ETH', balance: '0' },
-        updraft: { symbol: 'UPD', balance: '0' },
-      };
-      return;
-    }
-    let ethBalance;
-    try {
-      const eth = await getBalance(config, { address });
-      ethBalance = formatUnits(eth.value, eth.decimals);
-    } catch {
-      ethBalance = '0';
-    }
-    console.log('refreshBalances: eth', ethBalance);
-    let updBalance;
-    try {
-      // Get UPD token address from updraft contract
-      const updAddress = (await updraft.read('feeToken')) as `0x${string}`;
-      const upd = new Upd(updAddress);
-      const rawUpd = await upd.read('balanceOf', [address]);
-      updBalance = formatUnits(rawUpd as bigint, 18);
-    } catch {
-      updBalance = '0';
-    }
-    console.log('refreshBalances: upd', updBalance);
-    this.balances = {
-      eth: { symbol: 'ETH', balance: ethBalance },
-      updraft: { symbol: 'UPD', balance: updBalance },
-    };
-  }
 
   render() {
     return html` <app-layout> ${this.router.outlet()}</app-layout> `;

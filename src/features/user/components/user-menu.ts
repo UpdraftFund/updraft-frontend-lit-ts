@@ -1,8 +1,6 @@
 import { LitElement, css } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
-import { consume } from '@lit/context';
-import { balanceContext } from '@state/common';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
@@ -31,13 +29,10 @@ import {
   connectWallet,
   disconnectWallet,
 } from '@state/user';
+import { balances, refreshBalances } from '@state/user/balances';
 
 @customElement('profile-area')
 export class ProfileArea extends SignalWatcher(LitElement) {
-  @consume({ context: balanceContext, subscribe: true }) balances!: {
-    [key: string]: { symbol: string; balance: string };
-  };
-
   static styles = css`
     :host,
     .trigger-content {
@@ -127,10 +122,10 @@ export class ProfileArea extends SignalWatcher(LitElement) {
     const connectingValue = isConnecting.get();
     const displayName = profile?.name || (address ? address : 'Connecting...');
     const avatarUrl = profile?.image || profile?.avatar || '';
-    const ethBalanceRaw = this.balances?.eth?.balance || '0';
-    const ethSymbol = this.balances?.eth?.symbol || 'ETH';
-    const updBalanceRaw = this.balances?.updraft?.balance || '0';
-    const updSymbol = this.balances?.updraft?.symbol || 'UPD';
+    const ethBalanceRaw = balances.get()?.eth?.balance || '0';
+    const ethSymbol = balances.get()?.eth?.symbol || 'ETH';
+    const updBalanceRaw = balances.get()?.updraft?.balance || '0';
+    const updSymbol = balances.get()?.updraft?.symbol || 'UPD';
     const ethBalance = isNaN(Number(ethBalanceRaw))
       ? '0.00000'
       : parseFloat(ethBalanceRaw).toFixed(5);
@@ -142,13 +137,7 @@ export class ProfileArea extends SignalWatcher(LitElement) {
             distance="12"
             skidding="22"
             placement="top-end"
-            @sl-show=${() =>
-              this.dispatchEvent(
-                new CustomEvent('request-balance-refresh', {
-                  bubbles: true,
-                  composed: true,
-                })
-              )}
+            @sl-show=${refreshBalances}
           >
             <span slot="trigger" class="trigger-content" title="Profile menu">
               <user-avatar

@@ -1,5 +1,6 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { html, css, LitElement } from 'lit';
+import { css, LitElement } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
 import { consume } from '@lit/context';
 import { cache } from 'lit/directives/cache.js';
 
@@ -34,19 +35,15 @@ import urqlClient from '@utils/urql-client';
 import { IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
-import {
-  balanceContext,
-  defaultFunderReward,
-  RequestBalanceRefresh,
-  updraftSettings,
-} from '@state/common';
-import { UpdraftSettings, Balances, Idea } from '@/types';
+import { defaultFunderReward, updraftSettings } from '@state/common';
+import { UpdraftSettings, Idea } from '@/types';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
+import { getBalance, refreshBalances } from '@state/user/balances';
 
 @customElement('idea-page')
-export class IdeaPage extends LitElement {
+export class IdeaPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
@@ -188,8 +185,6 @@ export class IdeaPage extends LitElement {
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
 
-  @consume({ context: balanceContext, subscribe: true })
-  userBalances!: Balances;
   @consume({ context: updraftSettings, subscribe: true })
   updraftSettings!: UpdraftSettings;
 
@@ -238,15 +233,13 @@ export class IdeaPage extends LitElement {
   };
 
   private handleSupportFocus() {
-    this.dispatchEvent(new RequestBalanceRefresh());
+    refreshBalances();
   }
 
   private handleSupportInput(e: Event) {
     const input = e.target as SlInput;
     const value = Number(input.value);
-    const userBalance = Number(
-      this.userBalances?.updraft?.balance || 'Infinity'
-    );
+    const userBalance = getBalance('updraft');
     this.needUpd = false;
 
     if (isNaN(value)) {

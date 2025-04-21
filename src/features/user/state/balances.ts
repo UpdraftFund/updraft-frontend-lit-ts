@@ -47,5 +47,5 @@ export const refreshBalances = async () => {
 };
 
 export const getBalance = (token: string) => {
-  return balances.get()[token].balance;
+  return Number(balances.get()[token].balance);
 };
