@@ -53,7 +53,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <sl-dialog open label="Get more UPD">
+      <sl-dialog label="Get more UPD">
         <span class="check-balance">
           <p>
             You have
