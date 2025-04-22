@@ -1,32 +1,23 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { provide } from '@lit/context';
-import { Task } from '@lit/task';
 import { Router } from '@lit-labs/router';
-import { formatUnits } from 'viem';
 import { watchAccount } from '@wagmi/core';
 
 import '@layout/app-layout';
 
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import '@shoelace-style/shoelace/dist/themes/dark.css';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@styles/global.css';
 import '@styles/theme.css';
 import '@styles/reset.css';
 
-import { updraftSettings as updraftSettingsContext } from '@state/common';
 import { nav } from '@state/navigation';
 import { refreshBalances } from '@state/user/balances';
-
-import { UpdraftSettings } from '@/types';
 import { initializeUserState, userContext, getUserState } from '@state/user';
 
-import { updraft } from '@contracts/updraft';
 import { config } from '@utils/web3';
+import { refreshUpdraftSettings } from '@state/common';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -131,14 +122,6 @@ export class MyApp extends LitElement {
     },
   ]);
 
-  @provide({ context: updraftSettingsContext })
-  updraftSettings = {
-    percentScale: 0,
-    updAddress: '0x',
-    percentFee: 0,
-    minFee: 0,
-  } as UpdraftSettings;
-
   // Explicitly provide user state via context
   @provide({ context: userContext })
   userState = getUserState();
@@ -153,9 +136,11 @@ export class MyApp extends LitElement {
     super();
     console.log('MyApp constructor - initializing');
     watchAccount(config, {
-      onChange: refreshBalances,
+      onChange: () => {
+        refreshUpdraftSettings();
+        refreshBalances();
+      },
     });
-    this.getUpdraftSettings.run();
   }
 
   connectedCallback(): void {
@@ -189,23 +174,6 @@ export class MyApp extends LitElement {
         this.classList.toggle('sl-theme-light', !isDark);
       });
   }
-
-  public getUpdraftSettings = new Task(this, {
-    task: async () => {
-      const percentScaleBigInt = (await updraft.read('percentScale')) as bigint;
-      const minFee = (await updraft.read('minFee')) as bigint;
-      const percentFee = (await updraft.read('percentFee')) as bigint;
-      const percentScale = Number(percentScaleBigInt);
-      const updAddress = (await updraft.read('feeToken')) as `0x${string}`;
-      this.updraftSettings = {
-        percentScale,
-        updAddress,
-        percentFee: Number(percentFee) / percentScale,
-        minFee: Number(formatUnits(minFee, 18)),
-      };
-    },
-    autoRun: false,
-  });
 
   render() {
     return html` <app-layout> ${this.router.outlet()}</app-layout> `;
