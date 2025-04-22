@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
 import { watchAccount } from '@wagmi/core';
 
@@ -14,7 +13,7 @@ import '@styles/reset.css';
 
 import { nav } from '@state/navigation';
 import { refreshBalances } from '@state/user/balances';
-import { initializeUserState, userContext, getUserState } from '@state/user';
+import { initializeUserState } from '@state/user';
 
 import { config } from '@utils/web3';
 import { refreshUpdraftSettings } from '@state/common';
@@ -121,16 +120,6 @@ export class MyApp extends LitElement {
       },
     },
   ]);
-
-  // Explicitly provide user state via context
-  @provide({ context: userContext })
-  userState = getUserState();
-
-  // Make sure the context stays updated
-  updated() {
-    // Update the context provider value when anything changes
-    this.userState = getUserState();
-  }
 
   constructor() {
     super();

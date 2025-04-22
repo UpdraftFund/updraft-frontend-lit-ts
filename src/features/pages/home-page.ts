@@ -1,18 +1,17 @@
 import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { Task } from '@lit/task';
-import { consume } from '@lit/context';
 
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+
+import '@components/navigation/search-bar';
+import '@components/navigation/create-idea-button';
 import '@pages/home/components/tracked-changes';
 import '@pages/home/components/beginner-tasks';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@components/navigation/search-bar';
-
-import '@components/navigation/create-idea-button';
 
 import urqlClient from '@utils/urql-client';
-import { userContext, type UserState } from '@state/user';
 
+import { userAddress } from '@state/user';
 import layout from '@state/layout';
 
 interface UserIdeasSolutionsResponse {
@@ -61,23 +60,15 @@ export class HomePage extends LitElement {
     }
   `;
 
-  @consume({ context: userContext, subscribe: true })
-  userState?: UserState;
-
   private readonly userIdeasSolutions = new Task(this, {
     task: async () => {
-      console.log('User state:', this.userState);
-
-      if (!this.userState?.address) {
+      if (!userAddress) {
         console.log('No user address found');
         return { ideaIds: [], solutionIds: [] };
       }
 
       try {
-        console.log(
-          'Fetching ideas and solutions for user:',
-          this.userState.address
-        );
+        console.log('Fetching ideas and solutions for user:', userAddress);
 
         // Define the GraphQL query inline to avoid module import issues
         const USER_IDEAS_SOLUTIONS_QUERY = `
@@ -125,7 +116,7 @@ export class HomePage extends LitElement {
         const result = await urqlClient.query<UserIdeasSolutionsResponse>(
           USER_IDEAS_SOLUTIONS_QUERY,
           {
-            userId: this.userState.address,
+            userId: userAddress,
           }
         );
 
@@ -166,7 +157,7 @@ export class HomePage extends LitElement {
         return { ideaIds: [], solutionIds: [] };
       }
     },
-    args: () => [this.userState?.address],
+    args: () => [userAddress],
   });
 
   render() {

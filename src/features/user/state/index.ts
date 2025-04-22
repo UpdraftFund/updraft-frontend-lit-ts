@@ -1,5 +1,4 @@
 import { signal, computed } from '@lit-labs/signals';
-import { createContext } from '@lit/context';
 import type { Address } from 'viem';
 import { fromHex } from 'viem';
 
@@ -368,61 +367,4 @@ export const initializeUserState = async (): Promise<void> => {
   } finally {
     setIsConnecting(false);
   }
-};
-
-// Define interface for the context
-export interface UserState {
-  address: Address | null; // Represents the current wallet address
-  profile: CurrentUser | null; // Represents the fetched user profile
-  isConnected: boolean; // Computed: is address non-null?
-  isConnecting: boolean; // Reflects wagmi's connection/reconnection status
-  isLoadingProfile: boolean; // Indicates profile is being fetched
-  hasProfile: boolean; // Computed: is profile non-null?
-  networkName: string | null; // Current network name from wagmi
-  connectionError: string | null; // Error during connect process
-  profileError: string | null; // Error during profile fetch
-  connect: () => Promise<void>; // Function to initiate connection
-  disconnect: () => Promise<void>; // Function to initiate disconnection
-  fetchProfile: (userId: string) => Promise<void>; // Function to manually fetch profile
-  // Internal setters exposed (consider if truly needed externally)
-  setAddress: (address: Address | null) => void; // Manually set address (use with caution)
-  setProfile: (profile: CurrentUser | null) => void; // Manually set profile
-  setNetworkName: (name: string | null) => void; // Manually set network
-  setIsConnecting: (connecting: boolean) => void; // Manually set connecting status
-  setConnectionError: (error: string | null) => void; // Manually set error
-  reset: () => void; // Function to reset all state
-}
-
-// Create the context
-export const userContext = createContext<UserState>('user-state');
-
-// Helper function to get the current state (for context provider)
-export const getUserState = (): UserState => {
-  const state = {
-    address: userAddress.get(),
-    profile: userProfile.get(),
-    isConnected: isConnected.get(),
-    isConnecting: isConnecting.get(),
-    isLoadingProfile: isLoadingProfile.get(),
-    hasProfile: hasProfile.get(),
-    networkName: networkName.get(),
-    connectionError: connectionError.get(),
-    profileError: profileError.get(),
-    connect: connectWallet,
-    disconnect: disconnectWallet,
-    fetchProfile: fetchUserProfile,
-    setAddress: setUserAddress,
-    setProfile: setUserProfile,
-    setNetworkName,
-    setIsConnecting,
-    setConnectionError,
-    reset: resetState,
-  };
-  console.log('getUserState returning:', {
-    address: state.address,
-    isConnected: state.isConnected,
-    profile: state.profile ? 'profile exists' : 'no profile',
-    hasProfile: state.hasProfile,
-  });
-  return state;
 };
