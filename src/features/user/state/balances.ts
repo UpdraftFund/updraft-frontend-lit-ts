@@ -2,7 +2,8 @@ import { signal } from '@lit-labs/signals';
 import { getAccount, getBalance as getEthBalance } from '@wagmi/core';
 import { config } from '@utils/web3.ts';
 import { formatUnits } from 'viem';
-import { updraft } from '@contracts/updraft.ts';
+
+import { updraftSettings } from '@state/common';
 import { Upd } from '@contracts/upd.ts';
 import { Balances } from '@/types';
 
@@ -32,8 +33,7 @@ export const refreshBalances = async () => {
   console.log('refreshBalances: eth', ethBalance);
   let updBalance;
   try {
-    const updAddress = (await updraft.read('feeToken')) as `0x${string}`;
-    const upd = new Upd(updAddress);
+    const upd = new Upd(updraftSettings.get().updAddress);
     const rawUpd = await upd.read('balanceOf', [address]);
     updBalance = formatUnits(rawUpd as bigint, 18);
   } catch {
