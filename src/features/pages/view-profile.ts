@@ -11,20 +11,13 @@ import '@layout/page-heading';
 import '@/features/user/components/activity-feed';
 import '@/features/user/components/user-avatar';
 
-import {
-  userAddress,
-  isConnected,
-  userProfile,
-  USER_CONNECTED_EVENT,
-  USER_DISCONNECTED_EVENT,
-  USER_PROFILE_UPDATED_EVENT,
-} from '@state/user';
+import { userAddress, isConnected, userProfile } from '@state/user';
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
 import { markComplete } from '@pages/home/state/beginner-tasks';
 
 import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
-import layout, { topBarContent } from '@state/layout';
+import layout from '@state/layout';
 
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
@@ -128,80 +121,10 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
   @property() address!: string;
 
-  private async fetchUserProfile(address: string) {
-    const result = await urqlClient
-      .query(ProfileDocument, { userId: address })
-      .toPromise();
-    return result.data?.user?.profile;
-  }
-
-  private async loadProfile(address: string) {
-    if (!address) return;
-
-    try {
-      const profile = await this.fetchUserProfile(address);
-      if (profile) {
-        userProfile.set(profile);
-      }
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-    }
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    // Load profile if not already loaded
-    if (!userProfile.get() && this.address) {
-      this.loadProfile(this.address);
-    }
-
-    // Set page title
-    topBarContent.set(html`<page-heading>Profile</page-heading>`);
-
-    // Add listeners for user state events to trigger updates
-    document.addEventListener(
-      USER_CONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.addEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.addEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.handleUserStateChanged
-    );
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    topBarContent.set(html``);
-
-    // Remove event listeners
-    document.removeEventListener(
-      USER_CONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.removeEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.removeEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.handleUserStateChanged
-    );
-  }
-
-  private handleUserStateChanged = () => {
-    // Force a re-render when user state changes
-    this.requestUpdate();
-  };
-
   // Task for fetching profile data
   private readonly profile = new Task(this, {
-    task: async ([userId]) => {
-      if (!userId) return null;
+    task: async ([address]) => {
+      if (!address) return null;
 
       // If viewing the current user and we already have their profile, use it
       const currentUserAddress = userAddress.get();
@@ -209,14 +132,16 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
       if (
         currentUserAddress &&
-        userId.toLowerCase() === currentUserAddress.toLowerCase() &&
+        address.toLowerCase() === currentUserAddress.toLowerCase() &&
         currentUserProfile
       ) {
         return currentUserProfile;
       }
 
       // Otherwise fetch the profile
-      const result = await urqlClient.query(ProfileDocument, { userId });
+      const result = await urqlClient.query(ProfileDocument, {
+        userId: address,
+      });
       if (result.data?.user?.profile) {
         return JSON.parse(
           fromHex(result.data.user.profile as `0x${string}`, 'string')
