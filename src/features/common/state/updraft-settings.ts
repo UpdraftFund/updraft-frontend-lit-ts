@@ -4,6 +4,8 @@ import { UpdraftSettings } from '@/types';
 import { updraft } from '@contracts/updraft';
 import { formatUnits } from 'viem';
 
+export const defaultFunderRewardPct = 25;
+
 export const updraftSettings = signal<UpdraftSettings>({
   percentScale: 1000000,
   updAddress: '0x',
@@ -26,5 +28,5 @@ export const refreshUpdraftSettings = async () => {
 };
 
 export const defaultFunderReward = computed(
-  () => updraftSettings.get().percentScale * 0.25
+  () => updraftSettings.get().percentScale * (defaultFunderRewardPct / 100)
 );
