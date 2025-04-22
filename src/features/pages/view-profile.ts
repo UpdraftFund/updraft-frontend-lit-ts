@@ -13,7 +13,7 @@ import '@/features/user/components/user-avatar';
 
 import { userAddress, isConnected, userProfile } from '@state/user';
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
-import { markComplete } from '@pages/home/state/beginner-tasks';
+import { markComplete } from '@state/user/beginner-tasks';
 
 import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';

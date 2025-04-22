@@ -4,10 +4,7 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 
 import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/button/button';
-import {
-  allTasksComplete,
-  isComplete,
-} from '@pages/home/state/beginner-tasks.ts';
+import { allTasksComplete, isComplete } from '@state/user/beginner-tasks.ts';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
