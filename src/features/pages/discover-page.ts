@@ -1,6 +1,5 @@
 import { customElement, state } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { consume } from '@lit/context';
 import { SignalWatcher } from '@lit-labs/signals';
 import { repeat } from 'lit/directives/repeat.js';
 import { cache } from 'lit/directives/cache.js';
@@ -14,15 +13,8 @@ import '@components/idea/idea-card-large';
 import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
 
-import {
-  Connection,
-  Idea,
-  Solution,
-  IdeaContribution,
-  DiscoverQueryType,
-} from '@/types';
+import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 
-import { connectionContext } from '@state/common';
 import layout from '@state/layout';
 import { watchTag, isWatched } from '@state/user/watched-tags';
 
@@ -93,9 +85,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       align-items: center;
     }
   `;
-
-  @consume({ context: connectionContext, subscribe: true })
-  connection?: Connection;
 
   @state() private search: string | null = null;
   @state() private tab: DiscoverQueryType = 'hot-ideas';
