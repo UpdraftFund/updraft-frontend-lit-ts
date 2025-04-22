@@ -1,7 +1,6 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
-import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -13,7 +12,6 @@ import { SaveableForm } from '@components/common/saveable-form';
 import { dialogStyles } from '@styles/dialog-styles';
 
 import { updraftSettings } from '@state/common';
-import { userContext, UserState } from '@state/user';
 import layout from '@state/layout';
 
 import { TransactionWatcher } from '@components/common/transaction-watcher';
@@ -41,9 +39,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
-
-  @consume({ context: userContext, subscribe: true })
-  userState!: UserState;
 
   @state() private depositError: string | null = null;
   @state() private antiSpamFee?: string;
