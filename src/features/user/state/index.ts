@@ -17,10 +17,6 @@ import { ProfileDocument } from '@gql';
 export const USER_CONNECTED_EVENT = 'user-connected';
 export const USER_DISCONNECTED_EVENT = 'user-disconnected';
 export const USER_PROFILE_UPDATED_EVENT = 'user-profile-updated';
-export const NETWORK_CHANGED_EVENT = 'network-changed';
-export const PROFILE_LOADING_EVENT = 'profile-loading';
-export const PROFILE_LOADED_EVENT = 'profile-loaded';
-export const PROFILE_ERROR_EVENT = 'profile-error';
 
 // Initialize signals with default values
 export const userAddress = signal<Address | null>(null);
@@ -117,9 +113,6 @@ export const setConnectionError = (error: string | null): void => {
 
 export const setNetworkName = (name: string | null): void => {
   networkName.set(name);
-  if (name) {
-    dispatchUserEvent(NETWORK_CHANGED_EVENT, { networkName: name });
-  }
 };
 
 export const resetState = (): void => {
@@ -180,7 +173,6 @@ export const fetchUserProfile = async (userId: string): Promise<void> => {
 
   isLoadingProfile.set(true);
   profileError.set(null);
-  dispatchUserEvent(PROFILE_LOADING_EVENT);
 
   try {
     console.log('Fetching profile for:', userId);
@@ -212,7 +204,6 @@ export const fetchUserProfile = async (userId: string): Promise<void> => {
       }
 
       setUserProfile(profileData);
-      dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: profileData });
     } else {
       // User exists but has no profile - create minimal profile with blockies avatar and image
       const { default: makeBlockie } = await import('ethereum-blockies-base64');
@@ -223,13 +214,11 @@ export const fetchUserProfile = async (userId: string): Promise<void> => {
       };
 
       setUserProfile(minimalProfile);
-      dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: minimalProfile });
     }
   } catch (err) {
     console.error('Error fetching user profile:', err);
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     profileError.set(errorMessage);
-    dispatchUserEvent(PROFILE_ERROR_EVENT, { error: errorMessage });
   } finally {
     isLoadingProfile.set(false);
   }
@@ -249,7 +238,6 @@ export const subscribeToProfileUpdates = (address: string | null): void => {
   // Set loading state
   isLoadingProfile.set(true);
   profileError.set(null);
-  dispatchUserEvent(PROFILE_LOADING_EVENT);
 
   // Create subscription
   profileSubscription = urqlClient
@@ -282,7 +270,6 @@ export const subscribeToProfileUpdates = (address: string | null): void => {
           }
 
           setUserProfile(profileData);
-          dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: profileData });
         } else {
           // User exists but has no profile - create minimal profile with blockies avatar and image
           const { default: makeBlockie } = await import(
@@ -295,14 +282,12 @@ export const subscribeToProfileUpdates = (address: string | null): void => {
           };
 
           setUserProfile(minimalProfile);
-          dispatchUserEvent(PROFILE_LOADED_EVENT, { profile: minimalProfile });
         }
       } catch (err) {
         console.error('Error processing profile data:', err);
         const errorMessage =
           err instanceof Error ? err.message : 'Unknown error';
         profileError.set(errorMessage);
-        dispatchUserEvent(PROFILE_ERROR_EVENT, { error: errorMessage });
       } finally {
         isLoadingProfile.set(false);
       }
