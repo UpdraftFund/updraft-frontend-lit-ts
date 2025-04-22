@@ -5,7 +5,7 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import { CurrentUser, UpdraftSettings } from '@/types';
+import { CurrentUser } from '@/types';
 
 import pencilSquare from '@icons/user/pencil-square.svg';
 import personCircle from '@icons/user/person-circle.svg';
@@ -53,7 +53,6 @@ import { updraftSettings } from '@state/common';
 import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
-import { consume } from '@lit/context';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -159,9 +158,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
-
-  @consume({ context: updraftSettings, subscribe: true })
-  updraftSettings!: UpdraftSettings;
 
   // Listen for user state changes
   connectedCallback() {
@@ -307,7 +303,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       // Update new user state with signals
       setUserProfile(updatedProfile);
 
-      const settings = this.updraftSettings;
+      const settings = updraftSettings.get();
 
       try {
         // Check if user is connected using the signal
@@ -323,7 +319,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             this.submitTransaction.hash = await updraft.write(
               'createIdeaWithProfile',
               [
-                BigInt(defaultFunderReward),
+                BigInt(defaultFunderReward.get()),
                 parseUnits(ideaForm.deposit, 18),
                 toHex(JSON.stringify(ideaData)),
                 toHex(JSON.stringify(profileData)),
@@ -336,7 +332,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           const solutionData = formToJson('create-solution', solutionSchema);
           const solutionForm = loadForm('create-solution-two');
 
-          if (solutionForm && settings) {
+          if (solutionForm) {
             // Format the deadline date properly
             const deadline = solutionForm.deadline
               ? dayjs(solutionForm.deadline).unix()
@@ -382,13 +378,11 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             this.approveTransaction.reset();
             this.approveDialog.show();
 
-            if (settings) {
-              const upd = new Upd(settings.updAddress);
-              this.approveTransaction.hash = await upd.write('approve', [
-                updraft.address,
-                parseUnits('1', 29), // approve for total supply of UPD
-              ]);
-            }
+            const upd = new Upd(settings.updAddress);
+            this.approveTransaction.hash = await upd.write('approve', [
+              updraft.address,
+              parseUnits('1', 29), // approve for total supply of UPD
+            ]);
           }
         }
       }

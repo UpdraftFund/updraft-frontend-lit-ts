@@ -1,7 +1,6 @@
 import { customElement, query, state } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
-import { consume } from '@lit/context';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -18,14 +17,10 @@ import { SaveableForm } from '@components/common/saveable-form';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { updraftSettings } from '@state/common';
-import { UpdraftSettings } from '@/features/common/types';
 
 @customElement('create-idea')
 export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('upd-dialog', true) updDialog!: UpdDialog;
-
-  @consume({ context: updraftSettings, subscribe: true })
-  updraftSettings!: UpdraftSettings;
 
   @state() private depositError: string | null = null;
   @state() private antiSpamFee?: string;
@@ -116,7 +111,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     const input = e.target as SlInput;
     const value = Number(input.value);
     const userBalance = getBalance('updraft');
-    const minFee = this.updraftSettings.minFee;
+    const minFee = updraftSettings.get().minFee;
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
@@ -138,7 +133,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     if (isNaN(value)) {
       fee = minFee;
     } else {
-      fee = Math.max(minFee, value * this.updraftSettings.percentFee);
+      fee = Math.max(minFee, value * updraftSettings.get().percentFee);
     }
     this.antiSpamFee = fee.toFixed(2);
   }

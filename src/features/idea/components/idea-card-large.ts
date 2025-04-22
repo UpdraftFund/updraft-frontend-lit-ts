@@ -1,6 +1,6 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, css } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
-import { consume } from '@lit/context';
 import { formatUnits, fromHex } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -15,12 +15,11 @@ import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 import { defaultFunderReward, updraftSettings } from '@state/common';
 import { Idea } from '@/features/idea/types';
-import { UpdraftSettings } from '@/features/common/types';
 
 import { shortNum } from '@utils/short-num';
 
 @customElement('idea-card-large')
-export class IdeaCardLarge extends LitElement {
+export class IdeaCardLarge extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -115,8 +114,6 @@ export class IdeaCardLarge extends LitElement {
   `;
 
   @property() idea!: Idea;
-  @consume({ context: updraftSettings, subscribe: true })
-  updraftSettings?: UpdraftSettings;
 
   render() {
     const {
@@ -130,9 +127,9 @@ export class IdeaCardLarge extends LitElement {
       name,
     } = this.idea;
     let pctFunderReward;
-    if (funderReward != defaultFunderReward && this.updraftSettings) {
+    if (funderReward != defaultFunderReward.get()) {
       pctFunderReward =
-        (funderReward * 100) / this.updraftSettings.percentScale;
+        (funderReward * 100) / updraftSettings.get().percentScale;
     }
     const interest = shortNum(formatUnits(shares, 18));
     const profile = JSON.parse(

@@ -1,7 +1,6 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
-import { consume } from '@lit/context';
 import { cache } from 'lit/directives/cache.js';
 
 import { fromHex, formatUnits, parseUnits } from 'viem';
@@ -32,11 +31,10 @@ import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
 import urqlClient from '@utils/urql-client';
-import { IdeaDocument } from '@gql';
+import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
 import { defaultFunderReward, updraftSettings } from '@state/common';
-import { UpdraftSettings, Idea } from '@/types';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
@@ -185,9 +183,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
 
-  @consume({ context: updraftSettings, subscribe: true })
-  updraftSettings!: UpdraftSettings;
-
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
   //@property() network!: string;
@@ -244,8 +239,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
-    } else if (value <= this.updraftSettings.minFee) {
-      this.depositError = `Deposit must be more than ${this.updraftSettings.minFee} UPD to cover fees`;
+    } else if (value <= updraftSettings.get().minFee) {
+      this.depositError = `Deposit must be more than ${updraftSettings.get().minFee} UPD to cover fees`;
     } else if (value > userBalance) {
       this.depositError = `You have ${userBalance} UPD`;
       this.needUpd = true;
@@ -261,11 +256,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
     let fee;
     if (isNaN(value)) {
-      fee = this.updraftSettings.minFee;
+      fee = updraftSettings.get().minFee;
     } else {
       fee = Math.max(
-        this.updraftSettings.minFee,
-        value * this.updraftSettings.percentFee
+        updraftSettings.get().minFee,
+        value * updraftSettings.get().percentFee
       );
     }
     this.antiSpamFee = fee.toFixed(2);
@@ -289,7 +284,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           } else if (e.message.includes('exceeds allowance')) {
             this.approveTransaction.reset();
             this.approveDialog.show();
-            const upd = new Upd(this.updraftSettings.updAddress);
+            const upd = new Upd(updraftSettings.get().updAddress);
             this.approveTransaction.hash = await upd.write('approve', [
               this.ideaId,
               total,
@@ -322,9 +317,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       } = this.idea;
 
       let pctFunderReward;
-      if (funderReward != defaultFunderReward && this.updraftSettings) {
+      if (funderReward != defaultFunderReward.get()) {
         pctFunderReward =
-          (funderReward * 100) / this.updraftSettings.percentScale;
+          (funderReward * 100) / updraftSettings.get().percentScale;
       }
 
       const profile = JSON.parse(

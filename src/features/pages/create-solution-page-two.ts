@@ -12,7 +12,7 @@ import { SaveableForm } from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
-import { updraftSettings as updraftSettingsContext } from '@state/common';
+import { updraftSettings } from '@state/common';
 import { userContext, UserState } from '@state/user';
 import layout from '@state/layout';
 
@@ -25,7 +25,6 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
-import { UpdraftSettings } from '@/types';
 import { IdeaDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
 import { getBalance, refreshBalances } from '@state/user/balances';
@@ -43,8 +42,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
 
-  @consume({ context: updraftSettingsContext, subscribe: true })
-  updraftSettings!: UpdraftSettings;
   @consume({ context: userContext, subscribe: true })
   userState!: UserState;
 
@@ -192,7 +189,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     const input = e.target as SlInput;
     const value = Number(input.value);
     const userBalance = getBalance('updraft');
-    const minFee = this.updraftSettings.minFee;
+    const minFee = updraftSettings.get().minFee;
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
@@ -214,7 +211,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     if (isNaN(value)) {
       fee = minFee;
     } else {
-      fee = Math.max(minFee, value * this.updraftSettings.percentFee);
+      fee = Math.max(minFee, value * updraftSettings.get().percentFee);
     }
     this.antiSpamFee = fee.toFixed(2);
   }
