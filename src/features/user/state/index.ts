@@ -43,14 +43,21 @@ export const setUserAddress = (address: Address | null): void => {
 };
 
 export const setProfileImage = (image: string) => {
-  const profile = userProfile.get();
-  if (profile) {
-    userProfile.set({
-      ...profile,
-      image,
-      avatar: image,
-    });
-  }
+  const profile = userProfile.get() || {};
+  userProfile.set({
+    ...profile,
+    image,
+    avatar: image,
+  });
+};
+
+export const setBlockieAvatar = async () => {
+  const profile = userProfile.get() || {};
+  const { default: makeBlockie } = await import('ethereum-blockies-base64');
+  userProfile.set({
+    ...profile,
+    avatar: makeBlockie(userAddress.get() as `0x${string}`),
+  });
 };
 
 export const setUserProfile = (profile: CurrentUser | null): void => {
@@ -219,6 +226,7 @@ export const subscribeToProfileUpdates = (address: string | null): void => {
     .query(ProfileDocument, { userId: address })
     .subscribe(async (result) => {
       try {
+        userProfile.set(null);
         if (result.error) {
           throw new Error(result.error.message);
         }
@@ -229,40 +237,28 @@ export const subscribeToProfileUpdates = (address: string | null): void => {
           );
 
           // Ensure we have both blockies image and avatar if none provided
-          if (!profileData.image || !profileData.avatar) {
+          if (profileData.image) {
+            profileData.avatar = profileData.image;
+          } else {
             const { default: makeBlockie } = await import(
               'ethereum-blockies-base64'
             );
-            const blockieImage = makeBlockie(address);
-
-            if (!profileData.image) profileData.image = blockieImage;
-            if (!profileData.avatar) profileData.avatar = blockieImage;
-
+            profileData.avatar = makeBlockie(address);
             console.log(
               'Updated profile with blockies image in subscription:',
               profileData
             );
           }
-
           setUserProfile(profileData);
         } else {
-          // User exists but has no profile - create minimal profile with blockies avatar and image
-          const { default: makeBlockie } = await import(
-            'ethereum-blockies-base64'
-          );
-          const blockieImage = makeBlockie(address);
-          const minimalProfile = {
-            avatar: blockieImage,
-            image: blockieImage,
-          };
-
-          setUserProfile(minimalProfile);
+          setBlockieAvatar();
         }
       } catch (err) {
         console.error('Error processing profile data:', err);
         const errorMessage =
           err instanceof Error ? err.message : 'Unknown error';
         profileError.set(errorMessage);
+        setBlockieAvatar();
       } finally {
         isLoadingProfile.set(false);
       }
