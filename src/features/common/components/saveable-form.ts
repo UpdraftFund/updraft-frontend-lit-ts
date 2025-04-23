@@ -11,7 +11,6 @@ export class SaveableForm extends LitElement {
   @query('form', true) form!: HTMLFormElement;
 
   formName?: string;
-  extraData?: object;
 
   protected saveForm = () => {
     if (this.formName) {
@@ -39,18 +38,16 @@ export class SaveableForm extends LitElement {
   protected restoreForm = () => {
     if (this.formName) {
       const savedForm = localStorage.getItem(`form:${this.formName}`);
-      let values = {};
       if (savedForm) {
-        values = { ...values, ...JSON.parse(savedForm) };
-      }
-      if (this.extraData) {
-        values = { ...values, ...this.extraData };
-      }
-      if (values) {
+        const values = JSON.parse(savedForm);
         for (const [name, value] of Object.entries(values)) {
-          const field = this.form.querySelector(`[name="${name}"]`);
-          if (field && 'value' in field) {
-            field.value = <string>value;
+          const element = this.form.querySelector(`[name="${name}"]`);
+          // Check if the element exists and its value property is accessible
+          if (element && 'value' in element) {
+            // Preserve values previously set by a signal
+            if (!element.value) {
+              element.value = <string>value;
+            }
           }
         }
       }

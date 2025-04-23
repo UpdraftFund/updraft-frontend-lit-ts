@@ -44,9 +44,7 @@ import {
   isConnected,
   setUserProfile,
   connectWallet,
-  USER_CONNECTED_EVENT,
-  USER_DISCONNECTED_EVENT,
-  USER_PROFILE_UPDATED_EVENT,
+  setProfileImage,
 } from '@state/user';
 import { updraftSettings } from '@state/common';
 
@@ -149,7 +147,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @property() entity: string | undefined;
 
   @state() private links: { name: string; value: string }[] = [];
-  @state() private uploadedImage: string | undefined;
+  @state() private editingLinks: boolean = false;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('transaction-watcher.submit', true)
@@ -159,124 +157,14 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
 
-  // Listen for user state changes
-  connectedCallback() {
-    super.connectedCallback();
-
-    // Add listeners for user state events to trigger updates
-    document.addEventListener(
-      USER_CONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.addEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.addEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.handleUserStateChanged
-    );
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-
-    // Remove event listeners
-    document.removeEventListener(
-      USER_CONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.removeEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.removeEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.handleUserStateChanged
-    );
-  }
-
-  // This is a bad idea to use events to completely rerender the page.
-  // It's better to use signals to rerender only what we need.
-  private handleUserStateChanged = () => {
-    // Force a re-render when user state changes
-    this.requestUpdate();
-  };
-
   private handleInput() {
     this.submitTransaction.reset();
-  }
-
-  private restoreLinks() {
-    const savedForm = loadForm(this.form.name);
-    if (savedForm) {
-      this.links = Object.entries(savedForm)
-        .filter(([key, value]) => key.startsWith('link') && value.trim() !== '')
-        .map(([name, value]) => ({ name, value }));
-    }
-
-    const profileLinks = userProfile.get()?.links;
-    if (profileLinks?.length) {
-      const linksToAdd = profileLinks
-        .filter((link) => link.trim() !== '')
-        .map((link, i) => ({
-          name: `link-${i}`,
-          value: link,
-        }));
-      this.links = [
-        ...this.links,
-        ...linksToAdd.filter(
-          (linkToAdd) =>
-            !this.links.some(
-              (existingLink) => existingLink.value === linkToAdd.value
-            )
-        ),
-      ];
-    }
-    if (!this.links.length) {
-      this.addEmptyLink();
-    }
-  }
-
-  private addEmptyLink() {
-    this.links = [
-      ...this.links,
-      { name: `link-${this.links.length}`, value: '' },
-    ];
-  }
-
-  private removeLink(index: number) {
-    this.links = this.links.filter((_, i) => i !== index);
-  }
-
-  private handleLinkInput(event: InputEvent, index: number) {
-    const input = event.target as HTMLInputElement;
-    this.links = this.links.map((link, i) =>
-      i === index ? { ...link, value: input.value } : link
-    );
   }
 
   private handleImageError(event: Event) {
     const imgElement = event.target as HTMLImageElement;
     imgElement.src = '/src/assets/icons/link-45deg.svg'; // Fallback icon
   }
-
-  // Now handled by the user-avatar component
-  // But we need to update both image and avatar fields for consistent display
-  // private handleAvatarChange(e: CustomEvent) {
-  //   this.uploadedImage = e.detail.imageUrl;
-  //
-  //   // Sync changes with the user profile to ensure consistency
-  //   const currentProfile = userProfile.get();
-  //   if (currentProfile) {
-  //     const updatedProfile = {
-  //       ...currentProfile,
-  //       image: this.uploadedImage,
-  //       avatar: this.uploadedImage || '', // Ensure avatar is not undefined
-  //     };
-  //     setUserProfile(updatedProfile);
-  //   }
-  // }
 
   private handleFormSubmit(e: Event) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
@@ -285,14 +173,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleSubmit() {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
-      const currentProfile = userProfile.get();
-
-      const profileData = {
-        ...formToJson('edit-profile', profileSchema),
-        links: this.links.map((link) => link.value),
-        // Preserve existing image unless new one uploaded
-        image: this.uploadedImage || currentProfile?.image,
-      } as CurrentUser;
+      const profileData = formToJson(
+        'edit-profile',
+        profileSchema
+      ) as CurrentUser;
 
       const updatedProfile: CurrentUser = {
         ...profileData,
@@ -417,33 +301,109 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     }
   }
 
-  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
-    this.extraData = userProfile.get() || {};
-    super.firstUpdated(changedProperties);
-
-    // Initialize links from user profile data if available
-    this.restoreLinks();
-  }
-
   private async handleImageUpload(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        this.uploadedImage = reader.result as string;
-        this.requestUpdate();
+        setProfileImage(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   }
 
+  private resetLinksFromSavedForm() {
+    const savedForm = loadForm(this.form.name);
+    if (savedForm) {
+      this.links = Object.entries(savedForm)
+        .filter(([key, value]) => key.startsWith('link') && value.trim() !== '')
+        .map(([name, value]) => ({ name, value }));
+    }
+  }
+
+  private resetLinksFromProfile() {
+    if (!this.editingLinks) {
+      const profileLinks = userProfile.get()?.links;
+      if (profileLinks?.length) {
+        this.links = profileLinks
+          .filter((link) => link.trim() !== '')
+          .map((link, i) => ({
+            name: `link${i}`,
+            value: link,
+          }));
+      } else {
+        this.links = [];
+      }
+    }
+  }
+
+  private addEmptyLink() {
+    this.links = [
+      ...this.links,
+      { name: `link${this.links.length}`, value: '' },
+    ];
+    this.editingLinks = true;
+  }
+
+  private removeLink(index: number) {
+    this.links = this.links.filter((_, i) => i !== index);
+    this.editingLinks = true;
+  }
+
+  private handleLinkInput(event: InputEvent, index: number) {
+    const input = event.target as HTMLInputElement;
+    this.links[index] = { ...this.links[index], value: input.value };
+    this.editingLinks = true;
+  }
+
+  private renderLinks() {
+    if (!this.links.length) {
+      this.addEmptyLink();
+    }
+    this.editingLinks = false;
+    return this.links.map(
+      (link, index) => html`
+        <div class="link-container">
+          <sl-input
+            class="link-input"
+            autocomplete="url"
+            .name=${link.name}
+            .value=${link.value}
+            @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
+          >
+            <img
+              slot="prefix"
+              .src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
+              @error=${(e: Event) => this.handleImageError(e)}
+              alt="Logo for ${link.value}"
+              width="16px"
+              height="16px"
+            />
+          </sl-input>
+          <sl-button
+            class="remove-link-button"
+            variant="text"
+            @click=${() => this.removeLink(index)}
+          >
+            Remove
+          </sl-button>
+        </div>
+      `
+    );
+  }
+
+  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
+    super.firstUpdated(changedProperties);
+    this.resetLinksFromSavedForm();
+  }
+
   render() {
     // Get current profile and address from signals
-    const currentProfile = userProfile.get();
-    const currentAddress = userAddress.get();
-    const avatar =
-      this.uploadedImage || currentProfile?.image || currentProfile?.avatar;
+    const profile = userProfile.get();
+    const address = userAddress.get();
+    const avatar = profile?.image || profile?.avatar;
+    this.resetLinksFromProfile();
 
     layout.topBarContent.set(
       html` <page-heading>Edit Your Profile</page-heading>`
@@ -452,8 +412,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     layout.showRightSidebar.set(true);
     layout.rightSidebarContent.set(
       html` <activity-feed
-        .userId=${currentAddress}
-        .userName=${currentProfile?.name}
+        .userId=${address}
+        .userName=${profile?.name}
       ></activity-feed>`
     );
 
@@ -489,57 +449,29 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           label="Name"
           required
           autocomplete="name"
-          value=${currentProfile?.name}
+          .value=${profile?.name || ''}
         ></sl-input>
         <sl-input
           name="team"
           label="Team"
           autocomplete="organization"
-          value=${currentProfile?.team}
+          .value=${profile?.team || ''}
         ></sl-input>
         <sl-textarea
           name="about"
           label="About"
+          .value=${profile?.about || ''}
           resize="auto"
-          value=${currentProfile?.about}
         ></sl-textarea>
         <sl-textarea
           name="news"
           label="News"
+          .value=${profile?.news || ''}
           resize="auto"
-          value=${currentProfile?.news}
         ></sl-textarea>
         <div class="links-section">
           <p>Links</p>
-          ${this.links.map(
-            (link, index) => html`
-              <div class="link-container">
-                <sl-input
-                  class="link-input"
-                  autocomplete="url"
-                  name=${link.name}
-                  value=${link.value}
-                  @input=${(e: InputEvent) => this.handleLinkInput(e, index)}
-                >
-                  <img
-                    slot="prefix"
-                    src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
-                    @error=${(e: Event) => this.handleImageError(e)}
-                    alt="Logo for ${link.value}"
-                    width="16px"
-                    height="16px"
-                  />
-                </sl-input>
-                <sl-button
-                  class="remove-link-button"
-                  variant="text"
-                  @click=${() => this.removeLink(index)}
-                >
-                  Remove
-                </sl-button>
-              </div>
-            `
-          )}
+          ${this.renderLinks()}
           <sl-button variant="text" @click=${this.addEmptyLink}>
             + Add Link
           </sl-button>

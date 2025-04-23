@@ -13,11 +13,6 @@ import { disconnect, watchAccount, reconnect } from '@wagmi/core';
 import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
 
-// Define custom events for user state changes
-export const USER_CONNECTED_EVENT = 'user-connected';
-export const USER_DISCONNECTED_EVENT = 'user-disconnected';
-export const USER_PROFILE_UPDATED_EVENT = 'user-profile-updated';
-
 // Initialize signals with default values
 export const userAddress = signal<Address | null>(null);
 export const userProfile = signal<CurrentUser | null>(null);
@@ -34,40 +29,27 @@ export const hasProfile = computed(() => userProfile.get() !== null);
 // Variables to track urql subscription for profile data
 let profileSubscription: { unsubscribe: () => void } | null = null;
 
-// Helper function to dispatch custom events
-export const dispatchUserEvent = (
-  eventName: string,
-  detail?:
-    | {
-        address?: `0x${string}`;
-        profile?: CurrentUser;
-        networkName?: string;
-        error?: string;
-      }
-    | undefined
-) => {
-  console.log(`Dispatching ${eventName} event with detail:`, detail);
-  const event = new CustomEvent(eventName, {
-    bubbles: true,
-    composed: true,
-    detail,
-  });
-  document.dispatchEvent(event);
-};
-
 // State operations
 export const setUserAddress = (address: Address | null): void => {
   console.log('setUserAddress called with:', address);
   userAddress.set(address);
 
   if (address) {
-    dispatchUserEvent(USER_CONNECTED_EVENT, { address });
-    // Subscribe to profile updates for this address
     subscribeToProfileUpdates(address);
   } else {
-    dispatchUserEvent(USER_DISCONNECTED_EVENT);
     setUserProfile(null);
     cleanupProfileSubscription();
+  }
+};
+
+export const setProfileImage = (image: string) => {
+  const profile = userProfile.get();
+  if (profile) {
+    userProfile.set({
+      ...profile,
+      image,
+      avatar: image,
+    });
   }
 };
 
@@ -79,12 +61,9 @@ export const setUserProfile = (profile: CurrentUser | null): void => {
       if (addr) {
         // Use the same generated blockie for both image and avatar fields for consistency
         const blockieImage = makeBlockie(addr);
-        profile.image = blockieImage;
         profile.avatar = blockieImage;
-
         console.log('Generated blockie for profile:', profile);
         userProfile.set(profile);
-        dispatchUserEvent(USER_PROFILE_UPDATED_EVENT, { profile });
       }
     });
   } else {
@@ -97,9 +76,6 @@ export const setUserProfile = (profile: CurrentUser | null): void => {
 
     console.log('Setting user profile:', profile);
     userProfile.set(profile);
-    if (profile) {
-      dispatchUserEvent(USER_PROFILE_UPDATED_EVENT, { profile });
-    }
   }
 };
 
@@ -123,7 +99,6 @@ export const resetState = (): void => {
   connectionError.set(null);
   profileError.set(null);
   networkName.set(null);
-  dispatchUserEvent(USER_DISCONNECTED_EVENT);
 };
 
 // Connect wallet function
