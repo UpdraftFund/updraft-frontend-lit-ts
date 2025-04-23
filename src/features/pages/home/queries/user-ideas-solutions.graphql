@@ -1,14 +1,4 @@
 query UserIdeasSolutions($userId: String!) {
-  # Ideas created by the user
-  createdIdeas: ideas(
-    where: { creator: $userId }
-    orderBy: startTime
-    orderDirection: desc
-  ) {
-    id
-    name
-  }
-  
   # Ideas funded by the user
   fundedIdeas: ideaContributions(
     where: { funder: $userId }

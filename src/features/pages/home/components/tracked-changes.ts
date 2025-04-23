@@ -1,12 +1,14 @@
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { Task } from '@lit/task';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { formatUnits } from 'viem';
 
 import { TrackedChangesDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
+import { since, resetSince } from '@state/user/tracked-changes';
+
+import refreshIcon from '@icons/common/arrow-clockwise.svg';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -15,6 +17,8 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import { shortNum } from '@utils/short-num';
+import { updraftSettings } from '@state/common';
 
 dayjs.extend(relativeTime);
 
@@ -124,117 +128,188 @@ export class TrackedChanges extends LitElement {
       color: var(--subtle-text);
       font-style: italic;
     }
+
+    .header-container {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .header-container h2 {
+      margin: -0.25rem 0 0 0;
+    }
+
+    sl-icon-button.refresh-button::part(base) {
+      font-size: 1.5rem;
+      padding: 0;
+    }
+
+    sl-spinner {
+      font-size: 2rem;
+    }
   `;
 
   @property() ideaIds: string[] = [];
   @property() solutionIds: string[] = [];
+  @property() loading = false;
 
-  private readonly changes = new Task(this, {
-    task: async () => {
-      // Get changes from the last 24 hours
-      const oneDayAgo = Math.floor(Date.now() / 1000) - 86400;
+  @state() private error: Error | null = null;
+  @state() private changes: TrackedChange[] = [];
 
-      console.log('Fetching tracked changes with:', {
-        ideaIds: this.ideaIds,
-        solutionIds: this.solutionIds,
-        since: oneDayAgo,
-      });
+  private get hasChanges(): boolean {
+    return this.changes.length > 0;
+  }
 
-      const result = await urqlClient.query(TrackedChangesDocument, {
-        ideaIds: this.ideaIds,
-        solutionIds: this.solutionIds,
-        since: oneDayAgo,
-      });
+  private get hasIds(): boolean {
+    return this.ideaIds.length > 0 || this.solutionIds.length > 0;
+  }
 
-      console.log('Tracked changes query result:', result);
+  private subscription: { unsubscribe: () => void } | null = null;
 
-      if (result.data) {
-        const allChanges: TrackedChange[] = [
-          // New supporters for ideas you created
-          ...result.data.newSupporters.map((item) => ({
-            type: 'newSupporter' as const,
-            time: Number(item.createdTime),
-            idea: item.idea,
-            funder: item.funder,
-            contribution: item.contribution,
-          })),
-          // New solutions for your ideas
-          ...result.data.newSolutions.map((item) => ({
-            type: 'newSolution' as const,
-            time: Number(item.startTime),
-            idea: item.idea,
-            solution: item,
-          })),
-          // Updates to solutions you created or funded
-          ...result.data.solutionUpdated.map((item) => ({
-            type: 'solutionUpdated' as const,
-            time: Number(item.startTime),
-            solution: item,
-          })),
-          // New funders for solutions you created or funded
-          ...result.data.newFunders.map((item) => ({
-            type: 'newFunder' as const,
-            time: Number(item.createdTime),
-            solution: item.solution,
-            funder: item.funder,
-            contribution: item.contribution,
-          })),
-        ];
+  connectedCallback() {
+    super.connectedCallback();
+    this.setupSubscription();
+  }
 
-        // Remove duplicates based on type, time, and relevant IDs
-        const uniqueChanges = allChanges.filter((change, index, self) => {
-          const isDuplicate = self.findIndex((c) => {
-            if (c.type !== change.type) return false;
-            if (c.time !== change.time) return false;
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.cleanup();
+  }
 
-            switch (c.type) {
-              case 'newSupporter':
-                return (
-                  c.idea?.id === change.idea?.id &&
-                  c.funder?.id === change.funder?.id
-                );
-              case 'newSolution':
-                return (
-                  c.idea?.id === change.idea?.id &&
-                  c.solution?.id === change.solution?.id
-                );
-              case 'solutionUpdated':
-                return c.solution?.id === change.solution?.id;
-              case 'newFunder':
-                return (
-                  c.solution?.id === change.solution?.id &&
-                  c.funder?.id === change.funder?.id
-                );
-              default:
-                return false;
-            }
-          });
-          return isDuplicate === index;
+  updated(changedProperties: Map<string, unknown>) {
+    if (
+      changedProperties.has('ideaIds') ||
+      changedProperties.has('solutionIds')
+    ) {
+      this.setupSubscription();
+    }
+  }
+
+  private cleanup() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
+  }
+
+  private setupSubscription() {
+    // Clean up any existing subscription
+    this.cleanup();
+
+    if (this.ideaIds.length || this.solutionIds.length) {
+      this.loading = true;
+      this.error = null;
+
+      // Subscribe to tracked changes
+      this.subscription = urqlClient
+        .query(TrackedChangesDocument, {
+          ideaIds: this.ideaIds,
+          solutionIds: this.solutionIds,
+          since: since.get(),
+        })
+        .subscribe((result) => {
+          this.loading = false;
+          console.log('Tracked changes query result:', result);
+
+          if (result.error) {
+            this.error = new Error(result.error.message);
+            return;
+          }
+
+          if (result.data) {
+            const allChanges: TrackedChange[] = [
+              // New supporters for ideas you created or funded
+              ...result.data.newSupporters.map((item) => ({
+                type: 'newSupporter' as const,
+                time: Number(item.createdTime),
+                idea: item.idea,
+                funder: item.funder,
+                contribution: item.contribution,
+              })),
+              // New solutions for your ideas
+              ...result.data.newSolutions.map((item) => ({
+                type: 'newSolution' as const,
+                time: Number(item.startTime),
+                idea: item.idea,
+                solution: item,
+              })),
+              // Updates to solutions you created or funded
+              ...result.data.solutionUpdated.map((item) => ({
+                type: 'solutionUpdated' as const,
+                time: Number(item.startTime),
+                solution: item,
+              })),
+              // New funders for solutions you created or funded
+              ...result.data.newFunders.map((item) => ({
+                type: 'newFunder' as const,
+                time: Number(item.createdTime),
+                solution: item.solution,
+                funder: item.funder,
+                contribution: item.contribution,
+              })),
+            ];
+
+            // Remove duplicates based on type, time, and relevant IDs
+            const uniqueChanges = allChanges.filter((change, index, self) => {
+              const isDuplicate = self.findIndex((c) => {
+                if (c.type !== change.type) return false;
+                if (c.time !== change.time) return false;
+
+                switch (c.type) {
+                  case 'newSupporter':
+                    return (
+                      c.idea?.id === change.idea?.id &&
+                      c.funder?.id === change.funder?.id
+                    );
+                  case 'newSolution':
+                    return (
+                      c.idea?.id === change.idea?.id &&
+                      c.solution?.id === change.solution?.id
+                    );
+                  case 'solutionUpdated':
+                    return c.solution?.id === change.solution?.id;
+                  case 'newFunder':
+                    return (
+                      c.solution?.id === change.solution?.id &&
+                      c.funder?.id === change.funder?.id
+                    );
+                  default:
+                    return false;
+                }
+              });
+              return isDuplicate === index;
+            });
+
+            // Sort by time in descending order (newest first)
+            uniqueChanges.sort((a, b) => b.time - a.time);
+
+            console.log('Processed changes:', uniqueChanges);
+            this.changes = uniqueChanges;
+          }
         });
+    }
+  }
 
-        // Sort by time in descending order (newest first)
-        uniqueChanges.sort((a, b) => b.time - a.time);
-
-        console.log('Processed changes:', uniqueChanges);
-        return uniqueChanges;
-      }
-
-      return [];
-    },
-    args: () => [this.ideaIds, this.solutionIds],
-  });
+  private handleRefresh() {
+    resetSince();
+    this.setupSubscription();
+  }
 
   private formatAmount(
     amount: string | null | undefined,
     decimals: number = 18
   ): string {
     if (!amount) return '0';
-    return Number(formatUnits(BigInt(amount), decimals)).toLocaleString();
+    return shortNum(formatUnits(BigInt(amount), decimals));
   }
 
   private formatReward(percentage: string | null | undefined): string {
     if (!percentage) return '0';
-    return (Number(percentage) / 10000).toString();
+    return (
+      (Number(percentage) * 100) /
+      updraftSettings.get().percentScale
+    ).toString();
   }
 
   private getChangeTitle(change: TrackedChange) {
@@ -268,7 +343,7 @@ export class TrackedChanges extends LitElement {
           </div>
         `;
       default:
-        return '';
+        return html``;
     }
   }
 
@@ -290,7 +365,7 @@ export class TrackedChanges extends LitElement {
   }
 
   private renderSolutionDetails(solution: TrackedChange['solution']) {
-    if (!solution) return '';
+    if (!solution) return html``;
 
     const progress = this.calculateProgress(solution);
     const isCompleted = progress >= 100;
@@ -313,7 +388,7 @@ export class TrackedChanges extends LitElement {
                 <span class="emoji">🥳</span> Funded
               </sl-badge>
             `
-          : ''}
+          : html``}
         <span class="emoji-badge"
           ><span class="emoji">⏰</span> ${deadline.isBefore(now)
             ? 'expired'
@@ -325,7 +400,7 @@ export class TrackedChanges extends LitElement {
           )}</span
         >
         <span class="emoji-badge"
-          ><span class="emoji">💰</span> ${this.formatReward(
+          ><span class="emoji">🎁</span> ${this.formatReward(
             solution.funderReward
           )}%</span
         >
@@ -333,43 +408,53 @@ export class TrackedChanges extends LitElement {
     `;
   }
 
+  private renderChanges() {
+    if (this.error) {
+      return html`
+        <sl-alert variant="danger" open>
+          <strong>Error loading changes:</strong>
+          ${this.error.message}
+        </sl-alert>
+      `;
+    }
+
+    if (!this.hasChanges) {
+      return html`
+        <div class="empty-state">No recent changes to display.</div>
+      `;
+    }
+
+    return html`
+      ${this.changes.map(
+        (change) => html`
+          <sl-card>
+            <div slot="header">${this.getChangeTitle(change)}</div>
+            ${change.solution
+              ? this.renderSolutionDetails(change.solution)
+              : html``}
+          </sl-card>
+        `
+      )}
+    `;
+  }
+
   render() {
     return html`
-      <h2>Updates</h2>
-      ${this.changes.render({
-        pending: () => html`
-          <div class="loading-container">
-            <sl-spinner style="font-size: 2rem;"></sl-spinner>
-            <div>Loading changes...</div>
-          </div>
-        `,
-        error: (error) => html`
-          <sl-alert variant="danger" open>
-            <strong>Error loading changes:</strong>
-            ${error instanceof Error ? error.message : 'Unknown error'}
-          </sl-alert>
-        `,
-        complete: (changes) => {
-          if (!changes || changes.length === 0) {
-            return html`
-              <div class="empty-state">No recent changes to display.</div>
-            `;
-          }
-
-          return html`
-            ${changes.map(
-              (change) => html`
-                <sl-card>
-                  <div slot="header">${this.getChangeTitle(change)}</div>
-                  ${change.solution
-                    ? this.renderSolutionDetails(change.solution)
-                    : ''}
-                </sl-card>
-              `
-            )}
-          `;
-        },
-      })}
+      <div class="header-container">
+        <h2>Updates</h2>
+        ${this.hasIds && !this.loading
+          ? html`
+              <sl-icon-button
+                class="refresh-button"
+                src=${refreshIcon}
+                label="Refresh updates"
+                @click=${this.handleRefresh}
+              ></sl-icon-button>
+            `
+          : html``}
+      </div>
+      ${this.loading ? html` <sl-spinner></sl-spinner> ` : html``}
+      ${this.renderChanges()}
     `;
   }
 }
