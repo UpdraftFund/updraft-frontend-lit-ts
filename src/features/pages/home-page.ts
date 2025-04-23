@@ -2,10 +2,6 @@ import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { SignalWatcher } from '@lit-labs/signals';
 
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-
-import '@components/navigation/search-bar';
-import '@components/navigation/create-idea-button';
 import '@pages/home/components/tracked-changes';
 import '@pages/home/components/beginner-tasks';
 
