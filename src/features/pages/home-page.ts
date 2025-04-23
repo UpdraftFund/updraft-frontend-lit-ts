@@ -14,18 +14,7 @@ import layout from '@state/layout';
 @customElement('home-page')
 export class HomePage extends SignalWatcher(LitElement) {
   static styles = css`
-    .container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-      background: linear-gradient(
-        to bottom,
-        var(--subtle-background),
-        var(--main-background)
-      );
-    }
-
-    main {
+    :host {
       flex: 1;
       box-sizing: border-box;
       display: flex;
@@ -34,16 +23,6 @@ export class HomePage extends SignalWatcher(LitElement) {
       padding: 0.5rem 1rem;
       color: var(--main-foreground);
       background: var(--main-background);
-    }
-
-    .connect-prompt {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      padding: 2rem;
-      text-align: center;
     }
   `;
 
@@ -59,14 +38,9 @@ export class HomePage extends SignalWatcher(LitElement) {
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
     `);
-
     return html`
-      <div class="container">
-        <main>
-          <tracked-changes></tracked-changes>
-          <beginner-tasks></beginner-tasks>
-        </main>
-      </div>
+      <tracked-changes></tracked-changes>
+      <beginner-tasks></beginner-tasks>
     `;
   }
 }
