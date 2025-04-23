@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { SignalWatcher } from '@lit-labs/signals';
 
 import '@components/common/section-heading';
 import '@components/solution/solution-card-small';
@@ -13,9 +14,12 @@ import { SolutionsByFunderOrDrafterDocument } from '@gql';
 import { Solution } from '@/types';
 
 @customElement('my-solutions')
-export class MySolutions extends LitElement {
+export class MySolutions extends SignalWatcher(LitElement) {
   @state() private solutions?: Solution[];
   private unsubSolutions?: () => void;
+
+  // Track the current user address to detect changes
+  private lastUserAddress: string | null = null;
 
   static styles = css`
     :host {
@@ -23,7 +27,7 @@ export class MySolutions extends LitElement {
     }
 
     .content {
-      padding: 1rem 1.4rem 0;
+      padding: 1rem 0 0;
       box-sizing: border-box;
     }
 
@@ -37,65 +41,60 @@ export class MySolutions extends LitElement {
     }
   `;
 
-  private subscribe() {
+  private subscribe(address: `0x${string}`) {
     // Clean up previous subscription if it exists
     this.unsubSolutions?.();
 
-    if (userAddress.get()) {
-      const solutionsSub = urqlClient
-        .query(SolutionsByFunderOrDrafterDocument, {
-          user: userAddress.get() as string,
-        })
-        .subscribe((result) => {
-          if (result.data) {
-            // Get solutions from both queries
-            const fundedSolutions =
-              result.data.fundedSolutions?.map(
-                (contribution) => contribution.solution
-              ) || [];
-            const draftedSolutions = result.data.draftedSolutions || [];
+    const solutionsSub = urqlClient
+      .query(SolutionsByFunderOrDrafterDocument, {
+        user: address,
+      })
+      .subscribe((result) => {
+        if (result.data) {
+          // Get solutions from both queries
+          const fundedSolutions =
+            result.data.fundedSolutions?.map(
+              (contribution) => contribution.solution
+            ) || [];
+          const draftedSolutions = result.data.draftedSolutions || [];
 
-            // Combine and deduplicate solutions based on their ID
-            const solutionMap = new Map();
+          // Combine and deduplicate solutions based on their ID
+          const solutionMap = new Map();
 
-            // Add funded solutions to map
-            fundedSolutions.forEach((solution) => {
-              solutionMap.set(solution.id, solution);
-            });
+          // Add funded solutions to map
+          fundedSolutions.forEach((solution) => {
+            solutionMap.set(solution.id, solution);
+          });
 
-            // Add drafted solutions to map (will overwrite any duplicates)
-            draftedSolutions.forEach((solution) => {
-              solutionMap.set(solution.id, solution);
-            });
+          // Add drafted solutions to map (will overwrite any duplicates)
+          draftedSolutions.forEach((solution) => {
+            solutionMap.set(solution.id, solution);
+          });
 
-            // Convert map values back to array
-            this.solutions = Array.from(solutionMap.values());
-          } else {
-            this.solutions = [];
-          }
-        });
+          // Convert map values back to array
+          this.solutions = Array.from(solutionMap.values());
+        } else {
+          this.solutions = [];
+        }
+      });
 
-      this.unsubSolutions = solutionsSub.unsubscribe;
-    }
+    this.unsubSolutions = solutionsSub.unsubscribe;
   }
 
   private handleVisibilityChange = () => {
     if (document.hidden) {
       this.unsubSolutions?.();
     } else {
-      this.subscribe();
+      const currentAddress = userAddress.get();
+      if (currentAddress) {
+        this.subscribe(currentAddress);
+      }
     }
   };
 
   connectedCallback() {
     super.connectedCallback();
-    if (userAddress.get()) {
-      this.subscribe();
-      document.addEventListener(
-        'visibilitychange',
-        this.handleVisibilityChange
-      );
-    }
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   disconnectedCallback() {
@@ -108,6 +107,12 @@ export class MySolutions extends LitElement {
   }
 
   render() {
+    const currentUserAddress = userAddress.get();
+    if (currentUserAddress && this.lastUserAddress !== currentUserAddress) {
+      this.lastUserAddress = currentUserAddress;
+      this.subscribe(currentUserAddress);
+    }
+
     return html`
       <section-heading>My Solutions</section-heading>
       <div class="content">
