@@ -8,7 +8,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import seedling from '@icons/common/seedling.svg';
-import gift from '@icons/common/gift.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
@@ -148,7 +147,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
             <span>${date.fromNow()}</span>
           </li>
           <li>
-            <sl-icon src=${gift}></sl-icon>
+            🎁
             <span>${pctFunderReward.toFixed(0)}%</span>
           </li>
           <li>

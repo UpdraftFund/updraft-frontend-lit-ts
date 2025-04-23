@@ -11,9 +11,6 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-import gift from '@icons/common/gift.svg';
-import fire from '@icons/idea/fire.svg';
-
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -340,12 +337,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           ${pctFunderReward
             ? html`
                 <span class="reward">
-                  <sl-icon src=${gift}></sl-icon>
-                  ${pctFunderReward.toFixed(0)}% funder reward
+                  🎁 ${pctFunderReward.toFixed(0)}% funder reward
                 </span>
               `
             : html``}
-          <span class="fire"> <sl-icon src=${fire}></sl-icon>${interest} </span>
+          <span class="fire">🔥${interest}</span>
         </div>
         <form @submit=${this.handleSubmit}>
           <div class="support">

@@ -10,8 +10,6 @@ import urqlClient from '@utils/urql-client';
 import { IdeasBySharesDocument } from '@gql';
 import { Idea } from '@/features/idea/types';
 
-import fire from '@icons/idea/fire.svg';
-
 @customElement('hot-ideas')
 export class HotIdeas extends LitElement {
   static styles = css`
@@ -96,10 +94,7 @@ export class HotIdeas extends LitElement {
   render() {
     return html`
       <div>
-        <h2>
-          <sl-icon src=${fire}></sl-icon>
-          Hot Ideas
-        </h2>
+        <h2>🔥 Hot Ideas</h2>
         ${this.hotIdeas === undefined
           ? html` <sl-spinner></sl-spinner>`
           : cache(

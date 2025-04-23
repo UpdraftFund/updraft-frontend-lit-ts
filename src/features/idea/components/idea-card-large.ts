@@ -7,8 +7,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import seedling from '@icons/common/seedling.svg';
-import gift from '@icons/common/gift.svg';
-import fire from '@icons/idea/fire.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/card/card.js';
@@ -161,19 +159,17 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
           ${pctFunderReward
             ? html`
                 <li>
-                  <sl-icon src=${gift}></sl-icon>
-                  <span>${pctFunderReward.toFixed(0)}% funder reward</span>
+                  <span>🎁 ${pctFunderReward.toFixed(0)}% funder reward</span>
                 </li>
               `
             : ''}
           <li>
-            <sl-icon src=${fire}></sl-icon>
-            <span>${interest}</span>
+            <span>🔥${interest}</span>
           </li>
         </ul>
 
         ${description
-          ? html`<div class="description">${description}</div>`
+          ? html` <div class="description">${description}</div>`
           : ''}
         ${tags && tags.length > 0
           ? html`
