@@ -27,7 +27,7 @@ export class MyIdeas extends LitElement {
     }
 
     .content {
-      padding: 1rem 1.4rem 0;
+      padding: 1rem 0 0;
       box-sizing: border-box;
     }
 
