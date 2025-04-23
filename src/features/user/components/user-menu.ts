@@ -15,7 +15,7 @@ import { UpdDialog } from '@components/common/upd-dialog';
 
 import layersIcon from '@icons/navigation/layers.svg';
 import creditCardIcon from '@icons/navigation/credit-card.svg';
-import reconnectIcon from '@icons/navigation/arrow-clockwise.svg';
+import reconnectIcon from '@icons/common/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3';
