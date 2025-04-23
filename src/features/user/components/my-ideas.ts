@@ -1,11 +1,7 @@
-declare global {
-  interface HTMLElementTagNameMap {
-    'my-ideas': MyIdeas;
-  }
-}
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { SignalWatcher } from '@lit-labs/signals';
 
 import '@components/common/section-heading';
 import '@components/idea/idea-card-small';
@@ -17,10 +13,7 @@ import urqlClient from '@utils/urql-client';
 import { IdeasByFunderDocument, IdeasByFunderQuery } from '@gql';
 
 @customElement('my-ideas')
-export class MyIdeas extends LitElement {
-  @state() private ideasQueryResult?: IdeasByFunderQuery;
-  private unsubIdeas?: () => void;
-
+export class MyIdeas extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
@@ -41,39 +34,41 @@ export class MyIdeas extends LitElement {
     }
   `;
 
-  private subscribe() {
+  @state() private ideasQueryResult?: IdeasByFunderQuery;
+
+  // Track the current user address to detect changes
+  private lastUserAddress: string | null = null;
+
+  private unsubIdeas?: () => void;
+
+  private subscribe(address: `0x${string}`) {
     // Clean up previous subscription if it exists
     this.unsubIdeas?.();
 
-    if (userAddress.get()) {
-      const ideasSub = urqlClient
-        .query(IdeasByFunderDocument, {
-          funder: userAddress.get() as string,
-        })
-        .subscribe((result) => {
-          this.ideasQueryResult = result.data;
-        });
-      this.unsubIdeas = ideasSub.unsubscribe;
-    }
+    const ideasSub = urqlClient
+      .query(IdeasByFunderDocument, {
+        funder: address,
+      })
+      .subscribe((result) => {
+        this.ideasQueryResult = result.data;
+      });
+    this.unsubIdeas = ideasSub.unsubscribe;
   }
 
   private handleVisibilityChange = () => {
     if (document.hidden) {
       this.unsubIdeas?.();
     } else {
-      this.subscribe();
+      const currentAddress = userAddress.get();
+      if (currentAddress) {
+        this.subscribe(currentAddress);
+      }
     }
   };
 
   connectedCallback() {
     super.connectedCallback();
-    if (userAddress.get()) {
-      this.subscribe();
-      document.addEventListener(
-        'visibilitychange',
-        this.handleVisibilityChange
-      );
-    }
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   disconnectedCallback() {
@@ -86,6 +81,11 @@ export class MyIdeas extends LitElement {
   }
 
   render() {
+    const currentUserAddress = userAddress.get();
+    if (currentUserAddress && this.lastUserAddress !== currentUserAddress) {
+      this.lastUserAddress = currentUserAddress;
+      this.subscribe(currentUserAddress);
+    }
     return html`
       <section-heading>My Ideas</section-heading>
       <div class="content">
