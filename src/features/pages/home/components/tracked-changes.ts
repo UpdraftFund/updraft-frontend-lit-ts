@@ -1,12 +1,13 @@
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { formatUnits } from 'viem';
 
-import { TrackedChangesDocument } from '@gql';
+import { TrackedChangesDocument, UserIdeasSolutionsDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
 import { since, resetSince } from '@state/user/tracked-changes';
+import { userAddress } from '@state/user';
 
 import refreshIcon from '@icons/common/arrow-clockwise.svg';
 
@@ -150,12 +151,11 @@ export class TrackedChanges extends LitElement {
     }
   `;
 
-  @property() ideaIds: string[] = [];
-  @property() solutionIds: string[] = [];
-  @property() loading = false;
-
+  @state() private loading = false;
   @state() private error: Error | null = null;
   @state() private changes: TrackedChange[] = [];
+  @state() private ideaIds: string[] = [];
+  @state() private solutionIds: string[] = [];
 
   private get hasChanges(): boolean {
     return this.changes.length > 0;
@@ -165,44 +165,132 @@ export class TrackedChanges extends LitElement {
     return this.ideaIds.length > 0 || this.solutionIds.length > 0;
   }
 
-  private subscription: { unsubscribe: () => void } | null = null;
+  private changesSubscription: { unsubscribe: () => void } | null = null;
+  private ideasSolutionsSubscription: { unsubscribe: () => void } | null = null;
+
+  // Track the current user address to detect changes
+  private lastUserAddress: string | null = null;
 
   connectedCallback() {
     super.connectedCallback();
-    this.setupSubscription();
+    this.loadUserIdeasAndSolutions();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.cleanup();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
   }
 
-  updated(changedProperties: Map<string, unknown>) {
-    if (
-      changedProperties.has('ideaIds') ||
-      changedProperties.has('solutionIds')
-    ) {
-      this.setupSubscription();
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.cleanup();
+    } else {
+      this.loadUserIdeasAndSolutions();
     }
-  }
+  };
 
   private cleanup() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      this.subscription = null;
+    if (this.changesSubscription) {
+      this.changesSubscription.unsubscribe();
+      this.changesSubscription = null;
     }
+
+    if (this.ideasSolutionsSubscription) {
+      this.ideasSolutionsSubscription.unsubscribe();
+      this.ideasSolutionsSubscription = null;
+    }
+  }
+
+  private loadUserIdeasAndSolutions() {
+    const currentUserAddress = userAddress.get();
+    if (this.lastUserAddress !== currentUserAddress) {
+      this.lastUserAddress = currentUserAddress;
+      this.subscribeToUserIdeasSolutions(currentUserAddress);
+    }
+  }
+
+  private subscribeToUserIdeasSolutions(address: string | null) {
+    // Clean up previous subscription if it exists
+    if (this.ideasSolutionsSubscription) {
+      this.ideasSolutionsSubscription.unsubscribe();
+      this.ideasSolutionsSubscription = null;
+    }
+
+    if (!address) {
+      console.log('No user address found');
+      this.loading = false;
+      this.ideaIds = [];
+      this.solutionIds = [];
+      return;
+    }
+
+    this.loading = true;
+
+    console.log('Subscribing to ideas and solutions for user:', address);
+
+    this.ideasSolutionsSubscription = urqlClient
+      .query(UserIdeasSolutionsDocument, {
+        userId: address,
+      })
+      .subscribe((result) => {
+        if (result.error) {
+          console.error(
+            'Error fetching user ideas and solutions:',
+            result.error
+          );
+          this.ideaIds = [];
+          this.solutionIds = [];
+          this.setupSubscription();
+          return;
+        }
+
+        // Extract idea IDs
+        const extractedIdeaIds =
+          result.data?.fundedIdeas?.map(
+            (contribution) => contribution.idea.id
+          ) || [];
+
+        // Extract and combine solution IDs
+        const createdSolutionIds =
+          result.data?.createdSolutions?.map((solution) => solution.id) || [];
+        const fundedSolutionIds =
+          result.data?.fundedSolutions?.map(
+            (contribution) => contribution.solution.id
+          ) || [];
+
+        const uniqueSolutionIds = [
+          ...new Set([...createdSolutionIds, ...fundedSolutionIds]),
+        ];
+
+        console.log('User ideas:', extractedIdeaIds);
+        console.log('User solutions:', uniqueSolutionIds);
+
+        this.ideaIds = extractedIdeaIds;
+        this.solutionIds = uniqueSolutionIds;
+
+        // After getting the IDs, set up the changes subscription
+        this.setupSubscription();
+      });
   }
 
   private setupSubscription() {
     // Clean up any existing subscription
-    this.cleanup();
+    if (this.changesSubscription) {
+      this.changesSubscription.unsubscribe();
+      this.changesSubscription = null;
+    }
 
     if (this.ideaIds.length || this.solutionIds.length) {
       this.loading = true;
       this.error = null;
 
       // Subscribe to tracked changes
-      this.subscription = urqlClient
+      this.changesSubscription = urqlClient
         .query(TrackedChangesDocument, {
           ideaIds: this.ideaIds,
           solutionIds: this.solutionIds,
@@ -288,12 +376,14 @@ export class TrackedChanges extends LitElement {
             this.changes = uniqueChanges;
           }
         });
+    } else {
+      this.loading = false;
     }
   }
 
   private handleRefresh() {
     resetSince();
-    this.setupSubscription();
+    this.loadUserIdeasAndSolutions();
   }
 
   private formatAmount(
@@ -439,6 +529,9 @@ export class TrackedChanges extends LitElement {
   }
 
   render() {
+    // Always check for new user address changes
+    this.loadUserIdeasAndSolutions();
+
     return html`
       <div class="header-container">
         <h2>Updates</h2>
