@@ -2,8 +2,13 @@ import { customElement } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
 import { SignalWatcher } from '@lit-labs/signals';
 
-import '@pages/home/components/tracked-changes';
-import '@pages/home/components/beginner-tasks';
+import '@components/navigation/search-bar';
+import '@components/navigation/create-idea-button';
+import '@components/idea/hot-ideas';
+import '@components/tags/popular-tags';
+import '@components/tags/watched-tags';
+import '@components/home/tracked-changes';
+import '@components/home/beginner-tasks';
 
 import layout from '@state/layout';
 
