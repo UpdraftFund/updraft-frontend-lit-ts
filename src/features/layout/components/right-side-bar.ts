@@ -1,17 +1,6 @@
-/***
- * This is the right-hand sidebar for the Home and Discover screens.
- * https://www.figma.com/design/lfPeBM41v53XQZLkYRUt5h/Updraft?node-id=920-7089&m=dev
- ***/
-
 import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
-
-import '@components/idea/hot-ideas';
-import '@components/idea/related-ideas';
-import '@components/idea/top-supporters';
-import '@components/tags/watched-tags';
-import '@components/tags/popular-tags';
 
 import { rightSidebarContent } from '@state/layout';
 

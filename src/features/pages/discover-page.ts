@@ -9,9 +9,12 @@ import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import '@components/idea/idea-card-large';
-import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
+import '@components/navigation/search-bar';
+import '@components/navigation/discover-tabs';
+import '@components/tags/popular-tags';
+import '@components/tags/watched-tags';
+import '@components/idea/idea-card-large';
 
 import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 

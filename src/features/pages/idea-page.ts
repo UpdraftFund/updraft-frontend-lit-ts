@@ -20,6 +20,9 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 import '@components/navigation/create-idea-button';
+import '@components/navigation/search-bar';
+import '@components/idea/top-supporters';
+import '@components/idea/related-ideas';
 import '@/features/common/components/upd-dialog';
 import '@/features/common/components/share-dialog';
 import '@/features/common/components/transaction-watcher';
