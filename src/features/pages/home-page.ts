@@ -4,8 +4,11 @@ import { Task } from '@lit/task';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
+import '@components/navigation/search-bar';
+import '@components/idea/hot-ideas';
+import '@components/tags/popular-tags';
+import '@components/tags/watched-tags';
 import '@pages/home/components/tracked-changes';
 import '@pages/home/components/beginner-tasks';
 

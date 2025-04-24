@@ -31,8 +31,8 @@ import {
 } from '@state/user';
 import { balances, refreshBalances } from '@state/user/balances';
 
-@customElement('profile-area')
-export class ProfileArea extends SignalWatcher(LitElement) {
+@customElement('user-menu')
+export class UserMenu extends SignalWatcher(LitElement) {
   static styles = css`
     :host,
     .trigger-content {
@@ -205,6 +205,6 @@ export class ProfileArea extends SignalWatcher(LitElement) {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'profile-area': ProfileArea;
+    'user-menu': UserMenu;
   }
 }

@@ -5,9 +5,12 @@ import { Task } from '@lit/task';
 
 import { fromHex } from 'viem';
 
-import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@layout/page-heading';
+
+import '@layout/create-idea-button';
+import '@layout/search-bar';
+import '@components/idea/top-supporters';
+import '@components/idea/related-ideas';
 import '@/features/user/components/activity-feed';
 import '@/features/user/components/user-avatar';
 
