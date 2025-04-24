@@ -7,8 +7,8 @@ import { fromHex } from 'viem';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 
-import '@layout/create-idea-button';
-import '@layout/search-bar';
+import '@components/navigation/search-bar';
+import '@components/navigation/create-idea-button';
 import '@components/idea/top-supporters';
 import '@components/idea/related-ideas';
 import '@/features/user/components/activity-feed';
