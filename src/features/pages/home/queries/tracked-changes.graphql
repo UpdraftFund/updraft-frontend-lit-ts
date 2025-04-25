@@ -12,16 +12,11 @@ query TrackedChanges(
     idea {
       id
       name
-      creator {
-        id
-        profile
-      }
     }
     funder {
       id
       profile
     }
-    contribution
     createdTime
   }
 
@@ -60,7 +55,6 @@ query TrackedChanges(
       id
       profile
     }
-    contribution
     createdTime
   }
 }
