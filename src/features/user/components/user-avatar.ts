@@ -4,7 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 
 @customElement('user-avatar')
-export class Avatar extends LitElement {
+export class UserAvatar extends LitElement {
   static styles = css``;
 
   @property() address = '';
@@ -36,6 +36,6 @@ export class Avatar extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'user-avatar': Avatar;
+    'user-avatar': UserAvatar;
   }
 }

@@ -47,17 +47,10 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       margin-bottom: 1rem;
     }
 
-    .avatar {
-      border-radius: 50%;
+    user-avatar {
       width: 64px;
       height: 64px;
       aspect-ratio: 1/1;
-    }
-
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
     }
 
     .name {
@@ -282,8 +275,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
               <div class="profile-header">
                 <user-avatar
                   .address=${this.address}
-                  .imageUrl=${image || ''}
-                  size="64px"
+                  .imageUrl=${image}
                 ></user-avatar>
                 <div>
                   ${name || team
