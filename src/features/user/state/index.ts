@@ -17,7 +17,6 @@ import { ProfileDocument } from '@gql';
 export const userAddress = signal<Address | null>(null);
 export const userProfile = signal<CurrentUser | null>(null);
 export const isConnecting = signal<boolean>(false);
-export const isLoadingProfile = signal<boolean>(false);
 export const connectionError = signal<string | null>(null);
 export const profileError = signal<string | null>(null);
 export const networkName = signal<string | null>(null);
@@ -33,7 +32,6 @@ let profileSubscription: { unsubscribe: () => void } | null = null;
 export const setUserAddress = (address: Address | null): void => {
   console.log('setUserAddress called with:', address);
   userAddress.set(address);
-
   if (address) {
     subscribeToProfileUpdates(address);
   } else {
@@ -51,38 +49,29 @@ export const setProfileImage = (image: string) => {
   });
 };
 
-export const setBlockieAvatar = async () => {
-  const profile = userProfile.get() || {};
-  const { default: makeBlockie } = await import('ethereum-blockies-base64');
-  userProfile.set({
-    ...profile,
-    avatar: makeBlockie(userAddress.get() as `0x${string}`),
-  });
-};
-
 export const setUserProfile = (profile: CurrentUser | null): void => {
-  // If we have a profile but it's missing both image and avatar, generate one from the address
-  if (profile && !profile.image && !profile.avatar && userAddress.get()) {
-    import('ethereum-blockies-base64').then(({ default: makeBlockie }) => {
-      const addr = userAddress.get();
-      if (addr) {
-        // Use the same generated blockie for both image and avatar fields for consistency
-        const blockieImage = makeBlockie(addr);
-        profile.avatar = blockieImage;
-        console.log('Generated blockie for profile:', profile);
-        userProfile.set(profile);
-      }
+  if (!profile) {
+    profile = {};
+  }
+  if (profile.image) {
+    userProfile.set({
+      ...profile,
+      avatar: profile.image,
     });
   } else {
-    // If an upload happened through edit-profile, ensure both image and avatar are in sync
-    if (profile && profile.image && !profile.avatar) {
-      profile.avatar = profile.image;
-    } else if (profile && profile.avatar && !profile.image) {
-      profile.image = profile.avatar;
+    const address = userAddress.get();
+    if (address) {
+      import('ethereum-blockies-base64').then(({ default: makeBlockie }) => {
+        userProfile.set({
+          ...profile,
+          avatar: makeBlockie(address),
+        });
+      });
+    } else {
+      userProfile.set({
+        ...profile,
+      });
     }
-
-    console.log('Setting user profile:', profile);
-    userProfile.set(profile);
   }
 };
 
@@ -102,7 +91,6 @@ export const resetState = (): void => {
   userAddress.set(null);
   userProfile.set(null);
   isConnecting.set(false);
-  isLoadingProfile.set(false);
   connectionError.set(null);
   profileError.set(null);
   networkName.set(null);
@@ -137,7 +125,7 @@ export const disconnectWallet = async (): Promise<void> => {
     await modal.disconnect();
 
     // Explicitly call wagmi core disconnect to ensure persistence is cleared
-    await disconnect(config); // Pass your wagmi config object
+    await disconnect(config);
 
     // Reset our internal application state
     resetState();
@@ -149,118 +137,28 @@ export const disconnectWallet = async (): Promise<void> => {
   }
 };
 
-// Fetch user profile using GraphQL
-export const fetchUserProfile = async (userId: string): Promise<void> => {
-  if (!userId) return;
-
-  isLoadingProfile.set(true);
-  profileError.set(null);
-
-  try {
-    console.log('Fetching profile for:', userId);
-    const result = await urqlClient.query(ProfileDocument, { userId });
-
-    if (result.error) {
-      throw new Error(result.error.message);
-    }
-
-    if (result.data?.user?.profile) {
-      const profileData = JSON.parse(
-        fromHex(result.data.user.profile as `0x${string}`, 'string')
-      );
-
-      // Ensure we have both blockies image and avatar if none provided
-      if (!profileData.image || !profileData.avatar) {
-        const { default: makeBlockie } = await import(
-          'ethereum-blockies-base64'
-        );
-        const blockieImage = makeBlockie(userId);
-
-        if (!profileData.image) profileData.image = blockieImage;
-        if (!profileData.avatar) profileData.avatar = blockieImage;
-
-        console.log(
-          'Updated profile with blockies in fetchUserProfile:',
-          profileData
-        );
-      }
-
-      setUserProfile(profileData);
-    } else {
-      // User exists but has no profile - create minimal profile with blockies avatar and image
-      const { default: makeBlockie } = await import('ethereum-blockies-base64');
-      const blockieImage = makeBlockie(userId);
-      const minimalProfile = {
-        avatar: blockieImage,
-        image: blockieImage,
-      };
-
-      setUserProfile(minimalProfile);
-    }
-  } catch (err) {
-    console.error('Error fetching user profile:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    profileError.set(errorMessage);
-  } finally {
-    isLoadingProfile.set(false);
-  }
-};
-
 // Subscribe to profile updates when address changes
-export const subscribeToProfileUpdates = (address: string | null): void => {
-  // Clean up any existing subscription
-  if (profileSubscription) {
-    profileSubscription.unsubscribe();
-    profileSubscription = null;
-  }
-
-  // If no address, nothing to do
-  if (!address) return;
-
-  // Set loading state
-  isLoadingProfile.set(true);
-  profileError.set(null);
-
-  // Create subscription
+export const subscribeToProfileUpdates = (address: `0x${string}`): void => {
+  cleanupProfileSubscription();
   profileSubscription = urqlClient
     .query(ProfileDocument, { userId: address })
     .subscribe(async (result) => {
       try {
-        userProfile.set(null);
         if (result.error) {
           throw new Error(result.error.message);
         }
-
         if (result.data?.user?.profile) {
           const profileData = JSON.parse(
             fromHex(result.data.user.profile as `0x${string}`, 'string')
           );
-
-          // Ensure we have both blockies image and avatar if none provided
-          if (profileData.image) {
-            profileData.avatar = profileData.image;
-          } else {
-            const { default: makeBlockie } = await import(
-              'ethereum-blockies-base64'
-            );
-            profileData.avatar = makeBlockie(address);
-            console.log(
-              'Updated profile with blockies image in subscription:',
-              profileData
-            );
-          }
           setUserProfile(profileData);
-        } else {
-          setBlockieAvatar();
         }
       } catch (err) {
         console.error('Error processing profile data:', err);
         const errorMessage =
           err instanceof Error ? err.message : 'Unknown error';
         profileError.set(errorMessage);
-        setBlockieAvatar();
-      } finally {
-        isLoadingProfile.set(false);
+        setUserProfile(null);
       }
     });
 };
