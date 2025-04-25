@@ -26,14 +26,10 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
 
     .idea-card {
       background-color: var(--sl-color-neutral-0);
-      border-radius: 0.5rem;
-      box-shadow: var(--sl-shadow-x-small);
       overflow: hidden;
       padding: 1.5rem;
       width: 100%;
-      transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+      border-top: 1px solid var(--border-default);
     }
 
     .idea-header {
