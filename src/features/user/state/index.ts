@@ -191,6 +191,7 @@ watchAccount(config, {
       : null;
     if (currentNetworkName !== newNetworkName) {
       setNetworkName(newNetworkName);
+      refreshUpdraftSettings();
     }
 
     // Only update user address if newAddress is not null
@@ -205,8 +206,6 @@ watchAccount(config, {
 
     // Update connection status flags
     setIsConnecting(account.isConnecting);
-
-    refreshUpdraftSettings();
     refreshBalances();
   },
 });
