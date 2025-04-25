@@ -19,7 +19,6 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@layout/page-heading';
 import '@components/user/activity-feed';
 import '@components/common/transaction-watcher';
-import '@components/user/user-avatar';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import {
@@ -403,7 +402,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     // Get current profile and address from signals
     const profile = userProfile.get();
     const address = userAddress.get();
-    const avatar = profile?.image || profile?.avatar;
+    const avatar = profile?.avatar;
     this.resetLinksFromProfile();
 
     layout.topBarContent.set(
