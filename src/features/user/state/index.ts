@@ -12,6 +12,8 @@ import { disconnect, watchAccount, reconnect } from '@wagmi/core';
 // Import urqlClient for GraphQL queries
 import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
+import { refreshUpdraftSettings } from '@state/common';
+import { refreshBalances } from '@state/user/balances';
 
 // Initialize signals with default values
 export const userAddress = signal<Address | null>(null);
@@ -203,6 +205,9 @@ watchAccount(config, {
 
     // Update connection status flags
     setIsConnecting(account.isConnecting);
+
+    refreshUpdraftSettings();
+    refreshBalances();
   },
 });
 

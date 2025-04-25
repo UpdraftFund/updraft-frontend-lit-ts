@@ -1,7 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Router } from '@lit-labs/router';
-import { watchAccount } from '@wagmi/core';
 
 import '@layout/app-layout';
 
@@ -12,11 +11,7 @@ import '@styles/theme.css';
 import '@styles/reset.css';
 
 import { nav } from '@state/navigation';
-import { refreshBalances } from '@state/user/balances';
 import { initializeUserState } from '@state/user';
-
-import { config } from '@utils/web3';
-import { refreshUpdraftSettings } from '@state/common';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -120,17 +115,6 @@ export class MyApp extends LitElement {
       },
     },
   ]);
-
-  constructor() {
-    super();
-    console.log('MyApp constructor - initializing');
-    watchAccount(config, {
-      onChange: () => {
-        refreshUpdraftSettings();
-        refreshBalances();
-      },
-    });
-  }
 
   connectedCallback(): void {
     super.connectedCallback();
