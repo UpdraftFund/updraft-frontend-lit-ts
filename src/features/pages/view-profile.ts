@@ -48,9 +48,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     }
 
     user-avatar {
-      width: 64px;
-      height: 64px;
-      aspect-ratio: 1/1;
+      --avatar-size: 64px;
     }
 
     .name {
