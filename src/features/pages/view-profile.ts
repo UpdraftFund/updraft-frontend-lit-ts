@@ -273,7 +273,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
               <div class="profile-header">
                 <user-avatar
                   .address=${this.address}
-                  .imageUrl=${image}
+                  .image=${image}
                 ></user-avatar>
                 <div>
                   ${name || team

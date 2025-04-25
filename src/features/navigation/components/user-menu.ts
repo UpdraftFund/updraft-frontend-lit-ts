@@ -121,7 +121,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
     const profile = userProfile.get();
     const connectingValue = isConnecting.get();
     const displayName = profile?.name || (address ? address : 'Connecting...');
-    const avatarUrl = profile?.avatar;
+    const avatar = profile?.avatar;
     const ethBalanceRaw = balances.get()?.eth?.balance || '0';
     const ethSymbol = balances.get()?.eth?.symbol || 'ETH';
     const updBalanceRaw = balances.get()?.updraft?.balance || '0';
@@ -142,7 +142,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
             <span slot="trigger" class="trigger-content" title="Profile menu">
               <user-avatar
                 .address=${address}
-                .imageUrl=${avatarUrl}
+                .image=${avatar}
                 size="42px"
               ></user-avatar>
               <span class="name">${displayName}</span>
@@ -179,7 +179,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
                     slot="prefix"
                     class="menu-avatar"
                     .address=${address}
-                    .imageUrl=${avatarUrl}
+                    .image=${avatar}
                     size="32px"
                   ></user-avatar>
                   <div>

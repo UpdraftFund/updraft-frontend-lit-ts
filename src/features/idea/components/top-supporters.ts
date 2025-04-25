@@ -181,7 +181,7 @@ export class TopSupporters extends LitElement {
                         (supporter) => html`
                           <div class="supporter">
                             <user-avatar
-                              .imageUrl=${supporter.avatar}
+                              .image=${supporter.avatar}
                               .address=${supporter.id}
                             ></user-avatar>
                             <div class="supporter-info">

@@ -16,11 +16,11 @@ export class UserAvatar extends LitElement {
   `;
 
   @property() address = '';
-  @property() imageUrl = '';
+  @property() image = '';
   @state() blockie = '';
 
   updateBlockie() {
-    if (!this.imageUrl) {
+    if (!this.image) {
       if (this.address) {
         import('ethereum-blockies-base64').then(({ default: makeBlockie }) => {
           this.blockie = makeBlockie(this.address);
@@ -34,10 +34,7 @@ export class UserAvatar extends LitElement {
   render() {
     this.updateBlockie();
     return html`<label class="avatar">
-      <sl-avatar
-        image=${this.imageUrl || this.blockie}
-        label="avatar"
-      ></sl-avatar>
+      <sl-avatar image=${this.image || this.blockie} label="avatar"></sl-avatar>
     </label> `;
   }
 }
