@@ -5,29 +5,37 @@ import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 
 @customElement('user-avatar')
 export class UserAvatar extends LitElement {
-  static styles = css``;
+  static styles = css`
+    :host {
+      display: inline-block;
+    }
+
+    sl-avatar {
+      --size: var(--avatar-size);
+    }
+  `;
 
   @property() address = '';
   @property() imageUrl = '';
-  @state() blockieUrl = '';
+  @state() blockie = '';
 
   updateBlockie() {
     if (!this.imageUrl) {
       if (this.address) {
         import('ethereum-blockies-base64').then(({ default: makeBlockie }) => {
-          this.blockieUrl = makeBlockie(this.address);
+          this.blockie = makeBlockie(this.address);
         });
       } else {
-        this.blockieUrl = '';
+        this.blockie = '';
       }
     }
   }
 
   render() {
     this.updateBlockie();
-    return html`<label class="avatar'">
+    return html`<label class="avatar">
       <sl-avatar
-        image=${this.imageUrl || this.blockieUrl}
+        image=${this.imageUrl || this.blockie}
         label="avatar"
       ></sl-avatar>
     </label> `;
