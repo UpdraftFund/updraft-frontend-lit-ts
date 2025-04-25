@@ -3,10 +3,11 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
 import { fromHex, formatUnits } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+
+import '@components/user/user-avatar';
 
 import urqlClient from '@utils/urql-client';
 import { IdeaContributionsDocument } from '@gql';
@@ -103,7 +104,7 @@ export class TopSupporters extends LitElement {
           this.supporters = result.data.ideaContributions.map(
             (contribution) => {
               let name = contribution.funder.id;
-              let avatar = makeBlockie(contribution.funder.id);
+              let avatar;
 
               if (contribution.funder.profile) {
                 try {
@@ -114,7 +115,7 @@ export class TopSupporters extends LitElement {
                     )
                   );
                   name = profile.name || profile.team || contribution.funder.id;
-                  avatar = profile.image || avatar;
+                  avatar = profile.image;
                 } catch (e) {
                   console.error('Error parsing profile', e);
                 }
@@ -179,10 +180,10 @@ export class TopSupporters extends LitElement {
                       ${this.supporters.map(
                         (supporter) => html`
                           <div class="supporter">
-                            <sl-avatar
-                              image="${supporter.avatar}"
-                              label="Avatar for ${supporter.name}"
-                            ></sl-avatar>
+                            <user-avatar
+                              .imageUrl=${supporter.avatar}
+                              .address=${supporter.id}
+                            ></user-avatar>
                             <div class="supporter-info">
                               <a
                                 href="/profile/${supporter.id}"
