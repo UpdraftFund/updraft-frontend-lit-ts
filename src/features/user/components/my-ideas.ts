@@ -27,11 +27,6 @@ export class MyIdeas extends SignalWatcher(LitElement) {
     idea-card-small {
       width: 100%;
     }
-
-    .loading {
-      padding: 1rem;
-      color: var(--sl-color-neutral-500);
-    }
   `;
 
   @state() private ideasQueryResult?: IdeasByFunderQuery;

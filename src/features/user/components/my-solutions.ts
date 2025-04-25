@@ -28,11 +28,6 @@ export class MySolutions extends SignalWatcher(LitElement) {
     solution-card-small {
       width: 100%;
     }
-
-    .loading {
-      padding: 1rem;
-      color: var(--sl-color-neutral-500);
-    }
   `;
 
   @state() private solutions?: Solution[];
