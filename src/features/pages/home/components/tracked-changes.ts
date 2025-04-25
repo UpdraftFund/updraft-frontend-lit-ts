@@ -2,9 +2,6 @@ import { customElement, state } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-
-dayjs.extend(relativeTime);
 
 import refreshIcon from '@icons/common/arrow-clockwise.svg';
 
@@ -73,6 +70,19 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
       padding: 0;
     }
 
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .rotating {
+      animation: rotate 1.5s ease-in-out;
+    }
+
     sl-spinner {
       font-size: 2rem;
     }
@@ -82,6 +92,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
   @state() private error: Error | null = null;
   @state() private ideaIds: string[] = [];
   @state() private solutionIds: string[] = [];
+  @state() private isRefreshing = false;
   @state() private target: number = 10;
 
   // Use our new data structure
@@ -243,7 +254,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
             result.data.newSupporters.forEach((item) => {
               this.changesManager.addChange({
                 type: 'newSupporter',
-                time: Number(item.createdTime),
+                time: Number(item.createdTime) * 1000,
                 idea: item.idea,
                 supporters: [
                   {
@@ -258,8 +269,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
             result.data.newSolutions.forEach((item) => {
               this.changesManager.addChange({
                 type: 'newSolution',
-                time: Number(item.startTime),
-                idea: item.idea,
+                time: Number(item.startTime) * 1000,
                 solution: item,
               });
             });
@@ -267,7 +277,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
             // Process updates to solutions you created or funded
             result.data.solutionUpdated.forEach((item) => {
               const now = dayjs();
-              const deadlineDate = dayjs(item.deadline * 1000);
+              const deadlineDate = dayjs(Number(item.deadline) * 1000);
               const progressBigInt = BigInt(item.tokensContributed || '0');
               const goalBigInt = BigInt(item.fundingGoal || '0');
 
@@ -275,7 +285,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
               if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
                 this.changesManager.addChange({
                   type: 'goalReached',
-                  time: Number(item.startTime),
+                  time: Number(item.startTime) * 1000,
                   solution: item,
                 });
               }
@@ -286,7 +296,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
               ) {
                 this.changesManager.addChange({
                   type: 'goalFailed',
-                  time: Number(item.startTime),
+                  time: Number(item.startTime) * 1000,
                   solution: item,
                 });
               }
@@ -294,7 +304,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
               else {
                 this.changesManager.addChange({
                   type: 'solutionUpdated',
-                  time: Number(item.startTime),
+                  time: Number(item.startTime) * 1000,
                   solution: item,
                 });
               }
@@ -304,7 +314,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
             result.data.newFunders.forEach((item) => {
               this.changesManager.addChange({
                 type: 'newFunder',
-                time: Number(item.createdTime),
+                time: Number(item.createdTime) * 1000,
                 solution: item.solution,
                 funders: [
                   {
@@ -322,6 +332,18 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
   }
 
   private handleRefresh() {
+    const button = this.shadowRoot?.querySelector('.refresh-button');
+    if (button) {
+      button.classList.add('rotating');
+      this.isRefreshing = true;
+
+      // Remove the class after animation completes
+      setTimeout(() => {
+        button.classList.remove('rotating');
+        this.isRefreshing = false;
+      }, 5 * 1000);
+    }
+
     this.subToTrackedChanges(userAddress.get());
   }
 
@@ -389,6 +411,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
                 src=${refreshIcon}
                 label="Refresh updates"
                 @click=${this.handleRefresh}
+                ?disabled=${this.isRefreshing}
               ></sl-icon-button>
             `
           : html``}

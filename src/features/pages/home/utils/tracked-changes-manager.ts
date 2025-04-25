@@ -8,17 +8,17 @@ import { updateSince } from '@state/user/tracked-changes';
 function getChangeId(change: Change): string {
   switch (change.type) {
     case 'newSupporter':
-      return `idea-${change.idea?.id}-newSupporter`;
+      return `idea-${change.idea.id}-newSupporter`;
     case 'newSolution':
-      return `idea-${change.idea?.id}-solution-${change.solution?.id}-newSolution`;
+      return `idea-${change.solution.idea.id}-solution-${change.solution.id}-newSolution`;
     case 'solutionUpdated':
-      return `solution-${change.solution?.id}-solutionUpdated`;
+      return `solution-${change.solution.id}-solutionUpdated`;
     case 'newFunder':
-      return `solution-${change.solution?.id}-newFunder`;
+      return `solution-${change.solution.id}-newFunder`;
     case 'goalReached':
-      return `solution-${change.solution?.id}-goalReached`;
+      return `solution-${change.solution.id}-goalReached`;
     case 'goalFailed':
-      return `solution-${change.solution?.id}-goalFailed`;
+      return `solution-${change.solution.id}-goalFailed`;
     default:
       return `unknown-${Date.now()}`;
   }

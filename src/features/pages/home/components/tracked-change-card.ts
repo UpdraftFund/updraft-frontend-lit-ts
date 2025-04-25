@@ -1,10 +1,11 @@
-import { css, LitElement } from 'lit';
+import { html, css, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { formatUnits } from 'viem';
 import dayjs from 'dayjs';
-import { html } from 'lit';
+
 import { shortNum } from '@utils/short-num';
-import { Change, SolutionFieldsFragment } from '@/types';
+import { Change } from '@/types';
+import { SolutionFieldsFragment, SolutionFieldsDetailedFragment } from '@gql';
 import { updraftSettings } from '@state/common';
 
 export class TrackedChangeCard extends LitElement {
@@ -14,21 +15,18 @@ export class TrackedChangeCard extends LitElement {
         display: block;
       }
 
-      .change-card-title {
-        font-size: 1.5rem;
-        font-weight: 600;
+      .change-card-heading {
         margin: 0;
       }
 
-      .change-card-byline {
+      .change-card-subheading {
         font-size: 0.875rem;
-        color: var(--sl-color-neutral-600);
+        color: var(--subtle-text);
       }
 
       .change-details {
         display: flex;
         gap: 1rem;
-        align-items: center;
         flex-wrap: wrap;
         margin-top: 1rem;
       }
@@ -94,6 +92,21 @@ export class TrackedChangeCard extends LitElement {
         text-align: center;
         margin: 1rem 0;
       }
+
+      sl-card::part(header) {
+        border-bottom-width: 0;
+      }
+
+      sl-card::part(body) {
+        padding-top: 0;
+        font-size: 0.875rem;
+      }
+
+      sl-card::part(footer) {
+        font-size: 0.8rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
     `,
   ];
 
@@ -116,7 +129,9 @@ export class TrackedChangeCard extends LitElement {
     ).toString();
   }
 
-  protected calculateProgress(solution: SolutionFieldsFragment): number {
+  protected calculateProgress(
+    solution: SolutionFieldsFragment | SolutionFieldsDetailedFragment
+  ): number {
     if (!solution?.tokensContributed || !solution?.fundingGoal) {
       return 0;
     }
@@ -133,7 +148,9 @@ export class TrackedChangeCard extends LitElement {
     return (contributed / goal) * 100;
   }
 
-  protected renderSolutionDetails(solution: SolutionFieldsFragment) {
+  protected renderSolutionDetails(
+    solution: SolutionFieldsFragment | SolutionFieldsDetailedFragment
+  ) {
     if (!solution) return html``;
 
     const progress = this.calculateProgress(solution);

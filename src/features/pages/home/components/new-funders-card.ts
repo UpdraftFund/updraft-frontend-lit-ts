@@ -1,15 +1,25 @@
 import { customElement } from 'lit/decorators.js';
-import { html } from 'lit';
-import { css } from 'lit';
+import { html, css } from 'lit';
 import { NewFunders } from '@pages/home/types';
 import { TrackedChangeCard } from './tracked-change-card';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { fromHex } from 'viem';
+import { SolutionInfo } from '@/features/solution/types';
+
+dayjs.extend(relativeTime);
 
 @customElement('new-funders-card')
 export class NewFundersCard extends TrackedChangeCard {
   static styles = [
     ...TrackedChangeCard.styles,
     css`
-      /* Additional styles specific to this card */
+      .funders {
+        font-size: 0.85rem;
+      }
+      .funders .id {
+        font-size: 0.75rem;
+      }
     `,
   ];
 
@@ -21,29 +31,46 @@ export class NewFundersCard extends TrackedChangeCard {
     const funders = this.change.funders || [];
     const additionalCount = this.change.additionalCount || 0;
 
+    let solutionInfo: SolutionInfo | null = null;
+    if (solution?.info) {
+      try {
+        solutionInfo = JSON.parse(
+          fromHex(solution.info as `0x${string}`, 'string')
+        );
+      } catch (e) {
+        console.error('Error parsing solution info', e);
+      }
+    }
+
     return html`
       <sl-card>
         <div slot="header">
-          <h3 class="change-card-title">${solution?.info || 'Solution'}</h3>
-          <div class="change-card-byline">Received new funding</div>
+          <h3 class="change-card-heading">
+            ${solutionInfo?.name || 'Solution'}
+          </h3>
+          <div class="change-card-subheading">Received new funding</div>
         </div>
 
-        <div class="person-list">
+        <div class="funders">
           ${funders.map(
-            (funder) => html`
-              <div class="person-item">
-                <span>${funder.id}</span>
-              </div>
+            (funder, index) => html`
+              ${funder.name
+                ? html`<a href="/profile/${funder.id}">${funder.name}</a>`
+                : html`<span class="id" href="/profile/${funder.id}"
+                    >${funder.id}</span
+                  >`}${index < funders.length - 1 ? html`, ` : html``}
             `
           )}
           ${additionalCount > 0
             ? html`
-                <div class="additional-count">and ${additionalCount} more</div>
+                <div class="additional-count">
+                  and ${additionalCount} others
+                </div>
               `
             : ''}
         </div>
 
-        ${solution ? this.renderSolutionDetails(solution) : ''}
+        <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
       </sl-card>
     `;
   }

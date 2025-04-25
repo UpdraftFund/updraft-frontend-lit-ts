@@ -26,11 +26,7 @@ query TrackedChanges(
     orderBy: startTime
     orderDirection: desc
   ) {
-    idea {
-      id
-      name
-    }
-    ...SolutionFields
+      ...SolutionFieldsDetailed
   }
 
   # Get updated solutions

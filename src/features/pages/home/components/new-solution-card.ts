@@ -1,15 +1,28 @@
 import { customElement } from 'lit/decorators.js';
-import { html } from 'lit';
-import { css } from 'lit';
-import { NewSolution } from '@pages/home/types';
+import { html, css } from 'lit';
+import { fromHex } from 'viem';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
+
 import { TrackedChangeCard } from './tracked-change-card';
+
+import { NewSolution } from '@pages/home/types';
+import { SolutionInfo, Profile } from '@/types';
 
 @customElement('new-solution-card')
 export class NewSolutionCard extends TrackedChangeCard {
   static styles = [
     ...TrackedChangeCard.styles,
     css`
-      /* Additional styles specific to this card */
+      h4 {
+        font-size: 1rem;
+        margin: 0;
+      }
+      .byline {
+        font-size: 0.75rem;
+      }
     `,
   ];
 
@@ -19,21 +32,41 @@ export class NewSolutionCard extends TrackedChangeCard {
   render() {
     const solution = this.change.solution;
 
-    return html`
-      <sl-card>
-        <div slot="header">
-          <h3 class="change-card-title">${this.change.idea?.name}</h3>
-          <div class="change-card-byline">
-            New solution by ${solution?.id || 'anonymous'}
+    if (solution?.info) {
+      const solutionInfo: SolutionInfo = JSON.parse(
+        fromHex(solution.info as `0x${string}`, 'string')
+      );
+      const drafterProfile: Profile = JSON.parse(
+        fromHex(solution.drafter.profile as `0x${string}`, 'string')
+      );
+      return html`
+        <sl-card>
+          <div slot="header">
+            <h3 class="change-card-heading">
+              ${this.change.solution.idea.name}
+            </h3>
+            <div class="change-card-subheading">Has a new solution</div>
           </div>
-        </div>
 
-        ${solution?.info
-          ? html` <div class="solution-info">${solution.info}</div> `
-          : ''}
-        ${solution ? this.renderSolutionDetails(solution) : ''}
-      </sl-card>
-    `;
+          <div class="solution-info">
+            <h4>${solutionInfo.name}</h4>
+            <div class="byline">
+              by
+              <a href=${solution.drafter.id}
+                >${drafterProfile.name || solution.drafter.id}</a
+              >
+            </div>
+            <p>${solutionInfo.description}</p>
+          </div>
+
+          ${solution ? this.renderSolutionDetails(solution) : ''}
+
+          <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
+        </sl-card>
+      `;
+    } else {
+      return html``;
+    }
   }
 }
 
