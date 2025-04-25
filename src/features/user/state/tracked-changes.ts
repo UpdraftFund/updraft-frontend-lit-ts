@@ -10,7 +10,7 @@ function getDefaultSinceValue(): number {
   if (storedValue && !isNaN(Number(storedValue))) {
     return Number(storedValue);
   }
-  return dayjs().subtract(1000, 'day').unix();
+  return dayjs().subtract(1, 'day').unix();
 }
 
 export const since = signal(getDefaultSinceValue());
@@ -22,7 +22,7 @@ export function updateSince(value: number) {
 }
 
 export function resetSince() {
-  const oneDayAgo = dayjs().subtract(1000, 'day').unix();
+  const oneDayAgo = dayjs().subtract(1, 'day').unix();
   since.set(oneDayAgo);
   localStorage.setItem('tracked-changes-since', oneDayAgo.toString());
 }
