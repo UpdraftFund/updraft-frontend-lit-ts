@@ -7,22 +7,16 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-import seedling from '@icons/common/seedling.svg';
-
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import gaugeMinIcon from '@/features/solution/assets/icons/gauge-min.svg';
+import gaugeLowIcon from '@/features/solution/assets/icons/gauge-low.svg';
+import gaugeMidIcon from '@/features/solution/assets/icons/gauge-mid.svg';
+import gaugeHighIcon from '@/features/solution/assets/icons/gauge-high.svg';
 
 import { updraftSettings } from '@state/common';
 import { Solution } from '@/features/solution/types';
 
 import { shortNum } from '@utils/short-num';
-
-// Icon imports for status
-import xCircleIcon from '@/features/common/assets/icons/x-circle.svg';
-// Gauge icons - Assuming we'll select one based on progress
-import gaugeMinIcon from '@/features/solution/assets/icons/gauge-min.svg';
-import gaugeLowIcon from '@/features/solution/assets/icons/gauge-low.svg';
-import gaugeMidIcon from '@/features/solution/assets/icons/gauge-mid.svg';
-import gaugeHighIcon from '@/features/solution/assets/icons/gauge-high.svg';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends SignalWatcher(LitElement) {
@@ -81,34 +75,24 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
 
   @property() solution!: Solution;
 
-  private get statusDisplay(): {
-    text: string;
-    icon: string | TemplateResult;
-  } {
+  private renderStatus(): TemplateResult {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
 
     // Treat progress and goal as bigints for accuracy and compatibility with formatUnits
-    const progressBigInt = BigInt(this.solution.progress || 0);
+    const tokensContributed = BigInt(this.solution.tokensContributed || 0);
     const goalBigInt = BigInt(this.solution.fundingGoal || 0);
 
-    // Calculate percentage using BigInt math to avoid precision issues, then convert
-    const progressPercent =
-      goalBigInt > 0n ? Number(progressBigInt / goalBigInt) * 100 : 0;
-
-    if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
-      return {
-        text: 'Goal Reached',
-        icon: html` <sl-icon
-          name="check-circle-fill"
-          style="color: var(--sl-color-success-600);"
-        ></sl-icon>`,
-      };
+    if (goalBigInt > 0n && tokensContributed >= goalBigInt) {
+      return html`✅ <span>Goal Reached</span>`;
     }
 
     if (now.isAfter(deadlineDate)) {
-      return { text: 'Goal Failed', icon: xCircleIcon };
+      return html`❌ <span>Goal Failed</span>`;
     }
+
+    const progressPercent =
+      goalBigInt > 0n ? Number(tokensContributed / goalBigInt) * 100 : 0;
 
     // Determine which gauge icon to use
     let gaugeIcon = gaugeMinIcon;
@@ -120,10 +104,10 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
       gaugeIcon = gaugeLowIcon;
     }
 
-    return {
-      text: `${shortNum(formatUnits(this.solution.tokensContributed, 18))} / ${shortNum(formatUnits(goalBigInt, 18))}`,
-      icon: gaugeIcon,
-    };
+    const progressText = `${shortNum(formatUnits(tokensContributed, 18))} / ${shortNum(formatUnits(goalBigInt, 18))}`;
+
+    return html` <sl-icon src=${gaugeIcon}></sl-icon
+      ><span>${progressText}</span>`;
   }
 
   render() {
@@ -133,7 +117,6 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     const date = dayjs(this.solution.startTime * 1000);
     const name = info.name || 'Untitled Solution';
     const description = info.description;
-    const status = this.statusDisplay;
     const pctFunderReward =
       (this.solution.funderReward * 100) / updraftSettings.get().percentScale;
     return html`
@@ -142,20 +125,9 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         <h3>${name}</h3>
         ${description ? html`<p>${description}</p>` : ''}
         <ul class="info-row">
-          <li>
-            <sl-icon src=${seedling}></sl-icon>
-            <span>${date.fromNow()}</span>
-          </li>
-          <li>
-            🎁
-            <span>${pctFunderReward.toFixed(0)}%</span>
-          </li>
-          <li>
-            ${typeof status.icon === 'string'
-              ? html` <sl-icon src=${status.icon}></sl-icon>`
-              : status.icon}
-            <span>${status.text}</span>
-          </li>
+          <li>🌱 <span>${date.fromNow()}</span></li>
+          <li>🎁 <span>${pctFunderReward.toFixed(0)}%</span></li>
+          <li>${this.renderStatus()}</li>
         </ul>
       </a>
     `;
