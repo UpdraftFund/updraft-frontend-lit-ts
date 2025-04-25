@@ -15,12 +15,6 @@ import { Solution } from '@/types';
 
 @customElement('my-solutions')
 export class MySolutions extends SignalWatcher(LitElement) {
-  @state() private solutions?: Solution[];
-  private unsubSolutions?: () => void;
-
-  // Track the current user address to detect changes
-  private lastUserAddress: string | null = null;
-
   static styles = css`
     :host {
       display: block;
@@ -40,6 +34,13 @@ export class MySolutions extends SignalWatcher(LitElement) {
       color: var(--sl-color-neutral-500);
     }
   `;
+
+  @state() private solutions?: Solution[];
+
+  // Track the current user address to detect changes
+  private lastUserAddress: string | null = null;
+
+  private unsubSolutions?: () => void;
 
   private subscribe(address: `0x${string}`) {
     // Clean up previous subscription if it exists
