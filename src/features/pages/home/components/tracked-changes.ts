@@ -1,5 +1,6 @@
 import { customElement, state } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
+import { cache } from 'lit/directives/cache.js';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import dayjs from 'dayjs';
 
@@ -80,7 +81,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     }
 
     .rotating {
-      animation: rotate 1.5s ease-in-out;
+      animation: rotate 1s ease-in-out;
     }
 
     sl-spinner {
@@ -110,32 +111,20 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
   private changesFromIdsSub: { unsubscribe: () => void } | null = null;
 
   // Track the current user address to detect changes
-  private lastUserAddress: string | null = null;
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.checkForAddressChange();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.cleanup();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-  }
+  private lastAddress: string | null = null;
 
   private handleVisibilityChange = () => {
     if (document.hidden) {
-      this.cleanup();
+      this.unsubAll();
     } else {
-      this.checkForAddressChange();
+      const currentAddress = userAddress.get();
+      if (currentAddress) {
+        this.subToTrackedChanges(currentAddress);
+      }
     }
   };
 
-  private cleanup() {
+  private unsubAll() {
     if (this.changesFromIdsSub) {
       this.changesFromIdsSub.unsubscribe();
       this.changesFromIdsSub = null;
@@ -147,15 +136,15 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     }
   }
 
-  private checkForAddressChange() {
+  private checkForAddressChangeAndSubscribe() {
     const currentUserAddress = userAddress.get();
-    if (this.lastUserAddress !== currentUserAddress) {
-      this.lastUserAddress = currentUserAddress;
+    if (this.lastAddress !== currentUserAddress) {
+      this.lastAddress = currentUserAddress;
       this.subToTrackedChanges(currentUserAddress);
     }
   }
 
-  private subToTrackedChanges(address: string | null) {
+  private subToTrackedChanges(address: `0x${string}` | null) {
     // Clean up previous subscription if it exists
     if (this.trackedChangesSub) {
       this.trackedChangesSub.unsubscribe();
@@ -163,7 +152,6 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     }
 
     if (!address) {
-      console.log('No user address found');
       this.loading = false;
       this.ideaIds = [];
       this.solutionIds = [];
@@ -343,7 +331,6 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         this.isRefreshing = false;
       }, 5 * 1000);
     }
-
     this.subToTrackedChanges(userAddress.get());
   }
 
@@ -399,8 +386,22 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     `;
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubAll();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+  }
+
   render() {
-    this.checkForAddressChange();
+    this.checkForAddressChangeAndSubscribe();
     return html`
       <div class="header-container">
         <h2>Updates</h2>
@@ -417,7 +418,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
           : html``}
       </div>
       ${this.loading ? html` <sl-spinner></sl-spinner> ` : html``}
-      ${this.renderTrackedChanges()}
+      ${cache(this.renderTrackedChanges())}
     `;
   }
 }
