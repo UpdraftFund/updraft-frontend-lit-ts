@@ -33,7 +33,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
   @state() private solutions?: Solution[];
 
   // Track the current user address to detect changes
-  private lastUserAddress: string | null = null;
+  private lastAddress: string | null = null;
 
   private unsubSolutions?: () => void;
 
@@ -77,6 +77,16 @@ export class MySolutions extends SignalWatcher(LitElement) {
     this.unsubSolutions = solutionsSub.unsubscribe;
   }
 
+  private checkForAddressChangeAndSubscribe() {
+    const currentAddress = userAddress.get();
+    if (this.lastAddress !== currentAddress) {
+      this.lastAddress = currentAddress;
+      if (currentAddress) {
+        this.subscribe(currentAddress);
+      }
+    }
+  }
+
   private handleVisibilityChange = () => {
     if (document.hidden) {
       this.unsubSolutions?.();
@@ -103,12 +113,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
   }
 
   render() {
-    const currentUserAddress = userAddress.get();
-    if (currentUserAddress && this.lastUserAddress !== currentUserAddress) {
-      this.lastUserAddress = currentUserAddress;
-      this.subscribe(currentUserAddress);
-    }
-
+    this.checkForAddressChangeAndSubscribe();
     return html`
       <section-heading>My Solutions</section-heading>
       <div class="content">

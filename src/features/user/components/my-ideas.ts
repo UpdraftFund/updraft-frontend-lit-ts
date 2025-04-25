@@ -32,7 +32,7 @@ export class MyIdeas extends SignalWatcher(LitElement) {
   @state() private ideasQueryResult?: IdeasByFunderQuery;
 
   // Track the current user address to detect changes
-  private lastUserAddress: string | null = null;
+  private lastAddress: string | null = null;
 
   private unsubIdeas?: () => void;
 
@@ -48,6 +48,16 @@ export class MyIdeas extends SignalWatcher(LitElement) {
         this.ideasQueryResult = result.data;
       });
     this.unsubIdeas = ideasSub.unsubscribe;
+  }
+
+  private checkForAddressChangeAndSubscribe() {
+    const currentAddress = userAddress.get();
+    if (this.lastAddress !== currentAddress) {
+      this.lastAddress = currentAddress;
+      if (currentAddress) {
+        this.subscribe(currentAddress);
+      }
+    }
   }
 
   private handleVisibilityChange = () => {
@@ -76,11 +86,7 @@ export class MyIdeas extends SignalWatcher(LitElement) {
   }
 
   render() {
-    const currentUserAddress = userAddress.get();
-    if (currentUserAddress && this.lastUserAddress !== currentUserAddress) {
-      this.lastUserAddress = currentUserAddress;
-      this.subscribe(currentUserAddress);
-    }
+    this.checkForAddressChangeAndSubscribe();
     return html`
       <section-heading>My Ideas</section-heading>
       <div class="content">
