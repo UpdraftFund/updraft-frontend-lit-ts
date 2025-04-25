@@ -121,7 +121,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
     const profile = userProfile.get();
     const connectingValue = isConnecting.get();
     const displayName = profile?.name || (address ? address : 'Connecting...');
-    const avatarUrl = profile?.image || profile?.avatar || '';
+    const avatarUrl = profile?.avatar;
     const ethBalanceRaw = balances.get()?.eth?.balance || '0';
     const ethSymbol = balances.get()?.eth?.symbol || 'ETH';
     const updBalanceRaw = balances.get()?.updraft?.balance || '0';
