@@ -7,5 +7,5 @@ export interface Profile {
   news?: string;
 }
 
-export type { User } from '@gql';
+export type { User, SolutionFieldsFragment } from '@gql';
 export * from './current-user';

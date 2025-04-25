@@ -1,12 +1,9 @@
-import { customElement, property } from 'lit/decorators.js';
-import { css, html, LitElement } from 'lit';
-import { Task } from '@lit/task';
+import { customElement, state } from 'lit/decorators.js';
+import { css, LitElement } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import { formatUnits } from 'viem';
 
-import { TrackedChangesDocument } from '@gql';
-import urqlClient from '@utils/urql-client';
+import refreshIcon from '@icons/common/arrow-clockwise.svg';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -15,98 +12,29 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 
-dayjs.extend(relativeTime);
+import './new-supporters-card';
+import './new-solution-card';
+import './new-funders-card';
+import './solution-updated-card';
+import './goal-reached-card';
+import './goal-failed-card';
 
-// Define types for our tracked changes
-interface User {
-  id: string;
-  profile?: string | null;
-}
+import { TrackedChangesDocument, UserIdeasSolutionsDocument } from '@gql';
+import urqlClient from '@utils/urql-client';
+import { TrackedChangesManager } from '@utils/home/tracked-changes-manager';
 
-interface Idea {
-  id: string;
-  name?: string | null;
-  creator?: User;
-}
-
-interface Solution {
-  id: string;
-  startTime: number;
-  deadline: number;
-  tokensContributed?: string | null;
-  fundingGoal?: string | null;
-  stake?: string | null;
-  info?: string | null;
-  funderReward?: string | null;
-}
-
-interface TrackedChange {
-  type: 'newSupporter' | 'newSolution' | 'solutionUpdated' | 'newFunder';
-  time: number;
-  idea?: Idea;
-  solution?: Solution;
-  funder?: User;
-  contribution?: string;
-}
+import { since } from '@state/user/tracked-changes';
+import { userAddress } from '@state/user';
 
 @customElement('tracked-changes')
-export class TrackedChanges extends LitElement {
+export class TrackedChanges extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
-    }
-
-    sl-card {
-      --padding: 1rem;
-    }
-
-    .change-card-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .change-card-byline {
-      font-size: 0.875rem;
-      color: var(--sl-color-neutral-600);
-    }
-
-    .change-card-supporters {
-      font-size: 1rem;
-      color: var(--sl-color-neutral-700);
-    }
-
-    .change-details {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .goal {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      min-width: 150px;
-    }
-
-    .goal-text {
-      font-size: 0.75rem;
-      color: var(--sl-color-neutral-600);
-    }
-
-    .emoji-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 0.875rem;
-    }
-
-    .emoji {
-      font-size: 1rem;
     }
 
     .loading-container {
@@ -124,252 +52,372 @@ export class TrackedChanges extends LitElement {
       color: var(--subtle-text);
       font-style: italic;
     }
+
+    .header-container {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .header-container h2 {
+      margin: -0.25rem 0 0 0;
+    }
+
+    sl-icon-button.refresh-button::part(base) {
+      font-size: 1.5rem;
+      color: var(--main-foreground);
+      padding: 0;
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .rotating {
+      animation: rotate 1.5s ease-in-out;
+    }
+
+    sl-spinner {
+      font-size: 2rem;
+    }
   `;
 
-  @property() ideaIds: string[] = [];
-  @property() solutionIds: string[] = [];
+  @state() private loading = false;
+  @state() private error: Error | null = null;
+  @state() private ideaIds: string[] = [];
+  @state() private solutionIds: string[] = [];
+  @state() private isRefreshing = false;
+  @state() private target: number = 10;
 
-  private readonly changes = new Task(this, {
-    task: async () => {
-      // Get changes from the last 24 hours
-      const oneDayAgo = Math.floor(Date.now() / 1000) - 86400;
+  // Use our new data structure
+  private changesManager = new TrackedChangesManager(this.target);
 
-      console.log('Fetching tracked changes with:', {
-        ideaIds: this.ideaIds,
-        solutionIds: this.solutionIds,
-        since: oneDayAgo,
-      });
+  private get hasChanges(): boolean {
+    return this.changesManager.size() > 0;
+  }
 
-      const result = await urqlClient.query(TrackedChangesDocument, {
-        ideaIds: this.ideaIds,
-        solutionIds: this.solutionIds,
-        since: oneDayAgo,
-      });
+  private get hasIds(): boolean {
+    return this.ideaIds.length > 0 || this.solutionIds.length > 0;
+  }
 
-      console.log('Tracked changes query result:', result);
+  private trackedChangesSub: { unsubscribe: () => void } | null = null;
+  private changesFromIdsSub: { unsubscribe: () => void } | null = null;
 
-      if (result.data) {
-        const allChanges: TrackedChange[] = [
-          // New supporters for ideas you created
-          ...result.data.newSupporters.map((item) => ({
-            type: 'newSupporter' as const,
-            time: Number(item.createdTime),
-            idea: item.idea,
-            funder: item.funder,
-            contribution: item.contribution,
-          })),
-          // New solutions for your ideas
-          ...result.data.newSolutions.map((item) => ({
-            type: 'newSolution' as const,
-            time: Number(item.startTime),
-            idea: item.idea,
-            solution: item,
-          })),
-          // Updates to solutions you created or funded
-          ...result.data.solutionUpdated.map((item) => ({
-            type: 'solutionUpdated' as const,
-            time: Number(item.startTime),
-            solution: item,
-          })),
-          // New funders for solutions you created or funded
-          ...result.data.newFunders.map((item) => ({
-            type: 'newFunder' as const,
-            time: Number(item.createdTime),
-            solution: item.solution,
-            funder: item.funder,
-            contribution: item.contribution,
-          })),
+  // Track the current user address to detect changes
+  private lastUserAddress: string | null = null;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.checkForAddressChange();
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.cleanup();
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+  }
+
+  private handleVisibilityChange = () => {
+    if (document.hidden) {
+      this.cleanup();
+    } else {
+      this.checkForAddressChange();
+    }
+  };
+
+  private cleanup() {
+    if (this.changesFromIdsSub) {
+      this.changesFromIdsSub.unsubscribe();
+      this.changesFromIdsSub = null;
+    }
+
+    if (this.trackedChangesSub) {
+      this.trackedChangesSub.unsubscribe();
+      this.trackedChangesSub = null;
+    }
+  }
+
+  private checkForAddressChange() {
+    const currentUserAddress = userAddress.get();
+    if (this.lastUserAddress !== currentUserAddress) {
+      this.lastUserAddress = currentUserAddress;
+      this.subToTrackedChanges(currentUserAddress);
+    }
+  }
+
+  private subToTrackedChanges(address: string | null) {
+    // Clean up previous subscription if it exists
+    if (this.trackedChangesSub) {
+      this.trackedChangesSub.unsubscribe();
+      this.trackedChangesSub = null;
+    }
+
+    if (!address) {
+      console.log('No user address found');
+      this.loading = false;
+      this.ideaIds = [];
+      this.solutionIds = [];
+      this.changesManager.clear();
+      return;
+    }
+
+    this.loading = true;
+
+    console.log('Subscribing to ideas and solutions for user:', address);
+
+    this.trackedChangesSub = urqlClient
+      .query(UserIdeasSolutionsDocument, {
+        userId: address,
+      })
+      .subscribe((result) => {
+        if (result.error) {
+          console.error(
+            'Error fetching user ideas and solutions:',
+            result.error
+          );
+          this.ideaIds = [];
+          this.solutionIds = [];
+          this.subToChangesFromIds();
+          return;
+        }
+
+        // Extract idea IDs
+        const extractedIdeaIds =
+          result.data?.fundedIdeas?.map(
+            (contribution) => contribution.idea.id
+          ) || [];
+
+        // Extract and combine solution IDs
+        const createdSolutionIds =
+          result.data?.createdSolutions?.map((solution) => solution.id) || [];
+        const fundedSolutionIds =
+          result.data?.fundedSolutions?.map(
+            (contribution) => contribution.solution.id
+          ) || [];
+
+        const uniqueSolutionIds = [
+          ...new Set([...createdSolutionIds, ...fundedSolutionIds]),
         ];
 
-        // Remove duplicates based on type, time, and relevant IDs
-        const uniqueChanges = allChanges.filter((change, index, self) => {
-          const isDuplicate = self.findIndex((c) => {
-            if (c.type !== change.type) return false;
-            if (c.time !== change.time) return false;
+        console.log('User ideas:', extractedIdeaIds);
+        console.log('User solutions:', uniqueSolutionIds);
 
-            switch (c.type) {
-              case 'newSupporter':
-                return (
-                  c.idea?.id === change.idea?.id &&
-                  c.funder?.id === change.funder?.id
-                );
-              case 'newSolution':
-                return (
-                  c.idea?.id === change.idea?.id &&
-                  c.solution?.id === change.solution?.id
-                );
-              case 'solutionUpdated':
-                return c.solution?.id === change.solution?.id;
-              case 'newFunder':
-                return (
-                  c.solution?.id === change.solution?.id &&
-                  c.funder?.id === change.funder?.id
-                );
-              default:
-                return false;
-            }
-          });
-          return isDuplicate === index;
+        this.ideaIds = extractedIdeaIds;
+        this.solutionIds = uniqueSolutionIds;
+
+        this.subToChangesFromIds();
+      });
+  }
+
+  private subToChangesFromIds() {
+    // Clear existing changes
+    this.changesManager.clear();
+
+    // Clean up any existing subscription
+    if (this.changesFromIdsSub) {
+      this.changesFromIdsSub.unsubscribe();
+      this.changesFromIdsSub = null;
+    }
+
+    if (this.ideaIds.length || this.solutionIds.length) {
+      this.loading = true;
+      this.error = null;
+
+      // Subscribe to tracked changes
+      this.changesFromIdsSub = urqlClient
+        .query(TrackedChangesDocument, {
+          ideaIds: this.ideaIds,
+          solutionIds: this.solutionIds,
+          since: since.get(),
+        })
+        .subscribe((result) => {
+          this.loading = false;
+          console.log('Tracked changes query result:', result);
+
+          if (result.error) {
+            this.error = new Error(result.error.message);
+            return;
+          }
+
+          if (result.data) {
+            // Process new supporters for ideas you funded
+            result.data.newSupporters.forEach((item) => {
+              this.changesManager.addChange({
+                type: 'newSupporter',
+                time: Number(item.createdTime) * 1000,
+                idea: item.idea,
+                supporters: [
+                  {
+                    id: item.funder.id,
+                    profile: item.funder.profile,
+                  },
+                ],
+              });
+            });
+
+            // Process new solutions for your ideas
+            result.data.newSolutions.forEach((item) => {
+              this.changesManager.addChange({
+                type: 'newSolution',
+                time: Number(item.startTime) * 1000,
+                solution: item,
+              });
+            });
+
+            // Process updates to solutions you created or funded
+            result.data.solutionUpdated.forEach((item) => {
+              const now = dayjs();
+              const deadlineDate = dayjs(Number(item.deadline) * 1000);
+              const progressBigInt = BigInt(item.tokensContributed || '0');
+              const goalBigInt = BigInt(item.fundingGoal || '0');
+
+              // Check if the goal was reached
+              if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
+                this.changesManager.addChange({
+                  type: 'goalReached',
+                  time: Number(item.startTime) * 1000,
+                  solution: item,
+                });
+              }
+              // Check if the deadline has passed and goal wasn't reached
+              else if (
+                now.isAfter(deadlineDate) &&
+                progressBigInt < goalBigInt
+              ) {
+                this.changesManager.addChange({
+                  type: 'goalFailed',
+                  time: Number(item.startTime) * 1000,
+                  solution: item,
+                });
+              }
+              // Otherwise it's just a regular update
+              else {
+                this.changesManager.addChange({
+                  type: 'solutionUpdated',
+                  time: Number(item.startTime) * 1000,
+                  solution: item,
+                });
+              }
+            });
+
+            // Process new funders for solutions you created or funded
+            result.data.newFunders.forEach((item) => {
+              this.changesManager.addChange({
+                type: 'newFunder',
+                time: Number(item.createdTime) * 1000,
+                solution: item.solution,
+                funders: [
+                  {
+                    id: item.funder?.id || '',
+                    profile: item.funder.profile,
+                  },
+                ],
+              });
+            });
+          }
         });
-
-        // Sort by time in descending order (newest first)
-        uniqueChanges.sort((a, b) => b.time - a.time);
-
-        console.log('Processed changes:', uniqueChanges);
-        return uniqueChanges;
-      }
-
-      return [];
-    },
-    args: () => [this.ideaIds, this.solutionIds],
-  });
-
-  private formatAmount(
-    amount: string | null | undefined,
-    decimals: number = 18
-  ): string {
-    if (!amount) return '0';
-    return Number(formatUnits(BigInt(amount), decimals)).toLocaleString();
-  }
-
-  private formatReward(percentage: string | null | undefined): string {
-    if (!percentage) return '0';
-    return (Number(percentage) / 10000).toString();
-  }
-
-  private getChangeTitle(change: TrackedChange) {
-    switch (change.type) {
-      case 'newSupporter':
-        return html`
-          <h3 class="change-card-title">${change.idea?.name}</h3>
-          <div class="change-card-byline">
-            ${change.funder?.id} supported with
-            ${this.formatAmount(change.contribution)} UPD
-          </div>
-        `;
-      case 'newSolution':
-        return html`
-          <h3 class="change-card-title">${change.idea?.name}</h3>
-          <div class="change-card-byline">
-            New solution by ${change.solution?.id}
-          </div>
-        `;
-      case 'solutionUpdated':
-        return html`
-          <h3 class="change-card-title">Solution Updated</h3>
-          <div class="change-card-byline">by ${change.solution?.id}</div>
-        `;
-      case 'newFunder':
-        return html`
-          <h3 class="change-card-title">${change.solution?.info}</h3>
-          <div class="change-card-byline">
-            ${change.funder?.id} funded with
-            ${this.formatAmount(change.contribution)} UPD
-          </div>
-        `;
-      default:
-        return '';
+    } else {
+      this.loading = false;
     }
   }
 
-  private calculateProgress(solution: TrackedChange['solution']) {
-    if (!solution?.tokensContributed || !solution?.fundingGoal) {
-      return 0;
+  private handleRefresh() {
+    const button = this.shadowRoot?.querySelector('.refresh-button');
+    if (button) {
+      button.classList.add('rotating');
+      this.isRefreshing = true;
+
+      // Remove the class after animation completes
+      setTimeout(() => {
+        button.classList.remove('rotating');
+        this.isRefreshing = false;
+      }, 5 * 1000);
     }
 
-    const contributed = Number(
-      formatUnits(BigInt(solution.tokensContributed), 18)
-    );
-    const goal = Number(formatUnits(BigInt(solution.fundingGoal), 18));
-
-    if (isNaN(contributed) || isNaN(goal) || goal === 0) {
-      return 0;
-    }
-
-    return (contributed / goal) * 100;
+    this.subToTrackedChanges(userAddress.get());
   }
 
-  private renderSolutionDetails(solution: TrackedChange['solution']) {
-    if (!solution) return '';
+  private renderTrackedChanges() {
+    if (this.error) {
+      return html`
+        <sl-alert variant="danger" open>
+          <strong>Error loading changes:</strong>
+          ${this.error.message}
+        </sl-alert>
+      `;
+    }
 
-    const progress = this.calculateProgress(solution);
-    const isCompleted = progress >= 100;
-    const deadline = dayjs(solution.deadline * 1000);
-    const now = dayjs();
+    if (!this.hasChanges) {
+      return html`
+        <div class="empty-state">No recent changes to display.</div>
+      `;
+    }
+
+    const changesToRender = this.changesManager.getChangesForRendering();
 
     return html`
-      <sl-divider></sl-divider>
-      <div class="change-details">
-        <div class="goal">
-          <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
-          <div class="goal-text">
-            ${this.formatAmount(solution.tokensContributed)} out of
-            ${this.formatAmount(solution.fundingGoal)} UPD
-          </div>
-        </div>
-        ${isCompleted
-          ? html`
-              <sl-badge variant="success" pill>
-                <span class="emoji">🥳</span> Funded
-              </sl-badge>
-            `
-          : ''}
-        <span class="emoji-badge"
-          ><span class="emoji">⏰</span> ${deadline.isBefore(now)
-            ? 'expired'
-            : deadline.fromNow()}</span
-        >
-        <span class="emoji-badge"
-          ><span class="emoji">💎</span> ${this.formatAmount(
-            solution.stake
-          )}</span
-        >
-        <span class="emoji-badge"
-          ><span class="emoji">💰</span> ${this.formatReward(
-            solution.funderReward
-          )}%</span
-        >
-      </div>
+      ${changesToRender.map((change) => {
+        switch (change.type) {
+          case 'newSupporter':
+            return html` <new-supporters-card
+              .change=${change}
+            ></new-supporters-card>`;
+          case 'newSolution':
+            return html` <new-solution-card
+              .change=${change}
+            ></new-solution-card>`;
+          case 'solutionUpdated':
+            return html` <solution-updated-card
+              .change=${change}
+            ></solution-updated-card>`;
+          case 'newFunder':
+            return html` <new-funders-card
+              .change=${change}
+            ></new-funders-card>`;
+          case 'goalReached':
+            return html` <goal-reached-card
+              .change=${change}
+            ></goal-reached-card>`;
+          case 'goalFailed':
+            return html` <goal-failed-card
+              .change=${change}
+            ></goal-failed-card>`;
+          default:
+            return html``;
+        }
+      })}
     `;
   }
 
   render() {
+    this.checkForAddressChange();
     return html`
-      <h2>Updates</h2>
-      ${this.changes.render({
-        pending: () => html`
-          <div class="loading-container">
-            <sl-spinner style="font-size: 2rem;"></sl-spinner>
-            <div>Loading changes...</div>
-          </div>
-        `,
-        error: (error) => html`
-          <sl-alert variant="danger" open>
-            <strong>Error loading changes:</strong>
-            ${error instanceof Error ? error.message : 'Unknown error'}
-          </sl-alert>
-        `,
-        complete: (changes) => {
-          if (!changes || changes.length === 0) {
-            return html`
-              <div class="empty-state">No recent changes to display.</div>
-            `;
-          }
-
-          return html`
-            ${changes.map(
-              (change) => html`
-                <sl-card>
-                  <div slot="header">${this.getChangeTitle(change)}</div>
-                  ${change.solution
-                    ? this.renderSolutionDetails(change.solution)
-                    : ''}
-                </sl-card>
-              `
-            )}
-          `;
-        },
-      })}
+      <div class="header-container">
+        <h2>Updates</h2>
+        ${this.hasIds && !this.loading
+          ? html`
+              <sl-icon-button
+                class="refresh-button"
+                src=${refreshIcon}
+                label="Refresh updates"
+                @click=${this.handleRefresh}
+                ?disabled=${this.isRefreshing}
+              ></sl-icon-button>
+            `
+          : html``}
+      </div>
+      ${this.loading ? html` <sl-spinner></sl-spinner> ` : html``}
+      ${this.renderTrackedChanges()}
     `;
   }
 }

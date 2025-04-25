@@ -4,3 +4,4 @@ export * from '@/features/navigation/types';
 export * from '@/features/solution/types';
 export * from '@/features/tags/types';
 export * from '@/features/user/types';
+export * from '@/features/pages/home/types';
