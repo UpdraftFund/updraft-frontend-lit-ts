@@ -3,7 +3,7 @@ import type { Address } from 'viem';
 import { fromHex } from 'viem';
 
 // Import user profile type
-import type { CurrentUser } from '@/features/user/types/current-user';
+import type { Profile, CurrentUser } from '@/features/user/types';
 
 // Import the wallet connection modal
 import { modal, config } from '@utils/web3';
@@ -49,7 +49,7 @@ export const setProfileImage = (image: string) => {
   });
 };
 
-export const setUserProfile = (profile: CurrentUser | null): void => {
+export const setUserProfile = (profile: Profile | null): void => {
   if (!profile) {
     profile = {};
   }
@@ -152,6 +152,8 @@ export const subscribeToProfileUpdates = (address: `0x${string}`): void => {
             fromHex(result.data.user.profile as `0x${string}`, 'string')
           );
           setUserProfile(profileData);
+        } else {
+          setUserProfile(null);
         }
       } catch (err) {
         console.error('Error processing profile data:', err);

@@ -76,7 +76,6 @@ describe('User State Module', () => {
       setUserProfile({
         name: 'Test User',
         image: 'test-image.png',
-        avatar: 'test-avatar.png',
       });
       expect(hasProfile.get()).to.be.true;
     });
@@ -89,7 +88,6 @@ describe('User State Module', () => {
       setUserProfile({
         name: 'Test User',
         image: 'test-image.png',
-        avatar: 'test-avatar.png',
       });
       setIsConnecting(true);
       setConnectionError('Error');
