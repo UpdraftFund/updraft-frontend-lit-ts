@@ -124,28 +124,24 @@ export class MyApp extends LitElement {
   }
 
   private setupTheme() {
-    // TODO: factor out repeated code
-    // Apply the appropriate theme class to the document element
+    // Initial theme setup based on user preference
     const prefersDark = window.matchMedia?.(
       '(prefers-color-scheme: dark)'
     ).matches;
-    document.documentElement.classList.toggle('sl-theme-dark', prefersDark);
-    document.documentElement.classList.toggle('sl-theme-light', !prefersDark);
-
-    // Also apply to the component itself for shadow DOM styling
-    this.classList.toggle('sl-theme-dark', prefersDark);
-    this.classList.toggle('sl-theme-light', !prefersDark);
+    this.applyTheme(prefersDark);
 
     // Listen for changes in color scheme preference
     window
       .matchMedia('(prefers-color-scheme: dark)')
       .addEventListener('change', (e) => {
-        const isDark = e.matches;
-        document.documentElement.classList.toggle('sl-theme-dark', isDark);
-        document.documentElement.classList.toggle('sl-theme-light', !isDark);
-        this.classList.toggle('sl-theme-dark', isDark);
-        this.classList.toggle('sl-theme-light', !isDark);
+        this.applyTheme(e.matches);
       });
+  }
+
+  private applyTheme(isDark: boolean) {
+    // Apply the appropriate theme class to the document (root) element
+    document.documentElement.classList.toggle('sl-theme-dark', isDark);
+    document.documentElement.classList.toggle('sl-theme-light', !isDark);
   }
 
   render() {
