@@ -14,7 +14,6 @@ export default {
 
 // Sidebar collapse/expand
 const storedLeftSidebarState = localStorage.getItem('leftSidebarCollapsed');
-
 export const leftSidebarCollapsed = signal<boolean>(
   storedLeftSidebarState ? JSON.parse(storedLeftSidebarState) : false
 );
