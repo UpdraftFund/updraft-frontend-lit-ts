@@ -190,9 +190,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       const settings = updraftSettings.get();
 
       try {
-        // Check if user is connected using the signal
         if (!isConnected.get()) {
-          await this.openConnectModal();
+          await connectWallet();
           return;
         }
 
@@ -254,8 +253,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             e.message?.startsWith('connection') ||
             e.message?.includes('getChainId')
           ) {
-            // Open the wallet connection modal if there's a connection issue
-            await this.openConnectModal();
+            await connectWallet();
           } else if (e.message?.includes('exceeds balance')) {
             this.updDialog.show();
           } else if (e.message?.includes('exceeds allowance')) {
@@ -288,16 +286,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         }
         this.shareDialog.show();
       }
-    }
-  }
-
-  private async openConnectModal() {
-    try {
-      console.log('Opening connect modal');
-      // Use connectWallet from signals
-      await connectWallet();
-    } catch (error) {
-      console.error('Error opening connect modal:', error);
     }
   }
 
