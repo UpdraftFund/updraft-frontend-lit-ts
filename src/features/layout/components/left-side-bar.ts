@@ -145,7 +145,7 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
 
   private handleToggle = () => {
     toggleLeftSidebar();
-    // Add this to prevent scrolling of main content when sidebar is open on mobile
+    // Prevent scrolling of main content when sidebar is open on mobile
     if (window.innerWidth <= 768) {
       document.body.style.overflow = leftSidebarCollapsed.get() ? '' : 'hidden';
     }
