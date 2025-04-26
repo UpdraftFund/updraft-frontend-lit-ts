@@ -186,13 +186,11 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
 
   private handleSidebarToggle = () => {
     this.collapsed = leftSidebarCollapsed.get();
-    this.requestUpdate();
   };
 
   private handleDrawerToggle = () => {
     if (window.innerWidth <= 768) {
       this.expanded = !this.expanded;
-      this.requestUpdate();
 
       // Prevent body scrolling when drawer is open
       document.body.style.overflow = this.expanded ? 'hidden' : '';
@@ -203,7 +201,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     // Close drawer when navigation occurs
     if (this.expanded && window.innerWidth <= 768) {
       this.expanded = false;
-      this.requestUpdate();
       document.body.style.overflow = '';
     }
   };
@@ -215,7 +212,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       for (const element of path) {
         if (element instanceof HTMLAnchorElement) {
           this.expanded = false;
-          this.requestUpdate();
           document.body.style.overflow = '';
           break;
         }
@@ -227,7 +223,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     // For tablet view, toggle expanded state
     if (window.innerWidth <= 1024 && window.innerWidth > 768) {
       this.expanded = !this.expanded;
-      this.requestUpdate();
 
       // Dispatch an event to notify right sidebar about the state change
       const event = new CustomEvent('expanded', {
