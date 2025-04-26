@@ -4,14 +4,12 @@ import { html, css } from 'lit';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import { formToJson, SaveableForm } from '@components/common/saveable-form';
+import { SaveableForm } from '@components/common/saveable-form';
 
 import layout from '@state/layout';
 
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
-
-import solutionSchema from '@schemas/solution-schema.json';
 
 import { IdeaDocument } from '@gql';
 import urqlClient from '@utils/urql-client';
@@ -76,10 +74,6 @@ export class CreateSolution extends SaveableForm {
       form.reportValidity(); // Show validation messages
       return;
     }
-
-    // Save the form data to localStorage for the profile creation step
-    const formData = formToJson('create-solution', solutionSchema);
-    localStorage.setItem('create-solution-form', JSON.stringify(formData));
   }
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
