@@ -121,3 +121,9 @@ export class AppLayout extends SignalWatcher(LitElement) {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'app-layout': AppLayout;
+  }
+}
