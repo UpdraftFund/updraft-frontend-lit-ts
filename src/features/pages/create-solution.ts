@@ -1,22 +1,23 @@
 import { customElement, property } from 'lit/decorators.js';
 import { html, css } from 'lit';
+import { Subscription } from 'wonka';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@layout/page-heading';
+import '@components/common/label-with-hint';
 import { SaveableForm } from '@components/common/saveable-form';
 
 import layout from '@state/layout';
-
-import '@layout/page-heading';
-import '@components/common/label-with-hint';
-
-import { IdeaDocument } from '@gql';
-import urqlClient from '@utils/urql-client';
+import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
 
 @customElement('create-solution')
 export class CreateSolution extends SaveableForm {
   @property() ideaId!: string;
+
+  // Add a property to track the subscription
+  private unsubHeading?: Subscription;
 
   static styles = css`
     :host {
@@ -48,21 +49,6 @@ export class CreateSolution extends SaveableForm {
     }
   `;
 
-  private readonly addIdeaToHeading = async () => {
-    const result = await urqlClient.query(IdeaDocument, {
-      ideaId: this.ideaId,
-    });
-    const ideaData = result.data?.idea;
-    if (ideaData) {
-      layout.topBarContent.set(html`
-        <page-heading
-          >Create a new Solution
-          <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
-        </page-heading>
-      `);
-    }
-  };
-
   private handleFormSubmit(e: Event) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
@@ -76,19 +62,19 @@ export class CreateSolution extends SaveableForm {
     }
   }
 
-  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
-    super.firstUpdated(changedProperties);
-    this.addIdeaToHeading();
-  }
-
-  constructor() {
-    super();
-    layout.topBarContent.set(html`
-      <page-heading>Create a new Solution</page-heading>
-    `);
+  connectedCallback() {
+    super.connectedCallback();
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
+    this.unsubHeading = createSolutionHeading(this.ideaId);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this.unsubHeading) {
+      this.unsubHeading.unsubscribe();
+    }
   }
 
   render() {

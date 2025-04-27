@@ -54,6 +54,7 @@
       "@icons/navigation/*": ["src/features/navigation/assets/icons/*"],
       "@icons/solution/*": ["src/features/solution/assets/icons/*"],
       "@icons/user/*": ["src/features/user/assets/icons/*"],
+      "@utils/create-solution/*": ["src/features/pages/create-solution/utils/*"],
       "@utils/home/*": ["src/features/pages/home/utils/*"],
       "@images/*": ["src/features/common/assets/images/*"],
       "@pages/*": ["src/features/pages/*"],

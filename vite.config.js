@@ -55,6 +55,10 @@ export default defineConfig({
         'src/features/solution/assets/icons'
       ),
       '@icons/user': resolve(__dirname, 'src/features/user/assets/icons'),
+      '@utils/create-solution': resolve(
+        __dirname,
+        'src/features/pages/create-solution/utils'
+      ),
       '@utils/home': resolve(__dirname, 'src/features/pages/home/utils'),
       '@images': resolve(__dirname, 'src/features/common/assets/images'),
       '@pages': resolve(__dirname, 'src/features/pages'),
