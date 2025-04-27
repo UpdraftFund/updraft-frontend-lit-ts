@@ -2,22 +2,74 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  build: {
-    target: "esnext",
-    sourcemap: true,
-  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@components': resolve(__dirname, 'src/components'),
-      '@layout': resolve(__dirname, 'src/components/layout'),
-      '@styles': resolve(__dirname, 'src/styles'),
-      '@assets': resolve(__dirname, 'src/assets'),
-      '@icons': resolve(__dirname, 'src/assets/icons'),
-      '@pages': resolve(__dirname, 'src/pages'),
+      '@components/idea': resolve(__dirname, 'src/features/idea/components'),
+      '@components/solution': resolve(
+        __dirname,
+        'src/features/solution/components'
+      ),
+      '@components/common': resolve(
+        __dirname,
+        'src/features/common/components'
+      ),
+      '@components/layout': resolve(
+        __dirname,
+        'src/features/layout/components'
+      ),
+      '@components/navigation': resolve(
+        __dirname,
+        'src/features/navigation/components'
+      ),
+      '@components/home': resolve(
+        __dirname,
+        'src/features/pages/home/components'
+      ),
+      '@components/tags': resolve(__dirname, 'src/features/tags/components'),
+      '@components/user': resolve(__dirname, 'src/features/user/components'),
+      '@styles/idea': resolve(__dirname, 'src/features/idea/styles'),
+      '@styles/solution': resolve(__dirname, 'src/features/solution/styles'),
+      '@styles/common': resolve(__dirname, 'src/features/common/styles'),
+      '@styles/layout': resolve(__dirname, 'src/features/layout/styles'),
+      '@styles/navigation': resolve(
+        __dirname,
+        'src/features/navigation/styles'
+      ),
+      '@state/common': resolve(__dirname, 'src/features/common/state'),
+      '@state/idea': resolve(__dirname, 'src/features/idea/state'),
+      '@state/layout': resolve(__dirname, 'src/features/layout/state'),
+      '@state/navigation': resolve(__dirname, 'src/features/navigation/state'),
+      '@state/solution': resolve(__dirname, 'src/features/solution/state'),
+      '@state/tags': resolve(__dirname, 'src/features/tags/state'),
+      '@state/user': resolve(__dirname, 'src/features/user/state'),
+      '@state/home': resolve(__dirname, 'src/features/pages/home/state'),
+      '@icons/common': resolve(__dirname, 'src/features/common/assets/icons'),
+      '@icons/idea': resolve(__dirname, 'src/features/idea/assets/icons'),
+      '@icons/navigation': resolve(
+        __dirname,
+        'src/features/navigation/assets/icons'
+      ),
+      '@icons/solution': resolve(
+        __dirname,
+        'src/features/solution/assets/icons'
+      ),
+      '@icons/user': resolve(__dirname, 'src/features/user/assets/icons'),
+      '@utils/home': resolve(__dirname, 'src/features/pages/home/utils'),
+      '@images': resolve(__dirname, 'src/features/common/assets/images'),
+      '@pages': resolve(__dirname, 'src/features/pages'),
+      '@layout': resolve(__dirname, 'src/features/layout/components'),
+      '@styles': resolve(__dirname, 'src/features/common/styles'),
+      '@utils': resolve(__dirname, 'src/lib/utils'),
+      '@contracts': resolve(__dirname, 'src/lib/contracts'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
-      '@contracts': resolve(__dirname, 'src/contracts'),
-      '@gql': resolve(__dirname, '.graphclient')
-    }
-  }
+      '@gql': resolve(__dirname, '.graphclient'),
+    },
+  },
+  define: {
+    'process.env': {},
+  },
+  build: {
+    target: 'es2022', // Should match tsconfig.json target
+  },
 });

@@ -1,0 +1,27 @@
+query RelatedIdeas(
+  $ideaId: Bytes!,
+  $first: Int = 3,
+  $skip: Int = 0,
+  $tag: String!
+) {
+  ideas(
+    first: $first,
+    skip: $skip,
+    where: {
+      id_not: $ideaId,
+      tags_contains_nocase: [$tag]
+    },
+    orderBy: shares,
+    orderDirection: desc
+  ) {
+    id
+    name
+    description
+    shares
+    creator {
+      id
+      profile
+    }
+    tags
+  }
+}

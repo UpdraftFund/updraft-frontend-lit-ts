@@ -1,0 +1,174 @@
+import { customElement, property } from 'lit/decorators.js';
+import { css, html, LitElement } from 'lit';
+import { Task } from '@lit/task';
+
+import { UserActivityDocument } from '@gql';
+import urqlClient from '@utils/urql-client';
+import '@/features/user/components/activity-card';
+
+// Import Shoelace components
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/alert/alert.js';
+
+@customElement('activity-feed')
+export class ActivityFeed extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      width: 100%;
+    }
+
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 782px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .activity-heading {
+      line-height: 1.4;
+      color: var(--sl-color-neutral-900);
+      margin: 0;
+    }
+
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      gap: 1rem;
+      color: var(--sl-color-neutral-600);
+    }
+
+    .empty-state {
+      padding: 1rem;
+      color: var(--sl-color-neutral-600);
+      font-style: italic;
+    }
+  `;
+
+  @property() userId!: string;
+  @property() userName!: string;
+  private readonly activities = new Task(this, {
+    task: async () => {
+      const result = await urqlClient.query(UserActivityDocument, {
+        userId: this.userId,
+        first: 10, // Increase the number of items to fetch
+      });
+
+      if (result.data) {
+        const allActivities = [
+          ...result.data.ideasFunded.map((item) => ({
+            type: 'ideaFunded',
+            userName: this.userName,
+            contribution: item.contribution,
+            idea: {
+              id: item.idea.id,
+              name: item.idea.name || 'Unnamed Idea',
+              creator: { id: item.idea.creator.id },
+              description: item.idea.description,
+            },
+            time: item.idea.startTime,
+            funderReward: item.idea.funderReward,
+          })),
+          ...result.data.solutionsFunded.map((item) => ({
+            type: 'solutionFunded',
+            contribution: item.contribution,
+            solution: {
+              id: item.solution.id,
+              description: item.solution.info,
+            },
+            displayName: item.solution.id,
+            time: item.solution.startTime,
+            description: item.solution.info,
+            deadline: item.solution.deadline,
+            fundingGoal: item.solution.fundingGoal,
+            tokensContributed: item.solution.tokensContributed,
+            stake: item.solution.stake,
+            funderReward: item.solution.funderReward,
+          })),
+          ...result.data.solutionsDrafted.map((item) => ({
+            type: 'solutionDrafted',
+            solution: {
+              id: item.id,
+              description: item.info,
+            },
+            displayName: item.id,
+            time: item.startTime,
+            description: item.info,
+            deadline: item.deadline,
+            fundingGoal: item.fundingGoal,
+            tokensContributed: item.tokensContributed,
+            stake: item.stake,
+            funderReward: item.funderReward,
+          })),
+        ];
+
+        // Sort by time in descending order (newest first)
+        allActivities.sort((a, b) => {
+          const timeA = new Date(a.time).getTime();
+          const timeB = new Date(b.time).getTime();
+          return timeB - timeA;
+        });
+
+        return allActivities;
+      }
+      return [];
+    },
+    // Re-run when userId changes
+    args: () => [this.userId],
+  });
+
+  render() {
+    return html`
+      <div class="activity-feed">
+        <h2 class="activity-heading">Activity</h2>
+
+        ${this.activities.render({
+          pending: () => html`
+            <div class="loading-container">
+              <sl-spinner style="font-size: 2rem;"></sl-spinner>
+              <div>Loading activities...</div>
+            </div>
+          `,
+          error: (error) => html`
+            <sl-alert variant="danger" open>
+              <strong>Error loading activities:</strong>
+              ${error instanceof Error ? error.message : 'Unknown error'}
+            </sl-alert>
+          `,
+          complete: (activities) => {
+            if (!activities || activities.length === 0) {
+              return html`
+                <div class="empty-state">
+                  No activities found for this user.
+                </div>
+              `;
+            }
+
+            return html`
+              <div class="activity-list">
+                ${activities.map(
+                  (activity) => html`
+                    <activity-card .activity=${activity}></activity-card>
+                  `
+                )}
+              </div>
+            `;
+          },
+        })}
+      </div>
+    `;
+  }
+}

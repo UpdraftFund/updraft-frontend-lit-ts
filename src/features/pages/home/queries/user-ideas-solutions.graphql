@@ -1,0 +1,33 @@
+query UserIdeasSolutions($userId: String!) {
+  # Ideas funded by the user
+  fundedIdeas: ideaContributions(
+    where: { funder: $userId }
+    orderBy: createdTime
+    orderDirection: desc
+  ) {
+    idea {
+      id
+      name
+    }
+  }
+  
+  # Solutions created by the user
+  createdSolutions: solutions(
+    where: { drafter: $userId }
+    orderBy: startTime
+    orderDirection: desc
+  ) {
+    id
+  }
+  
+  # Solutions funded by the user
+  fundedSolutions: solutionContributions(
+    where: { funder: $userId }
+    orderBy: createdTime
+    orderDirection: desc
+  ) {
+    solution {
+      id
+    }
+  }
+}

@@ -1,0 +1,56 @@
+query TrackedChanges(
+  $ideaIds: [String!]
+  $solutionIds: [Bytes!]
+  $since: BigInt!
+) {
+  # Get new supporters for the ideas
+  newSupporters: ideaContributions(
+    where: { idea_in: $ideaIds, createdTime_gt: $since }
+    orderBy: createdTime
+    orderDirection: desc
+  ) {
+    idea {
+      id
+      name
+    }
+    funder {
+      id
+      profile
+    }
+    createdTime
+  }
+
+  # Get new solutions for the ideas
+  newSolutions: solutions(
+    where: { idea_in: $ideaIds, startTime_gt: $since }
+    orderBy: startTime
+    orderDirection: desc
+  ) {
+      ...SolutionFieldsDetailed
+  }
+
+  # Get updated solutions
+  solutionUpdated: solutions(
+    where: { id_in: $solutionIds, modifiedTime_gt: $since }
+    orderBy: modifiedTime
+    orderDirection: desc
+  ) {
+    ...SolutionFields
+  }
+
+  # Get new funders for solutions
+  newFunders: solutionContributions(
+    where: { solution_: { id_in: $solutionIds }, createdTime_gt: $since }
+    orderBy: createdTime
+    orderDirection: desc
+  ) {
+    solution {
+      ...SolutionFields
+    }
+    funder {
+      id
+      profile
+    }
+    createdTime
+  }
+}

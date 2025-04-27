@@ -1,186 +1,152 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { provide } from '@lit/context';
 import { Router } from '@lit-labs/router';
-import { Task } from '@lit/task';
-import { getBalance } from '@wagmi/core'
-import { formatUnits, fromHex } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
+
+import '@layout/app-layout';
 
 import '@shoelace-style/shoelace/dist/themes/light.css';
-import '@styles/reset.css';
+import '@shoelace-style/shoelace/dist/themes/dark.css';
 import '@styles/global.css';
 import '@styles/theme.css';
+import '@styles/reset.css';
 
-import { modal, config } from '@/web3';
+import { nav } from '@state/navigation';
+import { initializeUserState } from '@state/user';
 
-import { user, connectionContext, balanceContext, RequestBalanceRefresh, updraftSettings } from '@/context';
-import { Connection, Balances, UpdraftSettings } from '@/types';
-
-import urqlClient from '@/urql-client';
-import { ProfileDocument } from '@gql';
-import { updraft } from "@contracts/updraft.ts";
-
-// @ts-ignore: Property 'UrlPattern' does not exist
-if (!globalThis.URLPattern) {
+if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
 }
 
 @customElement('my-app')
 export class MyApp extends LitElement {
-
   private router = new Router(this, [
     {
       path: '/',
       enter: async () => {
-        await import('./pages/home-page');
+        await import('@pages/home-page');
+        nav.set('home');
         return true;
       },
-      render: () => html`
-        <home-page></home-page>`
+      render: () => html` <home-page></home-page>`,
     },
     {
       path: '/discover',
       enter: async () => {
-        await import('./pages/discover-page');
+        await import('@pages/discover-page');
+        nav.set('discover');
         return true;
       },
       render: () => {
-        const params = new URLSearchParams(window.location.search);
-        const search = params.get('search');
-        const tab = params.get('tab') || (search ? 'search' : null);
-        return html`<discover-page .search=${search} .tab=${tab}></discover-page>`
-      }
+        return html` <discover-page></discover-page>`;
+      },
     },
     {
       path: '/idea/:id',
       enter: async () => {
-        await import('./pages/idea-page');
+        await import('@pages/idea-page');
+        nav.set('idea');
         return true;
       },
-      render: ({ id }) => html`
-        <idea-page .ideaId=${id}></idea-page>`
+      render: ({ id }) =>
+        html` <idea-page .ideaId=${id as string}></idea-page>`,
     },
     {
       path: '/create-idea',
       enter: async () => {
-        await import('./pages/create-idea');
+        await import('@pages/create-idea');
+        nav.set('create-idea');
         return true;
       },
-      render: () => html`
-        <create-idea></create-idea>`
+      render: () => html` <create-idea></create-idea>`,
     },
     {
       path: '/edit-profile',
       enter: async () => {
-        await import('./pages/edit-profile');
+        await import('@pages/edit-profile');
+        nav.set('edit-profile');
         return true;
       },
-      render: () => html`
-        <edit-profile></edit-profile>`
+      render: () => html` <edit-profile></edit-profile>`,
     },
     {
       path: '/submit-profile-and-create-:entity',
       enter: async () => {
-        await import('./pages/edit-profile');
+        await import('@pages/edit-profile');
+        nav.set('edit-profile');
         return true;
       },
-      render: ({ entity }) => html`
-        <edit-profile .entity=${entity}></edit-profile>`
+      render: ({ entity }) =>
+        html` <edit-profile .entity=${entity}></edit-profile>`,
     },
     {
       path: '/profile/:address',
       enter: async () => {
-        await import('./pages/view-profile');
+        await import('@pages/view-profile');
+        nav.set('view-profile');
         return true;
       },
-      render: ({ address }) => html`
-        <view-profile .address=${address}></view-profile>`
+      render: ({ address }) =>
+        html` <view-profile .address=${address as string}></view-profile>`,
+    },
+    {
+      path: '/create-solution/:ideaId',
+      enter: async () => {
+        await import('@pages/create-solution');
+        nav.set('create-solution');
+        return true;
+      },
+      render: ({ ideaId }) => {
+        return html` <create-solution
+          .ideaId=${ideaId as string}
+        ></create-solution>`;
+      },
+    },
+    {
+      path: '/create-solution-two/:ideaId',
+      enter: async () => {
+        await import('@pages/create-solution-page-two');
+        nav.set('create-solution-two');
+        return true;
+      },
+      render: ({ ideaId }) => {
+        return html` <create-solution-page-two
+          .ideaId=${ideaId as string}
+        ></create-solution-page-two>`;
+      },
     },
   ]);
 
-  @provide({ context: connectionContext }) connection: Connection = { connected: false };
-  @provide({ context: balanceContext }) balances: Balances = {};
-  @provide({ context: updraftSettings }) updraftSettings!: UpdraftSettings;
-
-  constructor() {
-    super();
-
-    modal.subscribeAccount(async ({ isConnected, address }) => {
-      if (address) {
-        this.connection.address = address as `0x${string}`;
-        const result = await urqlClient.query(ProfileDocument, { userId: address });
-        let profile = {} as { name: string, team: string, image: string };
-        if (result.data?.user?.profile) {
-          profile = JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
-        }
-        user.set({
-          name: profile.name || profile.team || address,
-          image: profile.image,
-          avatar: profile.image || makeBlockie(address),
-        });
-      }
-      this.connection = {
-        ...this.connection,
-        connected: isConnected,
-      };
-    });
-
-    modal.subscribeNetwork(({ caipNetwork }) => {
-      this.connection = {
-        ...this.connection,
-        network: {
-          name: caipNetwork!.name,
-        }
-      };
-      this.getUpdraftSettings.run().then(() =>
-        this.refreshBalances.run());
-    });
-
-    this.addEventListener(RequestBalanceRefresh.type, () => this.refreshBalances.run());
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.setupTheme();
+    // Initialize user state including reconnect attempt
+    initializeUserState();
   }
 
-  public refreshBalances = new Task(this, {
-    task: async () => {
-      if (this.connection.address) {
-        const gasToken = await getBalance(config, { address: this.connection.address });
-        const updraftToken = await getBalance(config, {
-          address: this.connection.address,
-          token: this.updraftSettings.updAddress,
-        });
-        this.balances = {
-          gas: {
-            symbol: gasToken.symbol,
-            balance: gasToken.formatted,
-          },
-          updraft: {
-            symbol: updraftToken.symbol,
-            balance: updraftToken.formatted,
-          }
-        }
-      }
-    },
-    autoRun: false,
-  });
+  private setupTheme() {
+    // Initial theme setup based on user preference
+    const prefersDark = window.matchMedia?.(
+      '(prefers-color-scheme: dark)'
+    ).matches;
+    this.applyTheme(prefersDark);
 
-  public getUpdraftSettings = new Task(this, {
-    task: async () => {
-      const percentScaleBigInt = await updraft.read('percentScale') as bigint;
-      const minFee = await updraft.read('minFee') as bigint;
-      const percentFee = await updraft.read('percentFee') as bigint;
-      const percentScale = Number(percentScaleBigInt);
-      const updAddress = await updraft.read('feeToken') as `0x${string}`;
-      this.updraftSettings = {
-        percentScale,
-        updAddress,
-        percentFee: Number(percentFee) / percentScale,
-        minFee: Number(formatUnits(minFee, 18)),
-      };
-    },
-    autoRun: false,
-  });
+    // Listen for changes in color scheme preference
+    window
+      .matchMedia('(prefers-color-scheme: dark)')
+      .addEventListener('change', (e) => {
+        this.applyTheme(e.matches);
+      });
+  }
 
-  render = () => this.router.outlet();
+  private applyTheme(isDark: boolean) {
+    // Apply the appropriate theme class to the document (root) element
+    document.documentElement.classList.toggle('sl-theme-dark', isDark);
+    document.documentElement.classList.toggle('sl-theme-light', !isDark);
+  }
+
+  render() {
+    return html` <app-layout> ${this.router.outlet()}</app-layout> `;
+  }
 }
 
 declare global {

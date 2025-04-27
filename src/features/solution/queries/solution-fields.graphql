@@ -1,0 +1,12 @@
+fragment SolutionFields on Solution {
+    id
+    startTime
+    deadline
+    tokensContributed
+    fundingGoal
+    fundingToken
+    stake
+    info
+    funderReward
+    progress
+}
