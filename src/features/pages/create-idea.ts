@@ -149,13 +149,17 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
 
-  render() {
+  connectedCallback() {
+    super.connectedCallback();
     layout.topBarContent.set(html`
       <page-heading>Create a new Idea</page-heading>
     `);
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
+  }
+
+  render() {
     return html`
       <div class="container">
         <main>
