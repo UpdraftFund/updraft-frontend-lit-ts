@@ -266,29 +266,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.setTabFromUrl();
-    window.addEventListener('popstate', this.setTabFromUrl);
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-
-    // Listen for URL changes that aren't caught by popstate
-    // This is needed for when users click on tags in idea cards
-    this._handleUrlChange = this._handleUrlChange.bind(this);
-    this._setupUrlChangeListener();
-  }
-
-  disconnectedCallback() {
-    window.removeEventListener('popstate', this.setTabFromUrl);
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-    this._teardownUrlChangeListener();
-    this.unsubscribeQuery?.();
-    super.disconnectedCallback();
-  }
-
   private _lastUrl = window.location.href;
   private _urlChangeInterval?: number;
 
@@ -323,7 +300,9 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   };
 
-  render() {
+  connectedCallback() {
+    super.connectedCallback();
+    this.setTabFromUrl();
     layout.topBarContent.set(html`
       <create-idea-button></create-idea-button>
       <div>
@@ -337,7 +316,27 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
     `);
+    window.addEventListener('popstate', this.setTabFromUrl);
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
 
+    // Listen for URL changes that aren't caught by popstate
+    // This is needed for when users click on tags in idea cards
+    this._handleUrlChange = this._handleUrlChange.bind(this);
+    this._setupUrlChangeListener();
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('popstate', this.setTabFromUrl);
+    document.removeEventListener(
+      'visibilitychange',
+      this.handleVisibilityChange
+    );
+    this._teardownUrlChangeListener();
+    this.unsubscribeQuery?.();
+    super.disconnectedCallback();
+  }
+
+  render() {
     return html`
       <div class="container">
         <main>

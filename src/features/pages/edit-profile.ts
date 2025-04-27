@@ -362,7 +362,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           >
             <img
               slot="prefix"
-              .src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
+              src=${`https://www.google.com/s2/favicons?domain=${link.value || '.'}&sz=16`}
               @error=${(e: Event) => this.handleImageError(e)}
               alt="Logo for ${link.value}"
               width="16px"
@@ -381,18 +381,9 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     );
   }
 
-  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
-    super.firstUpdated(changedProperties);
-    this.resetLinksFromSavedForm();
-  }
-
-  render() {
-    // Get current profile and address from signals
-    const profile = userProfile.get();
+  connectedCallback() {
+    super.connectedCallback();
     const address = userAddress.get();
-    const avatar = profile?.avatar;
-    this.resetLinksFromProfile();
-
     layout.topBarContent.set(
       html` <page-heading>Edit Your Profile</page-heading>`
     );
@@ -401,10 +392,20 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     layout.rightSidebarContent.set(
       html` <activity-feed
         .userId=${address}
-        .userName=${profile?.name}
+        .userName=${'You'}
       ></activity-feed>`
     );
+  }
 
+  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
+    super.firstUpdated(changedProperties);
+    this.resetLinksFromSavedForm();
+  }
+
+  render() {
+    const profile = userProfile.get();
+    const avatar = profile?.avatar;
+    this.resetLinksFromProfile();
     return html`
       <form
         name="edit-profile"

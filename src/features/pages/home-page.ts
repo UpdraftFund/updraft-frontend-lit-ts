@@ -26,7 +26,8 @@ export class HomePage extends LitElement {
     }
   `;
 
-  render() {
+  connectedCallback() {
+    super.connectedCallback();
     layout.topBarContent.set(html`
       <create-idea-button></create-idea-button>
       <search-bar></search-bar>
@@ -38,6 +39,9 @@ export class HomePage extends LitElement {
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
     `);
+  }
+
+  render() {
     return html`
       <tracked-changes></tracked-changes>
       <beginner-tasks></beginner-tasks>

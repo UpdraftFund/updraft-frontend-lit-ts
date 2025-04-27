@@ -183,7 +183,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       return html`
         ${this.followStatus.render({
           pending: () =>
-            html`<sl-button variant="primary" disabled>Loading...</sl-button>`,
+            html` <sl-button variant="primary" disabled>Loading...</sl-button>`,
           complete: (isFollowing) => {
             if (isFollowing) {
               return html` <sl-button
@@ -205,7 +205,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
             }
           },
           error: () =>
-            html`<sl-button variant="primary" disabled>Error</sl-button>`,
+            html` <sl-button variant="primary" disabled>Error</sl-button>`,
         })}
       `;
     }
@@ -242,6 +242,16 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     imgElement.src = '/src/assets/icons/link-45deg.svg'; // Fallback icon
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    layout.topBarContent.set(html`
+      <create-idea-button></create-idea-button>
+      <search-bar></search-bar>
+    `);
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(true);
+  }
+
   updated(changedProperties: Map<string, unknown>) {
     // If the address changes, re-run the profile and follow status tasks
     if (changedProperties.has('address')) {
@@ -251,24 +261,18 @@ export class ViewProfile extends SignalWatcher(LitElement) {
   }
 
   render() {
-    layout.topBarContent.set(html`
-      <create-idea-button></create-idea-button>
-      <search-bar></search-bar>
-    `);
-    layout.showLeftSidebar.set(true);
-    layout.showRightSidebar.set(true);
-    layout.rightSidebarContent.set(
-      html` <activity-feed
-        .userId=${this.address}
-        .userName=${this.profile.value?.name}
-      ></activity-feed>`
-    );
     return html`
       <main>
         ${this.profile.render({
           pending: () => html`<p>Loading profile...</p>`,
           complete: (value) => {
             const { name, team, image, about, news, links } = value || {};
+            layout.rightSidebarContent.set(
+              html` <activity-feed
+                .userId=${this.address}
+                .userName=${this.profile.value?.name}
+              ></activity-feed>`
+            );
             return html`
               <div class="profile-header">
                 <user-avatar

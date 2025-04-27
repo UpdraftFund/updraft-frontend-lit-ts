@@ -1,6 +1,7 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
+import { Subscription } from 'wonka';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -23,9 +24,8 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
-import { IdeaDocument } from '@gql';
-import urqlClient from '@utils/urql-client';
 import { getBalance, refreshBalances } from '@state/user/balances';
+import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
 
 @customElement('create-solution-page-two')
 export class CreateSolution extends SignalWatcher(SaveableForm) {
@@ -44,6 +44,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   @state() private antiSpamFee?: string;
 
   private resizeObserver!: ResizeObserver;
+  private unsubHeading?: Subscription;
 
   static styles = [
     dialogStyles,
@@ -159,23 +160,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     `,
   ];
 
-  private readonly addIdeaToHeading = async () => {
-    if (this.ideaId) {
-      const result = await urqlClient.query(IdeaDocument, {
-        ideaId: this.ideaId,
-      });
-      const ideaData = result.data?.idea;
-      if (ideaData) {
-        layout.topBarContent.set(html`
-          <page-heading
-            >Create a new Solution
-            <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
-          </page-heading>
-        `);
-      }
-    }
-  };
-
   private handleDepositFocus() {
     refreshBalances();
   }
@@ -256,10 +240,16 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     }
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(false);
+    layout.rightSidebarContent.set(html``);
+    this.unsubHeading = createSolutionHeading(this.ideaId);
+  }
+
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
-
-    this.addIdeaToHeading();
 
     this.rewardRange.tooltipFormatter = (value: number) => `${value}%`;
     this.rewardRange.defaultValue = 25;
@@ -270,19 +260,11 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     this.resizeObserver.observe(this.rewardRange);
   }
 
-  constructor() {
-    super();
-    layout.topBarContent.set(html`
-      <page-heading>Create a new Solution</page-heading>
-    `);
-    layout.showLeftSidebar.set(true);
-    layout.showRightSidebar.set(false);
-    layout.rightSidebarContent.set(html``);
-  }
-
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.resizeObserver?.disconnect();
+    if (this.unsubHeading) {
+      this.unsubHeading.unsubscribe();
+    }
   }
 
   render() {

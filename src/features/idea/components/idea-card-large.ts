@@ -29,7 +29,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
       overflow: hidden;
       padding: 1.5rem;
       width: 100%;
-      border-top: 1px solid var(--border-default);
+      border-bottom: 1px solid var(--border-default);
     }
 
     .idea-header {
