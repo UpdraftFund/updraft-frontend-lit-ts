@@ -7,7 +7,14 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
-import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
+import '@shoelace-style/shoelace/dist/components/select/select.js';
+import '@shoelace-style/shoelace/dist/components/option/option.js';
+import type {
+  SlDialog,
+  SlInput,
+  SlRange,
+  SlSelect,
+} from '@shoelace-style/shoelace';
 import { SaveableForm } from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
@@ -26,6 +33,7 @@ import '@components/common/label-with-hint';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
+import { ethAddressPattern } from '@utils/validation';
 
 @customElement('create-solution-page-two')
 export class CreateSolution extends SignalWatcher(SaveableForm) {
@@ -39,8 +47,15 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
+  @query('input[name="fundingToken"]', true)
+  fundingTokenInput!: HTMLInputElement;
+  @query('sl-select[name="fundingTokenSelection"]', true)
+  fundingTokenSelect!: SlSelect;
+  @query('sl-input[name="customTokenAddress"]', true)
+  customTokenInput!: SlInput;
 
   @state() private depositError: string | null = null;
+  @state() private showCustomTokenInput = false;
   @state() private antiSpamFee?: string;
 
   private resizeObserver!: ResizeObserver;
@@ -147,6 +162,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         --sl-input-focus-ring-color: red;
       }
 
+      .hidden {
+        display: none;
+      }
+
       /* Responsive behavior for smaller screens */
       @media (max-width: 768px) {
         .container {
@@ -207,17 +226,42 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     }
   }
 
-  private handleFundingTokenInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = input.value;
-
-    // Basic validation for Ethereum address format
-    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    if (!ethAddressRegex.test(value) && value !== '') {
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
+  private selectDefaultFundingToken() {
+    // After loading the saved form values, if no funding token is chosen,
+    // select the default value.
+    if (this.fundingTokenInput.value) {
+      if (this.fundingTokenSelect.value === 'custom') {
+        this.showCustomTokenInput = true;
+        this.customTokenInput.value = this.fundingTokenInput.value;
+      } else {
+        this.fundingTokenSelect.value = this.fundingTokenInput.value;
+      }
     } else {
-      input.style.removeProperty('--sl-input-focus-ring-color');
+      const updraftAddress = updraftSettings.get().updAddress;
+      this.fundingTokenSelect.value = updraftAddress;
+      this.fundingTokenInput.value = updraftAddress;
     }
+  }
+
+  private handleTokenSelection() {
+    if (this.fundingTokenSelect.value === 'custom') {
+      this.showCustomTokenInput = true;
+    } else {
+      this.showCustomTokenInput = false;
+      this.fundingTokenInput.value = this.fundingTokenSelect.value as string;
+    }
+  }
+
+  private handleCustomTokenInput(e: Event) {
+    const input = e.target as SlInput;
+
+    if (input.value === '' || ethAddressPattern.test(input.value)) {
+      input.style.removeProperty('--sl-input-focus-ring-color');
+    } else {
+      input.style.setProperty('--sl-input-focus-ring-color', 'red');
+    }
+
+    this.fundingTokenInput.value = input.value;
   }
 
   private syncRangeTooltip = () => {
@@ -258,6 +302,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
     this.resizeObserver = new ResizeObserver(this.syncRangeTooltip);
     this.resizeObserver.observe(this.rewardRange);
+
+    this.updateComplete.then(() => {
+      this.selectDefaultFundingToken();
+    });
   }
 
   disconnectedCallback() {
@@ -268,23 +316,40 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   }
 
   render() {
+    const updAddress = updraftSettings.get().updAddress;
     return html`
       <form name="create-solution-two" @submit=${this.handleFormSubmit}>
         <h2>Funding details</h2>
 
         <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
-        <sl-input
-          name="fundingToken"
+        <input type="hidden" name="fundingToken" />
+
+        <sl-select
+          name="fundingTokenSelection"
           required
-          autocomplete="off"
-          @input=${this.handleFundingTokenInput}
-          placeholder="0x..."
+          @sl-change=${this.handleTokenSelection}
         >
           <label-with-hint
             slot="label"
             label="Funding Token*"
-            hint="The address of the token you want to use to fund your solution"
+            hint="The token you want to use to fund your solution"
+          ></label-with-hint>
+          <sl-option value="${updAddress}">UPD</sl-option>
+          <sl-option value="custom">Custom Token Address</sl-option>
+        </sl-select>
+
+        <sl-input
+          name="customTokenAddress"
+          class=${this.showCustomTokenInput ? '' : 'hidden'}
+          pattern=${ethAddressPattern}
+          placeholder="0x..."
+          @input=${this.handleCustomTokenInput}
+        >
+          <label-with-hint
+            slot="label"
+            label="Custom Token Address*"
+            hint="Enter the address of the token you want to use"
           ></label-with-hint>
         </sl-input>
 
@@ -312,7 +377,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         <div class="deposit-container">
           <label-with-hint
             label="Stake"
-            hint="Add a stake to attract more funders. If don't reach your 
+            hint="Add a stake to attract more funders. If don't reach your
                 funding goal, this amount will be distributed to your funders."
           >
           </label-with-hint>
@@ -339,7 +404,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         <div class="reward-container">
           <label-with-hint
             label="Funder Reward"
-            hint="Allow funders to earn a % of the funds contributed by later funders. 
+            hint="Allow funders to earn a % of the funds contributed by later funders.
             A higher reward lets funders earn more but adds less to the solution fund."
           >
           </label-with-hint>

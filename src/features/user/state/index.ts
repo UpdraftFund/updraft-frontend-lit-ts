@@ -7,7 +7,7 @@ import type { Profile, CurrentUser } from '@/features/user/types';
 
 // Import the wallet connection modal
 import { modal, config } from '@utils/web3';
-import { disconnect, watchAccount, reconnect } from '@wagmi/core';
+import { disconnect, watchAccount, reconnect, watchChainId } from '@wagmi/core';
 
 // Import urqlClient for GraphQL queries
 import urqlClient from '@utils/urql-client';
@@ -83,6 +83,20 @@ export const setIsConnecting = (connecting: boolean): void => {
 
 export const setConnectionError = (error: string | null): void => {
   connectionError.set(error);
+};
+
+export const setNetwork = (chainId: number | undefined): void => {
+  if (chainId) {
+    const currentNetworkName = networkName.get();
+    const newNetworkName = chainId
+      ? (config.chains.find((chain) => chain.id === chainId)?.name ?? null)
+      : null;
+    if (currentNetworkName !== newNetworkName) {
+      setNetworkName(newNetworkName);
+      refreshUpdraftSettings();
+      refreshBalances();
+    }
+  }
 };
 
 export const setNetworkName = (name: string | null): void => {
@@ -179,20 +193,10 @@ export const cleanupProfileSubscription = (): void => {
 // Initialize listeners for wagmi state changes right after config is available
 watchAccount(config, {
   onChange(account) {
+    setNetwork(account.chainId);
+
     const currentAddress = userAddress.get();
     const newAddress = account.address ?? null;
-
-    // Update network name if changed
-    const currentNetworkName = networkName.get();
-    const chainId = account.chainId;
-    // Find the network name from the config based on chainId
-    const newNetworkName = chainId
-      ? (config.chains.find((chain) => chain.id === chainId)?.name ?? null)
-      : null;
-    if (currentNetworkName !== newNetworkName) {
-      setNetworkName(newNetworkName);
-      refreshUpdraftSettings();
-    }
 
     // Only update user address if newAddress is not null
     if (newAddress) {
@@ -207,6 +211,12 @@ watchAccount(config, {
     // Update connection status flags
     setIsConnecting(account.isConnecting);
     refreshBalances();
+  },
+});
+
+watchChainId(config, {
+  onChange(chainId) {
+    setNetwork(chainId);
   },
 });
 

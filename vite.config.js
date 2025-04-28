@@ -55,6 +55,7 @@ export default defineConfig({
         'src/features/solution/assets/icons'
       ),
       '@icons/user': resolve(__dirname, 'src/features/user/assets/icons'),
+      '@utils/common': resolve(__dirname, 'src/features/common/utils'),
       '@utils/create-solution': resolve(
         __dirname,
         'src/features/pages/create-solution/utils'
@@ -64,7 +65,7 @@ export default defineConfig({
       '@pages': resolve(__dirname, 'src/features/pages'),
       '@layout': resolve(__dirname, 'src/features/layout/components'),
       '@styles': resolve(__dirname, 'src/features/common/styles'),
-      '@utils': resolve(__dirname, 'src/lib/utils'),
+      '@utils': resolve(__dirname, 'src/features/common/utils'),
       '@contracts': resolve(__dirname, 'src/lib/contracts'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
       '@gql': resolve(__dirname, '.graphclient'),
