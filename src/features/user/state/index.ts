@@ -7,7 +7,13 @@ import type { Profile, CurrentUser } from '@/features/user/types';
 
 // Import the wallet connection modal
 import { modal, config } from '@utils/web3';
-import { disconnect, watchAccount, reconnect, watchChainId } from '@wagmi/core';
+import {
+  disconnect,
+  watchAccount,
+  reconnect,
+  watchChainId,
+  getChainId,
+} from '@wagmi/core';
 
 // Import urqlClient for GraphQL queries
 import urqlClient from '@utils/urql-client';
@@ -219,6 +225,8 @@ watchChainId(config, {
     setNetwork(chainId);
   },
 });
+
+setNetwork(getChainId(config));
 
 // --- Application Initialization --- //
 export const initializeUserState = async (): Promise<void> => {
