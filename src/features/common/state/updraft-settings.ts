@@ -8,7 +8,7 @@ export const defaultFunderRewardPct = 25;
 
 export const updraftSettings = signal<UpdraftSettings>({
   percentScale: 1000000,
-  updAddress: '0x',
+  updAddress: null,
   percentFee: 0,
   minFee: 0,
 });
