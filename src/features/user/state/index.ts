@@ -49,15 +49,13 @@ export const setUserAddress = (address: Address | null): void => {
 };
 
 export const setProfileImage = (image: string) => {
-  const profile = userProfile.get() || {};
-  userProfile.set({
-    ...profile,
+  setUserProfile({
+    ...(userProfile.get() || {}),
     image,
-    avatar: image,
   });
 };
 
-export const setUserProfile = (profile: Profile | null): void => {
+export const setUserProfile = (profile: Profile | null) => {
   if (!profile) {
     profile = {};
   }
