@@ -47,12 +47,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
-  @query('input[name="fundingToken"]', true)
-  fundingTokenInput!: HTMLInputElement;
+  @query('sl-input[name="fundingToken"]', true)
+  fundingTokenInput!: SlInput;
   @query('sl-select[name="fundingTokenSelection"]', true)
   fundingTokenSelect!: SlSelect;
-  @query('sl-input[name="customTokenAddress"]', true)
-  customTokenInput!: SlInput;
 
   @state() private depositError: string | null = null;
   @state() private showCustomTokenInput = false;
@@ -67,6 +65,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       :host {
         width: 100%;
         overflow: hidden;
+      }
+
+      h2 {
+        margin: 0 0 0.5rem;
       }
 
       form {
@@ -232,20 +234,22 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     if (this.fundingTokenInput.value) {
       if (this.fundingTokenSelect.value === 'custom') {
         this.showCustomTokenInput = true;
-        this.customTokenInput.value = this.fundingTokenInput.value;
       } else {
         this.fundingTokenSelect.value = this.fundingTokenInput.value;
       }
     } else {
       const updraftAddress = updraftSettings.get().updAddress;
-      this.fundingTokenSelect.value = updraftAddress;
-      this.fundingTokenInput.value = updraftAddress;
+      if (updraftAddress) {
+        this.fundingTokenSelect.value = updraftAddress;
+        this.fundingTokenInput.value = updraftAddress;
+      }
     }
   }
 
   private handleTokenSelection() {
     if (this.fundingTokenSelect.value === 'custom') {
       this.showCustomTokenInput = true;
+      this.fundingTokenInput.value = '';
     } else {
       this.showCustomTokenInput = false;
       this.fundingTokenInput.value = this.fundingTokenSelect.value as string;
@@ -260,8 +264,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     } else {
       input.style.setProperty('--sl-input-focus-ring-color', 'red');
     }
-
-    this.fundingTokenInput.value = input.value;
   }
 
   private syncRangeTooltip = () => {
@@ -323,11 +325,8 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
         <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
-        <input type="hidden" name="fundingToken" />
-
         <sl-select
           name="fundingTokenSelection"
-          required
           @sl-change=${this.handleTokenSelection}
         >
           <label-with-hint
@@ -340,9 +339,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         </sl-select>
 
         <sl-input
-          name="customTokenAddress"
+          name="fundingToken"
           class=${this.showCustomTokenInput ? '' : 'hidden'}
-          pattern=${ethAddressPattern}
+          pattern=${ethAddressPattern.source}
+          required
           placeholder="0x..."
           @input=${this.handleCustomTokenInput}
         >
