@@ -5,8 +5,6 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import { CurrentUser } from '@/types';
-
 import pencilSquare from '@icons/user/pencil-square.svg';
 import personCircle from '@icons/user/person-circle.svg';
 
@@ -173,15 +171,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleSubmit() {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
-      const profileData = formToJson(
-        'edit-profile',
-        profileSchema
-      ) as CurrentUser;
+      const profileData = formToJson('edit-profile', profileSchema);
 
-      const updatedProfile: CurrentUser = {
+      const updatedProfile = {
         ...profileData,
-        name: profileData.name || profileData.team,
-        avatar: profileData.image || '', // Ensure non-empty string
+        name: (profileData.name || profileData.team) as string | undefined,
+        image: userProfile.get()?.image,
       };
 
       // Update new user state with signals
@@ -190,11 +185,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       const settings = updraftSettings.get();
 
       try {
-        if (!isConnected.get()) {
-          await connectWallet();
-          return;
-        }
-
         if (this.entity === 'idea') {
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
@@ -386,18 +376,14 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
   connectedCallback() {
     super.connectedCallback();
-    const address = userAddress.get();
+    if (!isConnected.get()) {
+      connectWallet();
+    }
     layout.topBarContent.set(
       html` <page-heading>Edit Your Profile</page-heading>`
     );
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(true);
-    layout.rightSidebarContent.set(
-      html` <activity-feed
-        .userId=${address}
-        .userName=${'You'}
-      ></activity-feed>`
-    );
   }
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -406,6 +392,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   }
 
   render() {
+    layout.rightSidebarContent.set(
+      html` <activity-feed
+        .userId=${userAddress.get()}
+        .userName=${'You'}
+      ></activity-feed>`
+    );
     const profile = userProfile.get();
     const avatar = profile?.avatar;
     this.resetLinksFromProfile();
