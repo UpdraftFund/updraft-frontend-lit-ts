@@ -33,9 +33,14 @@ export const refreshBalances = async () => {
   console.log('refreshBalances: eth', ethBalance);
   let updBalance;
   try {
-    const upd = new Upd(updraftSettings.get().updAddress);
-    const rawUpd = await upd.read('balanceOf', [address]);
-    updBalance = formatUnits(rawUpd as bigint, 18);
+    const updAddress = updraftSettings.get().updAddress;
+    if (updAddress) {
+      const upd = new Upd(updAddress);
+      const rawUpd = await upd.read('balanceOf', [address]);
+      updBalance = formatUnits(rawUpd as bigint, 18);
+    } else {
+      updBalance = '0';
+    }
   } catch {
     updBalance = '0';
   }

@@ -282,13 +282,16 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           } else if (e.message.includes('exceeds balance')) {
             this.updDialog.show();
           } else if (e.message.includes('exceeds allowance')) {
-            this.approveTransaction.reset();
-            this.approveDialog.show();
-            const upd = new Upd(updraftSettings.get().updAddress);
-            this.approveTransaction.hash = await upd.write('approve', [
-              this.ideaId,
-              total,
-            ]);
+            const updAddress = updraftSettings.get().updAddress;
+            if (updAddress) {
+              this.approveTransaction.reset();
+              this.approveDialog.show();
+              const upd = new Upd(updAddress);
+              this.approveTransaction.hash = await upd.write('approve', [
+                this.ideaId,
+                total,
+              ]);
+            }
           }
         }
         console.error(e);

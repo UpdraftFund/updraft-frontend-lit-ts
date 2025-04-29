@@ -256,7 +256,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             await connectWallet();
           } else if (e.message?.includes('exceeds balance')) {
             this.updDialog.show();
-          } else if (e.message?.includes('exceeds allowance')) {
+          } else if (
+            e.message?.includes('exceeds allowance') &&
+            settings.updAddress
+          ) {
             this.approveTransaction.reset();
             this.approveDialog.show();
 
