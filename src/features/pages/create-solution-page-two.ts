@@ -54,7 +54,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
   @state() private depositError: string | null = null;
   @state() private showCustomTokenInput = false;
-  @state() private antiSpamFee?: string;
 
   private resizeObserver!: ResizeObserver;
   private unsubHeading?: Subscription;
@@ -206,14 +205,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     } else {
       input.classList.remove('invalid');
     }
-
-    let fee;
-    if (isNaN(value)) {
-      fee = minFee;
-    } else {
-      fee = Math.max(minFee, value * updraftSettings.get().percentFee);
-    }
-    this.antiSpamFee = fee.toFixed(2);
   }
 
   private handleGoalInput(e: Event) {
@@ -228,7 +219,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     }
   }
 
-  private selectDefaultFundingToken() {
+  private setDefaultFundingToken() {
     // After loading the saved form values, if no funding token is chosen,
     // select the default value.
     if (this.fundingTokenInput.value) {
@@ -306,7 +297,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     this.resizeObserver.observe(this.rewardRange);
 
     this.updateComplete.then(() => {
-      this.selectDefaultFundingToken();
+      this.setDefaultFundingToken();
     });
   }
 
@@ -319,6 +310,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
   render() {
     const updAddress = updraftSettings.get().updAddress;
+    const fee = updraftSettings.get().minFee;
     return html`
       <form name="create-solution-two" @submit=${this.handleFormSubmit}>
         <h2>Funding details</h2>
@@ -376,7 +368,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
         <div class="deposit-container">
           <label-with-hint
-            label="Stake"
+            label="Stake, anti-spam fee"
             hint="Add a stake to attract more funders. If don't reach your
                 funding goal, this amount will be distributed to your funders."
           >
@@ -393,9 +385,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
             <sl-button variant="primary" @click=${() => this.updDialog.show()}
               >Get more UPD
             </sl-button>
-            ${this.antiSpamFee
-              ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-              : ''}
+            <span>Anti-Spam Fee: ${fee} UPD</span>
           </div>
           ${this.depositError
             ? html` <div class="error">${this.depositError}</div>`
