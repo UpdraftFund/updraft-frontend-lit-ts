@@ -266,17 +266,24 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
   private async handleSubmitSuccess(t: TransactionSuccess) {
     if (this.entity) {
-      const address = t.receipt?.logs?.[0]?.topics?.[1];
-      if (address) {
-        if (this.entity === 'idea') {
+      let show;
+      if (this.entity === 'idea') {
+        const address = t.receipt?.logs?.[0]?.topics?.[1];
+        if (address) {
           this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
           this.shareDialog.action = 'created an Idea';
-        } else if (this.entity === 'solution') {
-          const params = new URLSearchParams(window.location.search);
-          const ideaId = params.get('ideaId');
-          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${ideaId}`;
-          this.shareDialog.action = 'created a Solution';
+          show = true;
         }
+      } else if (this.entity === 'solution') {
+        const address = t.receipt?.logs?.[1]?.topics?.[1];
+        const ideaId = t.receipt?.logs?.[1]?.topics?.[3];
+        if (address && ideaId) {
+          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${trim(ideaId)}`;
+          this.shareDialog.action = 'created a Solution';
+          show = true;
+        }
+      }
+      if (show) {
         this.shareDialog.show();
       }
     }
