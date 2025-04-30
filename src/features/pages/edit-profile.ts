@@ -49,6 +49,7 @@ import { updraftSettings } from '@state/common';
 import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
+import { Profile } from '@/types/user/profile';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -171,16 +172,13 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleSubmit() {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
-      const profileData = formToJson('edit-profile', profileSchema);
-
-      const updatedProfile = {
-        ...profileData,
-        name: (profileData.name || profileData.team) as string | undefined,
+      const profileData = {
+        ...formToJson('edit-profile', profileSchema),
         image: userProfile.get()?.image,
-      };
+      } as Profile;
 
       // Update new user state with signals
-      setUserProfile(updatedProfile);
+      setUserProfile(profileData);
 
       const settings = updraftSettings.get();
 
