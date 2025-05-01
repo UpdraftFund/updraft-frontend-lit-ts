@@ -284,7 +284,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                     ? html` <h1 class="name">${name || team}</h1>`
                     : ''}
                   <div class="address">${this.address}</div>
-                  ${team ? html` <div class="team">${team}</div>` : ''}
+                  ${team && name ? html` <div class="team">${team}</div>` : ''}
                 </div>
               </div>
 
