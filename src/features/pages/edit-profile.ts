@@ -5,8 +5,6 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import { CurrentUser } from '@/types';
-
 import pencilSquare from '@icons/user/pencil-square.svg';
 import personCircle from '@icons/user/person-circle.svg';
 
@@ -51,6 +49,7 @@ import { updraftSettings } from '@state/common';
 import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
+import { Profile } from '@/types/user/profile';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -173,28 +172,17 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleSubmit() {
     // Don't allow overlapping transactions
     if (this.submitTransaction.transactionTask.status !== TaskStatus.PENDING) {
-      const profileData = formToJson(
-        'edit-profile',
-        profileSchema
-      ) as CurrentUser;
-
-      const updatedProfile: CurrentUser = {
-        ...profileData,
-        name: profileData.name || profileData.team,
-        avatar: profileData.image || '', // Ensure non-empty string
-      };
+      const profileData = {
+        ...formToJson('edit-profile', profileSchema),
+        image: userProfile.get()?.image,
+      } as Profile;
 
       // Update new user state with signals
-      setUserProfile(updatedProfile);
+      setUserProfile(profileData);
 
       const settings = updraftSettings.get();
 
       try {
-        if (!isConnected.get()) {
-          await connectWallet();
-          return;
-        }
-
         if (this.entity === 'idea') {
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
@@ -276,17 +264,24 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
   private async handleSubmitSuccess(t: TransactionSuccess) {
     if (this.entity) {
-      const address = t.receipt?.logs?.[0]?.topics?.[1];
-      if (address) {
-        if (this.entity === 'idea') {
+      let show;
+      if (this.entity === 'idea') {
+        const address = t.receipt?.logs?.[0]?.topics?.[1];
+        if (address) {
           this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
           this.shareDialog.action = 'created an Idea';
-        } else if (this.entity === 'solution') {
-          const params = new URLSearchParams(window.location.search);
-          const ideaId = params.get('ideaId');
-          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${ideaId}`;
-          this.shareDialog.action = 'created a Solution';
+          show = true;
         }
+      } else if (this.entity === 'solution') {
+        const address = t.receipt?.logs?.[1]?.topics?.[1];
+        const ideaId = t.receipt?.logs?.[1]?.topics?.[3];
+        if (address && ideaId) {
+          this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${trim(ideaId)}`;
+          this.shareDialog.action = 'created a Solution';
+          show = true;
+        }
+      }
+      if (show) {
         this.shareDialog.show();
       }
     }
@@ -386,18 +381,14 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
   connectedCallback() {
     super.connectedCallback();
-    const address = userAddress.get();
+    if (!isConnected.get()) {
+      connectWallet();
+    }
     layout.topBarContent.set(
       html` <page-heading>Edit Your Profile</page-heading>`
     );
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(true);
-    layout.rightSidebarContent.set(
-      html` <activity-feed
-        .userId=${address}
-        .userName=${'You'}
-      ></activity-feed>`
-    );
   }
 
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
@@ -406,6 +397,12 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   }
 
   render() {
+    layout.rightSidebarContent.set(
+      html` <activity-feed
+        .userId=${userAddress.get()}
+        .userName=${'You'}
+      ></activity-feed>`
+    );
     const profile = userProfile.get();
     const avatar = profile?.avatar;
     this.resetLinksFromProfile();
