@@ -23,7 +23,7 @@ import './goal-reached-card';
 import './goal-failed-card';
 
 import { TrackedChangesDocument, UserIdeasSolutionsDocument } from '@gql';
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
 import { TrackedChangesManager } from '@utils/home/tracked-changes-manager';
 
 import { since } from '@state/user/tracked-changes';
@@ -91,8 +91,8 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
   @state() private loading = false;
   @state() private error: Error | null = null;
-  @state() private ideaIds: string[] = [];
-  @state() private solutionIds: string[] = [];
+  @state() private ideaIds: `0x${string}`[] = [];
+  @state() private solutionIds: `0x${string}`[] = [];
   @state() private isRefreshing = false;
   @state() private target: number = 10;
 
@@ -107,89 +107,36 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     return this.ideaIds.length > 0 || this.solutionIds.length > 0;
   }
 
-  private trackedChangesSub: { unsubscribe: () => void } | null = null;
-  private changesFromIdsSub: { unsubscribe: () => void } | null = null;
-
   // Track the current user address to detect changes
   private lastAddress: string | null = null;
 
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubAll();
-    } else {
-      const currentAddress = userAddress.get();
-      if (currentAddress) {
-        this.subToTrackedChanges(currentAddress);
+  // Controller for fetching user ideas and solutions
+  private readonly userIdeasSolutionsController = new UrqlQueryController(
+    this,
+    UserIdeasSolutionsDocument,
+    { userId: userAddress.get() || '' },
+    (result) => {
+      if (result.error) {
+        console.error('Error fetching user ideas and solutions:', result.error);
+        this.ideaIds = [];
+        this.solutionIds = [];
+        this.loading = false;
+        this.changesManager.clear();
+        return;
       }
-    }
-  };
 
-  private unsubAll() {
-    if (this.changesFromIdsSub) {
-      this.changesFromIdsSub.unsubscribe();
-      this.changesFromIdsSub = null;
-    }
-
-    if (this.trackedChangesSub) {
-      this.trackedChangesSub.unsubscribe();
-      this.trackedChangesSub = null;
-    }
-  }
-
-  private checkForAddressChangeAndSubscribe() {
-    const currentUserAddress = userAddress.get();
-    if (this.lastAddress !== currentUserAddress) {
-      this.lastAddress = currentUserAddress;
-      this.subToTrackedChanges(currentUserAddress);
-    }
-  }
-
-  private subToTrackedChanges(address: `0x${string}` | null) {
-    // Clean up previous subscription if it exists
-    if (this.trackedChangesSub) {
-      this.trackedChangesSub.unsubscribe();
-      this.trackedChangesSub = null;
-    }
-
-    if (!address) {
-      this.loading = false;
-      this.ideaIds = [];
-      this.solutionIds = [];
-      this.changesManager.clear();
-      return;
-    }
-
-    this.loading = true;
-
-    console.log('Subscribing to ideas and solutions for user:', address);
-
-    this.trackedChangesSub = urqlClient
-      .query(UserIdeasSolutionsDocument, {
-        userId: address,
-      })
-      .subscribe((result) => {
-        if (result.error) {
-          console.error(
-            'Error fetching user ideas and solutions:',
-            result.error
-          );
-          this.ideaIds = [];
-          this.solutionIds = [];
-          this.subToChangesFromIds();
-          return;
-        }
-
+      if (result.data) {
         // Extract idea IDs
         const extractedIdeaIds =
-          result.data?.fundedIdeas?.map(
+          result.data.fundedIdeas?.map(
             (contribution) => contribution.idea.id
           ) || [];
 
         // Extract and combine solution IDs
         const createdSolutionIds =
-          result.data?.createdSolutions?.map((solution) => solution.id) || [];
+          result.data.createdSolutions?.map((solution) => solution.id) || [];
         const fundedSolutionIds =
-          result.data?.fundedSolutions?.map(
+          result.data.fundedSolutions?.map(
             (contribution) => contribution.solution.id
           ) || [];
 
@@ -203,119 +150,142 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         this.ideaIds = extractedIdeaIds;
         this.solutionIds = uniqueSolutionIds;
 
-        this.subToChangesFromIds();
-      });
-  }
-
-  private subToChangesFromIds() {
-    // Clear existing changes
-    this.changesManager.clear();
-
-    // Clean up any existing subscription
-    if (this.changesFromIdsSub) {
-      this.changesFromIdsSub.unsubscribe();
-      this.changesFromIdsSub = null;
+        this.fetchTrackedChanges();
+      }
     }
+  );
 
+  // Controller for fetching tracked changes
+  private readonly trackedChangesController = new UrqlQueryController(
+    this,
+    TrackedChangesDocument,
+    {
+      ideaIds: [] as `0x${string}`[],
+      solutionIds: [] as `0x${string}`[],
+      since: since.get(),
+    },
+    (result) => {
+      this.loading = false;
+      console.log('Tracked changes query result:', result);
+
+      if (result.error) {
+        this.error = new Error(result.error.message);
+        return;
+      }
+
+      if (result.data) {
+        // Clear existing changes before processing new ones
+        this.changesManager.clear();
+
+        // Process new supporters for ideas you funded
+        result.data.newSupporters.forEach((item) => {
+          this.changesManager.addChange({
+            type: 'newSupporter',
+            time: Number(item.createdTime) * 1000,
+            idea: item.idea,
+            supporters: [
+              {
+                id: item.funder.id,
+                profile: item.funder.profile,
+              },
+            ],
+          });
+        });
+
+        // Process new solutions for your ideas
+        result.data.newSolutions.forEach((item) => {
+          this.changesManager.addChange({
+            type: 'newSolution',
+            time: Number(item.startTime) * 1000,
+            solution: item,
+          });
+        });
+
+        // Process updates to solutions you created or funded
+        result.data.solutionUpdated.forEach((item) => {
+          const now = dayjs();
+          const deadlineDate = dayjs(Number(item.deadline) * 1000);
+          const progressBigInt = BigInt(item.tokensContributed || '0');
+          const goalBigInt = BigInt(item.fundingGoal || '0');
+
+          // Check if the goal was reached
+          if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
+            this.changesManager.addChange({
+              type: 'goalReached',
+              time: Number(item.startTime) * 1000,
+              solution: item,
+            });
+          }
+          // Check if the deadline has passed and goal wasn't reached
+          else if (now.isAfter(deadlineDate) && progressBigInt < goalBigInt) {
+            this.changesManager.addChange({
+              type: 'goalFailed',
+              time: Number(item.startTime) * 1000,
+              solution: item,
+            });
+          }
+          // Otherwise it's just a regular update
+          else {
+            this.changesManager.addChange({
+              type: 'solutionUpdated',
+              time: Number(item.startTime) * 1000,
+              solution: item,
+            });
+          }
+        });
+
+        // Process new funders for solutions you created or funded
+        result.data.newFunders.forEach((item) => {
+          this.changesManager.addChange({
+            type: 'newFunder',
+            time: Number(item.createdTime) * 1000,
+            solution: item.solution,
+            funders: [
+              {
+                id: item.funder?.id || '',
+                profile: item.funder.profile,
+              },
+            ],
+          });
+        });
+      }
+    }
+  );
+
+  // Method to fetch tracked changes based on current ideaIds and solutionIds
+  private fetchTrackedChanges() {
     if (this.ideaIds.length || this.solutionIds.length) {
       this.loading = true;
       this.error = null;
 
-      // Subscribe to tracked changes
-      this.changesFromIdsSub = urqlClient
-        .query(TrackedChangesDocument, {
-          ideaIds: this.ideaIds,
-          solutionIds: this.solutionIds,
-          since: since.get(),
-        })
-        .subscribe((result) => {
-          this.loading = false;
-          console.log('Tracked changes query result:', result);
-
-          if (result.error) {
-            this.error = new Error(result.error.message);
-            return;
-          }
-
-          if (result.data) {
-            // Process new supporters for ideas you funded
-            result.data.newSupporters.forEach((item) => {
-              this.changesManager.addChange({
-                type: 'newSupporter',
-                time: Number(item.createdTime) * 1000,
-                idea: item.idea,
-                supporters: [
-                  {
-                    id: item.funder.id,
-                    profile: item.funder.profile,
-                  },
-                ],
-              });
-            });
-
-            // Process new solutions for your ideas
-            result.data.newSolutions.forEach((item) => {
-              this.changesManager.addChange({
-                type: 'newSolution',
-                time: Number(item.startTime) * 1000,
-                solution: item,
-              });
-            });
-
-            // Process updates to solutions you created or funded
-            result.data.solutionUpdated.forEach((item) => {
-              const now = dayjs();
-              const deadlineDate = dayjs(Number(item.deadline) * 1000);
-              const progressBigInt = BigInt(item.tokensContributed || '0');
-              const goalBigInt = BigInt(item.fundingGoal || '0');
-
-              // Check if the goal was reached
-              if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
-                this.changesManager.addChange({
-                  type: 'goalReached',
-                  time: Number(item.startTime) * 1000,
-                  solution: item,
-                });
-              }
-              // Check if the deadline has passed and goal wasn't reached
-              else if (
-                now.isAfter(deadlineDate) &&
-                progressBigInt < goalBigInt
-              ) {
-                this.changesManager.addChange({
-                  type: 'goalFailed',
-                  time: Number(item.startTime) * 1000,
-                  solution: item,
-                });
-              }
-              // Otherwise it's just a regular update
-              else {
-                this.changesManager.addChange({
-                  type: 'solutionUpdated',
-                  time: Number(item.startTime) * 1000,
-                  solution: item,
-                });
-              }
-            });
-
-            // Process new funders for solutions you created or funded
-            result.data.newFunders.forEach((item) => {
-              this.changesManager.addChange({
-                type: 'newFunder',
-                time: Number(item.createdTime) * 1000,
-                solution: item.solution,
-                funders: [
-                  {
-                    id: item.funder?.id || '',
-                    profile: item.funder.profile,
-                  },
-                ],
-              });
-            });
-          }
-        });
+      this.trackedChangesController.setVariablesAndSubscribe({
+        ideaIds: this.ideaIds,
+        solutionIds: this.solutionIds,
+        since: since.get(),
+      });
     } else {
       this.loading = false;
+      this.changesManager.clear();
+    }
+  }
+
+  // Check for address changes and update the controller variables
+  private checkForAddressChangeAndSubscribe() {
+    const currentUserAddress = userAddress.get();
+    if (this.lastAddress !== currentUserAddress) {
+      this.lastAddress = currentUserAddress;
+
+      if (currentUserAddress) {
+        this.loading = true;
+        this.userIdeasSolutionsController.setVariablesAndSubscribe({
+          userId: currentUserAddress,
+        });
+      } else {
+        this.loading = false;
+        this.ideaIds = [];
+        this.solutionIds = [];
+        this.changesManager.clear();
+      }
     }
   }
 
@@ -331,7 +301,10 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         this.isRefreshing = false;
       }, 5 * 1000);
     }
-    this.subToTrackedChanges(userAddress.get());
+
+    // Refresh both controllers
+    this.userIdeasSolutionsController.refresh();
+    this.trackedChangesController.refresh();
   }
 
   private renderTrackedChanges() {
@@ -388,16 +361,12 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    // The UrqlQueryController handles visibility changes automatically
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.unsubAll();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
+    // The UrqlQueryController handles cleanup automatically
   }
 
   render() {

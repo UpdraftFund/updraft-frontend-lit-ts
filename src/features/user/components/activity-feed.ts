@@ -109,7 +109,10 @@ export class ActivityFeed extends LitElement {
     if (changedProperties.has('userId') && this.userId) {
       this.isLoading = true;
       this.error = null;
-      this.activityController.setVariables({ userId: this.userId, first: 10 });
+      this.activityController.setVariablesAndSubscribe({
+        userId: this.userId,
+        first: 10,
+      });
     }
   }
 
