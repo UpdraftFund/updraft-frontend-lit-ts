@@ -139,7 +139,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
           </a>
           <div class="byline">
             <a href="/profile/${creator.id}"
-              >by ${profile.name || creator.id}</a
+              >by ${profile.name || profile.team || creator.id}</a
             >
           </div>
         </div>

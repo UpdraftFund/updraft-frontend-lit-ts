@@ -53,7 +53,9 @@ export class NewSolutionCard extends TrackedChangeCard {
             <div class="byline">
               by
               <a href=${solution.drafter.id}
-                >${drafterProfile.name || solution.drafter.id}</a
+                >${drafterProfile.name ||
+                drafterProfile.team ||
+                solution.drafter.id}</a
               >
             </div>
             <p>${solutionInfo.description}</p>
