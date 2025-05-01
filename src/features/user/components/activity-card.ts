@@ -14,6 +14,7 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import { Activity, Profile, SolutionInfo } from '@/types';
 import { shortNum } from '@utils/short-num';
+import { updraftSettings } from '@state/common';
 
 @customElement('activity-card')
 export class ActivityCard extends LitElement {
@@ -207,6 +208,33 @@ export class ActivityCard extends LitElement {
     }
   }
 
+  private calculateProgress(contributed: number, goal: number) {
+    if (isNaN(contributed) || isNaN(goal) || goal === 0) {
+      return 0;
+    }
+    return (contributed / goal) * 100;
+  }
+
+  private formatDeadline(timestamp: number) {
+    const deadline = dayjs(timestamp * 1000);
+    const now = dayjs();
+
+    let deadlineString = deadline.fromNow();
+    if (deadline.isBefore(now)) {
+      deadlineString = `❌ ${deadlineString}`;
+    }
+    return deadlineString;
+  }
+
+  private formatReward(reward: number) {
+    const percentScale = updraftSettings.get().percentScale;
+    if (percentScale > 0) {
+      return ((reward * 100) / percentScale).toFixed(0) + '%';
+    } else {
+      return '0%';
+    }
+  }
+
   private renderEntity() {
     let href, name;
 
@@ -256,12 +284,14 @@ export class ActivityCard extends LitElement {
             ${dayjs(this.activity.timestamp).fromNow()}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🎁</span>${this.activity.idea.funderReward}%
+            ><span class="emoji">🎁</span>${this.formatReward(
+              this.activity.idea.funderReward
+            )}
             Funder Reward</span
           >
           <span class="emoji-badge"
             ><span class="emoji">🔥</span>${shortNum(
-              this.activity.idea.shares
+              formatUnits(this.activity.idea.shares, 18)
             )}</span
           >
         </div>
@@ -287,7 +317,8 @@ export class ActivityCard extends LitElement {
               value="${Math.min(progress, 100)}"
             ></sl-progress-bar>
             <div class="goal-text">
-              ${solution?.tokensContributed} out of ${solution?.fundingGoal} UPD
+              ${shortNum(formatUnits(solution?.tokensContributed, 18))} out of
+              ${shortNum(formatUnits(solution?.fundingGoal, 18))} UPD
             </div>
           </div>
           ${isCompleted
@@ -306,31 +337,17 @@ export class ActivityCard extends LitElement {
             ).fromNow()}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💎</span> ${solution?.stake}</span
+            ><span class="emoji">💎</span> ${shortNum(
+              formatUnits(solution?.stake, 18)
+            )}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🎁</span> ${solution?.funderReward}%</span
+            ><span class="emoji">🎁</span> ${this.formatReward(
+              solution?.funderReward
+            )}</span
           >
         </div>
       `;
-    }
-  }
-
-  private calculateProgress(contributed: number, goal: number) {
-    if (isNaN(contributed) || isNaN(goal) || goal === 0) {
-      return 0;
-    }
-    return (contributed / goal) * 100;
-  }
-
-  private formatDeadline(timestamp: number) {
-    const deadline = dayjs(timestamp * 1000);
-    const now = dayjs();
-
-    if (deadline.isBefore(now)) {
-      return 'expired';
-    } else {
-      return deadline.fromNow();
     }
   }
 
