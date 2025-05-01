@@ -1,6 +1,6 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { formatUnits } from 'viem';
+import { formatUnits, fromHex } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -12,32 +12,9 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
-// Define the activity type to ensure type safety
-type ActivityType = {
-  type: 'ideaFunded' | 'solutionFunded' | 'solutionDrafted';
-  contribution?: number;
-  idea?: {
-    id: string;
-    name: string;
-    creator: { id: string };
-    description?: string | null;
-  };
-  solution?: {
-    id: string;
-    name?: string;
-    description?: string | null;
-  };
-  name?: string;
-  userName?: string;
-  displayName?: string;
-  description?: string | null;
-  time: number;
-  deadline?: number;
-  fundingGoal?: string;
-  tokensContributed?: string;
-  stake?: string;
-  funderReward?: string;
-};
+import { Activity, Profile, SolutionInfo } from '@/types';
+import { shortNum } from '@utils/short-num';
+import { updraftSettings } from '@state/common';
 
 @customElement('activity-card')
 export class ActivityCard extends LitElement {
@@ -72,7 +49,7 @@ export class ActivityCard extends LitElement {
       color: var(--sl-color-neutral-600);
     }
 
-    .name {
+    .entity {
       font-weight: 600;
       font-size: 1.25rem;
       line-height: 1.2em;
@@ -85,12 +62,12 @@ export class ActivityCard extends LitElement {
       -webkit-box-orient: vertical;
     }
 
-    .name-link {
+    .entity-link {
       text-decoration: none;
       color: var(--sl-color-neutral-900);
     }
 
-    .name-link:hover {
+    .entity-link:hover {
       text-decoration: underline;
       color: var(--accent);
     }
@@ -154,36 +131,41 @@ export class ActivityCard extends LitElement {
     }
   `;
 
-  @property() activity!: ActivityType;
+  @property() activity!: Activity;
+  @property() userId!: `0x${string}`;
+  @property() userName!: string;
 
-  render() {
-    const date = dayjs(this.activity.time * 1000);
-    return html`
-      <sl-card>
-        <div class="action-time">
-          <div class="action">
-            ${this.getActivityIcon()} ${this.getActivityAction()}
-          </div>
-          <div class="time">${date.fromNow()}</div>
-        </div>
+  private _creatorProfile: Profile | undefined;
+  private _solutionInfo: SolutionInfo | undefined;
 
-        <div class="name">${this.renderNameWithLink()}</div>
+  get creatorProfile(): Profile | undefined {
+    if (!this._creatorProfile) {
+      let profile;
+      if (this.activity.type === 'ideaFunded') {
+        profile = this.activity.idea.creator.profile;
+      } else if (this.activity.type === 'solutionFunded') {
+        profile = this.activity.solution.drafter.profile;
+      }
+      if (profile) {
+        this._creatorProfile = JSON.parse(fromHex(profile, 'string'));
+      }
+    }
+    return this._creatorProfile;
+  }
 
-        <div class="description-container">
-          <div class="description">${this.getDescription()}</div>
-          <sl-button
-            variant="primary"
-            size="small"
-            href="${this.getButtonLink()}"
-            >${this.getFundButtonText()}
-          </sl-button>
-        </div>
-
-        <sl-divider></sl-divider>
-
-        ${this.renderDetailsBar()}
-      </sl-card>
-    `;
+  get solutionInfo(): SolutionInfo | undefined {
+    if (!this._solutionInfo) {
+      let info;
+      if (this.activity.type === 'solutionFunded') {
+        info = this.activity.solution.info;
+      } else if (this.activity.type === 'solutionDrafted') {
+        info = this.activity.info;
+      }
+      if (info) {
+        this._solutionInfo = JSON.parse(fromHex(info, 'string'));
+      }
+    }
+    return this._solutionInfo;
   }
 
   private getActivityIcon() {
@@ -200,90 +182,97 @@ export class ActivityCard extends LitElement {
   }
 
   private getActivityAction() {
-    // In a real app, you would get the user's name from a profile service
-    const userName = this.activity.userName;
-
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${userName} supported an Idea with ${formatUnits(
+        return `${this.userName} supported an Idea with ${formatUnits(
           BigInt(this.activity.contribution || 0),
           18
         )} UPD`;
       case 'solutionFunded':
-        return `${userName} funded a solution with ${formatUnits(
+        return `${this.userName} funded a solution with ${formatUnits(
           BigInt(this.activity.contribution || 0),
           18
         )} UPD`;
       case 'solutionDrafted':
-        return `${userName} drafted a solution`;
+        return `${this.userName} drafted a solution`;
       default:
         return 'Unknown Activity';
     }
   }
 
-  private renderNameWithLink() {
-    const name = this.getName();
-
-    if (this.activity.type === 'ideaFunded' && this.activity.idea?.name) {
-      // Extract idea ID from the activity data
-      const ideaId = this.getIdeaId();
-      if (ideaId) {
-        return html`<a href="/idea/${ideaId}" class="name-link">${name}</a>`;
-      }
-    } else if (
-      (this.activity.type === 'solutionFunded' ||
-        this.activity.type === 'solutionDrafted') &&
-      this.activity.solution?.name
-    ) {
-      // Extract solution ID from the activity data
-      const solutionId = this.getSolutionId();
-      if (solutionId) {
-        return html`<a href="/solution/${solutionId}" class="name-link"
-          >${name}</a
-        >`;
-      }
-    }
-
-    return name;
-  }
-
-  private getIdeaId() {
-    return this.activity.idea?.id || '';
-  }
-
-  private getSolutionId() {
-    return this.activity.solution?.id || '';
-  }
-
-  private getName() {
-    return (
-      this.activity.name ||
-      this.activity.displayName ||
-      this.activity.idea?.name ||
-      this.activity.solution?.name ||
-      'Unnamed'
-    );
-  }
-
   private getDescription() {
-    return (
-      this.activity.description ||
-      this.activity.idea?.description ||
-      this.activity.solution?.description ||
-      ''
-    );
+    if (this.activity.type === 'ideaFunded') {
+      return this.activity.idea.description;
+    } else {
+      return this.solutionInfo?.description;
+    }
   }
 
-  private getFundButtonText() {
-    switch (this.activity.type) {
-      case 'ideaFunded':
-        return 'Support this Idea';
-      case 'solutionFunded':
-      case 'solutionDrafted':
-        return 'Fund this Solution';
-      default:
-        return 'Support';
+  private calculateProgress(contributed: number, goal: number) {
+    if (isNaN(contributed) || isNaN(goal) || goal === 0) {
+      return 0;
     }
+    return (contributed / goal) * 100;
+  }
+
+  private formatDeadline(timestamp: number) {
+    const deadline = dayjs(timestamp * 1000);
+    const now = dayjs();
+
+    let deadlineString = deadline.fromNow();
+    if (deadline.isBefore(now)) {
+      deadlineString = `❌ ${deadlineString}`;
+    }
+    return deadlineString;
+  }
+
+  private formatReward(reward: number) {
+    const percentScale = updraftSettings.get().percentScale;
+    if (percentScale > 0) {
+      return ((reward * 100) / percentScale).toFixed(0) + '%';
+    } else {
+      return '0%';
+    }
+  }
+
+  private renderEntity() {
+    let href, name;
+
+    if (this.activity.type === 'ideaFunded') {
+      href = html`/idea/${this.activity.idea.id}`;
+      name = this.activity.idea.name;
+    } else if (this.activity.type === 'solutionFunded') {
+      href = html`/solution/${this.activity.solution.id}`;
+      name = this.solutionInfo?.name || 'Untitled';
+    } else if (this.activity.type === 'solutionDrafted') {
+      href = html`/solution/${this.activity.id};`;
+      name = this.solutionInfo?.name || 'Untitled';
+    }
+
+    return html`<a href="${href}" class="name-link">${name}</a>`;
+  }
+
+  private renderFundButton() {
+    let href, text;
+    if (this.activity.type === 'ideaFunded') {
+      href = html`/idea/${this.activity.idea.id}`;
+    } else if (this.activity.type === 'solutionFunded') {
+      href = html`/solution/${this.activity.solution.id}`;
+    } else if (this.activity.type === 'solutionDrafted') {
+      href = html`/solution/${this.activity.id}`;
+    }
+
+    if (this.activity.type === 'ideaFunded') {
+      text = 'Support this Idea';
+    } else {
+      text = 'Fund this Solution';
+    }
+
+    return html`
+      <sl-button variant="primary" size="small" href="${href}"
+        >${text}
+      </sl-button>
+    `;
   }
 
   private renderDetailsBar() {
@@ -292,18 +281,33 @@ export class ActivityCard extends LitElement {
         <div class="details-bar">
           <span class="emoji-badge"
             ><span class="emoji">🌱</span> Created
-            ${this.formatCreatedTime()}</span
+            ${dayjs(this.activity.timestamp).fromNow()}</span
           >
-          <!-- <span class="emoji-badge"
-          ><span class="emoji">💰</span> ${this.activity.funderReward || '10'}%
+          <span class="emoji-badge"
+            ><span class="emoji">🎁</span>${this.formatReward(
+              this.activity.idea.funderReward
+            )}
             Funder Reward</span
-          > -->
-          <span class="emoji-badge"><span class="emoji">🔥</span> 78.8k</span>
+          >
+          <span class="emoji-badge"
+            ><span class="emoji">🔥</span>${shortNum(
+              formatUnits(this.activity.idea.shares, 18)
+            )}</span
+          >
         </div>
       `;
     } else {
-      // For solution types
-      const progress = this.calculateProgress();
+      let solution;
+      if (this.activity.type === 'solutionFunded') {
+        solution = this.activity.solution;
+      } else if (this.activity.type == 'solutionDrafted') {
+        solution = this.activity;
+      }
+
+      const progress = this.calculateProgress(
+        solution?.tokensContributed,
+        solution?.fundingGoal
+      );
       const isCompleted = progress >= 100;
 
       return html`
@@ -313,8 +317,8 @@ export class ActivityCard extends LitElement {
               value="${Math.min(progress, 100)}"
             ></sl-progress-bar>
             <div class="goal-text">
-              ${this.activity.tokensContributed || '0'} out of
-              ${this.activity.fundingGoal || '150,000'} UPD
+              ${shortNum(formatUnits(solution?.tokensContributed, 18))} out of
+              ${shortNum(formatUnits(solution?.fundingGoal, 18))} UPD
             </div>
           </div>
           ${isCompleted
@@ -323,69 +327,59 @@ export class ActivityCard extends LitElement {
               </sl-badge>`
             : ''}
           <span class="emoji-badge"
-            ><span class="emoji">⏰</span> ${this.formatDeadline()}</span
+            ><span class="emoji">⏰</span> ${this.formatDeadline(
+              solution?.deadline
+            )}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🌱</span> ${this.formatCreatedTime()}</span
+            ><span class="emoji">🌱</span>${dayjs(
+              this.activity.timestamp
+            ).fromNow()}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💎</span> ${this.activity.stake ||
-            '200K'}</span
+            ><span class="emoji">💎</span> ${shortNum(
+              formatUnits(solution?.stake, 18)
+            )}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💰</span> ${this.activity.funderReward ||
-            '10'}%</span
+            ><span class="emoji">🎁</span> ${this.formatReward(
+              solution?.funderReward
+            )}</span
           >
         </div>
       `;
     }
   }
 
-  private calculateProgress() {
-    if (!this.activity.tokensContributed || !this.activity.fundingGoal) {
-      return 0;
-    }
-
-    const contributed = parseFloat(
-      String(this.activity.tokensContributed).replace(/,/g, '')
-    );
-    const goal = parseFloat(
-      String(this.activity.fundingGoal).replace(/,/g, '')
-    );
-
-    if (isNaN(contributed) || isNaN(goal) || goal === 0) {
-      return 0;
-    }
-
-    return (contributed / goal) * 100;
-  }
-
-  private formatCreatedTime() {
-    return dayjs(this.activity.time * 1000).fromNow();
-  }
-
-  private formatDeadline() {
-    const deadline = dayjs(this.activity.deadline || 0 * 1000);
-    const now = dayjs();
-
-    if (deadline.isBefore(now)) {
-      return 'expired';
-    } else {
-      return deadline.fromNow();
+  updated(changedProperties: Map<string | number | symbol, unknown>) {
+    if (changedProperties.has('activity')) {
+      this._creatorProfile = undefined;
+      this._solutionInfo = undefined;
     }
   }
 
-  private getButtonLink() {
-    if (this.activity.type === 'ideaFunded') {
-      const ideaId = this.getIdeaId();
-      return ideaId ? `/idea/${ideaId}` : '';
-    } else if (
-      this.activity.type === 'solutionFunded' ||
-      this.activity.type === 'solutionDrafted'
-    ) {
-      const solutionId = this.getSolutionId();
-      return solutionId ? `/solution/${solutionId}` : '';
-    }
-    return '';
+  render() {
+    const date = dayjs(this.activity.timestamp);
+    return html`
+      <sl-card>
+        <div class="action-time">
+          <div class="action">
+            ${this.getActivityIcon()} ${this.getActivityAction()}
+          </div>
+          <div class="time">${date.fromNow()}</div>
+        </div>
+
+        <div class="entity">${this.renderEntity()}</div>
+
+        <div class="description-container">
+          <div class="description">${this.getDescription()}</div>
+          ${this.renderFundButton()}
+        </div>
+
+        <sl-divider></sl-divider>
+
+        ${this.renderDetailsBar()}
+      </sl-card>
+    `;
   }
 }

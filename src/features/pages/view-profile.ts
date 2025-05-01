@@ -270,7 +270,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
             layout.rightSidebarContent.set(
               html` <activity-feed
                 .userId=${this.address}
-                .userName=${this.profile.value?.name}
+                .userName=${name || team}
               ></activity-feed>`
             );
             return html`
@@ -284,7 +284,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                     ? html` <h1 class="name">${name || team}</h1>`
                     : ''}
                   <div class="address">${this.address}</div>
-                  ${name && team ? html` <div class="team">${team}</div>` : ''}
+                  ${team && name ? html` <div class="team">${team}</div>` : ''}
                 </div>
               </div>
 

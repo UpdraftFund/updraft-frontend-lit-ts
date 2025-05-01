@@ -7,12 +7,10 @@ query UserActivity($first: Int = 4, $skip: Int = 0, $userId: String!) {
         orderDirection: desc
     ) {
         idea {
-            ...IdeaFields
-            creator {
-                id
-            }
+            ...IdeaFieldsDetailed
         }
         contribution
+        createdTime
     }
     solutionsFunded: solutionContributions(
         first: $first,
@@ -22,9 +20,10 @@ query UserActivity($first: Int = 4, $skip: Int = 0, $userId: String!) {
         orderDirection: desc
     ) {
         solution {
-            ...SolutionFields
+            ...SolutionFieldsDetailed
         }
         contribution
+        createdTime
     }
     solutionsDrafted: solutions(
         first: $first,

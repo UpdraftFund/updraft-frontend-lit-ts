@@ -1,14 +1,15 @@
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { Task } from '@lit/task';
+import { cache } from 'lit/directives/cache.js';
 
-import { UserActivityDocument } from '@gql';
-import urqlClient from '@utils/urql-client';
-import '@/features/user/components/activity-card';
-
-// Import Shoelace components
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/alert/alert.js';
+
+import '@/features/user/components/activity-card';
+
+import { UserActivityDocument } from '@gql';
+import { UrqlQueryController } from '@utils/urql-query-controller';
+import { Activity } from '@/features/user/types';
 
 @customElement('activity-feed')
 export class ActivityFeed extends LitElement {
@@ -58,116 +59,100 @@ export class ActivityFeed extends LitElement {
     }
   `;
 
-  @property() userId!: string;
+  @property() userId!: `0x${string}`;
   @property() userName!: string;
-  private readonly activities = new Task(this, {
-    task: async () => {
-      const result = await urqlClient.query(UserActivityDocument, {
-        userId: this.userId,
-        first: 10, // Increase the number of items to fetch
-      });
+  @state() private activities: Activity[] = [];
+  @state() private isLoading = true;
+  @state() private error: Error | null = null;
+
+  private readonly activityController = new UrqlQueryController(
+    this,
+    UserActivityDocument,
+    { userId: this.userId, first: 10 },
+    (result) => {
+      this.isLoading = false;
+
+      if (result.error) {
+        this.error = result.error;
+        return;
+      }
 
       if (result.data) {
         const allActivities = [
           ...result.data.ideasFunded.map((item) => ({
+            ...item,
             type: 'ideaFunded',
-            userName: this.userName,
-            contribution: item.contribution,
-            idea: {
-              id: item.idea.id,
-              name: item.idea.name || 'Unnamed Idea',
-              creator: { id: item.idea.creator.id },
-              description: item.idea.description,
-            },
-            time: item.idea.startTime,
-            funderReward: item.idea.funderReward,
+            timestamp: item.createdTime * 1000,
           })),
           ...result.data.solutionsFunded.map((item) => ({
+            ...item,
             type: 'solutionFunded',
-            contribution: item.contribution,
-            solution: {
-              id: item.solution.id,
-              description: item.solution.info,
-            },
-            displayName: item.solution.id,
-            time: item.solution.startTime,
-            description: item.solution.info,
-            deadline: item.solution.deadline,
-            fundingGoal: item.solution.fundingGoal,
-            tokensContributed: item.solution.tokensContributed,
-            stake: item.solution.stake,
-            funderReward: item.solution.funderReward,
+            timestamp: item.createdTime * 1000,
           })),
           ...result.data.solutionsDrafted.map((item) => ({
+            ...item,
             type: 'solutionDrafted',
-            solution: {
-              id: item.id,
-              description: item.info,
-            },
-            displayName: item.id,
-            time: item.startTime,
-            description: item.info,
-            deadline: item.deadline,
-            fundingGoal: item.fundingGoal,
-            tokensContributed: item.tokensContributed,
-            stake: item.stake,
-            funderReward: item.funderReward,
+            timestamp: item.startTime * 1000,
           })),
         ];
 
         // Sort by time in descending order (newest first)
-        allActivities.sort((a, b) => {
-          const timeA = new Date(a.time).getTime();
-          const timeB = new Date(b.time).getTime();
-          return timeB - timeA;
-        });
-
-        return allActivities;
+        allActivities.sort((a, b) => b.timestamp - a.timestamp);
+        this.activities = allActivities as Activity[];
+      } else {
+        this.activities = [];
       }
-      return [];
-    },
-    // Re-run when userId changes
-    args: () => [this.userId],
-  });
+    }
+  );
+
+  updated(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has('userId') && this.userId) {
+      this.isLoading = true;
+      this.error = null;
+      this.activityController.setVariables({ userId: this.userId, first: 10 });
+    }
+  }
 
   render() {
     return html`
       <div class="activity-feed">
         <h2 class="activity-heading">Activity</h2>
 
-        ${this.activities.render({
-          pending: () => html`
-            <div class="loading-container">
-              <sl-spinner style="font-size: 2rem;"></sl-spinner>
-              <div>Loading activities...</div>
-            </div>
-          `,
-          error: (error) => html`
-            <sl-alert variant="danger" open>
-              <strong>Error loading activities:</strong>
-              ${error instanceof Error ? error.message : 'Unknown error'}
-            </sl-alert>
-          `,
-          complete: (activities) => {
-            if (!activities || activities.length === 0) {
-              return html`
-                <div class="empty-state">
-                  No activities found for this user.
-                </div>
-              `;
-            }
-
-            return html`
-              <div class="activity-list">
-                ${activities.map(
-                  (activity) => html`
-                    <activity-card .activity=${activity}></activity-card>
-                  `
-                )}
+        ${this.isLoading
+          ? html`
+              <div class="loading-container">
+                <sl-spinner style="font-size: 2rem;"></sl-spinner>
+                <div>Loading activities...</div>
               </div>
-            `;
-          },
-        })}
+            `
+          : this.error
+            ? html`
+                <sl-alert variant="danger" open>
+                  <strong>Error loading activities:</strong>
+                  ${this.error.message || 'Unknown error'}
+                </sl-alert>
+              `
+            : this.activities.length === 0
+              ? html`
+                  <div class="empty-state">
+                    No activities found for this user.
+                  </div>
+                `
+              : html`
+                  <div class="activity-list">
+                    ${cache(
+                      this.activities.map(
+                        (activity) => html`
+                          <activity-card
+                            .activity=${activity}
+                            .userId=${this.userId}
+                            .userName=${this.userName}
+                          ></activity-card>
+                        `
+                      )
+                    )}
+                  </div>
+                `}
       </div>
     `;
   }
