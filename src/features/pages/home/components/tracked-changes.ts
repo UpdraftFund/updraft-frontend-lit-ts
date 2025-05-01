@@ -1,4 +1,4 @@
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, query } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { cache } from 'lit/directives/cache.js';
 import { html, SignalWatcher } from '@lit-labs/signals';
@@ -95,6 +95,8 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
   @state() private solutionIds: `0x${string}`[] = [];
   @state() private isRefreshing = false;
   @state() private target: number = 10;
+
+  @query('.refresh-button', true) private refreshButton!: HTMLElement;
 
   // Use our new data structure
   private changesManager = new TrackedChangesManager(this.target);
@@ -290,21 +292,18 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
   }
 
   private handleRefresh() {
-    const button = this.shadowRoot?.querySelector('.refresh-button');
-    if (button) {
-      button.classList.add('rotating');
-      this.isRefreshing = true;
+    this.refreshButton.classList.add('rotating');
+    this.isRefreshing = true;
 
-      // Remove the class after animation completes
-      setTimeout(() => {
-        button.classList.remove('rotating');
-        this.isRefreshing = false;
-      }, 5 * 1000);
-    }
+    // Remove the class after animation completes
+    setTimeout(() => {
+      this.refreshButton.classList.remove('rotating');
+      this.isRefreshing = false;
+    }, 5 * 1000);
 
-    // Refresh both controllers
+    // Only refresh userIdeasSolutionsController as it will trigger trackedChangesController
+    // when it completes via fetchTrackedChanges()
     this.userIdeasSolutionsController.refresh();
-    this.trackedChangesController.refresh();
   }
 
   private renderTrackedChanges() {
@@ -323,7 +322,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
       `;
     }
 
-    const changesToRender = this.changesManager.getChangesForRendering();
+    const changesToRender = this.changesManager.getChangesToRender();
 
     return html`
       ${changesToRender.map((change) => {
@@ -357,16 +356,6 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         }
       })}
     `;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    // The UrqlQueryController handles visibility changes automatically
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    // The UrqlQueryController handles cleanup automatically
   }
 
   render() {
