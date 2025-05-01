@@ -351,10 +351,11 @@ export class ActivityCard extends LitElement {
     }
   }
 
-  firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
-    this._creatorProfile = undefined;
-    this._solutionInfo = undefined;
-    super.firstUpdated(changedProperties);
+  updated(changedProperties: Map<string | number | symbol, unknown>) {
+    if (changedProperties.has('activity')) {
+      this._creatorProfile = undefined;
+      this._solutionInfo = undefined;
+    }
   }
 
   render() {
