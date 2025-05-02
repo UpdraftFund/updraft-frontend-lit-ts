@@ -42,10 +42,10 @@ export class NewSolutionCard extends TrackedChangeCard {
       return html`
         <sl-card>
           <div slot="header">
-            <h3 class="change-card-heading">
+            <a href="/idea/${solution.idea.id}" class="change-card-heading">
               ${this.change.solution.idea.name}
-            </h3>
-            <div class="change-card-subheading">Has a new solution</div>
+            </a>
+            <div class="change-card-subheading">has a new solution</div>
           </div>
 
           <div class="solution-info">

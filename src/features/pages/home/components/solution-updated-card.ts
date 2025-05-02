@@ -38,16 +38,13 @@ export class SolutionUpdatedCard extends TrackedChangeCard {
     return html`
       <sl-card>
         <div slot="header">
-          <h3 class="change-card-heading">Solution Updated</h3>
-          <div class="change-card-subheading">
-            by ${solution?.id || 'anonymous'}
-          </div>
+          <a class="change-card-heading">${solutionInfo?.name || 'Solution'}</a>
+          <div class="change-card-subheading">has updates</div>
         </div>
 
         ${solutionInfo
           ? html`
               <div class="solution-info">
-                <h4>${solutionInfo.name || 'Untitled Solution'}</h4>
                 ${solutionInfo.news
                   ? html`<p class="solution-news">${solutionInfo.news}</p>`
                   : ''}

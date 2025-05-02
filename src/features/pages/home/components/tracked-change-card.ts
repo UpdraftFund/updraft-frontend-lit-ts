@@ -24,9 +24,9 @@ export class TrackedChangeCard extends LitElement {
       }
 
       .change-card-subheading {
-        font-size: 0.875rem;
+        font-size: 1rem;
         color: var(--subtle-text);
-        margin-top: 0.875rem;
+        margin-top: 0.5rem;
       }
 
       .change-details {

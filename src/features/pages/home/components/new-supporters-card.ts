@@ -35,7 +35,7 @@ export class NewSupportersCard extends TrackedChangeCard {
           <a class="change-card-heading" href="/idea/${idea.id}"
             >${idea.name}</a
           >
-          <div class="change-card-subheading">Has new supporters</div>
+          <div class="change-card-subheading">has new supporters</div>
         </div>
         <div class="supporters">
           ${supporters.map(
