@@ -35,13 +35,10 @@ export class SolutionUpdatedCard extends TrackedChangeCard {
             >
             <div class="change-card-subheading">has updates</div>
           </div>
-          <div class="solution-info">
+          <a class="solution-body" href="/solution/${solution.id}">
             ${solutionInfo.news
               ? html`<p class="solution-news">${solutionInfo.news}</p>`
-              : ''}
-          </div>
-          <a class="solution-body" href="/solution/${solution.id}">
-            <p>${solutionInfo.description}</p>
+              : html``}
             ${solution ? this.renderSolutionDetails(solution) : ''}
           </a>
           <div slot="footer">${dayjs(this.change.time).fromNow()}</div>

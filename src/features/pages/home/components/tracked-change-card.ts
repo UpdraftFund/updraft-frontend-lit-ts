@@ -28,7 +28,7 @@ export class TrackedChangeCard extends LitElement {
     css`
       .change-card-heading,
       .new-solution-heading,
-      .solution-description {
+      .solution-body {
         text-decoration: none;
         color: var(--main-foreground);
       }
