@@ -11,10 +11,6 @@ import { updraftSettings } from '@state/common';
 export class TrackedChangeCard extends LitElement {
   static styles = [
     css`
-      :host {
-        display: block;
-      }
-
       .change-card-heading {
         font-size: 1.25rem;
         font-weight: 600;
@@ -30,6 +26,7 @@ export class TrackedChangeCard extends LitElement {
       .change-card-subheading {
         font-size: 0.875rem;
         color: var(--subtle-text);
+        margin-top: 0.875rem;
       }
 
       .change-details {
