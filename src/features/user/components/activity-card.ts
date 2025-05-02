@@ -237,13 +237,13 @@ export class ActivityCard extends LitElement {
     let href, name;
 
     if (this.activity.type === 'ideaFunded') {
-      href = html`/idea/${this.activity.idea.id}`;
+      href = `/idea/${this.activity.idea.id}`;
       name = this.activity.idea.name;
     } else if (this.activity.type === 'solutionFunded') {
-      href = html`/solution/${this.activity.solution.id}`;
+      href = `/solution/${this.activity.solution.id}`;
       name = this.solutionInfo?.name || 'Untitled';
     } else if (this.activity.type === 'solutionDrafted') {
-      href = html`/solution/${this.activity.id};`;
+      href = `/solution/${this.activity.id};`;
       name = this.solutionInfo?.name || 'Untitled';
     }
 
@@ -253,11 +253,11 @@ export class ActivityCard extends LitElement {
   private renderFundButton() {
     let href, text;
     if (this.activity.type === 'ideaFunded') {
-      href = html`/idea/${this.activity.idea.id}`;
+      href = `/idea/${this.activity.idea.id}`;
     } else if (this.activity.type === 'solutionFunded') {
-      href = html`/solution/${this.activity.solution.id}`;
+      href = `/solution/${this.activity.solution.id}`;
     } else if (this.activity.type === 'solutionDrafted') {
-      href = html`/solution/${this.activity.id}`;
+      href = `/solution/${this.activity.id}`;
     }
 
     if (this.activity.type === 'ideaFunded') {
