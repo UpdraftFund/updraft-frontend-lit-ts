@@ -33,6 +33,7 @@ export class ActivityFeed extends LitElement {
       line-height: 1.4;
       color: var(--sl-color-neutral-900);
       margin: 0;
+      text-align: center;
     }
 
     .activity-list {
