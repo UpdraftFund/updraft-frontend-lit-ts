@@ -368,7 +368,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
         <div class="deposit-container">
           <label-with-hint
-            label="Stake, anti-spam fee"
+            label="Stake"
             hint="Add a stake to attract more funders. If don't reach your
                 funding goal, this amount will be distributed to your funders."
           >
