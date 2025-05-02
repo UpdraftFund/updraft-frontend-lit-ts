@@ -34,6 +34,7 @@
   --sl-input-border-color: var(--sl-color-primary-300);
   --main-background: var(--sl-color-neutral-0);
   --accent: var(--sl-color-primary-800);
+  --link: var(--sl-color-primary-500);
   --main-foreground: var(--sl-color-neutral-800);
   --subtle-text: var(--sl-color-neutral-600);
   --control-background: var(--sl-color-sky-200);

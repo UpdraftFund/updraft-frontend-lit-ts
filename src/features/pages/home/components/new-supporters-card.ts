@@ -27,11 +27,14 @@ export class NewSupportersCard extends TrackedChangeCard {
   render() {
     const supporters = this.change.supporters;
     const additionalCount = this.change.additionalCount || 0;
+    const idea = this.change.idea;
 
     return html`
       <sl-card>
         <div slot="header">
-          <h3 class="change-card-heading">${this.change.idea.name}</h3>
+          <a class="change-card-heading" href="/idea/${idea.id}"
+            >${idea.name}</a
+          >
           <div class="change-card-subheading">Has new supporters</div>
         </div>
 

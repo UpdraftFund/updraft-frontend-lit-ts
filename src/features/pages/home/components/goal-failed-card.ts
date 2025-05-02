@@ -38,9 +38,9 @@ export class GoalFailedCard extends TrackedChangeCard {
     return html`
       <sl-card>
         <div slot="header">
-          <h3 class="change-card-heading">
-            ${solutionInfo?.name || 'Solution'}
-          </h3>
+          <a class="change-card-heading">
+            href="/solution/${solution.id}"> ${solutionInfo?.name || 'Solution'}
+          </a>
           <div class="change-card-subheading">Goal Failed</div>
         </div>
 

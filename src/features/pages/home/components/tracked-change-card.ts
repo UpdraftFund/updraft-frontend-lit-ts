@@ -16,7 +16,15 @@ export class TrackedChangeCard extends LitElement {
       }
 
       .change-card-heading {
-        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-decoration: none;
+        color: var(--main-foreground);
+      }
+
+      .change-card-heading:hover {
+        color: var(--link);
+        text-decoration: underline;
       }
 
       .change-card-subheading {
@@ -106,6 +114,10 @@ export class TrackedChangeCard extends LitElement {
         font-size: 0.8rem;
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
+      }
+
+      a {
+        color: var(--link);
       }
     `,
   ];
