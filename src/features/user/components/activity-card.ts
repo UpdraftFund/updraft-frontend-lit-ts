@@ -184,14 +184,12 @@ export class ActivityCard extends LitElement {
   private getActivityAction() {
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${this.userName} supported an Idea with ${formatUnits(
-          BigInt(this.activity.contribution || 0),
-          18
+        return `${this.userName} supported an Idea with ${shortNum(
+          formatUnits(this.activity.contribution, 18)
         )} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a solution with ${formatUnits(
-          BigInt(this.activity.contribution || 0),
-          18
+        return `${this.userName} funded a solution with ${shortNum(
+          formatUnits(this.activity.contribution, 18)
         )} UPD`;
       case 'solutionDrafted':
         return `${this.userName} drafted a solution`;
