@@ -222,9 +222,9 @@ export class TrackedChangesManager {
   }
 
   /**
-   * Get changes for rendering, limited to target count
+   * Get changes to render, limited to target count
    */
-  getChangesForRendering(): Change[] {
+  getChangesToRender(): Change[] {
     // Convert queue to array for rendering
     const changesArray = this.changesQueue.toArray();
 

@@ -42,26 +42,29 @@ export class NewSolutionCard extends TrackedChangeCard {
       return html`
         <sl-card>
           <div slot="header">
-            <h3 class="change-card-heading">
+            <a class="change-card-heading" href="/idea/${solution.idea.id}">
               ${this.change.solution.idea.name}
-            </h3>
-            <div class="change-card-subheading">Has a new solution</div>
+            </a>
+            <div class="change-card-subheading">has a new solution</div>
           </div>
 
           <div class="solution-info">
-            <h4>${solutionInfo.name}</h4>
-            <div class="byline">
+            <a class="new-solution-heading" href="/solution/${solution.id}"
+              >${solutionInfo.name}</a
+            >
+            <div class=" byline">
               by
-              <a href=${solution.drafter.id}
-                >${drafterProfile.name ||
+              <a href=${solution.drafter.id}>
+                ${drafterProfile.name ||
                 drafterProfile.team ||
-                solution.drafter.id}</a
-              >
+                solution.drafter.id}
+              </a>
             </div>
-            <p>${solutionInfo.description}</p>
+            <a class="solution-body" href="/solution/${solution.id}">
+              <p>${solutionInfo.description}</p>
+              ${solution ? this.renderSolutionDetails(solution) : ''}
+            </a>
           </div>
-
-          ${solution ? this.renderSolutionDetails(solution) : ''}
 
           <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
         </sl-card>
