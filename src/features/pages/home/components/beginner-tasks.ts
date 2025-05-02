@@ -9,6 +9,10 @@ import { allTasksComplete, isComplete } from '@state/user/beginner-tasks.ts';
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
   static styles = css`
+    h2 {
+      margin: 1.5rem 0 1.5rem;
+    }
+
     section {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

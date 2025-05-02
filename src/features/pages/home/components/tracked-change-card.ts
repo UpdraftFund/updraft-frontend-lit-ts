@@ -11,9 +11,24 @@ import { updraftSettings } from '@state/common';
 export class TrackedChangeCard extends LitElement {
   static styles = [
     css`
+      :host {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+
+      sl-card {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
+    `,
+    css`
       .change-card-heading,
       .new-solution-heading,
-      .solution-body {
+      .solution-description {
         text-decoration: none;
         color: var(--main-foreground);
       }

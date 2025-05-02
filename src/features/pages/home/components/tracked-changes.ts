@@ -33,9 +33,8 @@ import { userAddress } from '@state/user';
 export class TrackedChanges extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
+      display: block;
+      width: 100%;
     }
 
     .loading-container {
@@ -55,7 +54,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     }
 
     .header-container {
-      margin-top: 1.5rem;
+      margin: 1.5rem 0 1.5rem;
       display: flex;
       gap: 0.5rem;
       align-items: center;
@@ -86,6 +85,34 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
     sl-spinner {
       font-size: 2rem;
+    }
+
+    .full-width {
+      width: 100%;
+      flex-basis: 100%;
+    }
+
+    /* Cards container styling */
+    .cards-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      width: 100%;
+    }
+
+    /* Card components styling */
+    .cards-container > * {
+      flex: 1 0 280px;
+      max-width: 100%;
+      /* Ensure cards don't disappear on narrow screens */
+      min-width: 0;
+    }
+
+    /* Media query for mobile devices */
+    @media (max-width: 600px) {
+      .cards-container > * {
+        flex-basis: 100%;
+      }
     }
   `;
 
@@ -309,59 +336,63 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
   private renderTrackedChanges() {
     if (this.error) {
       return html`
-        <sl-alert variant="danger" open>
-          <strong>Error loading changes:</strong>
-          ${this.error.message}
-        </sl-alert>
+        <div class="full-width">
+          <sl-alert variant="danger" open>
+            <strong>Error loading changes:</strong>
+            ${this.error.message}
+          </sl-alert>
+        </div>
       `;
     }
 
     if (!this.hasChanges) {
       return html`
-        <div class="empty-state">No recent changes to display.</div>
+        <div class="empty-state full-width">No recent changes to display.</div>
       `;
     }
 
     const changesToRender = this.changesManager.getChangesToRender();
 
     return html`
-      ${changesToRender.map((change) => {
-        switch (change.type) {
-          case 'newSupporter':
-            return html` <new-supporters-card
-              .change=${change}
-            ></new-supporters-card>`;
-          case 'newSolution':
-            return html` <new-solution-card
-              .change=${change}
-            ></new-solution-card>`;
-          case 'solutionUpdated':
-            return html` <solution-updated-card
-              .change=${change}
-            ></solution-updated-card>`;
-          case 'newFunder':
-            return html` <new-funders-card
-              .change=${change}
-            ></new-funders-card>`;
-          case 'goalReached':
-            return html` <goal-reached-card
-              .change=${change}
-            ></goal-reached-card>`;
-          case 'goalFailed':
-            return html` <goal-failed-card
-              .change=${change}
-            ></goal-failed-card>`;
-          default:
-            return html``;
-        }
-      })}
+      <div class="cards-container">
+        ${changesToRender.map((change) => {
+          switch (change.type) {
+            case 'newSupporter':
+              return html` <new-supporters-card
+                .change=${change}
+              ></new-supporters-card>`;
+            case 'newSolution':
+              return html` <new-solution-card
+                .change=${change}
+              ></new-solution-card>`;
+            case 'solutionUpdated':
+              return html` <solution-updated-card
+                .change=${change}
+              ></solution-updated-card>`;
+            case 'newFunder':
+              return html` <new-funders-card
+                .change=${change}
+              ></new-funders-card>`;
+            case 'goalReached':
+              return html` <goal-reached-card
+                .change=${change}
+              ></goal-reached-card>`;
+            case 'goalFailed':
+              return html` <goal-failed-card
+                .change=${change}
+              ></goal-failed-card>`;
+            default:
+              return html``;
+          }
+        })}
+      </div>
     `;
   }
 
   render() {
     this.checkForAddressChangeAndSubscribe();
     return html`
-      <div class="header-container">
+      <div class="header-container full-width">
         <h2>Updates</h2>
         ${this.hasIds && !this.loading
           ? html`
@@ -375,7 +406,13 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
             `
           : html``}
       </div>
-      ${this.loading ? html` <sl-spinner></sl-spinner> ` : html``}
+      ${this.loading
+        ? html`
+            <div class="full-width">
+              <sl-spinner></sl-spinner>
+            </div>
+          `
+        : html``}
       ${cache(this.renderTrackedChanges())}
     `;
   }
