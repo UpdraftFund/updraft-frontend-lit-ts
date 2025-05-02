@@ -53,7 +53,7 @@ export class UrqlQueryController<TData, TVariables extends AnyVariables>
   /**
    * Update the variables and re-subscribe if the component is connected
    */
-  setVariables(variables: TVariables): void {
+  setVariablesAndSubscribe(variables: TVariables): void {
     this._variables = variables;
     if (this._isActive) {
       this.subscribe();

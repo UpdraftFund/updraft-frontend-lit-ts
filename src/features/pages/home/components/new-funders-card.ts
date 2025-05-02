@@ -45,9 +45,9 @@ export class NewFundersCard extends TrackedChangeCard {
     return html`
       <sl-card>
         <div slot="header">
-          <h3 class="change-card-heading">
+          <a href="/solution/${solution.id}" class="change-card-heading">
             ${solutionInfo?.name || 'Solution'}
-          </h3>
+          </a>
           <div class="change-card-subheading">Received new funding</div>
         </div>
 
