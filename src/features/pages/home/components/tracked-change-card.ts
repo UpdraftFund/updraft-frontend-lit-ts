@@ -11,16 +11,22 @@ import { updraftSettings } from '@state/common';
 export class TrackedChangeCard extends LitElement {
   static styles = [
     css`
-      .change-card-heading {
-        font-size: 1.25rem;
-        font-weight: 600;
+      .change-card-heading,
+      .new-solution-heading,
+      .solution-body {
         text-decoration: none;
         color: var(--main-foreground);
       }
 
-      .change-card-heading:hover {
+      .change-card-heading:hover,
+      .new-solution-heading:hover {
         color: var(--link);
         text-decoration: underline;
+      }
+
+      .change-card-heading {
+        font-size: 1.25rem;
+        font-weight: 600;
       }
 
       .change-card-subheading {
@@ -78,6 +84,11 @@ export class TrackedChangeCard extends LitElement {
 
       .solution-info {
         margin-top: 0.5rem;
+      }
+
+      .new-solution-heading {
+        font-size: 1rem;
+        font-weight: 600;
       }
 
       .success-message {

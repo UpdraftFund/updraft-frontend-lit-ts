@@ -23,39 +23,33 @@ export class SolutionUpdatedCard extends TrackedChangeCard {
 
   render() {
     const solution = this.change.solution;
-
-    let solutionInfo: SolutionInfo | null = null;
     if (solution?.info) {
-      try {
-        solutionInfo = JSON.parse(
-          fromHex(solution.info as `0x${string}`, 'string')
-        );
-      } catch (e) {
-        console.error('Error parsing solution info', e);
-      }
+      const solutionInfo: SolutionInfo = JSON.parse(
+        fromHex(solution.info as `0x${string}`, 'string')
+      );
+      return html`
+        <sl-card>
+          <div slot="header">
+            <a class="change-card-heading" href="/solution/${solution.id}"
+              >${solutionInfo.name || `Solution ${solution.id}`}</a
+            >
+            <div class="change-card-subheading">has updates</div>
+          </div>
+          <div class="solution-info">
+            ${solutionInfo.news
+              ? html`<p class="solution-news">${solutionInfo.news}</p>`
+              : ''}
+          </div>
+          <a class="solution-body" href="/solution/${solution.id}">
+            <p>${solutionInfo.description}</p>
+            ${solution ? this.renderSolutionDetails(solution) : ''}
+          </a>
+          <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
+        </sl-card>
+      `;
+    } else {
+      return html``;
     }
-
-    return html`
-      <sl-card>
-        <div slot="header">
-          <a class="change-card-heading">${solutionInfo?.name || 'Solution'}</a>
-          <div class="change-card-subheading">has updates</div>
-        </div>
-
-        ${solutionInfo
-          ? html`
-              <div class="solution-info">
-                ${solutionInfo.news
-                  ? html`<p class="solution-news">${solutionInfo.news}</p>`
-                  : ''}
-              </div>
-            `
-          : ''}
-        ${solution ? this.renderSolutionDetails(solution) : ''}
-
-        <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
-      </sl-card>
-    `;
   }
 }
 
