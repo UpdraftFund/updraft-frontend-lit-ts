@@ -82,7 +82,7 @@ export class ActivityFeed extends LitElement {
           ...result.data.ideasFunded.map((item) => ({
             ...item,
             type: 'ideaFunded',
-            timestamp: item.createdTime * 1000,
+            timestamp: (item.createdTime || item.idea.startTime) * 1000,
           })),
           ...result.data.solutionsFunded.map((item) => ({
             ...item,
