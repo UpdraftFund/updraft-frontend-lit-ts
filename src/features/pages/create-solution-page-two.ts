@@ -2,6 +2,8 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { Subscription } from 'wonka';
+import { parseUnits, toHex, trim } from 'viem';
+import dayjs from 'dayjs';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
@@ -9,20 +11,28 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
+import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import type {
   SlDialog,
   SlInput,
   SlRange,
   SlSelect,
 } from '@shoelace-style/shoelace';
-import { SaveableForm } from '@components/common/saveable-form';
+import {
+  SaveableForm,
+  formToJson,
+  loadForm,
+} from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
 import { updraftSettings } from '@state/common';
 import layout from '@state/layout';
 
-import { TransactionWatcher } from '@components/common/transaction-watcher';
+import {
+  TransactionWatcher,
+  TransactionSuccess,
+} from '@components/common/transaction-watcher';
 import { ShareDialog } from '@components/common/share-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
 import '@layout/page-heading';
@@ -34,6 +44,10 @@ import '@components/common/label-with-hint';
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
 import { ethAddressPattern } from '@utils/validation';
+import { hasProfile, connectWallet } from '@state/user';
+import { updraft } from '@contracts/updraft';
+import { Upd } from '@contracts/upd';
+import solutionSchema from '@schemas/solution-schema.json';
 
 @customElement('create-solution-page-two')
 export class CreateSolution extends SignalWatcher(SaveableForm) {
@@ -277,6 +291,83 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     }
   }
 
+  private async handleCreateSolution(e: MouseEvent) {
+    e.preventDefault();
+    if (!this.form.checkValidity()) {
+      this.form.reportValidity(); // Show validation messages
+      return;
+    }
+
+    // Get solution data from the first form
+    const solutionData = formToJson('create-solution', solutionSchema);
+
+    // Check if we have the required solution data
+    if (!solutionData.name || !solutionData.description) {
+      console.error('Missing required solution data');
+      return;
+    }
+
+    // Get funding details from the current form
+    const solutionForm = loadForm('create-solution-two');
+    if (!solutionForm) {
+      console.error('Could not load solution form data');
+      return;
+    }
+
+    const { ideaId, fundingToken, goal, deadline, stake, reward } =
+      solutionForm;
+
+    try {
+      const settings = updraftSettings.get();
+      // Format the deadline date properly
+      const deadlineTimestamp = dayjs(deadline).unix();
+
+      this.submitTransaction.hash = await updraft.write('createSolution', [
+        ideaId,
+        fundingToken,
+        stake ? parseUnits(stake, 18) : BigInt(0),
+        parseUnits(goal, 18),
+        BigInt(deadlineTimestamp),
+        BigInt((Number(reward) * Number(settings.percentScale)) / 100),
+        toHex(JSON.stringify(solutionData)),
+      ]);
+      this.shareDialog.topic = solutionData.name as string;
+    } catch (e) {
+      console.error('Solution creation error:', e);
+      if (e instanceof Error) {
+        if (
+          e.message?.startsWith('connection') ||
+          e.message?.includes('getChainId')
+        ) {
+          await connectWallet();
+        } else if (e.message?.includes('exceeds balance')) {
+          this.updDialog.show();
+        } else if (
+          e.message?.includes('exceeds allowance') &&
+          updraftSettings.get().updAddress
+        ) {
+          this.approveTransaction.reset();
+          this.approveDialog.show();
+          const upd = new Upd(updraftSettings.get().updAddress!);
+          this.approveTransaction.hash = await upd.write('approve', [
+            updraft.address,
+            parseUnits('1', 29), // approve for total supply of UPD
+          ]);
+        }
+      }
+    }
+  }
+
+  private async handleTransactionSuccess(t: TransactionSuccess) {
+    const address = t.receipt?.logs?.[0]?.topics?.[1];
+    const ideaId = t.receipt?.logs?.[0]?.topics?.[3];
+    if (address && ideaId) {
+      this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${trim(ideaId)}`;
+      this.shareDialog.action = 'created a Solution';
+      this.shareDialog.show();
+    }
+  }
+
   connectedCallback() {
     super.connectedCallback();
     layout.showLeftSidebar.set(true);
@@ -408,15 +499,40 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           <sl-button href="/create-solution/${this.ideaId}" variant="primary"
             >Previous
           </sl-button>
-          <sl-button
-            href="/submit-profile-and-create-solution"
-            variant="primary"
-            @click=${this.nextButtonClick}
-            >Next: Create your Profile
-          </sl-button>
+          ${hasProfile.get()
+            ? html` <sl-button
+                variant="primary"
+                @click=${this.handleCreateSolution}
+                >Create Solution
+              </sl-button>`
+            : html` <sl-button
+                href="/submit-profile-and-create-solution"
+                variant="primary"
+                @click=${this.nextButtonClick}
+                >Next: Create your Profile
+              </sl-button>`}
         </span>
       </form>
       <upd-dialog></upd-dialog>
+      <share-dialog></share-dialog>
+      <transaction-watcher
+        class="submit"
+        @transaction-success=${this.handleTransactionSuccess}
+      ></transaction-watcher>
+      <transaction-watcher class="approve"></transaction-watcher>
+      <sl-dialog label="Set Allowance">
+        <p>
+          Before you can create your solution, you need to sign a transaction to
+          allow Updraft to spend your UPD tokens.
+        </p>
+        <transaction-watcher
+          class="approve"
+          @transaction-success=${() => {
+            this.approveDialog.hide();
+            this.handleCreateSolution(new MouseEvent('click'));
+          }}
+        ></transaction-watcher>
+      </sl-dialog>
     `;
   }
 }
