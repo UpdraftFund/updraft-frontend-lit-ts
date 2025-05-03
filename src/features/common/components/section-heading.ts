@@ -5,7 +5,9 @@ import { css, html, LitElement } from 'lit';
 export class SectionHeading extends LitElement {
   static styles = css`
     :host {
-      font-size: 0.9rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--section-heading);
     }
 
     hr {
