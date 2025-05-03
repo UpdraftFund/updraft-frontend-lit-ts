@@ -13,6 +13,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import { SlDialog } from '@shoelace-style/shoelace';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
+import { shortNum } from '@utils/short-num';
 
 @customElement('upd-dialog')
 export class UpdDialog extends SignalWatcher(LitElement) {
@@ -40,7 +41,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
   @query('sl-dialog') dialog!: SlDialog;
   @state() private loadingBalance = false;
 
-  private handleRecheckBalance() {
+  private checkBalance() {
     this.loadingBalance = true;
     refreshBalances().finally(() => {
       this.loadingBalance = false;
@@ -49,6 +50,8 @@ export class UpdDialog extends SignalWatcher(LitElement) {
 
   async show() {
     this.dialog.show();
+    // Load balance in the background when dialog is opened
+    this.checkBalance();
   }
 
   render() {
@@ -60,13 +63,13 @@ export class UpdDialog extends SignalWatcher(LitElement) {
             <span class="balance">
               ${this.loadingBalance
                 ? html` <sl-spinner></sl-spinner>`
-                : getBalance('updraft')}
+                : shortNum(getBalance('updraft'))}
             </span>
             UPD
           </p>
           <sl-button
             pill
-            @click=${this.handleRecheckBalance}
+            @click=${this.checkBalance}
             variant="primary"
             size="small"
           >
@@ -75,7 +78,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
               class="calculator-icon"
               src=${calculator}
             ></sl-icon>
-            Recheck Balance
+            Refresh Balance
           </sl-button>
         </span>
         <h3>How to get UPD</h3>
