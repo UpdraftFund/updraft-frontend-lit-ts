@@ -10,7 +10,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import { userAddress } from '@state/user';
 
 import urqlClient from '@utils/urql-client';
-import { IdeasByFunderDocument, IdeasByFunderQuery } from '@gql';
+import { IdeasByFunderOrCreatorDocument, Idea } from '@gql';
 
 @customElement('my-ideas')
 export class MyIdeas extends SignalWatcher(LitElement) {
@@ -29,7 +29,8 @@ export class MyIdeas extends SignalWatcher(LitElement) {
     }
   `;
 
-  @state() private ideasQueryResult?: IdeasByFunderQuery;
+  @state() private ideas: Idea[] = [];
+  @state() private loading = false;
 
   // Track the current user address to detect changes
   private lastAddress: string | null = null;
@@ -39,13 +40,52 @@ export class MyIdeas extends SignalWatcher(LitElement) {
   private subscribe(address: `0x${string}`) {
     // Clean up previous subscription if it exists
     this.unsubIdeas?.();
-
+    this.loading = true;
     const ideasSub = urqlClient
-      .query(IdeasByFunderDocument, {
-        funder: address,
+      .query(IdeasByFunderOrCreatorDocument, {
+        user: address,
       })
       .subscribe((result) => {
-        this.ideasQueryResult = result.data;
+        this.loading = false;
+        if (result.data) {
+          // Create a map to store ideas with their activity timestamps
+          const ideaActivityMap = new Map();
+
+          const fundedIdeas = result.data.fundedIdeas || [];
+          fundedIdeas.forEach((contribution) => {
+            const idea = contribution.idea;
+            // Store the idea with its activity time (contribution time)
+            ideaActivityMap.set(idea.id, {
+              idea,
+              // Use the latest activity time if this idea already exists in the map
+              activityTime: Math.max(
+                Number(contribution.createdTime),
+                ideaActivityMap.get(idea.id)?.activityTime || 0
+              ),
+            });
+          });
+
+          const createdIdeas = result.data.createdIdeas || [];
+          createdIdeas.forEach((idea) => {
+            // Store the idea with its activity time (creation time)
+            ideaActivityMap.set(idea.id, {
+              idea,
+              // Use the latest activity time if this idea already exists in the map
+              activityTime: Math.max(
+                Number(idea.startTime),
+                ideaActivityMap.get(idea.id)?.activityTime || 0
+              ),
+            });
+          });
+
+          // Sort ideas by activity time (newest first), extract just the ideas, and limit to 3
+          this.ideas = Array.from(ideaActivityMap.values())
+            .sort((a, b) => b.activityTime - a.activityTime)
+            .map((item) => item.idea)
+            .slice(0, 3); // Limit to 3 ideas total
+        } else {
+          this.ideas = [];
+        }
       });
     this.unsubIdeas = ideasSub.unsubscribe;
   }
@@ -90,12 +130,12 @@ export class MyIdeas extends SignalWatcher(LitElement) {
     return html`
       <section-heading>My Ideas</section-heading>
       <div class="content">
-        ${this.ideasQueryResult === undefined
+        ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : cache(
-              this.ideasQueryResult.ideaContributions.map(
-                (ic) => html`
-                  <idea-card-small .idea=${ic.idea}></idea-card-small>
+              this.ideas.map(
+                (idea) => html`
+                  <idea-card-small .idea=${idea}></idea-card-small>
                 `
               )
             )}
