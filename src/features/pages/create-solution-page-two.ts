@@ -359,8 +359,8 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   }
 
   private async handleTransactionSuccess(t: TransactionSuccess) {
-    const address = t.receipt?.logs?.[0]?.topics?.[1];
-    const ideaId = t.receipt?.logs?.[0]?.topics?.[3];
+    const address = t.receipt?.logs?.[1]?.topics?.[1];
+    const ideaId = t.receipt?.logs?.[1]?.topics?.[3];
     if (address && ideaId) {
       this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${trim(ideaId)}`;
       this.shareDialog.action = 'created a Solution';
