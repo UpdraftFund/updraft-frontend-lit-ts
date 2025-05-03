@@ -163,7 +163,10 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     others will follow and learn from you. Create a profile so
                     they can see what you're up to and follow your lead.
                   </p>
-                  <sl-button slot="footer" variant="primary"
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/edit-profile"
                     >Go to Your Profile</sl-button
                   >
                 </sl-card>
