@@ -473,6 +473,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           Submit Profile
           ${this.entity ? 'and Create ' + capitalize(this.entity) : ''}
         </sl-button>
+        <transaction-watcher
+          class="submit"
+          @transaction-success=${this.handleSubmitSuccess}
+        ></transaction-watcher>
       </form>
       <upd-dialog></upd-dialog>
       <sl-dialog label="Set Allowance">
@@ -486,10 +490,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         ></transaction-watcher>
       </sl-dialog>
       <share-dialog></share-dialog>
-      <transaction-watcher
-        class="submit"
-        @transaction-success=${this.handleSubmitSuccess}
-      ></transaction-watcher>
     `;
   }
 }

@@ -509,13 +509,13 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
                 >Next: Create your Profile
               </sl-button>`}
         </span>
+        <transaction-watcher
+          class="submit"
+          @transaction-success=${this.handleTransactionSuccess}
+        ></transaction-watcher>
       </form>
       <upd-dialog></upd-dialog>
       <share-dialog></share-dialog>
-      <transaction-watcher
-        class="submit"
-        @transaction-success=${this.handleTransactionSuccess}
-      ></transaction-watcher>
       <transaction-watcher class="approve"></transaction-watcher>
       <sl-dialog label="Set Allowance">
         <p>
