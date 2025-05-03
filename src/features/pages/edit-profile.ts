@@ -50,6 +50,7 @@ import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
 import { Profile } from '@/types/user/profile';
+import { markComplete } from '@state/user/beginner-tasks';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -285,6 +286,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         this.shareDialog.show();
       }
     }
+    markComplete('create-profile');
   }
 
   private async handleImageUpload(event: Event) {
