@@ -59,7 +59,7 @@ export class MyIdeas extends SignalWatcher(LitElement) {
               idea,
               // Use the latest activity time if this idea already exists in the map
               activityTime: Math.max(
-                Number(contribution.createdTime),
+                Number(contribution.createdTime) || Number(idea.startTime),
                 ideaActivityMap.get(idea.id)?.activityTime || 0
               ),
             });
