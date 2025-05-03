@@ -206,9 +206,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
           if (solutionForm) {
             // Format the deadline date properly
-            const deadline = solutionForm.deadline
-              ? dayjs(solutionForm.deadline).unix()
-              : dayjs().add(30, 'days').unix(); // Default to 30 days from now if not set
+            const deadline = dayjs(solutionForm.deadline).unix();
 
             this.submitTransaction.hash = await updraft.write(
               'createSolutionWithProfile',
