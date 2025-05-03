@@ -20,6 +20,7 @@ import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
 import { refreshUpdraftSettings } from '@state/common';
 import { refreshBalances } from '@state/user/balances';
+import { markComplete } from '@state/user/beginner-tasks';
 
 // Initialize signals with default values
 export const userAddress = signal<Address | null>(null);
@@ -215,6 +216,9 @@ watchAccount(config, {
     // Update connection status flags
     setIsConnecting(account.isConnecting);
     refreshBalances();
+
+    // Mark the 'connect-wallet' beginner task as complete
+    markComplete('connect-wallet');
   },
 });
 

@@ -39,6 +39,7 @@ import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
 import { getBalance, refreshBalances } from '@state/user/balances';
+import { markComplete } from '@state/user/beginner-tasks';
 
 @customElement('idea-page')
 export class IdeaPage extends SignalWatcher(LitElement) {
@@ -305,6 +306,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.approveDialog.hide();
     this.shareDialog.show();
+    markComplete('support-idea');
   }
 
   private renderIdea() {

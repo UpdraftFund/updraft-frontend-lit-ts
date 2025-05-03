@@ -1,10 +1,13 @@
-import { customElement } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
 import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/button/button';
 import { allTasksComplete, isComplete } from '@state/user/beginner-tasks.ts';
+
+import '@components/common/upd-dialog';
+import { UpdDialog } from '@components/common/upd-dialog';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
@@ -33,7 +36,6 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
     sl-card p {
       font-size: 0.875rem;
       line-height: 1.5;
-      margin-bottom: 1.5rem;
     }
 
     sl-card::part(base),
@@ -47,6 +49,8 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       justify-content: space-between;
     }
   `;
+
+  @query('upd-dialog', true) updDialog!: UpdDialog;
 
   render() {
     if (allTasksComplete.get()) {
@@ -110,10 +114,13 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     You'll need at least 5 UPD to complete the rest of the
                     tasks. Swap some ETH for UPD.
                   </p>
-                  <div slot="footer" class="button-upd-container">
-                    <sl-button variant="primary">Swap for UPD</sl-button>
-                    <div>🪁 525 UPD</div>
-                  </div>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    @click=${() => this.updDialog.show()}
+                    >Get UPD</sl-button
+                  >
+                  <upd-dialog></upd-dialog>
                 </sl-card>
               `}
           ${isComplete('support-idea')
@@ -156,7 +163,10 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     others will follow and learn from you. Create a profile so
                     they can see what you're up to and follow your lead.
                   </p>
-                  <sl-button slot="footer" variant="primary"
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/edit-profile"
                     >Go to Your Profile</sl-button
                   >
                 </sl-card>
