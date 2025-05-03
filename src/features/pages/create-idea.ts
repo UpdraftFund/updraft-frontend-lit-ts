@@ -173,8 +173,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
 
-  private async handleCreateIdea(e: MouseEvent) {
-    e.preventDefault();
+  private async createIdea() {
     if (!this.form.checkValidity()) {
       this.form.reportValidity(); // Show validation messages
       return;
@@ -304,7 +303,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
               ? html` <sl-button
                   class="submit-button"
                   variant="primary"
-                  @click=${this.handleCreateIdea}
+                  @click=${this.createIdea}
                   >Create Idea
                 </sl-button>`
               : html`<a href="/submit-profile-and-create-idea" rel="next">
@@ -332,7 +331,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
               class="approve"
               @transaction-success=${() => {
                 this.approveDialog.hide();
-                this.handleCreateIdea(new MouseEvent('click'));
+                this.createIdea();
               }}
             ></transaction-watcher>
           </sl-dialog>

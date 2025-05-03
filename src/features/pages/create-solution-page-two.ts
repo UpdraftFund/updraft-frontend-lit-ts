@@ -291,8 +291,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     }
   }
 
-  private async handleCreateSolution(e: MouseEvent) {
-    e.preventDefault();
+  private async createSolution() {
     if (!this.form.checkValidity()) {
       this.form.reportValidity(); // Show validation messages
       return;
@@ -500,9 +499,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
             >Previous
           </sl-button>
           ${hasProfile.get()
-            ? html` <sl-button
-                variant="primary"
-                @click=${this.handleCreateSolution}
+            ? html` <sl-button variant="primary" @click=${this.createSolution}
                 >Create Solution
               </sl-button>`
             : html` <sl-button
@@ -529,7 +526,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           class="approve"
           @transaction-success=${() => {
             this.approveDialog.hide();
-            this.handleCreateSolution(new MouseEvent('click'));
+            this.createSolution();
           }}
         ></transaction-watcher>
       </sl-dialog>
