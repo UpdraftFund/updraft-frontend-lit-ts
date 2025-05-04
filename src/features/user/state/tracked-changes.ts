@@ -10,7 +10,8 @@ function getDefaultSinceValue(): number {
   if (storedValue && !isNaN(Number(storedValue))) {
     return Number(storedValue);
   }
-  return dayjs().subtract(1, 'day').unix();
+  resetSince();
+  return since.get();
 }
 
 export const since = signal(getDefaultSinceValue());
