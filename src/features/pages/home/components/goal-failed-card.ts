@@ -1,4 +1,4 @@
-import { customElement } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { html, css } from 'lit';
 import { GoalFailed } from '@pages/home/types';
 import { TrackedChangeCard } from './tracked-change-card';
@@ -6,6 +6,13 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { fromHex } from 'viem';
 import { SolutionInfo } from '@/features/solution/types';
+import { Task } from '@lit/task';
+import { userAddress } from '@state/user';
+import { SolutionContract } from '@contracts/solution';
+import { TransactionWatcher } from '@components/common/transaction-watcher';
+
+import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 dayjs.extend(relativeTime);
 
@@ -15,11 +22,52 @@ export class GoalFailedCard extends TrackedChangeCard {
     ...TrackedChangeCard.styles,
     css`
       /* Additional styles specific to this card */
+      .refund-button {
+        margin-top: 1rem;
+      }
+
+      .refund-section {
+        margin-top: 1rem;
+      }
     `,
   ];
 
   // Type checking for the change property
   declare change: GoalFailed;
+
+  @query('transaction-watcher') refundTransaction!: TransactionWatcher;
+
+  // Task to check if the current user has funded this solution
+  private readonly hasFundedTask = new Task(
+    this,
+    async ([solutionAddress, userAddr]) => {
+      if (!solutionAddress || !userAddr) return false;
+
+      try {
+        const solution = new SolutionContract(solutionAddress as `0x${string}`);
+        // Check if the user has any positions in this solution
+        const numPositions = await solution.read('numPositions', [userAddr]);
+        return Number(numPositions) > 0;
+      } catch (error) {
+        console.error('Error checking if user funded solution:', error);
+        return false;
+      }
+    },
+    () => [this.change.solution.id, userAddress.get()] as const
+  );
+
+  // Handle refund button click
+  private async handleRefund() {
+    try {
+      const solution = new SolutionContract(
+        this.change.solution.id as `0x${string}`
+      );
+      // Call the refund function without parameters to refund all positions
+      this.refundTransaction.hash = await solution.write('refund', []);
+    } catch (error) {
+      console.error('Error refunding solution:', error);
+    }
+  }
 
   render() {
     const solution = this.change.solution;
@@ -58,6 +106,39 @@ export class GoalFailedCard extends TrackedChangeCard {
         </div>
 
         <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
+
+        ${this.hasFundedTask.render({
+          pending: () =>
+            html` <div class="refund-section">
+              <sl-spinner></sl-spinner>
+              Checking funding status...
+            </div>`,
+          complete: (hasFunded) =>
+            hasFunded
+              ? html`
+                  <div class="refund-section">
+                    <p>
+                      You funded this solution. You can get a refund since the
+                      goal was not met.
+                    </p>
+                    <sl-button
+                      class="refund-button"
+                      variant="primary"
+                      @click=${this.handleRefund}
+                    >
+                      Get refunded
+                    </sl-button>
+                    <transaction-watcher
+                      @transaction-success=${() => this.hasFundedTask.run()}
+                    ></transaction-watcher>
+                  </div>
+                `
+              : html``,
+          error: (error) =>
+            html` <div class="refund-section">
+              Error checking funding status: ${(error as Error).message}
+            </div>`,
+        })}
       </sl-card>
     `;
   }
