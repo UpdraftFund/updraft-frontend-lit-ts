@@ -202,12 +202,9 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     const input = e.target as SlInput;
     const value = Number(input.value);
     const userBalance = getBalance('updraft');
-    const minFee = updraftSettings.get().minFee;
 
     if (isNaN(value)) {
       this.depositError = 'Enter a number';
-    } else if (value <= minFee) {
-      this.depositError = `Deposit must be more than ${minFee} UPD to cover fees`;
     } else if (value > userBalance) {
       this.depositError = `You have ${userBalance} UPD`;
     } else {
