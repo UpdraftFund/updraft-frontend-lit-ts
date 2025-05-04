@@ -54,7 +54,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     }
 
     .header-container {
-      margin: 1.5rem 0 1.5rem;
+      margin: 1.5rem 0 1rem;
       display: flex;
       gap: 0.5rem;
       align-items: center;
