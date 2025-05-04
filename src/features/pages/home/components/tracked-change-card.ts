@@ -3,6 +3,8 @@ import { property } from 'lit/decorators.js';
 import { formatUnits } from 'viem';
 import dayjs from 'dayjs';
 
+import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
+
 import { shortNum } from '@utils/short-num';
 import { Change } from '@/types';
 import { SolutionFieldsFragment, SolutionFieldsDetailedFragment } from '@gql';
@@ -106,10 +108,9 @@ export class TrackedChangeCard extends LitElement {
         font-weight: 600;
       }
 
-      .success-message {
+      .goal-message {
         margin-top: 1rem;
-        text-align: center;
-        font-size: 1.2rem;
+        font-size: 1rem;
       }
 
       .funding-details {
@@ -119,9 +120,8 @@ export class TrackedChangeCard extends LitElement {
       }
 
       .emoji-large {
-        font-size: 2rem;
-        text-align: center;
-        margin: 1rem 0;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
       }
 
       sl-card::part(header) {

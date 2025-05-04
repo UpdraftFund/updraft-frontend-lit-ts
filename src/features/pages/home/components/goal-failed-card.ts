@@ -35,24 +35,26 @@ export class GoalFailedCard extends TrackedChangeCard {
       }
     }
 
+    const progress = this.calculateProgress(solution);
+
     return html`
       <sl-card>
         <div slot="header">
-          <a class="change-card-heading">
-            href="/solution/${solution.id}"> ${solutionInfo?.name || 'Solution'}
+          <a class="change-card-heading" href="/solution/${solution.id}"
+            >${solutionInfo?.name || 'Solution'}
           </a>
           <div class="change-card-subheading">Goal Failed</div>
         </div>
 
         <div class="emoji-large">😔</div>
+        <p class="goal-message">Funding goal was not met by the deadline</p>
 
-        <div class="success-message">
-          Funding goal was not met by the deadline
-        </div>
-
-        <div class="funding-details">
-          ${this.formatAmount(solution?.tokensContributed)} of
-          ${this.formatAmount(solution?.fundingGoal)} UPD raised
+        <div class="goal">
+          <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
+          <div class="goal-text">
+            ${this.formatAmount(solution.tokensContributed)} out of
+            ${this.formatAmount(solution.fundingGoal)} UPD
+          </div>
         </div>
 
         <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
