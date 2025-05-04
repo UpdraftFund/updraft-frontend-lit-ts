@@ -30,7 +30,7 @@ import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
@@ -188,45 +188,31 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   //TODO: each url should include a network
   //@property() network!: string;
 
-  private unsubIdea?: () => void;
+  private readonly ideaController = new UrqlQueryController(
+    this,
+    IdeaDocument,
+    { ideaId: this.ideaId },
+    (result) => {
+      this.loaded = true;
 
-  private subscribe() {
-    // Clean up any existing subscription
-    this.unsubIdea?.();
+      if (result.error) {
+        this.error = result.error.message;
+        return;
+      }
 
-    if (this.ideaId) {
-      this.loaded = false;
-      this.error = null;
-      const ideaSub = urqlClient
-        .query(IdeaDocument, { ideaId: this.ideaId })
-        .subscribe((result) => {
-          this.loaded = true;
-          this.idea = result.data?.idea as Idea;
-          if (this.idea) {
-            layout.rightSidebarContent.set(html`
-              <top-supporters .ideaId=${this.ideaId}></top-supporters>
-              <related-ideas
-                .ideaId=${this.ideaId}
-                .tags=${this.idea.tags}
-              ></related-ideas>
-            `);
-          }
-          if (result.error) {
-            this.error = result.error.message;
-          }
-        });
-      this.unsubIdea = ideaSub.unsubscribe;
+      this.idea = result.data?.idea as Idea;
+
+      if (this.idea) {
+        layout.rightSidebarContent.set(html`
+          <top-supporters .ideaId=${this.ideaId}></top-supporters>
+          <related-ideas
+            .ideaId=${this.ideaId}
+            .tags=${this.idea.tags}
+          ></related-ideas>
+        `);
+      }
     }
-  }
-
-  private handleVisibilityChange = () => {
-    // Pause subscription when tab is hidden
-    if (document.hidden) {
-      this.unsubIdea?.();
-    } else {
-      this.subscribe();
-    }
-  };
+  );
 
   private handleSupportFocus() {
     refreshBalances();
@@ -341,7 +327,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           (${date.fromNow()})
         </span>
         <div class="reward-fire">
-          <!--          TODO: don't show funder reward if it's the default value-->
           ${pctFunderReward
             ? html`
                 <span class="reward">
@@ -411,7 +396,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Error Loading Idea</h2>
             <p>${this.error}</p>
-            <sl-button variant="primary" @click=${this.subscribe}
+            <sl-button
+              variant="primary"
+              @click=${() => this.ideaController.refresh()}
               >Retry
             </sl-button>
           </div>
@@ -442,23 +429,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     // initially set the right side bar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
-    // if the idea is found, it will populate the right sidebar
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubIdea?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
   }
 
   updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('ideaId')) {
-      this.subscribe();
+    super.updated(changedProperties);
+    if (changedProperties.has('ideaId') && this.ideaId) {
+      this.loaded = false;
+      this.error = null;
+      this.ideaController.setVariablesAndSubscribe({ ideaId: this.ideaId });
     }
   }
 
