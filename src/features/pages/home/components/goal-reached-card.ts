@@ -38,15 +38,15 @@ export class GoalReachedCard extends TrackedChangeCard {
     return html`
       <sl-card>
         <div slot="header">
-          <a class="change-card-heading">
-            href="/solution/${solution.id}"> ${solutionInfo?.name || 'Solution'}
+          <a class="change-card-heading" href="/solution/${solution.id}">
+            ${solutionInfo?.name || 'Solution'}
           </a>
           <div class="change-card-subheading">Goal Reached!</div>
         </div>
 
         <div class="emoji-large">🎉</div>
 
-        <div class="success-message">Funding goal has been reached!</div>
+        <div class="goal-message">Funding goal has been reached!</div>
 
         <div class="funding-details">
           ${this.formatAmount(solution?.fundingGoal)} UPD raised
