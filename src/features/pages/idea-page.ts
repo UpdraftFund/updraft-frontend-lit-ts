@@ -12,13 +12,7 @@ import utc from 'dayjs/plugin/utc';
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 
-// Define Position interface for storing viable positions
-interface Position {
-  originalContribution: bigint;
-  currentPosition: bigint;
-  earnings: bigint;
-  positionIndex: bigint;
-}
+import type { Position } from '@/features/idea/types';
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
