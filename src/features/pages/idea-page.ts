@@ -21,7 +21,6 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import { SlDialog, SlInput } from '@shoelace-style/shoelace';
@@ -113,10 +112,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       .reward-fire span {
         display: flex;
         gap: 0.3rem;
-      }
-
-      .reward sl-icon {
-        padding-top: 2px; // align the box part of the gift with the text
       }
 
       .fire {
@@ -248,10 +243,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
-  // Array to store viable positions
-  private positions: Position[] = [];
   // Track current position index for navigation
   @state() private positionIndex: number = 0;
+
+  // Array to store viable positions
+  private positions: Position[] = [];
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
