@@ -30,7 +30,8 @@ export class MySolutions extends SignalWatcher(LitElement) {
     }
   `;
 
-  @state() private solutions?: Solution[];
+  @state() private solutions: Solution[] = [];
+  @state() private loading = false;
 
   // Track the current user address to detect changes
   private lastAddress: string | null = null;
@@ -40,40 +41,54 @@ export class MySolutions extends SignalWatcher(LitElement) {
   private subscribe(address: `0x${string}`) {
     // Clean up previous subscription if it exists
     this.unsubSolutions?.();
-
+    this.loading = true;
     const solutionsSub = urqlClient
       .query(SolutionsByFunderOrDrafterDocument, {
         user: address,
       })
       .subscribe((result) => {
+        this.loading = false;
         if (result.data) {
-          // Get solutions from both queries
-          const fundedSolutions =
-            result.data.fundedSolutions?.map(
-              (contribution) => contribution.solution
-            ) || [];
+          // Create a map to store solutions with their activity timestamps
+          const solutionActivityMap = new Map();
+
+          // Process funded solutions
+          const fundedSolutions = result.data.fundedSolutions || [];
+          fundedSolutions.forEach((contribution) => {
+            const solution = contribution.solution;
+            // Store the solution with its activity time (contribution time)
+            solutionActivityMap.set(solution.id, {
+              solution,
+              // Use the latest activity time if this solution already exists in the map
+              activityTime: Math.max(
+                Number(contribution.createdTime),
+                solutionActivityMap.get(solution.id)?.activityTime || 0
+              ),
+            });
+          });
+
+          // Process drafted solutions
           const draftedSolutions = result.data.draftedSolutions || [];
-
-          // Combine and deduplicate solutions based on their ID
-          const solutionMap = new Map();
-
-          // Add funded solutions to map
-          fundedSolutions.forEach((solution) => {
-            solutionMap.set(solution.id, solution);
-          });
-
-          // Add drafted solutions to map (will overwrite any duplicates)
           draftedSolutions.forEach((solution) => {
-            solutionMap.set(solution.id, solution);
+            // Store the solution with its activity time (creation time)
+            solutionActivityMap.set(solution.id, {
+              solution,
+              // Use the latest activity time if this solution already exists in the map
+              activityTime: Math.max(
+                Number(solution.startTime),
+                solutionActivityMap.get(solution.id)?.activityTime || 0
+              ),
+            });
           });
 
-          // Convert map values back to array
-          this.solutions = Array.from(solutionMap.values());
+          // Sort solutions by activity time (newest first) and extract just the solutions
+          this.solutions = Array.from(solutionActivityMap.values())
+            .sort((a, b) => b.activityTime - a.activityTime)
+            .map((item) => item.solution);
         } else {
           this.solutions = [];
         }
       });
-
     this.unsubSolutions = solutionsSub.unsubscribe;
   }
 
@@ -117,7 +132,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
     return html`
       <section-heading>My Solutions</section-heading>
       <div class="content">
-        ${this.solutions === undefined
+        ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : cache(
               this.solutions.map(

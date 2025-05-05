@@ -11,7 +11,7 @@ import seedling from '@icons/common/seedling.svg';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
-import { defaultFunderReward, updraftSettings } from '@state/common';
+import { updraftSettings } from '@state/common';
 import { Idea } from '@/features/idea/types';
 
 import { shortNum } from '@utils/short-num';
@@ -76,11 +76,8 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
   render() {
     const { startTime, funderReward, shares, description, id, name } =
       this.idea;
-    let pctFunderReward;
-    if (funderReward != defaultFunderReward.get()) {
-      pctFunderReward =
-        (funderReward * 100) / updraftSettings.get().percentScale;
-    }
+    const pctFunderReward =
+      (funderReward * 100) / updraftSettings.get().percentScale;
     const interest = shortNum(formatUnits(shares, 18));
     const date = dayjs(startTime * 1000);
     return html`

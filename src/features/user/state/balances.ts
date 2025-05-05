@@ -6,6 +6,7 @@ import { formatUnits } from 'viem';
 import { updraftSettings } from '@state/common';
 import { Upd } from '@contracts/upd.ts';
 import { Balances } from '@/types';
+import { markComplete } from '@state/user/beginner-tasks';
 
 export const balances = signal<Balances>({
   eth: { symbol: 'ETH', balance: '0' },
@@ -49,6 +50,9 @@ export const refreshBalances = async () => {
     eth: { symbol: 'ETH', balance: ethBalance },
     updraft: { symbol: 'UPD', balance: updBalance },
   });
+  if (Number(updBalance) > 5) {
+    markComplete('get-upd');
+  }
 };
 
 export const getBalance = (token: string) => {

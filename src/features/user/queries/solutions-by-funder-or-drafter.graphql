@@ -8,6 +8,7 @@ query SolutionsByFunderOrDrafter($user: String!, $first: Int = 3, $skip: Int = 0
         solution {
             ...SolutionFields
         }
+        createdTime
     }
 
     # Get solutions where user is a drafter

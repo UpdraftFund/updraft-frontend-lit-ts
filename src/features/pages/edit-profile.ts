@@ -50,6 +50,7 @@ import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
 import { Profile } from '@/types/user/profile';
+import { markComplete } from '@state/user/beginner-tasks';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -205,9 +206,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
           if (solutionForm) {
             // Format the deadline date properly
-            const deadline = solutionForm.deadline
-              ? dayjs(solutionForm.deadline).unix()
-              : dayjs().add(30, 'days').unix(); // Default to 30 days from now if not set
+            const deadline = dayjs(solutionForm.deadline).unix();
 
             this.submitTransaction.hash = await updraft.write(
               'createSolutionWithProfile',
@@ -285,6 +284,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         this.shareDialog.show();
       }
     }
+    markComplete('create-profile');
   }
 
   private async handleImageUpload(event: Event) {
@@ -473,6 +473,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           Submit Profile
           ${this.entity ? 'and Create ' + capitalize(this.entity) : ''}
         </sl-button>
+        <transaction-watcher
+          class="submit"
+          @transaction-success=${this.handleSubmitSuccess}
+        ></transaction-watcher>
       </form>
       <upd-dialog></upd-dialog>
       <sl-dialog label="Set Allowance">
@@ -486,10 +490,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         ></transaction-watcher>
       </sl-dialog>
       <share-dialog></share-dialog>
-      <transaction-watcher
-        class="submit"
-        @transaction-success=${this.handleSubmitSuccess}
-      ></transaction-watcher>
     `;
   }
 }

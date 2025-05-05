@@ -2,11 +2,17 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
+import { Task } from '@lit/task';
 
 import { fromHex, formatUnits, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
+
+import chevronLeft from '@icons/navigation/chevron-left.svg';
+import chevronRight from '@icons/navigation/chevron-right.svg';
+
+import type { Position } from '@/features/idea/types';
 
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
@@ -15,8 +21,8 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 import '@components/navigation/create-idea-button';
@@ -30,7 +36,7 @@ import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
@@ -39,6 +45,8 @@ import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
 import { getBalance, refreshBalances } from '@state/user/balances';
+import { markComplete } from '@state/user/beginner-tasks';
+import { userAddress } from '@state/user';
 
 @customElement('idea-page')
 export class IdeaPage extends SignalWatcher(LitElement) {
@@ -106,10 +114,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         gap: 0.3rem;
       }
 
-      .reward sl-icon {
-        padding-top: 2px; // align the box part of the gift with the text
-      }
-
       .fire {
         align-items: center;
       }
@@ -164,6 +168,61 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       sl-dialog::part(body) {
         padding-top: 0;
       }
+
+      .user-support {
+        background-color: var(--subtle-background);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .support-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .user-support h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      .position-navigation {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .position-navigation sl-icon-button::part(base) {
+        font-size: 1.2rem;
+        color: var(--sl-color-neutral-600);
+      }
+
+      .position-navigation sl-icon-button::part(base):hover {
+        color: var(--accent);
+      }
+
+      .position-navigation span {
+        font-size: 0.9rem;
+        color: var(--sl-color-neutral-600);
+      }
+
+      .support-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .support-details p {
+        margin: 0;
+      }
+
+      .support-details sl-button {
+        margin-top: 0.5rem;
+        align-self: flex-start;
+      }
     `,
   ];
 
@@ -174,58 +233,170 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   submitTransaction!: TransactionWatcher;
   @query('transaction-watcher.approve', true)
   approveTransaction!: TransactionWatcher;
+  @query('transaction-watcher.withdraw', true)
+  withdrawTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
 
   @state() private depositError: string | null = null;
   @state() private antiSpamFee: string = '1'; // 1 UPD
   @state() private needUpd: boolean = false;
-  @state() private idea?: Idea; // the fetched idea
+  @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
+  // Track current position index for navigation
+  @state() private positionIndex: number = 0;
+
+  // Array to store viable positions
+  private positions: Position[] = [];
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
   //@property() network!: string;
 
-  private unsubIdea?: () => void;
+  private readonly ideaController = new UrqlQueryController(
+    this,
+    IdeaDocument,
+    { ideaId: this.ideaId },
+    (result) => {
+      this.loaded = true;
 
-  private subscribe() {
-    // Clean up any existing subscription
-    this.unsubIdea?.();
+      if (result.error) {
+        this.error = result.error.message;
+        return;
+      }
 
-    if (this.ideaId) {
-      this.loaded = false;
-      this.error = null;
-      const ideaSub = urqlClient
-        .query(IdeaDocument, { ideaId: this.ideaId })
-        .subscribe((result) => {
-          this.loaded = true;
-          this.idea = result.data?.idea as Idea;
-          if (this.idea) {
-            layout.rightSidebarContent.set(html`
-              <top-supporters .ideaId=${this.ideaId}></top-supporters>
-              <related-ideas
-                .ideaId=${this.ideaId}
-                .tags=${this.idea.tags}
-              ></related-ideas>
-            `);
+      this.idea = result.data?.idea as Idea;
+
+      if (this.idea) {
+        layout.rightSidebarContent.set(html`
+          <top-supporters .ideaId=${this.ideaId}></top-supporters>
+          <related-ideas
+            .ideaId=${this.ideaId}
+            .tags=${this.idea.tags}
+          ></related-ideas>
+        `);
+
+        // Refresh user support data when idea is loaded
+        this.userSupportTask.run();
+      }
+    }
+  );
+
+  // Task to fetch user's support for this idea
+  private readonly userSupportTask = new Task(
+    this,
+    async ([ideaId, address]) => {
+      if (!ideaId || !address) return null;
+
+      try {
+        const idea = new IdeaContract(ideaId);
+
+        // First, get the total number of positions
+        const numPositions = (await idea.read('numPositions', [
+          address,
+        ])) as bigint;
+
+        // If user has no positions, return null
+        if (numPositions === 0n) {
+          this.positions = [];
+          return null;
+        }
+
+        // Collect all viable positions
+        const viablePositions: Position[] = [];
+
+        // Check each position
+        for (let i = 0n; i < numPositions; i++) {
+          try {
+            // Get current position (includes original contribution + earnings)
+            const position = (await idea.read('checkPosition', [
+              address,
+              i,
+            ])) as bigint[];
+            const currentPosition = position[0] as bigint;
+
+            // Skip positions with zero value (already withdrawn)
+            if (currentPosition <= 0n) continue;
+
+            // Get original contribution from positionsByAddress mapping
+            const originalPosition = (await idea.read('positionsByAddress', [
+              address,
+              i,
+            ])) as bigint[];
+
+            const originalContribution = originalPosition[1] as bigint;
+            const earnings = currentPosition - originalContribution;
+            viablePositions.push({
+              originalContribution,
+              currentPosition,
+              earnings,
+              positionIndex: i,
+            });
+          } catch (error) {
+            // If position doesn't exist (already withdrawn), skip it
+            console.warn(`Position ${i} not available:`, error);
           }
-          if (result.error) {
-            this.error = result.error.message;
-          }
-        });
-      this.unsubIdea = ideaSub.unsubscribe;
+        }
+
+        // Store the viable positions and reset current index
+        this.positions = viablePositions;
+        this.positionIndex = viablePositions.length > 0 ? 0 : -1;
+
+        // Return the positions array for rendering
+        return viablePositions.length > 0 ? viablePositions : null;
+      } catch (error) {
+        console.warn('Error fetching user support:', error);
+        this.positions = [];
+        return null;
+      }
+    },
+    () => [this.ideaId, userAddress.get()] as const
+  );
+
+  // Handle withdraw support
+  private async handleWithdraw() {
+    try {
+      // Make sure we have positions and a valid index
+      if (this.positions.length === 0 || this.positionIndex < 0) {
+        console.warn('No valid position to withdraw');
+        return;
+      }
+
+      const currentPosition = this.positions[this.positionIndex];
+      const idea = new IdeaContract(this.ideaId);
+
+      // Use the withdraw method that takes a position index
+      this.withdrawTransaction.hash = await idea.write('withdraw', [
+        currentPosition.positionIndex,
+      ]);
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message.startsWith('connection')) {
+          modal.open({ view: 'Connect' });
+        }
+      }
+      console.error('Withdraw error:', e);
     }
   }
 
-  private handleVisibilityChange = () => {
-    // Pause subscription when tab is hidden
-    if (document.hidden) {
-      this.unsubIdea?.();
-    } else {
-      this.subscribe();
-    }
-  };
+  // Navigate to previous position
+  private previousPosition() {
+    if (this.positions.length <= 1) return; // No need to navigate if only one position
+
+    // Decrement position index, wrapping around to the end if needed
+    this.positionIndex =
+      this.positionIndex === 0
+        ? this.positions.length - 1
+        : this.positionIndex - 1;
+  }
+
+  // Navigate to next position
+  private nextPosition() {
+    if (this.positions.length <= 1) return; // No need to navigate if only one position
+
+    // Increment position index, wrapping around to the beginning if needed
+    this.positionIndex = (this.positionIndex + 1) % this.positions.length;
+  }
 
   private handleSupportFocus() {
     refreshBalances();
@@ -305,6 +476,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.approveDialog.hide();
     this.shareDialog.show();
+    markComplete('support-idea');
+    this.userSupportTask.run();
+  }
+
+  private async handleWithdrawSuccess() {
+    this.userSupportTask.run();
+    // If the position was successfully withdrawn, it will be removed from the viable positions
+    // If there are no more positions, the UI will update automatically
   }
 
   private renderIdea() {
@@ -339,7 +518,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           (${date.fromNow()})
         </span>
         <div class="reward-fire">
-          <!--          TODO: don't show funder reward if it's the default value-->
           ${pctFunderReward
             ? html`
                 <span class="reward">
@@ -349,6 +527,73 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             : html``}
           <span class="fire">🔥${interest}</span>
         </div>
+        ${this.userSupportTask.render({
+          complete: () => {
+            // Check if we have any positions
+            if (this.positions.length > 0 && this.positionIndex >= 0) {
+              const position = this.positions[this.positionIndex];
+
+              return html`
+                <div class="user-support">
+                  <div class="support-header">
+                    <h3>Your Support</h3>
+                    ${this.positions.length > 1
+                      ? html`
+                          <div class="position-navigation">
+                            <sl-icon-button
+                              src=${chevronLeft}
+                              label="Previous position"
+                              @click=${this.previousPosition}
+                            ></sl-icon-button>
+                            <span
+                              >Position ${this.positionIndex + 1} of
+                              ${this.positions.length}</span
+                            >
+                            <sl-icon-button
+                              src=${chevronRight}
+                              label="Next position"
+                              @click=${this.nextPosition}
+                            ></sl-icon-button>
+                          </div>
+                        `
+                      : html``}
+                  </div>
+                  <div class="support-details">
+                    <p>
+                      Your original contribution:
+                      <strong>
+                        ${shortNum(
+                          formatUnits(position.originalContribution, 18)
+                        )}
+                        UPD
+                      </strong>
+                    </p>
+                    <p>
+                      Your earnings so far:
+                      <strong>
+                        ${shortNum(formatUnits(position.earnings, 18))} UPD
+                      </strong>
+                    </p>
+                    <p>
+                      Withdrawable amount:
+                      <strong>
+                        ${shortNum(formatUnits(position.currentPosition, 18))}
+                        UPD
+                      </strong>
+                    </p>
+                    <sl-button variant="primary" @click=${this.handleWithdraw}>
+                      Withdraw Support
+                    </sl-button>
+                  </div>
+                </div>
+
+                <h3>Add More Support</h3>
+              `;
+            } else {
+              return html`<h3>Support this Idea</h3>`;
+            }
+          },
+        })}
         <form @submit=${this.handleSubmit}>
           <div class="support">
             <sl-input
@@ -409,7 +654,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Error Loading Idea</h2>
             <p>${this.error}</p>
-            <sl-button variant="primary" @click=${this.subscribe}
+            <sl-button
+              variant="primary"
+              @click=${() => this.ideaController.refresh()}
               >Retry
             </sl-button>
           </div>
@@ -437,26 +684,17 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       <search-bar></search-bar>
     `);
     layout.showLeftSidebar.set(true);
-    // initially set the right side bar to empty html
+    // initially set the right sidebar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
-    // if the idea is found, it will populate the right sidebar
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubIdea?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
   }
 
   updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('ideaId')) {
-      this.subscribe();
+    super.updated(changedProperties);
+    if (changedProperties.has('ideaId') && this.ideaId) {
+      this.loaded = false;
+      this.error = null;
+      this.ideaController.setVariablesAndSubscribe({ ideaId: this.ideaId });
     }
   }
 
@@ -478,6 +716,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         <transaction-watcher
           class="submit"
           @transaction-success=${this.handleTransactionSuccess}
+        >
+        </transaction-watcher>
+        <transaction-watcher
+          class="withdraw"
+          @transaction-success=${this.handleWithdrawSuccess}
         >
         </transaction-watcher>
       </main>
