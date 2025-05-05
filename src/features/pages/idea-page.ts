@@ -9,6 +9,17 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import utc from 'dayjs/plugin/utc';
 
+import chevronLeft from '@icons/navigation/chevron-left.svg';
+import chevronRight from '@icons/navigation/chevron-right.svg';
+
+// Define Position interface for storing viable positions
+interface Position {
+  originalContribution: bigint;
+  currentPosition: bigint;
+  earnings: bigint;
+  positionIndex: bigint;
+}
+
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
@@ -18,6 +29,7 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import { SlDialog, SlInput } from '@shoelace-style/shoelace';
 
 import '@components/navigation/create-idea-button';
@@ -175,11 +187,37 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         margin: 1rem 0;
       }
 
-      .user-support h3 {
-        margin-top: 0;
+      .support-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 0.5rem;
+      }
+
+      .user-support h3 {
+        margin: 0;
         font-size: 1.2rem;
         font-weight: 500;
+      }
+
+      .position-navigation {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .position-navigation sl-icon-button::part(base) {
+        font-size: 1.2rem;
+        color: var(--sl-color-neutral-600);
+      }
+
+      .position-navigation sl-icon-button::part(base):hover {
+        color: var(--accent);
+      }
+
+      .position-navigation span {
+        font-size: 0.9rem;
+        color: var(--sl-color-neutral-600);
       }
 
       .support-details {
@@ -216,6 +254,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
+  // Array to store viable positions
+  private positions: Position[] = [];
+  // Track current position index for navigation
+  @state() private positionIndex: number = 0;
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
@@ -258,25 +300,63 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
       try {
         const idea = new IdeaContract(ideaId);
-        const result = (await idea.read('checkPosition', [
-          address,
-        ])) as bigint[];
-        const tokensContributed = result[0] as bigint;
-        const shares = result[1] as bigint;
 
-        // If user has a position, also fetch total tokens in the contract
-        let totalTokens = 0n;
-        if (shares > 0n) {
-          totalTokens = (await idea.read('tokens', [])) as bigint;
+        // First, get the total number of positions
+        const numPositions = (await idea.read('numPositions', [
+          address,
+        ])) as bigint;
+
+        // If user has no positions, return null
+        if (numPositions === 0n) {
+          this.positions = [];
+          return null;
         }
 
-        return {
-          tokensContributed,
-          shares,
-          totalTokens,
-        };
+        // Collect all viable positions
+        const viablePositions: Position[] = [];
+
+        // Check each position
+        for (let i = 0n; i < numPositions; i++) {
+          try {
+            // Get current position (includes original contribution + earnings)
+            const position = (await idea.read('checkPosition', [
+              address,
+              i,
+            ])) as bigint[];
+            const currentPosition = position[0] as bigint;
+
+            // Skip positions with zero value (already withdrawn)
+            if (currentPosition <= 0n) continue;
+
+            // Get original contribution from positionsByAddress mapping
+            const originalPosition = (await idea.read('positionsByAddress', [
+              address,
+              i,
+            ])) as bigint[];
+
+            const originalContribution = originalPosition[1] as bigint;
+            const earnings = currentPosition - originalContribution;
+            viablePositions.push({
+              originalContribution,
+              currentPosition,
+              earnings,
+              positionIndex: i,
+            });
+          } catch (error) {
+            // If position doesn't exist (already withdrawn), skip it
+            console.warn(`Position ${i} not available:`, error);
+          }
+        }
+
+        // Store the viable positions and reset current index
+        this.positions = viablePositions;
+        this.positionIndex = viablePositions.length > 0 ? 0 : -1;
+
+        // Return the positions array for rendering
+        return viablePositions.length > 0 ? viablePositions : null;
       } catch (error) {
-        console.error('Error fetching user support:', error);
+        console.warn('Error fetching user support:', error);
+        this.positions = [];
         return null;
       }
     },
@@ -286,8 +366,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Handle withdraw support
   private async handleWithdraw() {
     try {
+      // Make sure we have positions and a valid index
+      if (this.positions.length === 0 || this.positionIndex < 0) {
+        console.warn('No valid position to withdraw');
+        return;
+      }
+
+      const currentPosition = this.positions[this.positionIndex];
       const idea = new IdeaContract(this.ideaId);
-      this.withdrawTransaction.hash = await idea.write('withdraw', []);
+
+      // Use the withdraw method that takes a position index
+      this.withdrawTransaction.hash = await idea.write('withdraw', [
+        currentPosition.positionIndex,
+      ]);
     } catch (e) {
       if (e instanceof Error) {
         if (e.message.startsWith('connection')) {
@@ -296,6 +387,25 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       }
       console.error('Withdraw error:', e);
     }
+  }
+
+  // Navigate to previous position
+  private previousPosition() {
+    if (this.positions.length <= 1) return; // No need to navigate if only one position
+
+    // Decrement position index, wrapping around to the end if needed
+    this.positionIndex =
+      this.positionIndex === 0
+        ? this.positions.length - 1
+        : this.positionIndex - 1;
+  }
+
+  // Navigate to next position
+  private nextPosition() {
+    if (this.positions.length <= 1) return; // No need to navigate if only one position
+
+    // Increment position index, wrapping around to the beginning if needed
+    this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
   private handleSupportFocus() {
@@ -377,13 +487,13 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     this.approveDialog.hide();
     this.shareDialog.show();
     markComplete('support-idea');
+    this.userSupportTask.run();
   }
 
   private async handleWithdrawSuccess() {
-    // Refresh user support data after successful withdrawal
     this.userSupportTask.run();
-    // Refresh balances to show updated UPD amount
-    refreshBalances();
+    // If the position was successfully withdrawn, it will be removed from the viable positions
+    // If there are no more positions, the UI will update automatically
   }
 
   private renderIdea() {
@@ -428,43 +538,59 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <span class="fire">🔥${interest}</span>
         </div>
         ${this.userSupportTask.render({
-          complete: (support) => {
-            if (
-              support &&
-              (support.tokensContributed > 0n || support.shares > 0n)
-            ) {
+          complete: () => {
+            // Check if we have any positions
+            if (this.positions.length > 0 && this.positionIndex >= 0) {
+              const position = this.positions[this.positionIndex];
+
               return html`
                 <div class="user-support">
-                  <h3>Your Support</h3>
+                  <div class="support-header">
+                    <h3>Your Support</h3>
+                    ${this.positions.length > 1
+                      ? html`
+                          <div class="position-navigation">
+                            <sl-icon-button
+                              src=${chevronLeft}
+                              label="Previous position"
+                              @click=${this.previousPosition}
+                            ></sl-icon-button>
+                            <span
+                              >Position ${this.positionIndex + 1} of
+                              ${this.positions.length}</span
+                            >
+                            <sl-icon-button
+                              src=${chevronRight}
+                              label="Next position"
+                              @click=${this.nextPosition}
+                            ></sl-icon-button>
+                          </div>
+                        `
+                      : html``}
+                  </div>
                   <div class="support-details">
                     <p>
-                      You supported this idea with
-                      <strong
-                        >${formatUnits(support.tokensContributed, 18)}
-                        UPD</strong
-                      >
+                      Your original contribution:
+                      <strong>
+                        ${shortNum(
+                          formatUnits(position.originalContribution, 18)
+                        )}
+                        UPD
+                      </strong>
                     </p>
                     <p>
-                      Your share of the idea:
-                      <strong>${formatUnits(support.shares, 18)}</strong>
+                      Your earnings so far:
+                      <strong>
+                        ${shortNum(formatUnits(position.earnings, 18))} UPD
+                      </strong>
                     </p>
-                    ${support.totalTokens > 0n && this.idea
-                      ? (() => {
-                          // Calculate withdrawable amount based on user's share of total tokens
-                          const withdrawableAmount =
-                            (support.shares * support.totalTokens) /
-                            BigInt(this.idea.shares);
-                          return html`
-                            <p>
-                              Withdrawable amount:
-                              <strong
-                                >${formatUnits(withdrawableAmount, 18)}
-                                UPD</strong
-                              >
-                            </p>
-                          `;
-                        })()
-                      : html``}
+                    <p>
+                      Withdrawable amount:
+                      <strong>
+                        ${shortNum(formatUnits(position.currentPosition, 18))}
+                        UPD
+                      </strong>
+                    </p>
                     <sl-button variant="primary" @click=${this.handleWithdraw}>
                       Withdraw Support
                     </sl-button>
