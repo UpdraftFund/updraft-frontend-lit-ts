@@ -2,6 +2,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
+import { Task } from '@lit/task';
 
 import { fromHex, formatUnits, parseUnits } from 'viem';
 import dayjs from 'dayjs';
@@ -40,6 +41,7 @@ import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { markComplete } from '@state/user/beginner-tasks';
+import { userAddress } from '@state/user';
 
 @customElement('idea-page')
 export class IdeaPage extends SignalWatcher(LitElement) {
@@ -165,6 +167,35 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       sl-dialog::part(body) {
         padding-top: 0;
       }
+
+      .user-support {
+        background-color: var(--subtle-background);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .user-support h3 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      .support-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .support-details p {
+        margin: 0;
+      }
+
+      .support-details sl-button {
+        margin-top: 0.5rem;
+        align-self: flex-start;
+      }
     `,
   ];
 
@@ -175,12 +206,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   submitTransaction!: TransactionWatcher;
   @query('transaction-watcher.approve', true)
   approveTransaction!: TransactionWatcher;
+  @query('transaction-watcher.withdraw', true)
+  withdrawTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
 
   @state() private depositError: string | null = null;
   @state() private antiSpamFee: string = '1'; // 1 UPD
   @state() private needUpd: boolean = false;
-  @state() private idea?: Idea; // the fetched idea
+  @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
 
@@ -210,9 +243,60 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             .tags=${this.idea.tags}
           ></related-ideas>
         `);
+
+        // Refresh user support data when idea is loaded
+        this.userSupportTask.run();
       }
     }
   );
+
+  // Task to fetch user's support for this idea
+  private readonly userSupportTask = new Task(
+    this,
+    async ([ideaId, address]) => {
+      if (!ideaId || !address) return null;
+
+      try {
+        const idea = new IdeaContract(ideaId);
+        const result = (await idea.read('checkPosition', [
+          address,
+        ])) as bigint[];
+        const tokensContributed = result[0] as bigint;
+        const shares = result[1] as bigint;
+
+        // If user has a position, also fetch total tokens in the contract
+        let totalTokens = 0n;
+        if (shares > 0n) {
+          totalTokens = (await idea.read('tokens', [])) as bigint;
+        }
+
+        return {
+          tokensContributed,
+          shares,
+          totalTokens,
+        };
+      } catch (error) {
+        console.error('Error fetching user support:', error);
+        return null;
+      }
+    },
+    () => [this.ideaId, userAddress.get()] as const
+  );
+
+  // Handle withdraw support
+  private async handleWithdraw() {
+    try {
+      const idea = new IdeaContract(this.ideaId);
+      this.withdrawTransaction.hash = await idea.write('withdraw', []);
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message.startsWith('connection')) {
+          modal.open({ view: 'Connect' });
+        }
+      }
+      console.error('Withdraw error:', e);
+    }
+  }
 
   private handleSupportFocus() {
     refreshBalances();
@@ -295,6 +379,13 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     markComplete('support-idea');
   }
 
+  private async handleWithdrawSuccess() {
+    // Refresh user support data after successful withdrawal
+    this.userSupportTask.run();
+    // Refresh balances to show updated UPD amount
+    refreshBalances();
+  }
+
   private renderIdea() {
     if (this.idea) {
       const {
@@ -336,6 +427,57 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             : html``}
           <span class="fire">🔥${interest}</span>
         </div>
+        ${this.userSupportTask.render({
+          complete: (support) => {
+            if (
+              support &&
+              (support.tokensContributed > 0n || support.shares > 0n)
+            ) {
+              return html`
+                <div class="user-support">
+                  <h3>Your Support</h3>
+                  <div class="support-details">
+                    <p>
+                      You supported this idea with
+                      <strong
+                        >${formatUnits(support.tokensContributed, 18)}
+                        UPD</strong
+                      >
+                    </p>
+                    <p>
+                      Your share of the idea:
+                      <strong>${formatUnits(support.shares, 18)}</strong>
+                    </p>
+                    ${support.totalTokens > 0n && this.idea
+                      ? (() => {
+                          // Calculate withdrawable amount based on user's share of total tokens
+                          const withdrawableAmount =
+                            (support.shares * support.totalTokens) /
+                            BigInt(this.idea.shares);
+                          return html`
+                            <p>
+                              Withdrawable amount:
+                              <strong
+                                >${formatUnits(withdrawableAmount, 18)}
+                                UPD</strong
+                              >
+                            </p>
+                          `;
+                        })()
+                      : html``}
+                    <sl-button variant="primary" @click=${this.handleWithdraw}>
+                      Withdraw Support
+                    </sl-button>
+                  </div>
+                </div>
+
+                <h3>Add More Support</h3>
+              `;
+            } else {
+              return html`<h3>Support this Idea</h3>`;
+            }
+          },
+        })}
         <form @submit=${this.handleSubmit}>
           <div class="support">
             <sl-input
@@ -426,7 +568,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       <search-bar></search-bar>
     `);
     layout.showLeftSidebar.set(true);
-    // initially set the right side bar to empty html
+    // initially set the right sidebar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
   }
@@ -458,6 +600,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         <transaction-watcher
           class="submit"
           @transaction-success=${this.handleTransactionSuccess}
+        >
+        </transaction-watcher>
+        <transaction-watcher
+          class="withdraw"
+          @transaction-success=${this.handleWithdrawSuccess}
         >
         </transaction-watcher>
       </main>
