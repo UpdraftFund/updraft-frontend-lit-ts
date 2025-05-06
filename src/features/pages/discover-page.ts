@@ -279,7 +279,9 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
           this.results as Solution[],
           (solution) => solution.id,
           (solution) =>
-            html` <solution-card .solution=${solution}></solution-card>`
+            html` <solution-card-large
+              .solution=${solution}
+            ></solution-card-large>`
         )}`
       );
     } else if (this.tab === 'followed') {
