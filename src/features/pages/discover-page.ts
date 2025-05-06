@@ -263,27 +263,35 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       this.tab === 'tags'
     ) {
       // Ideas result type
-      return html`${repeat(
-        this.results as Idea[],
-        (idea) => idea.id,
-        (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
-      )}`;
+      return cache(
+        html`${repeat(
+          this.results as Idea[],
+          (idea) => idea.id,
+          (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
+        )}`
+      );
     } else if (this.tab === 'deadline') {
       // Solutions result type
-      return html`${repeat(
-        this.results as Solution[],
-        (solution) => solution.id,
-        (solution) =>
-          html` <solution-card .solution=${solution}></solution-card>`
-      )}`;
+      return cache(
+        html`${repeat(
+          this.results as Solution[],
+          (solution) => solution.id,
+          (solution) =>
+            html` <solution-card .solution=${solution}></solution-card>`
+        )}`
+      );
     } else if (this.tab === 'followed') {
       // IdeaContribution result type
-      return html`${repeat(
-        this.results as IdeaContribution[],
-        (contribution) => contribution.id,
-        (contribution) =>
-          html` <idea-card-large .idea=${contribution.idea}></idea-card-large>`
-      )}`;
+      return cache(
+        html`${repeat(
+          this.results as IdeaContribution[],
+          (contribution) => contribution.id,
+          (contribution) =>
+            html` <idea-card-large
+              .idea=${contribution.idea}
+            ></idea-card-large>`
+        )}`
+      );
     }
   }
 
@@ -347,7 +355,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       <div class="container">
         <main>
           ${this.tab === 'tags' ? this.renderTagList() : html``}
-          ${cache(this.renderQueryResults())}
+          ${this.renderQueryResults()}
         </main>
       </div>
     `;
