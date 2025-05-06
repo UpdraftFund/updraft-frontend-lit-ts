@@ -4,6 +4,8 @@ import { SignalWatcher } from '@lit-labs/signals';
 import { repeat } from 'lit/directives/repeat.js';
 import { cache } from 'lit/directives/cache.js';
 
+import dayjs from 'dayjs';
+
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -145,7 +147,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       case 'new-ideas':
         return {};
       case 'deadline':
-        return {};
+        return { now: dayjs().unix() };
       case 'followed':
         return { funders: Array.from(followedUsers.get()) };
       case 'search':
