@@ -26,6 +26,9 @@ dist-ssr
 # Graphclient output
 /.graphclient/
 
+# Environment variables
+src/features/common/utils/env.ts
+
 tmp.txt
 .aider*
 .codebuddy/*
