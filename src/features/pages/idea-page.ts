@@ -325,6 +325,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             ])) as bigint[];
 
             const originalContribution = originalPosition[1] as bigint;
+
+            // Skip positions with zero value (already withdrawn)
+            if (originalContribution <= 0n) continue;
+
             const earnings = currentPosition - originalContribution;
             viablePositions.push({
               originalContribution,
