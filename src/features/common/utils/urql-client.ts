@@ -1,5 +1,4 @@
 import { Client, cacheExchange, fetchExchange } from '@urql/core';
-import { GRAPH_API_KEY } from './env';
 
 //TODO: each chain subgraph will need its own urql client
 
@@ -10,7 +9,9 @@ const devUrl =
 const prodUrl =
   'https://gateway.thegraph.com/api/subgraphs/id/AX96zuXixk4ugPQG7CDypy1EdRnYE4Z9khjk2fpzHfAq';
 const url = prod ? prodUrl : devUrl;
-const apiKey = GRAPH_API_KEY;
+// Use Vite's environment variable system for the API key
+// This will be replaced at build time with the actual value from .env.local or Vercel
+const apiKey = import.meta.env.VITE_GRAPH_API_KEY || '';
 
 const urqlClient = new Client({
   url,
