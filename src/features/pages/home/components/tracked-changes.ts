@@ -23,7 +23,7 @@ import './goal-reached-card';
 import './goal-failed-card';
 
 import { TrackedChangesDocument, UserIdeasSolutionsDocument } from '@gql';
-import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { TrackedChangesManager } from '@utils/home/tracked-changes-manager';
 
 import { since } from '@state/user/tracked-changes';

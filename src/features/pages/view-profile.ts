@@ -14,7 +14,7 @@ import '@components/idea/related-ideas';
 import '@/features/user/components/activity-feed';
 import '@/features/user/components/user-avatar';
 
-import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 
 import layout from '@state/layout';
 import { userAddress, isConnected } from '@state/user';

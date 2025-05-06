@@ -9,7 +9,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import { userAddress } from '@state/user';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeasByFunderOrCreatorDocument, Idea } from '@gql';
 
 @customElement('my-ideas')
@@ -30,103 +30,84 @@ export class MyIdeas extends SignalWatcher(LitElement) {
   `;
 
   @state() private ideas: Idea[] = [];
-  @state() private loading = false;
+  @state() private loading = true;
 
   // Track the current user address to detect changes
   private lastAddress: string | null = null;
 
-  private unsubIdeas?: () => void;
+  // Controller for fetching ideas
+  private readonly ideasController = new UrqlQueryController(
+    this,
+    IdeasByFunderOrCreatorDocument,
+    { user: userAddress.get() || '' },
+    (result) => {
+      this.loading = false;
 
-  private subscribe(address: `0x${string}`) {
-    // Clean up previous subscription if it exists
-    this.unsubIdeas?.();
-    this.loading = true;
-    const ideasSub = urqlClient
-      .query(IdeasByFunderOrCreatorDocument, {
-        user: address,
-      })
-      .subscribe((result) => {
-        this.loading = false;
-        if (result.data) {
-          // Create a map to store ideas with their activity timestamps
-          const ideaActivityMap = new Map();
+      if (result.error) {
+        console.error('Error fetching ideas:', result.error);
+        this.ideas = [];
+        return;
+      }
 
-          const fundedIdeas = result.data.fundedIdeas || [];
-          fundedIdeas.forEach((contribution) => {
-            const idea = contribution.idea;
-            // Store the idea with its activity time (contribution time)
-            ideaActivityMap.set(idea.id, {
-              idea,
-              // Use the latest activity time if this idea already exists in the map
-              activityTime: Math.max(
-                Number(contribution.createdTime) || Number(idea.startTime),
-                ideaActivityMap.get(idea.id)?.activityTime || 0
-              ),
-            });
+      if (result.data) {
+        // Create a map to store ideas with their activity timestamps
+        const ideaActivityMap = new Map();
+
+        const fundedIdeas = result.data.fundedIdeas || [];
+        fundedIdeas.forEach((contribution) => {
+          const idea = contribution.idea;
+          // Store the idea with its activity time (contribution time)
+          ideaActivityMap.set(idea.id, {
+            idea,
+            // Use the latest activity time if this idea already exists in the map
+            activityTime: Math.max(
+              Number(contribution.createdTime) || Number(idea.startTime),
+              ideaActivityMap.get(idea.id)?.activityTime || 0
+            ),
           });
+        });
 
-          const createdIdeas = result.data.createdIdeas || [];
-          createdIdeas.forEach((idea) => {
-            // Store the idea with its activity time (creation time)
-            ideaActivityMap.set(idea.id, {
-              idea,
-              // Use the latest activity time if this idea already exists in the map
-              activityTime: Math.max(
-                Number(idea.startTime),
-                ideaActivityMap.get(idea.id)?.activityTime || 0
-              ),
-            });
+        const createdIdeas = result.data.createdIdeas || [];
+        createdIdeas.forEach((idea) => {
+          // Store the idea with its activity time (creation time)
+          ideaActivityMap.set(idea.id, {
+            idea,
+            // Use the latest activity time if this idea already exists in the map
+            activityTime: Math.max(
+              Number(idea.startTime),
+              ideaActivityMap.get(idea.id)?.activityTime || 0
+            ),
           });
+        });
 
-          // Sort ideas by activity time (newest first), extract just the ideas, and limit to 3
-          this.ideas = Array.from(ideaActivityMap.values())
-            .sort((a, b) => b.activityTime - a.activityTime)
-            .map((item) => item.idea)
-            .slice(0, 3); // Limit to 3 ideas total
-        } else {
-          this.ideas = [];
-        }
-      });
-    this.unsubIdeas = ideasSub.unsubscribe;
-  }
+        // Sort ideas by activity time (newest first), extract just the ideas, and limit to 3
+        this.ideas = Array.from(ideaActivityMap.values())
+          .sort((a, b) => b.activityTime - a.activityTime)
+          .map((item) => item.idea)
+          .slice(0, 3); // Limit to 3 ideas total
+      } else {
+        this.ideas = [];
+      }
+    }
+  );
 
   private checkForAddressChangeAndSubscribe() {
     const currentAddress = userAddress.get();
     if (this.lastAddress !== currentAddress) {
       this.lastAddress = currentAddress;
       if (currentAddress) {
-        this.subscribe(currentAddress);
+        this.loading = true;
+        this.ideasController.setVariablesAndSubscribe({ user: currentAddress });
       }
     }
   }
 
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubIdeas?.();
-    } else {
-      const currentAddress = userAddress.get();
-      if (currentAddress) {
-        this.subscribe(currentAddress);
-      }
-    }
-  };
-
-  connectedCallback() {
-    super.connectedCallback();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubIdeas?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    this.checkForAddressChangeAndSubscribe();
   }
 
   render() {
-    this.checkForAddressChangeAndSubscribe();
     return html`
       <section-heading>My Ideas</section-heading>
       <div class="content">
