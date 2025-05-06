@@ -353,7 +353,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
     const changesToRender = this.changesManager.getChangesToRender();
 
-    return html`
+    return cache(html`
       <div class="cards-container">
         ${changesToRender.map((change) => {
           switch (change.type) {
@@ -386,7 +386,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
           }
         })}
       </div>
-    `;
+    `);
   }
 
   render() {
@@ -413,7 +413,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
             </div>
           `
         : html``}
-      ${cache(this.renderTrackedChanges())}
+      ${this.renderTrackedChanges()}
     `;
   }
 }

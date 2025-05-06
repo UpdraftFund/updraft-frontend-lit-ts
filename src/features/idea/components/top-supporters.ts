@@ -147,40 +147,35 @@ export class TopSupporters extends LitElement {
         <h2>Top Supporters</h2>
         ${this.supporters === undefined
           ? html` <sl-spinner></sl-spinner>`
-          : cache(
-              this.supporters.length === 0
-                ? html` <div class="no-supporters">No supporters yet</div>`
-                : html`
-                    <div class="supporters-list">
-                      ${this.supporters.map(
-                        (supporter) => html`
-                          <div class="supporter">
-                            <user-avatar
-                              .image=${supporter.avatar}
-                              .address=${supporter.id}
-                            ></user-avatar>
-                            <div class="supporter-info">
-                              <a
-                                href="/profile/${supporter.id}"
-                                class="supporter-name"
-                                >${supporter.name}</a
-                              >
-                              <div class="supporter-contribution">
-                                ${shortNum(
-                                  formatUnits(
-                                    BigInt(supporter.contribution),
-                                    18
-                                  )
-                                )}
-                                UPD
-                              </div>
-                            </div>
+          : this.supporters.length === 0
+            ? html` <div class="no-supporters">No supporters yet</div>`
+            : cache(html`
+                <div class="supporters-list">
+                  ${this.supporters.map(
+                    (supporter) => html`
+                      <div class="supporter">
+                        <user-avatar
+                          .image=${supporter.avatar}
+                          .address=${supporter.id}
+                        ></user-avatar>
+                        <div class="supporter-info">
+                          <a
+                            href="/profile/${supporter.id}"
+                            class="supporter-name"
+                            >${supporter.name}</a
+                          >
+                          <div class="supporter-contribution">
+                            ${shortNum(
+                              formatUnits(BigInt(supporter.contribution), 18)
+                            )}
+                            UPD
                           </div>
-                        `
-                      )}
-                    </div>
-                  `
-            )}
+                        </div>
+                      </div>
+                    `
+                  )}
+                </div>
+              `)}
       </div>
     `;
   }
