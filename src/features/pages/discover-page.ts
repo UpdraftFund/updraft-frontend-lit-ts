@@ -20,6 +20,7 @@ import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 
 import layout from '@state/layout';
 import { watchTag, isWatched } from '@state/user/watched-tags';
+import { followedUsers } from '@state/user/follow';
 
 import urqlClient from '@utils/urql-client';
 import {
@@ -115,9 +116,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       case 'deadline':
         return {};
       case 'followed':
-        return {
-          funders: JSON.parse(localStorage.getItem('funders') || '[]'),
-        };
+        return { funders: Array.from(followedUsers.get()) };
       case 'search':
         return {
           text: this.search ?? '', // Ensure text is always string, default to '' if null
