@@ -146,20 +146,9 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     args: () => [this.address] as const,
   });
 
-  // Task for checking follow status
-  private readonly followStatus = new Task(this, {
-    task: async ([userId]) => {
-      if (!userId) return false;
-      return isFollowed(userId);
-    },
-    args: () => [this.address] as const,
-  });
-
   private handleFollow(): void {
     followUser(this.address);
     markComplete('follow-someone');
-    // Re-run follow status task to update UI
-    this.followStatus.run();
   }
 
   private get profileButton() {
@@ -180,34 +169,20 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       `;
     } else {
       // Otherwise, show Follow/Unfollow button based on follow status task
-      return html`
-        ${this.followStatus.render({
-          pending: () =>
-            html` <sl-button variant="primary" disabled>Loading...</sl-button>`,
-          complete: (isFollowing) => {
-            if (isFollowing) {
-              return html` <sl-button
-                variant="primary"
-                @click=${() => {
-                  unfollowUser(this.address);
-                  this.followStatus.run();
-                }}
-              >
-                Unfollow
-              </sl-button>`;
-            } else {
-              return html` <sl-button
-                variant="primary"
-                @click=${this.handleFollow}
-              >
-                Follow
-              </sl-button>`;
-            }
-          },
-          error: () =>
-            html` <sl-button variant="primary" disabled>Error</sl-button>`,
-        })}
-      `;
+      if (isFollowed(this.address)) {
+        return html` <sl-button
+          variant="primary"
+          @click=${() => {
+            unfollowUser(this.address);
+          }}
+        >
+          Unfollow
+        </sl-button>`;
+      } else {
+        return html` <sl-button variant="primary" @click=${this.handleFollow}>
+          Follow
+        </sl-button>`;
+      }
     }
   }
 
@@ -256,7 +231,6 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     // If the address changes, re-run the profile and follow status tasks
     if (changedProperties.has('address')) {
       this.profile.run();
-      this.followStatus.run();
     }
   }
 
