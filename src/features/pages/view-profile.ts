@@ -14,7 +14,7 @@ import '@components/idea/related-ideas';
 import '@/features/user/components/activity-feed';
 import '@/features/user/components/user-avatar';
 
-import { userAddress, isConnected, userProfile } from '@state/user';
+import { userAddress, isConnected } from '@state/user';
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
 import { markComplete } from '@state/user/beginner-tasks';
 
@@ -120,19 +120,6 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     task: async ([address]) => {
       if (!address) return null;
 
-      // If viewing the current user and we already have their profile, use it
-      const currentUserAddress = userAddress.get();
-      const currentUserProfile = userProfile.get();
-
-      if (
-        currentUserAddress &&
-        address.toLowerCase() === currentUserAddress.toLowerCase() &&
-        currentUserProfile
-      ) {
-        return currentUserProfile;
-      }
-
-      // Otherwise fetch the profile
       const result = await urqlClient.query(ProfileDocument, {
         userId: address,
       });
