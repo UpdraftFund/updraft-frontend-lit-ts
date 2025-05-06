@@ -7,7 +7,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { TopTagsDocument } from '@gql';
 import { TagCount } from '@/types';
 
@@ -48,40 +48,25 @@ export class PopularTags extends LitElement {
   `;
 
   @state() private topTags?: TagCount[];
-  private unsubTopTags?: () => void;
 
-  private subscribe() {
-    this.unsubTopTags?.();
+  // Controller for fetching top tags
+  private readonly tagsController = new UrqlQueryController(
+    this,
+    TopTagsDocument,
+    {},
+    (result) => {
+      if (result.error) {
+        console.error('Error fetching top tags:', result.error);
+        return;
+      }
 
-    const topTagsSub = urqlClient
-      .query(TopTagsDocument, {})
-      .subscribe((result) => {
-        this.topTags = result.data?.tagCounts as TagCount[];
-      });
-    this.unsubTopTags = topTagsSub.unsubscribe;
-  }
-
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubTopTags?.();
-    } else {
-      this.subscribe();
+      this.topTags = result.data?.tagCounts as TagCount[];
     }
-  };
+  );
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubTopTags?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
+  // Method to manually refresh tags if needed
+  refreshTags() {
+    this.tagsController.refresh();
   }
 
   render() {

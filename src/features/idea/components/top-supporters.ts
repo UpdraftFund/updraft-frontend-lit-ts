@@ -9,7 +9,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import '@components/user/user-avatar';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeaContributionsDocument } from '@gql';
 import { shortNum } from '@utils/short-num';
 
@@ -80,89 +80,64 @@ export class TopSupporters extends LitElement {
 
   @property({ type: String }) ideaId = '';
   @state() private supporters?: Supporter[];
-  private unsubscribe?: () => void;
 
-  private subscribe() {
-    // Disconnect any previous subscriptions
-    this.unsubscribe?.();
+  // Controller for fetching top supporters
+  private readonly supportersController = new UrqlQueryController(
+    this,
+    IdeaContributionsDocument,
+    {
+      ideaId: this.ideaId || '',
+      first: 5,
+      skip: 0,
+    },
+    (result) => {
+      if (result.error) {
+        console.error('Error fetching supporters:', result.error);
+        this.supporters = [];
+        return;
+      }
 
-    if (!this.ideaId) {
-      this.supporters = [];
-      return;
-    }
+      if (!result.data?.ideaContributions) {
+        this.supporters = [];
+      } else {
+        this.supporters = result.data.ideaContributions.map((contribution) => {
+          let name = contribution.funder.id;
+          let avatar;
 
-    const supportersSub = urqlClient
-      .query(IdeaContributionsDocument, {
-        ideaId: this.ideaId,
-        first: 5,
-        skip: 0,
-      })
-      .subscribe((result) => {
-        if (!result.data?.ideaContributions) {
-          this.supporters = [];
-        } else {
-          this.supporters = result.data.ideaContributions.map(
-            (contribution) => {
-              let name = contribution.funder.id;
-              let avatar;
-
-              if (contribution.funder.profile) {
-                try {
-                  const profile: Profile = JSON.parse(
-                    fromHex(
-                      contribution.funder.profile as `0x${string}`,
-                      'string'
-                    )
-                  );
-                  name = profile.name || profile.team || contribution.funder.id;
-                  avatar = profile.image;
-                } catch (e) {
-                  console.error('Error parsing profile', e);
-                }
-              }
-
-              return {
-                id: contribution.funder.id,
-                name,
-                avatar,
-                contribution: contribution.contribution,
-              };
+          if (contribution.funder.profile) {
+            try {
+              const profile: Profile = JSON.parse(
+                fromHex(contribution.funder.profile as `0x${string}`, 'string')
+              );
+              name = profile.name || profile.team || contribution.funder.id;
+              avatar = profile.image;
+            } catch (e) {
+              console.error('Error parsing profile', e);
             }
-          );
-        }
-      });
+          }
 
-    this.unsubscribe = supportersSub.unsubscribe;
-  }
-
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubscribe?.();
-    } else {
-      this.subscribe();
+          return {
+            id: contribution.funder.id,
+            name,
+            avatar,
+            contribution: contribution.contribution,
+          };
+        });
+      }
     }
-  };
-
-  connectedCallback() {
-    super.connectedCallback();
-    if (this.ideaId) {
-      this.subscribe();
-    }
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubscribe?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-  }
+  );
 
   updated(changedProperties: Map<string, unknown>) {
     if (changedProperties.has('ideaId')) {
-      this.subscribe();
+      if (this.ideaId) {
+        this.supportersController.setVariablesAndSubscribe({
+          ideaId: this.ideaId,
+          first: 5,
+          skip: 0,
+        });
+      } else {
+        this.supporters = [];
+      }
     }
   }
 

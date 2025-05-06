@@ -5,7 +5,7 @@ import { cache } from 'lit/directives/cache.js';
 import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeasByTagsDocument } from '@gql';
 import { Idea } from '@/types';
 
@@ -44,60 +44,43 @@ export class RelatedIdeas extends LitElement {
   @property({ type: String }) ideaId = '';
   @property({ type: Array }) tags = [];
   @state() private ideas?: Idea[];
-  private unsubIdeas?: () => void;
 
-  private subscribe() {
-    // Clean up previous subscription if it exists
-    this.unsubIdeas?.();
+  // Controller for fetching related ideas
+  private readonly ideasController = new UrqlQueryController(
+    this,
+    IdeasByTagsDocument,
+    {
+      tag1: this.tags?.[0] || '',
+      tag2: this.tags?.[1] || this.tags?.[0] || '',
+      tag3: this.tags?.[2] || this.tags?.[0] || '',
+      tag4: this.tags?.[3] || this.tags?.[0] || '',
+      tag5: this.tags?.[4] || this.tags?.[0] || '',
+    },
+    (result) => {
+      if (result.error) {
+        console.error('Error fetching related ideas:', result.error);
+        this.ideas = [];
+        return;
+      }
 
-    if (this.ideaId && this.tags?.length > 0) {
-      const ideasSub = urqlClient
-        .query(IdeasByTagsDocument, {
+      const allIdeas = result.data?.ideas as Idea[];
+      this.ideas = allIdeas?.filter((idea) => idea.id !== this.ideaId) || [];
+    }
+  );
+
+  updated(changedProperties: Map<string, unknown>) {
+    if (changedProperties.has('ideaId') || changedProperties.has('tags')) {
+      if (this.ideaId && this.tags?.length > 0) {
+        this.ideasController.setVariablesAndSubscribe({
           tag1: this.tags[0],
           tag2: this.tags[1] || this.tags[0],
           tag3: this.tags[2] || this.tags[0],
           tag4: this.tags[3] || this.tags[0],
           tag5: this.tags[4] || this.tags[0],
-        })
-        .subscribe((result) => {
-          const allIdeas = result.data?.ideas as Idea[];
-          this.ideas = allIdeas.filter((idea) => idea.id !== this.ideaId);
         });
-
-      this.unsubIdeas = ideasSub.unsubscribe;
-    } else {
-      this.ideas = [];
-    }
-  }
-
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubIdeas?.();
-    } else {
-      this.subscribe();
-    }
-  };
-
-  connectedCallback() {
-    super.connectedCallback();
-    if (this.ideaId && this.tags?.length > 0) {
-      this.subscribe();
-    }
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubIdeas?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-  }
-
-  updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('ideaId')) {
-      this.subscribe();
+      } else {
+        this.ideas = [];
+      }
     }
   }
 

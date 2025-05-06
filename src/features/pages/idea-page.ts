@@ -36,7 +36,7 @@ import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
-import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';

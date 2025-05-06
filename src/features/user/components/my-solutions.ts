@@ -9,7 +9,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import { userAddress } from '@state/user';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { SolutionsByFunderOrDrafterDocument } from '@gql';
 import { Solution } from '@/types';
 
@@ -31,104 +31,87 @@ export class MySolutions extends SignalWatcher(LitElement) {
   `;
 
   @state() private solutions: Solution[] = [];
-  @state() private loading = false;
+  @state() private loading = true;
 
   // Track the current user address to detect changes
   private lastAddress: string | null = null;
 
-  private unsubSolutions?: () => void;
+  // Controller for fetching solutions
+  private readonly solutionsController = new UrqlQueryController(
+    this,
+    SolutionsByFunderOrDrafterDocument,
+    { user: userAddress.get() || '' },
+    (result) => {
+      this.loading = false;
 
-  private subscribe(address: `0x${string}`) {
-    // Clean up previous subscription if it exists
-    this.unsubSolutions?.();
-    this.loading = true;
-    const solutionsSub = urqlClient
-      .query(SolutionsByFunderOrDrafterDocument, {
-        user: address,
-      })
-      .subscribe((result) => {
-        this.loading = false;
-        if (result.data) {
-          // Create a map to store solutions with their activity timestamps
-          const solutionActivityMap = new Map();
+      if (result.error) {
+        console.error('Error fetching solutions:', result.error);
+        this.solutions = [];
+        return;
+      }
 
-          // Process funded solutions
-          const fundedSolutions = result.data.fundedSolutions || [];
-          fundedSolutions.forEach((contribution) => {
-            const solution = contribution.solution;
-            // Store the solution with its activity time (contribution time)
-            solutionActivityMap.set(solution.id, {
-              solution,
-              // Use the latest activity time if this solution already exists in the map
-              activityTime: Math.max(
-                Number(contribution.createdTime),
-                solutionActivityMap.get(solution.id)?.activityTime || 0
-              ),
-            });
+      if (result.data) {
+        // Create a map to store solutions with their activity timestamps
+        const solutionActivityMap = new Map();
+
+        // Process funded solutions
+        const fundedSolutions = result.data.fundedSolutions || [];
+        fundedSolutions.forEach((contribution) => {
+          const solution = contribution.solution;
+          // Store the solution with its activity time (contribution time)
+          solutionActivityMap.set(solution.id, {
+            solution,
+            // Use the latest activity time if this solution already exists in the map
+            activityTime: Math.max(
+              Number(contribution.createdTime),
+              solutionActivityMap.get(solution.id)?.activityTime || 0
+            ),
           });
+        });
 
-          // Process drafted solutions
-          const draftedSolutions = result.data.draftedSolutions || [];
-          draftedSolutions.forEach((solution) => {
-            // Store the solution with its activity time (creation time)
-            solutionActivityMap.set(solution.id, {
-              solution,
-              // Use the latest activity time if this solution already exists in the map
-              activityTime: Math.max(
-                Number(solution.startTime),
-                solutionActivityMap.get(solution.id)?.activityTime || 0
-              ),
-            });
+        // Process drafted solutions
+        const draftedSolutions = result.data.draftedSolutions || [];
+        draftedSolutions.forEach((solution) => {
+          // Store the solution with its activity time (creation time)
+          solutionActivityMap.set(solution.id, {
+            solution,
+            // Use the latest activity time if this solution already exists in the map
+            activityTime: Math.max(
+              Number(solution.startTime),
+              solutionActivityMap.get(solution.id)?.activityTime || 0
+            ),
           });
+        });
 
-          // Sort solutions by activity time (newest first) and extract just the solutions
-          this.solutions = Array.from(solutionActivityMap.values())
-            .sort((a, b) => b.activityTime - a.activityTime)
-            .map((item) => item.solution);
-        } else {
-          this.solutions = [];
-        }
-      });
-    this.unsubSolutions = solutionsSub.unsubscribe;
-  }
+        // Sort solutions by activity time (newest first) and extract just the solutions
+        this.solutions = Array.from(solutionActivityMap.values())
+          .sort((a, b) => b.activityTime - a.activityTime)
+          .map((item) => item.solution);
+      } else {
+        this.solutions = [];
+      }
+    }
+  );
 
   private checkForAddressChangeAndSubscribe() {
     const currentAddress = userAddress.get();
     if (this.lastAddress !== currentAddress) {
       this.lastAddress = currentAddress;
       if (currentAddress) {
-        this.subscribe(currentAddress);
+        this.loading = true;
+        this.solutionsController.setVariablesAndSubscribe({
+          user: currentAddress,
+        });
       }
     }
   }
 
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubSolutions?.();
-    } else {
-      const currentAddress = userAddress.get();
-      if (currentAddress) {
-        this.subscribe(currentAddress);
-      }
-    }
-  };
-
-  connectedCallback() {
-    super.connectedCallback();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubSolutions?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    this.checkForAddressChangeAndSubscribe();
   }
 
   render() {
-    this.checkForAddressChangeAndSubscribe();
     return html`
       <section-heading>My Solutions</section-heading>
       <div class="content">
