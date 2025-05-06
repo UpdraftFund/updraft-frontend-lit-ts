@@ -17,6 +17,7 @@ import '@components/navigation/discover-tabs';
 import '@components/tags/popular-tags';
 import '@components/tags/watched-tags';
 import '@components/idea/idea-card-large';
+import '@components/solution/solution-card-large';
 
 import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 
@@ -116,7 +117,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   private readonly queries = {
     'hot-ideas': IdeasBySharesDocument,
     'new-ideas': IdeasByStartTimeDocument,
-    deadline: SolutionsByDeadlineDocument,
+    solutions: SolutionsByDeadlineDocument,
     followed: IdeasByFundersDocument,
     search: IdeasFullTextDocument,
     tags: IdeasByTagsDocument,
@@ -146,7 +147,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         return { first: 4, detailed: true };
       case 'new-ideas':
         return {};
-      case 'deadline':
+      case 'solutions':
         return { now: dayjs().unix() };
       case 'followed':
         return { funders: Array.from(followedUsers.get()) };
@@ -175,7 +176,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         return (data as IdeasBySharesQuery).ideas as Idea[];
       case 'new-ideas':
         return (data as IdeasByStartTimeQuery).ideas as Idea[];
-      case 'deadline':
+      case 'solutions':
         return (data as SolutionsByDeadlineQuery).solutions as Solution[];
       case 'followed':
         return (data as IdeasByFundersQuery)
@@ -272,7 +273,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
           (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
         )}`
       );
-    } else if (this.tab === 'deadline') {
+    } else if (this.tab === 'solutions') {
       // Solutions result type
       return cache(
         html`${repeat(

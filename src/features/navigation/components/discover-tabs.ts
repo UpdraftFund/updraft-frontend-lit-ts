@@ -35,8 +35,8 @@ export class DiscoverTabs extends LitElement {
         <sl-tab slot="nav" panel="new-ideas" .active=${this.tab === 'new-ideas'}
           >New Ideas
         </sl-tab>
-        <sl-tab slot="nav" panel="deadline" .active=${this.tab === 'deadline'}
-          >Deadline
+        <sl-tab slot="nav" panel="solutions" .active=${this.tab === 'solutions'}
+          >Solutions
         </sl-tab>
         <sl-tab slot="nav" panel="followed" .active=${this.tab === 'followed'}
           >Followed
