@@ -27,8 +27,8 @@ dist-ssr
 /.graphclient/
 
 # Environment variables
-src/features/common/utils/env.ts
+.env.local
+.env.*.local
 
 tmp.txt
-.aider*
-.codebuddy/*
+
