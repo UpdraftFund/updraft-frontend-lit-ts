@@ -29,6 +29,7 @@ import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
 import '@components/idea/top-supporters';
 import '@components/idea/related-ideas';
+import '@components/idea/idea-solutions';
 import '@/features/common/components/upd-dialog';
 import '@/features/common/components/share-dialog';
 import '@/features/common/components/transaction-watcher';
@@ -40,7 +41,7 @@ import { UrqlQueryController } from '@utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
-import { defaultFunderReward, updraftSettings } from '@state/common';
+import { updraftSettings } from '@state/common';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
@@ -502,11 +503,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         name,
       } = this.idea;
 
-      let pctFunderReward;
-      if (funderReward != defaultFunderReward.get()) {
-        pctFunderReward =
-          (funderReward * 100) / updraftSettings.get().percentScale;
-      }
+      const pctFunderReward =
+        (funderReward * 100) / updraftSettings.get().percentScale;
 
       const profile = JSON.parse(
         fromHex(creator.profile as `0x${string}`, 'string')
@@ -643,6 +641,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               </div>
             `
           : html``}
+        <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
+
         <sl-button
           class="add-solution-button"
           href="/create-solution/${this.ideaId}"
