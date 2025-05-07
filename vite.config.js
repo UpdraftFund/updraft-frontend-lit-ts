@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig({
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -72,9 +73,37 @@ export default defineConfig({
     },
   },
   define: {
+    // Legacy compatibility for process.env
     'process.env': {},
   },
   build: {
     target: 'es2022', // Should match tsconfig.json target
+    // Improve build performance and output size
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
+    // Split chunks for better caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'lit-core': ['lit'],
+          shoelace: ['@shoelace-style/shoelace'],
+          vendor: [
+            '@lit-labs/router',
+            '@lit-labs/signals',
+            '@lit/context',
+            '@lit/task',
+            'urql',
+            'graphql',
+          ],
+        },
+      },
+    },
+    // Generate sourcemaps for debugging
+    sourcemap: mode !== 'production',
   },
-});
+}));
