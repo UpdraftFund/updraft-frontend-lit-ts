@@ -1,4 +1,4 @@
-import { LitElement, css } from 'lit';
+import { LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 import { formatUnits, fromHex } from 'viem';
@@ -17,65 +17,15 @@ import { updraftSettings } from '@state/common';
 import { Solution } from '@/features/solution/types';
 
 import { shortNum } from '@utils/short-num';
+import { smallCardStyles } from '@styles/small-card-styles';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends SignalWatcher(LitElement) {
-  static styles = css`
-    :host {
-      display: inline-block;
-      color: var(--main-foreground);
-    }
-
-    a {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    a:hover h3 {
-      text-decoration: underline;
-      color: var(--accent);
-    }
-
-    hr {
-      height: 1px;
-      background-color: var(--layout-divider); /* Line color */
-      border: none;
-    }
-
-    h3 {
-      margin-top: 0;
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    p {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: var(--subtle-text);
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      list-style: none;
-      padding: 0;
-    }
-
-    .info-row li {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .info-row span {
-      font-size: 0.8rem;
-    }
-  `;
+  static styles = smallCardStyles;
 
   @property() solution!: Solution;
 
-  private renderStatus() {
+  private renderGoalProgress() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
 
@@ -127,7 +77,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         <ul class="info-row">
           <li>🌱 <span>${date.fromNow()}</span></li>
           <li>🎁 <span>${pctFunderReward.toFixed(0)}%</span></li>
-          <li>${this.renderStatus()}</li>
+          <li>${this.renderGoalProgress()}</li>
         </ul>
       </a>
     `;

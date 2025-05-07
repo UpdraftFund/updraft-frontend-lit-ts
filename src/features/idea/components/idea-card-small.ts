@@ -1,4 +1,4 @@
-import { LitElement, css } from 'lit';
+import { LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 import { formatUnits } from 'viem';
@@ -15,61 +15,11 @@ import { updraftSettings } from '@state/common';
 import { Idea } from '@/features/idea/types';
 
 import { shortNum } from '@utils/short-num';
+import { smallCardStyles } from '@styles/small-card-styles';
 
 @customElement('idea-card-small')
 export class IdeaCardSmall extends SignalWatcher(LitElement) {
-  static styles = css`
-    :host {
-      display: inline-block;
-      color: var(--main-foreground);
-    }
-
-    a {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    a:hover h3 {
-      text-decoration: underline;
-      color: var(--accent);
-    }
-
-    hr {
-      height: 1px;
-      background-color: var(--layout-divider); /* Line color */
-      border: none;
-    }
-
-    h3 {
-      margin-top: 0;
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    p {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: var(--subtle-text);
-    }
-
-    .info-row {
-      display: flex;
-      justify-content: space-between;
-      list-style: none;
-      padding: 0;
-    }
-
-    .info-row li {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .info-row span {
-      font-size: 0.8rem;
-    }
-  `;
+  static styles = smallCardStyles;
 
   @property() idea!: Idea;
 
