@@ -40,15 +40,6 @@ export const smallCardStyles = css`
     justify-content: space-between;
     list-style: none;
     padding: 0;
-  }
-
-  .info-row li {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-
-  .info-row span {
     font-size: 0.8rem;
   }
 `;
