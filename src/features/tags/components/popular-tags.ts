@@ -4,12 +4,13 @@
  ***/
 
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { TopTagsDocument } from '@gql';
 import { TagCount } from '@/types';
+import { tagBlacklist } from '../config/blacklist';
 
 @customElement('popular-tags')
 export class PopularTags extends LitElement {
@@ -48,25 +49,51 @@ export class PopularTags extends LitElement {
   `;
 
   @state() private topTags?: TagCount[];
+  @property({ type: Number }) first = 14;
 
   // Controller for fetching top tags
   private readonly tagsController = new UrqlQueryController(
     this,
     TopTagsDocument,
-    {},
+    { first: this.first },
     (result) => {
       if (result.error) {
         console.error('Error fetching top tags:', result.error);
         return;
       }
 
-      this.topTags = result.data?.tagCounts as TagCount[];
+      // Filter out blacklisted tags
+      const allTags = result.data?.tagCounts as TagCount[];
+      this.topTags = this.filterBlacklistedTags(allTags);
     }
   );
 
   // Method to manually refresh tags if needed
   refreshTags() {
     this.tagsController.refresh();
+  }
+
+  // Update the query when properties change
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+
+    if (changedProperties.has('first')) {
+      this.tagsController.setVariablesAndSubscribe({ first: this.first });
+    }
+  }
+
+  /**
+   * Filters out tags that contain any blacklisted strings
+   */
+  private filterBlacklistedTags(tags: TagCount[] | undefined): TagCount[] {
+    if (!tags) return [];
+
+    return tags.filter((tag) => {
+      // Check if the tag contains any blacklisted string
+      return !tagBlacklist.some((blacklistedStr) =>
+        tag.id.toLowerCase().includes(blacklistedStr.toLowerCase())
+      );
+    });
   }
 
   render() {
