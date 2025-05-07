@@ -250,10 +250,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.withdraw', true)
   withdrawTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
+  @query('sl-input[name="support"]', true) supportInput!: SlInput;
 
-  @state() private depositError: string | null = null;
-  @state() private antiSpamFee: string = '1'; // 1 UPD
-  @state() private needUpd: boolean = false;
+  @state() private supportValue: string = '';
   @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
@@ -266,6 +265,46 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
   //@property() network!: string;
+
+  private get antiSpamFee(): number {
+    const value = Number(this.supportValue || 0);
+    if (isNaN(value)) {
+      return updraftSettings.get().minFee;
+    }
+    return Math.max(
+      updraftSettings.get().minFee,
+      value * updraftSettings.get().percentFee
+    );
+  }
+
+  private get needUpd(): boolean {
+    const value = Number(this.supportValue || 0);
+    const userBalance = getBalance('updraft');
+    return (
+      isNaN(value) ||
+      value == 0 ||
+      value > userBalance ||
+      value < this.antiSpamFee
+    );
+  }
+
+  private get depositError(): string | null {
+    if (this.supportValue) {
+      const value = Number(this.supportValue);
+      const userBalance = getBalance('updraft');
+      if (isNaN(value)) {
+        return 'Enter a number';
+      } else if (value <= updraftSettings.get().minFee) {
+        return `Deposit must be more than ${updraftSettings.get().minFee} UPD to cover fees`;
+      } else if (value > userBalance) {
+        return `You have ${userBalance.toFixed(0)} UPD`;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
 
   private readonly ideaController = new UrqlQueryController(
     this,
@@ -422,45 +461,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   private handleSupportInput(e: Event) {
     const input = e.target as SlInput;
-    const value = Number(input.value);
-    const userBalance = getBalance('updraft');
-    this.needUpd = false;
-
-    if (isNaN(value)) {
-      this.depositError = 'Enter a number';
-    } else if (value <= updraftSettings.get().minFee) {
-      this.depositError = `Deposit must be more than ${updraftSettings.get().minFee} UPD to cover fees`;
-    } else if (value > userBalance) {
-      this.depositError = `You have ${userBalance} UPD`;
-      this.needUpd = true;
-    } else {
-      this.depositError = null;
-    }
-
-    if (this.depositError) {
-      input.classList.add('invalid');
-    } else {
-      input.classList.remove('invalid');
-    }
-
-    let fee;
-    if (isNaN(value)) {
-      fee = updraftSettings.get().minFee;
-    } else {
-      fee = Math.max(
-        updraftSettings.get().minFee,
-        value * updraftSettings.get().percentFee
-      );
-    }
-    this.antiSpamFee = fee.toFixed(2);
+    this.supportValue = input.value; // Update the state property to trigger re-render
   }
 
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
-      const formData = new FormData(this.form);
-      const support = parseUnits(formData.get('support') as string, 18);
-      const total = support + parseUnits(this.antiSpamFee, 18);
+      const support = parseUnits(this.supportValue, 18);
+      const total = support + parseUnits(this.antiSpamFee.toString(), 18);
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
@@ -615,8 +623,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               name="support"
               required
               autocomplete="off"
+              .value=${this.supportValue}
               @focus=${this.handleSupportFocus}
               @input=${this.handleSupportInput}
+              class=${this.depositError ? 'invalid' : ''}
             >
             </sl-input>
             <span>UPD</span>
@@ -707,6 +717,13 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     // initially set the right sidebar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
+
+    // Initialize supportValue when the component is connected
+    this.updateComplete.then(() => {
+      if (this.supportInput) {
+        this.supportValue = this.supportInput.value;
+      }
+    });
   }
 
   updated(changedProperties: Map<string, unknown>) {
