@@ -82,12 +82,42 @@ export const setIsConnecting = (connecting: boolean): void => {
   isConnecting.set(connecting);
 };
 
-export const setConnectionError = (error: string | null): void => {
-  connectionError.set(error);
+/**
+ * Type for error message arguments
+ * Can be a string, Error, or any other value that can be converted to string
+ */
+type ErrorArg = string | Error | unknown;
+
+/**
+ * Helper function to extract error message from arguments and set it to a signal
+ * @param args Arguments passed to the error handler
+ * @returns The extracted error message or null if no arguments
+ */
+const extractErrorMessage = (...args: ErrorArg[]): string | null => {
+  if (args.length > 0) {
+    console.error(...args);
+
+    // Extract error message for the signal
+    const lastArg = args[args.length - 1];
+    return lastArg instanceof Error
+      ? lastArg.message
+      : lastArg
+        ? String(lastArg)
+        : 'Unknown error';
+  }
+  return null;
 };
 
-export const setProfileError = (error: string | null): void => {
-  profileError.set(error);
+export const setProfileError = (...args: ErrorArg[]): void => {
+  profileError.set(extractErrorMessage(...args));
+  // Clear the user profile when there's an error
+  if (args.length > 0) {
+    setUserProfile(null);
+  }
+};
+
+export const setConnectionError = (...args: ErrorArg[]): void => {
+  connectionError.set(extractErrorMessage(...args));
 };
 
 export const setNetwork = (chainId: number | undefined): void => {
@@ -130,8 +160,7 @@ export const connectWallet = async (): Promise<void> => {
     // The modal will automatically close on successful connection
     // because the AppKit handles this internally
   } catch (err) {
-    console.error('Error connecting wallet:', err);
-    setConnectionError(err instanceof Error ? err.message : 'Unknown error');
+    setConnectionError('Error connecting wallet', err);
   } finally {
     console.log('Finished connecting wallet');
     setIsConnecting(false);
@@ -166,7 +195,7 @@ export const subscribeToProfileUpdates = (address: `0x${string}`): void => {
     .subscribe(async (result) => {
       try {
         if (result.error) {
-          throw new Error(result.error.message);
+          setProfileError('Error fetching profile', result.error.message);
         }
         if (result.data?.user?.profile) {
           const profileData = JSON.parse(
@@ -177,11 +206,7 @@ export const subscribeToProfileUpdates = (address: `0x${string}`): void => {
           setUserProfile(null);
         }
       } catch (err) {
-        console.error('Error processing profile data:', err);
-        const errorMessage =
-          err instanceof Error ? err.message : 'Unknown error';
-        profileError.set(errorMessage);
-        setUserProfile(null);
+        setProfileError('Error processing profile data', err);
       }
     });
 };
@@ -243,7 +268,7 @@ export const initializeUserState = async (): Promise<void> => {
       profile: userProfile.get() ? 'has profile' : 'no profile',
     });
   } catch (error) {
-    console.error('Error initializing user state:', error);
+    setConnectionError('Error initializing user state', error);
   } finally {
     setIsConnecting(false);
   }
