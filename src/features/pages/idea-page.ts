@@ -224,6 +224,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         margin-top: 0.5rem;
         align-self: flex-start;
       }
+
+      .solutions-header {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin: 1rem 0 0;
+      }
+
+      .solutions-header h2 {
+        margin: 0;
+        font-size: 1.875rem;
+        font-weight: 500;
+      }
     `,
   ];
 
@@ -641,14 +654,17 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               </div>
             `
           : html``}
-        <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
-        <sl-button
-          class="add-solution-button"
-          href="/create-solution/${this.ideaId}"
-          variant="primary"
-          >Add Solution
-        </sl-button>
+        <div class="solutions-header">
+          <h2>Solutions</h2>
+          <sl-button
+            class="add-solution-button"
+            href="/create-solution/${this.ideaId}"
+            variant="primary"
+            >Add Solution
+          </sl-button>
+        </div>
+        <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
         <share-dialog action="supported an Idea" .topic=${name}></share-dialog>
       `;

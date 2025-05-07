@@ -14,13 +14,6 @@ export class IdeaSolutions extends LitElement {
   static styles = css`
     :host {
       display: block;
-      margin-top: 2rem;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 500;
-      margin-bottom: 1rem;
     }
 
     .solutions-list {
@@ -30,9 +23,9 @@ export class IdeaSolutions extends LitElement {
     }
 
     .no-solutions {
-      color: var(--sl-color-neutral-500);
+      color: var(--subtle-text);
       font-style: italic;
-      margin: 1rem 0;
+      margin-top: 1rem;
     }
   `;
 
@@ -70,7 +63,6 @@ export class IdeaSolutions extends LitElement {
   render() {
     return html`
       <div>
-        <h2>Solutions for this Idea</h2>
         ${this.solutions === undefined
           ? html` <sl-spinner></sl-spinner>`
           : this.solutions.length > 0
