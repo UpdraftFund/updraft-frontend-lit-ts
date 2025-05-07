@@ -55,7 +55,7 @@ export class ActivityFeed extends LitElement {
 
     .empty-state {
       padding: 1rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--no-results);
       font-style: italic;
     }
   `;

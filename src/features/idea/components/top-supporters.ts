@@ -69,11 +69,11 @@ export class TopSupporters extends LitElement {
 
     .supporter-contribution {
       font-size: 0.8rem;
-      color: var(--section-heading);
+      color: var(--subtle-text);
     }
 
     .no-supporters {
-      color: var(--sl-color-neutral-500);
+      color: var(--no-results);
       font-style: italic;
     }
   `;

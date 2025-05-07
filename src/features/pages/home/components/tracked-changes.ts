@@ -49,7 +49,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
     .empty-state {
       text-align: center;
-      color: var(--subtle-text);
+      color: var(--no-results);
       font-style: italic;
     }
 

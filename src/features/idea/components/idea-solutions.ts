@@ -23,7 +23,7 @@ export class IdeaSolutions extends LitElement {
     }
 
     .no-solutions {
-      color: var(--subtle-text);
+      color: var(--no-results);
       font-style: italic;
       margin-top: 1rem;
     }

@@ -106,6 +106,11 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       gap: 0.5rem;
       align-items: center;
     }
+
+    .no-results {
+      color: var(--no-results);
+      font-style: italic;
+    }
   `;
 
   @state() private search: string | null = null;
@@ -255,7 +260,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
 
     if (!this.results?.length) {
-      return html`<p>No results found</p>`;
+      return html`<p class="no-results">No results found</p>`;
     }
 
     // Type handling based on the current tab/query type

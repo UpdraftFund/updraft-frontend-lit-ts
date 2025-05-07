@@ -34,7 +34,7 @@ export class HotIdeas extends LitElement {
     }
 
     .no-ideas {
-      color: var(--sl-color-neutral-500);
+      color: var(--no-results);
       font-style: italic;
     }
   `;
