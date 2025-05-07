@@ -3,6 +3,7 @@ import { css, LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 
 import calculator from '@icons/common/calculator.svg';
+import copy from '@icons/common/copy.svg';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
@@ -10,10 +11,12 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
-import { SlDialog } from '@shoelace-style/shoelace';
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
+import { SlDialog, SlTooltip } from '@shoelace-style/shoelace';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { shortNum } from '@utils/short-num';
+import { updraftSettings } from '@state/common';
 
 @customElement('upd-dialog')
 export class UpdDialog extends SignalWatcher(LitElement) {
@@ -32,6 +35,13 @@ export class UpdDialog extends SignalWatcher(LitElement) {
         gap: 0.25rem;
       }
 
+      .copy-address {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+      }
+
       sl-spinner {
         font-size: 1rem;
       }
@@ -39,6 +49,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
   ];
 
   @query('sl-dialog') dialog!: SlDialog;
+  @query('sl-tooltip.clipboard') clipboardTip!: SlTooltip;
   @state() private loadingBalance = false;
 
   private checkBalance() {
@@ -46,6 +57,24 @@ export class UpdDialog extends SignalWatcher(LitElement) {
     refreshBalances().finally(() => {
       this.loadingBalance = false;
     });
+  }
+
+  private async copyTokenAddress() {
+    const updAddress = updraftSettings.get().updAddress;
+    if (updAddress) {
+      try {
+        await navigator.clipboard.writeText(updAddress);
+        this.clipboardTip.content = 'Copied!';
+      } catch {
+        this.clipboardTip.content = 'Failed to copy';
+      }
+
+      // Show and auto-hide tooltip
+      await this.clipboardTip.show();
+      setTimeout(() => {
+        this.clipboardTip.hide();
+      }, 1500);
+    }
   }
 
   async show() {
@@ -89,9 +118,15 @@ export class UpdDialog extends SignalWatcher(LitElement) {
             </a>
           </li>
           <li>
-            <a href="https://app.uniswap.org/swap" target="_blank">
-              Swap ETH for UPD on Uniswap
-            </a>
+            <div class="copy-address">
+              <span>UPD Token Address:</span>
+              <sl-tooltip class="clipboard" placement="bottom" trigger="manual">
+                <sl-button size="small" @click=${this.copyTokenAddress}>
+                  <sl-icon src=${copy}></sl-icon>
+                  Copy Address
+                </sl-button>
+              </sl-tooltip>
+            </div>
           </li>
         </ul>
       </sl-dialog>
