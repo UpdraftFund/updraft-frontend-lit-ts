@@ -4,7 +4,6 @@ import { cache } from 'lit/directives/cache.js';
 
 import '@/features/idea/components/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeasBySharesDocument } from '@gql';

@@ -9,8 +9,6 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
-import '@components/idea/top-supporters';
-import '@components/idea/related-ideas';
 import '@/features/user/components/activity-feed';
 import '@/features/user/components/user-avatar';
 
