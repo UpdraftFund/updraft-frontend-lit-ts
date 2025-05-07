@@ -23,7 +23,7 @@ import './goal-reached-card';
 import './goal-failed-card';
 
 import { TrackedChangesDocument, UserIdeasSolutionsDocument } from '@gql';
-import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { TrackedChangesManager } from '@utils/home/tracked-changes-manager';
 
 import { since } from '@state/user/tracked-changes';
@@ -49,7 +49,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
     .empty-state {
       text-align: center;
-      color: var(--subtle-text);
+      color: var(--no-results);
       font-style: italic;
     }
 
@@ -353,7 +353,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
     const changesToRender = this.changesManager.getChangesToRender();
 
-    return html`
+    return cache(html`
       <div class="cards-container">
         ${changesToRender.map((change) => {
           switch (change.type) {
@@ -386,7 +386,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
           }
         })}
       </div>
-    `;
+    `);
   }
 
   render() {
@@ -413,7 +413,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
             </div>
           `
         : html``}
-      ${cache(this.renderTrackedChanges())}
+      ${this.renderTrackedChanges()}
     `;
   }
 }

@@ -4,6 +4,8 @@ import { SignalWatcher } from '@lit-labs/signals';
 import { repeat } from 'lit/directives/repeat.js';
 import { cache } from 'lit/directives/cache.js';
 
+import dayjs from 'dayjs';
+
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -15,13 +17,15 @@ import '@components/navigation/discover-tabs';
 import '@components/tags/popular-tags';
 import '@components/tags/watched-tags';
 import '@components/idea/idea-card-large';
+import '@components/solution/solution-card-large';
 
 import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 
 import layout from '@state/layout';
 import { watchTag, isWatched } from '@state/user/watched-tags';
+import { followedUsers } from '@state/user/follow';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,
@@ -35,7 +39,14 @@ import {
   IdeasByFundersQuery,
   IdeasFullTextQuery,
   IdeasByTagsQuery,
+  IdeasBySharesQueryVariables,
+  IdeasByStartTimeQueryVariables,
+  SolutionsByDeadlineQueryVariables,
+  IdeasByFundersQueryVariables,
+  IdeasFullTextQueryVariables,
+  IdeasByTagsQueryVariables,
 } from '@gql';
+import { TypedDocumentNode } from '@urql/core';
 
 type AnyResult =
   | IdeasBySharesQuery
@@ -44,6 +55,14 @@ type AnyResult =
   | IdeasByFundersQuery
   | IdeasFullTextQuery
   | IdeasByTagsQuery;
+
+type AnyVariables =
+  | IdeasBySharesQueryVariables
+  | IdeasByStartTimeQueryVariables
+  | SolutionsByDeadlineQueryVariables
+  | IdeasByFundersQueryVariables
+  | IdeasFullTextQueryVariables
+  | IdeasByTagsQueryVariables;
 
 @customElement('discover-page')
 export class DiscoverPage extends SignalWatcher(LitElement) {
@@ -87,6 +106,11 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       gap: 0.5rem;
       align-items: center;
     }
+
+    .no-results {
+      color: var(--no-results);
+      font-style: italic;
+    }
   `;
 
   @state() private search: string | null = null;
@@ -95,29 +119,43 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   @state() private results?: Idea[] | Solution[] | IdeaContribution[];
   @state() private isLoading: boolean = false;
 
-  private unsubscribeQuery?: () => void;
-
   private readonly queries = {
     'hot-ideas': IdeasBySharesDocument,
     'new-ideas': IdeasByStartTimeDocument,
-    deadline: SolutionsByDeadlineDocument,
+    solutions: SolutionsByDeadlineDocument,
     followed: IdeasByFundersDocument,
     search: IdeasFullTextDocument,
     tags: IdeasByTagsDocument,
   } as const;
 
+  // Controller for handling query subscriptions
+  private readonly queryController = new UrqlQueryController<
+    AnyResult,
+    AnyVariables
+  >(
+    this,
+    this.queries['hot-ideas'], // default
+    this.getVariablesForQuery('hot-ideas'), // default
+    (result) => {
+      this.isLoading = false;
+      if (result.data) {
+        this.results = this.getResultsFromData(result.data, this.tab);
+      } else {
+        this.results = [];
+      }
+    }
+  );
+
   private getVariablesForQuery(queryType: DiscoverQueryType) {
     switch (queryType) {
       case 'hot-ideas':
-        return { detailed: true };
+        return { first: 4, detailed: true };
       case 'new-ideas':
         return {};
-      case 'deadline':
-        return {};
+      case 'solutions':
+        return { now: dayjs().unix() };
       case 'followed':
-        return {
-          funders: JSON.parse(localStorage.getItem('funders') || '[]'),
-        };
+        return { funders: Array.from(followedUsers.get()) };
       case 'search':
         return {
           text: this.search ?? '', // Ensure text is always string, default to '' if null
@@ -143,7 +181,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         return (data as IdeasBySharesQuery).ideas as Idea[];
       case 'new-ideas':
         return (data as IdeasByStartTimeQuery).ideas as Idea[];
-      case 'deadline':
+      case 'solutions':
         return (data as SolutionsByDeadlineQuery).solutions as Solution[];
       case 'followed':
         return (data as IdeasByFundersQuery)
@@ -155,25 +193,16 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   }
 
-  private subscribe(queryType: DiscoverQueryType) {
-    // Clean up previous subscription if it exists
-    this.unsubscribeQuery?.();
-
+  private subscribe() {
     this.isLoading = true;
     this.results = undefined;
 
-    const query = this.queries[queryType];
-    const variables = this.getVariablesForQuery(queryType);
-    const querySub = urqlClient.query(query, variables).subscribe((result) => {
-      this.isLoading = false;
-      if (result.data) {
-        this.results = this.getResultsFromData(result.data, queryType);
-      } else {
-        this.results = [];
-      }
-    });
-
-    this.unsubscribeQuery = querySub.unsubscribe;
+    const query = this.queries[this.tab] as TypedDocumentNode<
+      AnyResult,
+      AnyVariables
+    >;
+    const variables = this.getVariablesForQuery(this.tab);
+    this.queryController.setQueryAndSubscribe(query, variables);
   }
 
   private renderTagList() {
@@ -222,7 +251,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       }
     }
 
-    this.subscribe(this.tab);
+    this.subscribe();
   };
 
   private renderQueryResults() {
@@ -231,7 +260,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
 
     if (!this.results?.length) {
-      return html`<p>No results found</p>`;
+      return html`<p class="no-results">No results found</p>`;
     }
 
     // Type handling based on the current tab/query type
@@ -242,27 +271,37 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       this.tab === 'tags'
     ) {
       // Ideas result type
-      return html`${repeat(
-        this.results as Idea[],
-        (idea) => idea.id,
-        (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
-      )}`;
-    } else if (this.tab === 'deadline') {
+      return cache(
+        html`${repeat(
+          this.results as Idea[],
+          (idea) => idea.id,
+          (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
+        )}`
+      );
+    } else if (this.tab === 'solutions') {
       // Solutions result type
-      return html`${repeat(
-        this.results as Solution[],
-        (solution) => solution.id,
-        (solution) =>
-          html` <solution-card .solution=${solution}></solution-card>`
-      )}`;
+      return cache(
+        html`${repeat(
+          this.results as Solution[],
+          (solution) => solution.id,
+          (solution) =>
+            html` <solution-card-large
+              .solution=${solution}
+            ></solution-card-large>`
+        )}`
+      );
     } else if (this.tab === 'followed') {
       // IdeaContribution result type
-      return html`${repeat(
-        this.results as IdeaContribution[],
-        (contribution) => contribution.id,
-        (contribution) =>
-          html` <idea-card-large .idea=${contribution.idea}></idea-card-large>`
-      )}`;
+      return cache(
+        html`${repeat(
+          this.results as IdeaContribution[],
+          (contribution) => contribution.id,
+          (contribution) =>
+            html` <idea-card-large
+              .idea=${contribution.idea}
+            ></idea-card-large>`
+        )}`
+      );
     }
   }
 
@@ -292,14 +331,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   }
 
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubscribeQuery?.();
-    } else {
-      this.subscribe(this.tab);
-    }
-  };
-
   connectedCallback() {
     super.connectedCallback();
     this.setTabFromUrl();
@@ -317,8 +348,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       <watched-tags></watched-tags>
     `);
     window.addEventListener('popstate', this.setTabFromUrl);
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-
     // Listen for URL changes that aren't caught by popstate
     // This is needed for when users click on tags in idea cards
     this._handleUrlChange = this._handleUrlChange.bind(this);
@@ -327,12 +356,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   disconnectedCallback() {
     window.removeEventListener('popstate', this.setTabFromUrl);
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
     this._teardownUrlChangeListener();
-    this.unsubscribeQuery?.();
     super.disconnectedCallback();
   }
 
@@ -341,7 +365,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       <div class="container">
         <main>
           ${this.tab === 'tags' ? this.renderTagList() : html``}
-          ${cache(this.renderQueryResults())}
+          ${this.renderQueryResults()}
         </main>
       </div>
     `;

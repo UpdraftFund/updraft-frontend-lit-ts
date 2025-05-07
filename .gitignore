@@ -26,6 +26,9 @@ dist-ssr
 # Graphclient output
 /.graphclient/
 
+# Environment variables
+.env.local
+.env.*.local
+
 tmp.txt
-.aider*
-.codebuddy/*
+

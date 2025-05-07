@@ -29,6 +29,7 @@ import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
 import '@components/idea/top-supporters';
 import '@components/idea/related-ideas';
+import '@components/idea/idea-solutions';
 import '@/features/common/components/upd-dialog';
 import '@/features/common/components/share-dialog';
 import '@/features/common/components/transaction-watcher';
@@ -36,11 +37,11 @@ import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
 
-import { UrqlQueryController } from '@/features/common/utils/urql-query-controller';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { Upd } from '@contracts/upd';
-import { defaultFunderReward, updraftSettings } from '@state/common';
+import { updraftSettings } from '@state/common';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
@@ -223,6 +224,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         margin-top: 0.5rem;
         align-self: flex-start;
       }
+
+      .solutions-header {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin: 1rem 0 0;
+      }
+
+      .solutions-header h2 {
+        margin: 0;
+        font-size: 1.875rem;
+        font-weight: 500;
+      }
     `,
   ];
 
@@ -325,6 +339,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             ])) as bigint[];
 
             const originalContribution = originalPosition[1] as bigint;
+
+            // Skip positions with zero value (already withdrawn)
+            if (originalContribution <= 0n) continue;
+
             const earnings = currentPosition - originalContribution;
             viablePositions.push({
               originalContribution,
@@ -498,11 +516,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         name,
       } = this.idea;
 
-      let pctFunderReward;
-      if (funderReward != defaultFunderReward.get()) {
-        pctFunderReward =
-          (funderReward * 100) / updraftSettings.get().percentScale;
-      }
+      const pctFunderReward =
+        (funderReward * 100) / updraftSettings.get().percentScale;
 
       const profile = JSON.parse(
         fromHex(creator.profile as `0x${string}`, 'string')
@@ -639,12 +654,17 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               </div>
             `
           : html``}
-        <sl-button
-          class="add-solution-button"
-          href="/create-solution/${this.ideaId}"
-          variant="primary"
-          >Add Solution
-        </sl-button>
+
+        <div class="solutions-header">
+          <h2>Solutions</h2>
+          <sl-button
+            class="add-solution-button"
+            href="/create-solution/${this.ideaId}"
+            variant="primary"
+            >Add Solution
+          </sl-button>
+        </div>
+        <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
         <share-dialog action="supported an Idea" .topic=${name}></share-dialog>
       `;

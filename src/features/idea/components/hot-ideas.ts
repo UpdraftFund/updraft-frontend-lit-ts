@@ -6,7 +6,7 @@ import '@/features/idea/components/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeasBySharesDocument } from '@gql';
 import { Idea } from '@/features/idea/types';
 
@@ -34,37 +34,37 @@ export class HotIdeas extends LitElement {
     }
 
     .no-ideas {
-      color: var(--sl-color-neutral-500);
+      color: var(--no-results);
       font-style: italic;
     }
   `;
 
   @state() private hotIdeas?: Idea[];
-  private unsubHotIdeas?: () => void;
 
-  private subscribe() {
-    this.unsubHotIdeas?.();
+  // Controller for fetching hot ideas
+  private readonly hotIdeasController = new UrqlQueryController(
+    this,
+    IdeasBySharesDocument,
+    {},
+    (result) => {
+      if (result.error) {
+        console.error('Error fetching hot ideas:', result.error);
+        this.hotIdeas = [];
+        return;
+      }
 
-    const hotIdeasSub = urqlClient
-      .query(IdeasBySharesDocument, {})
-      .subscribe((result) => {
-        if (result.data?.ideas) {
-          this.hotIdeas = result.data.ideas as Idea[];
-        } else {
-          this.hotIdeas = [];
-        }
-      });
-
-    this.unsubHotIdeas = hotIdeasSub.unsubscribe;
-  }
-
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubHotIdeas?.();
-    } else {
-      this.subscribe();
+      if (result.data?.ideas) {
+        this.hotIdeas = result.data.ideas as Idea[];
+      } else {
+        this.hotIdeas = [];
+      }
     }
-  };
+  );
+
+  // Method to manually refresh data if needed
+  refreshIdeas() {
+    this.hotIdeasController.refresh();
+  }
 
   private renderHotIdeas(ideas: Idea[]) {
     return html`
@@ -76,32 +76,15 @@ export class HotIdeas extends LitElement {
     `;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-    this.unsubHotIdeas?.();
-  }
-
   render() {
     return html`
       <div>
         <h2>🔥 Hot Ideas</h2>
         ${this.hotIdeas === undefined
           ? html` <sl-spinner></sl-spinner>`
-          : cache(
-              this.hotIdeas.length === 0
-                ? html` <div class="no-ideas">No hot ideas found</div>`
-                : this.renderHotIdeas(this.hotIdeas)
-            )}
+          : this.hotIdeas.length === 0
+            ? html` <div class="no-ideas">No ideas found</div>`
+            : cache(this.renderHotIdeas(this.hotIdeas))}
       </div>
     `;
   }

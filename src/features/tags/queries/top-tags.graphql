@@ -1,5 +1,5 @@
-query TopTags{
-    tagCounts(first: 12, orderBy: count, orderDirection: desc) {
+query TopTags($first: Int = 14) {
+    tagCounts(first: $first, orderBy: count, orderDirection: desc) {
         id
         count
     }

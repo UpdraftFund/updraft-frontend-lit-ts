@@ -61,13 +61,21 @@ export class UrqlQueryController<TData, TVariables extends AnyVariables>
   }
 
   /**
-   * Update the callback function
+   * Update both the query and the variables and re-subscribe if the component is connected
+   *
+   * @param queryDocument
+   * @param variables
    */
-  setCallback(
-    callback: (result: { data?: TData; error?: Error }) => void
+
+  setQueryAndSubscribe(
+    queryDocument: TypedDocumentNode<TData, TVariables>,
+    variables: TVariables
   ): void {
-    this._callback = callback;
-    // No need to resubscribe as the subscription will use the new callback
+    this._document = queryDocument;
+    this._variables = variables;
+    if (this._isActive) {
+      this.subscribe();
+    }
   }
 
   /**
