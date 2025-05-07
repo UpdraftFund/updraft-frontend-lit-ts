@@ -1,184 +1,118 @@
 import { LitElement, css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
-import { formatUnits, fromHex } from 'viem';
+
+import { fromHex } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
-import '@shoelace-style/shoelace/dist/components/card/card.js';
 
-import { updraftSettings } from '@state/common';
 import { Solution, SolutionInfo } from '@/features/solution/types';
-import { Profile } from '@/features/user/types';
 
-import { shortNum } from '@utils/short-num';
+import { largeCardStyles } from '@styles/large-card-styles';
+import {
+  formatFunderReward,
+  formatTokenAmount,
+  parseProfile,
+  formatDate,
+  calculateProgress,
+} from '@utils/format-utils';
 
 @customElement('solution-card-large')
 export class SolutionCardLarge extends SignalWatcher(LitElement) {
-  static styles = css`
-    :host {
-      display: block;
-      color: var(--main-foreground);
-    }
+  static styles = [
+    largeCardStyles,
+    css`
+      .progress-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: flex-start;
+      }
 
-    .solution-card {
-      background-color: var(--sl-color-neutral-0);
-      overflow: hidden;
-      padding: 1.5rem;
-      width: 100%;
-      border-bottom: 1px solid var(--border-default);
-    }
+      .progress-status-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
 
-    .solution-header {
-      margin-bottom: 1rem;
-    }
+      .progress-bar {
+        width: 150px;
+        flex-shrink: 0;
+      }
 
-    h3 {
-      margin-top: 0;
-      margin-bottom: 0.25rem;
-      font-size: 1.25rem;
-      font-weight: 600;
-      line-height: 1.4;
-    }
+      .goal-text {
+        font-size: 0.9rem;
+        color: var(--sl-color-neutral-700);
+        white-space: nowrap;
+        margin-top: 0.25rem;
+      }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+      .news {
+        margin: 1rem 0;
+        padding: 0.75rem;
+        background-color: var(--sl-color-neutral-50);
+        border-radius: var(--sl-border-radius-medium);
+      }
 
-    a:hover {
-      color: var(--accent);
-    }
+      .news h4 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
 
-    .byline {
-      color: var(--sl-color-neutral-600);
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
-    }
+      .fund-button {
+        margin-top: 1rem;
+      }
 
-    .info-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 0;
-      margin: 0 0 1rem 0;
-      align-items: flex-end;
-    }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        white-space: nowrap;
+      }
 
-    .info-row li {
-      list-style: none;
-      display: flex;
-      gap: 0.25rem;
-      font-size: 0.9rem;
-      color: var(--sl-color-neutral-700);
-    }
+      .status-success {
+        color: var(--sl-color-success-600);
+      }
 
-    .description {
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
-    }
+      .status-danger {
+        color: var(--sl-color-danger-600);
+      }
 
-    .progress-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      margin-right: 1rem;
-      align-items: flex-start;
-    }
+      .status-progress {
+        color: var(--sl-color-primary-600);
+      }
 
-    .progress-status-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+      .idea-link {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: var(--sl-color-neutral-600);
+      }
 
-    .progress-bar {
-      width: 150px;
-      flex-shrink: 0;
-    }
+      .idea-link a {
+        color: var(--accent);
+      }
 
-    .goal-text {
-      font-size: 0.9rem;
-      color: var(--sl-color-neutral-700);
-      white-space: nowrap;
-      margin-top: 0.25rem;
-      padding-left: 0.5rem;
-    }
-
-    .news {
-      margin: 1rem 0;
-      padding: 0.75rem;
-      background-color: var(--sl-color-neutral-50);
-      border-radius: var(--sl-border-radius-medium);
-    }
-
-    .news h4 {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-
-    .fund-button {
-      margin-top: 1rem;
-    }
-
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 500;
-      white-space: nowrap;
-    }
-
-    .status-success {
-      color: var(--sl-color-success-600);
-    }
-
-    .status-danger {
-      color: var(--sl-color-danger-600);
-    }
-
-    .status-progress {
-      color: var(--sl-color-primary-600);
-    }
-
-    .idea-link {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: var(--sl-color-neutral-600);
-    }
-
-    .idea-link a {
-      color: var(--accent);
-    }
-
-    .idea-link a:hover {
-      text-decoration: underline;
-    }
-  `;
+      .idea-link a:hover {
+        text-decoration: underline;
+      }
+    `,
+  ];
 
   @property() solution!: Solution;
-
-  private calculateProgress(): number {
-    if (!this.solution?.tokensContributed || !this.solution?.fundingGoal) {
-      return 0;
-    }
-
-    const tokensContributed = BigInt(this.solution.tokensContributed);
-    const fundingGoal = BigInt(this.solution.fundingGoal);
-
-    if (fundingGoal === 0n) return 0;
-    return Number((tokensContributed * 100n) / fundingGoal);
-  }
 
   private renderGoalStatus() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
-    const progress = this.calculateProgress();
+    const progress = calculateProgress(
+      this.solution.tokensContributed,
+      this.solution.fundingGoal
+    );
 
     if (progress >= 100) {
       return html`
@@ -202,44 +136,30 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   }
 
   render() {
-    // Parse the solution info from the hex-encoded JSON string
     const solutionInfo: SolutionInfo = JSON.parse(
       fromHex(this.solution.info as `0x${string}`, 'string')
     );
-
-    // Parse the drafter profile from the hex-encoded JSON string
-    let drafterProfile: Profile = { name: '', team: '' };
-    if (this.solution.drafter.profile) {
-      try {
-        drafterProfile = JSON.parse(
-          fromHex(this.solution.drafter.profile as `0x${string}`, 'string')
-        );
-      } catch (e) {
-        console.error('Error parsing drafter profile', e);
-      }
-    }
-
-    // Format dates
-    const start = dayjs(this.solution.startTime * 1000);
-    const deadline = dayjs(this.solution.deadline * 1000);
-
-    // Calculate funding progress
-    const progress = this.calculateProgress();
-
-    // Format amounts
-    const tokensContributed = shortNum(
-      formatUnits(this.solution.tokensContributed, 18)
+    const drafterProfile = parseProfile(
+      this.solution.drafter.profile as `0x${string}`
     );
-    const fundingGoal = shortNum(formatUnits(this.solution.fundingGoal, 18));
-    const stake = shortNum(formatUnits(this.solution.stake, 18));
-
-    // Calculate funder reward percentage
-    const pctFunderReward =
-      (this.solution.funderReward * 100) / updraftSettings.get().percentScale;
+    const start = formatDate(this.solution.startTime);
+    const deadline = formatDate(this.solution.deadline);
+    const progress = calculateProgress(
+      this.solution.tokensContributed,
+      this.solution.fundingGoal
+    );
+    const tokensContributed = formatTokenAmount(
+      this.solution.tokensContributed
+    );
+    const fundingGoal = formatTokenAmount(this.solution.fundingGoal);
+    const stake = formatTokenAmount(this.solution.stake);
+    const funderRewardFormatted = formatFunderReward(
+      this.solution.funderReward
+    );
 
     return html`
-      <div class="solution-card">
-        <div class="solution-header">
+      <div class="card">
+        <div class="card-header">
           <a href="/solution/${this.solution.id}">
             <h3>${solutionInfo.name || 'Untitled Solution'}</h3>
           </a>
@@ -267,13 +187,13 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
             </div>
           </li>
           <li>
-            <span>⏰ Deadline ${deadline.fromNow()}</span>
+            <span>⏰ Deadline ${deadline.fromNow}</span>
           </li>
           <li>
-            <span class="created"> 🌱 Created ${start.fromNow()} </span>
+            <span class="created"> 🌱 Created ${start.fromNow} </span>
           </li>
           <li>
-            <span>🎁 ${pctFunderReward.toFixed(0)}% funder reward</span>
+            <span>🎁 ${funderRewardFormatted} funder reward</span>
           </li>
           <li>
             <span>💎 ${stake} UPD stake</span>
