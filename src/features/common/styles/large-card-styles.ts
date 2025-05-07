@@ -52,7 +52,7 @@ export const largeCardStyles = css`
   .info-row li {
     list-style: none;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 0.25rem;
     font-size: 0.9rem;
     color: var(--sl-color-neutral-700);

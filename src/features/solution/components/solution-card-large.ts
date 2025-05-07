@@ -26,7 +26,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   static styles = [
     largeCardStyles,
     css`
-      .progress-container {
+      .info-row .progress-container {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
@@ -48,7 +48,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         font-size: 0.9rem;
         color: var(--sl-color-neutral-700);
         white-space: nowrap;
-        margin-top: 0.25rem;
+        margin: 0 0.25rem;
       }
 
       .news {
