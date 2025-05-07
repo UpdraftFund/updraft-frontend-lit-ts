@@ -37,6 +37,7 @@
   --link: var(--sl-color-primary-500);
   --main-foreground: var(--sl-color-neutral-800);
   --subtle-text: var(--sl-color-neutral-600);
+  --no-results: var(--sl-color-neutral-500);
   --control-background: var(--sl-color-sky-200);
   --section-heading: var(--sl-color-neutral-500);
   --layout-divider: var(--sl-color-neutral-200);
