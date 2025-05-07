@@ -1,4 +1,4 @@
-import { LitElement, css, TemplateResult } from 'lit';
+import { LitElement, css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 import { formatUnits, fromHex } from 'viem';
@@ -75,7 +75,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
 
   @property() solution!: Solution;
 
-  private renderStatus(): TemplateResult {
+  private renderStatus() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
 
