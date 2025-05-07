@@ -27,10 +27,15 @@ For production deployments on Vercel:
 2. Navigate to the "Environment Variables" section
 3. Add the following variables:
     - `VITE_GRAPH_API_KEY`: Your Graph API key
+   - `VITE_APP_ENV`: Set to `production` for production deployments or `preview` for preview deployments
 
 ## Available Environment Variables
 
 - `VITE_GRAPH_API_KEY`: API key for The Graph API
+- `VITE_APP_ENV`: Environment setting that controls which endpoints are used. Values can be:
+    - Empty or undefined: Local development environment (default)
+    - `preview`: Preview deployment environment
+    - `production`: Production deployment environment
 
 ## How It Works
 
@@ -41,6 +46,7 @@ In our code, we access these variables directly:
 
 ```typescript
 const apiKey = import.meta.env.VITE_GRAPH_API_KEY || '';
+const isProd = import.meta.env.VITE_APP_ENV === 'production';
 ```
 
 This approach ensures that:
