@@ -42,4 +42,10 @@ export const smallCardStyles = css`
     padding: 0;
     font-size: 0.8rem;
   }
+
+  .info-row li {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
 `;

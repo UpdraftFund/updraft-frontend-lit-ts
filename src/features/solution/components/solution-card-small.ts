@@ -1,4 +1,4 @@
-import { LitElement } from 'lit';
+import { LitElement, css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 import { fromHex } from 'viem';
@@ -24,7 +24,15 @@ import {
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends SignalWatcher(LitElement) {
-  static styles = smallCardStyles;
+  static styles = [
+    smallCardStyles,
+    css`
+      sl-icon {
+        font-size: 1.5rem;
+        color: var(--main-foreground);
+      }
+    `,
+  ];
 
   @property() solution!: Solution;
 
@@ -37,10 +45,10 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     );
 
     if (progress >= 100) {
-      return html`✅ <span>Goal Reached!</span>`;
+      return html`✅ Goal Reached!`;
     }
     if (now.isAfter(deadlineDate)) {
-      return html`❌ <span>Goal Failed</span>`;
+      return html`❌ Goal Failed`;
     }
     let gaugeIcon = gaugeMinIcon;
     if (progress >= 75) {
@@ -58,8 +66,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     const formattedGoal = formatTokenAmount(this.solution.fundingGoal);
     const progressText = `${formattedContributed} / ${formattedGoal}`;
 
-    return html` <sl-icon src=${gaugeIcon}></sl-icon
-      ><span>${progressText}</span>`;
+    return html` <sl-icon src=${gaugeIcon}></sl-icon>${progressText}`;
   }
 
   render() {
