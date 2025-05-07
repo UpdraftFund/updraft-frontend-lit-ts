@@ -2,10 +2,8 @@ import { signal, computed } from '@lit-labs/signals';
 import type { Address } from 'viem';
 import { fromHex } from 'viem';
 
-// Import user profile type
 import type { Profile, CurrentUser } from '@/features/user/types';
 
-// Import the wallet connection modal
 import { modal, config } from '@utils/web3';
 import {
   disconnect,
@@ -15,22 +13,20 @@ import {
   getChainId,
 } from '@wagmi/core';
 
-// Import urqlClient for GraphQL queries
 import urqlClient from '@utils/urql-client';
+
 import { ProfileDocument } from '@gql';
+
 import { refreshUpdraftSettings } from '@state/common';
 import { refreshBalances } from '@state/user/balances';
 import { markComplete } from '@state/user/beginner-tasks';
 
-// Initialize signals with default values
 export const userAddress = signal<Address | null>(null);
 export const userProfile = signal<CurrentUser | null>(null);
 export const isConnecting = signal<boolean>(false);
 export const connectionError = signal<string | null>(null);
 export const profileError = signal<string | null>(null);
 export const networkName = signal<string | null>(null);
-
-// Computed values
 export const isConnected = computed(() => Boolean(userAddress.get()));
 export const hasProfile = computed(() => userProfile.get() !== null);
 
@@ -88,6 +84,10 @@ export const setIsConnecting = (connecting: boolean): void => {
 
 export const setConnectionError = (error: string | null): void => {
   connectionError.set(error);
+};
+
+export const setProfileError = (error: string | null): void => {
+  profileError.set(error);
 };
 
 export const setNetwork = (chainId: number | undefined): void => {
