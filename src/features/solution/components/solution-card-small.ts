@@ -17,9 +17,9 @@ import { Solution } from '@/features/solution/types';
 
 import { smallCardStyles } from '@styles/small-card-styles';
 import {
-  formatFunderReward,
   formatDate,
   calculateProgress,
+  formatTokenAmount,
 } from '@utils/format-utils';
 
 @customElement('solution-card-small')
@@ -37,10 +37,10 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     );
 
     if (progress >= 100) {
-      return html`✅ <span>Reached</span>`;
+      return html`✅ <span>Goal Reached!</span>`;
     }
     if (now.isAfter(deadlineDate)) {
-      return html`❌ <span>Failed</span>`;
+      return html`❌ <span>Goal Failed</span>`;
     }
     let gaugeIcon = gaugeMinIcon;
     if (progress >= 75) {
@@ -50,14 +50,23 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     } else if (progress >= 25) {
       gaugeIcon = gaugeLowIcon;
     }
-    return html` <sl-icon src=${gaugeIcon}></sl-icon>`;
+
+    // Format the progress text
+    const formattedContributed = formatTokenAmount(
+      this.solution.tokensContributed
+    );
+    const formattedGoal = formatTokenAmount(this.solution.fundingGoal);
+    const progressText = `${formattedContributed} / ${formattedGoal}`;
+
+    return html` <sl-icon src=${gaugeIcon}></sl-icon
+      ><span>${progressText}</span>`;
   }
 
   render() {
-    const { info: infoRaw, startTime, funderReward, id } = this.solution;
+    const { info: infoRaw, deadline, id } = this.solution;
     const info = JSON.parse(fromHex(infoRaw as `0x${string}`, 'string'));
     const name = info.name || 'Untitled Solution';
-    const date = formatDate(startTime);
+    const deadlineDate = formatDate(deadline);
     const description = info.description;
 
     return html`
@@ -66,8 +75,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         <h3>${name}</h3>
         ${description ? html`<p>${description}</p>` : html``}
         <ul class="info-row">
-          <li>🌱 ${date.fromNow}</li>
-          <li>🎁 ${formatFunderReward(funderReward)}</li>
+          <li>⏰ ${deadlineDate.fromNow}</li>
           <li>${this.renderGoalProgress()}</li>
         </ul>
       </a>
