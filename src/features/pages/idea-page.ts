@@ -18,6 +18,7 @@ dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
+import { TokenHandler } from '@utils/token-handler';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -40,17 +41,15 @@ import { TransactionWatcher } from '@/features/common/components/transaction-wat
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
-import { Upd } from '@contracts/upd';
 import { updraftSettings } from '@state/common';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
-import { getBalance, refreshBalances } from '@state/user/balances';
 import { markComplete } from '@state/user/beginner-tasks';
 import { userAddress } from '@state/user';
 
 @customElement('idea-page')
-export class IdeaPage extends SignalWatcher(LitElement) {
+export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
   static styles = [
     dialogStyles,
     css`
@@ -252,7 +251,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('sl-input[name="support"]', true) supportInput!: SlInput;
 
-  @state() private supportValue: string = '';
+  // supportValue is now handled by UpdTransactionMixin as updValue
   @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
@@ -266,45 +265,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   //TODO: each url should include a network
   //@property() network!: string;
 
-  private get antiSpamFee(): number {
-    const value = Number(this.supportValue || 0);
-    if (isNaN(value)) {
-      return updraftSettings.get().minFee;
-    }
-    return Math.max(
-      updraftSettings.get().minFee,
-      value * updraftSettings.get().percentFee
-    );
-  }
-
-  private get needUpd(): boolean {
-    const value = Number(this.supportValue || 0);
-    const userBalance = getBalance('updraft');
-    return (
-      isNaN(value) ||
-      value == 0 ||
-      value > userBalance ||
-      value < this.antiSpamFee
-    );
-  }
-
-  private get depositError(): string | null {
-    if (this.supportValue) {
-      const value = Number(this.supportValue);
-      const userBalance = getBalance('updraft');
-      if (isNaN(value)) {
-        return 'Enter a number';
-      } else if (value <= updraftSettings.get().minFee) {
-        return `Deposit must be more than ${updraftSettings.get().minFee} UPD to cover fees`;
-      } else if (value > userBalance) {
-        return `You have ${userBalance.toFixed(0)} UPD`;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
+  // antiSpamFee, needUpd, and validation are now handled by UpdTransactionMixin
+  // We can access them as this.antiSpamFee, this.needUpd, and this.updError
 
   private readonly ideaController = new UrqlQueryController(
     this,
@@ -455,50 +417,37 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
+  // Use the mixin's handleUpdFocus and handleUpdInput methods
   private handleSupportFocus() {
-    refreshBalances();
+    this.handleUpdFocus();
   }
 
   private handleSupportInput(e: Event) {
-    const input = e.target as SlInput;
-    this.supportValue = input.value; // Update the state property to trigger re-render
+    this.handleUpdInput(e);
   }
 
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
-      const support = parseUnits(this.supportValue, 18);
-      const total = support + parseUnits(this.antiSpamFee.toString(), 18);
+      const support = parseUnits(this.updValue, 18);
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
-      } catch (e) {
-        if (e instanceof Error) {
-          if (e.message.startsWith('connection')) {
-            modal.open({ view: 'Connect' });
-          } else if (e.message.includes('exceeds balance')) {
-            this.updDialog.show();
-          } else if (e.message.includes('exceeds allowance')) {
-            const updAddress = updraftSettings.get().updAddress;
-            if (updAddress) {
-              this.approveTransaction.reset();
-              this.approveDialog.show();
-              const upd = new Upd(updAddress);
-              this.approveTransaction.hash = await upd.write('approve', [
-                this.ideaId,
-                total,
-              ]);
-            }
-          }
+      } catch (err) {
+        if (err instanceof Error && err.message.startsWith('connection')) {
+          modal.open({ view: 'Connect' });
+        } else {
+          this.handleUpdTransactionError(err, this.ideaId, () => {
+            this.handleSubmit(e);
+          });
         }
-        console.error(e);
       }
     } else {
       this.form.reportValidity(); // Show validation messages
     }
   }
 
-  private async handleTransactionSuccess() {
+  private async handleSupportSucces() {
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.approveDialog.hide();
     this.shareDialog.show();
@@ -623,10 +572,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               name="support"
               required
               autocomplete="off"
-              .value=${this.supportValue}
+              .value=${this.updValue}
               @focus=${this.handleSupportFocus}
               @input=${this.handleSupportInput}
-              class=${this.depositError ? 'invalid' : ''}
+              class=${this.updError ? 'invalid' : ''}
             >
             </sl-input>
             <span>UPD</span>
@@ -648,8 +597,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
               : html``}
           </div>
-          ${this.depositError
-            ? html` <div class="error">${this.depositError}</div>`
+          ${this.updError
+            ? html` <div class="error">${this.updError}</div>`
             : html``}
         </form>
         <p>${description}</p>
@@ -718,10 +667,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
 
-    // Initialize supportValue when the component is connected
+    // Initialize updValue when the component is connected
     this.updateComplete.then(() => {
       if (this.supportInput) {
-        this.supportValue = this.supportInput.value;
+        this.updValue = this.supportInput.value;
       }
     });
   }
@@ -752,7 +701,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         </sl-dialog>
         <transaction-watcher
           class="submit"
-          @transaction-success=${this.handleTransactionSuccess}
+          @transaction-success=${this.handleSupportSucces}
         >
         </transaction-watcher>
         <transaction-watcher

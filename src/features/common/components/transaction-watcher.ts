@@ -78,9 +78,6 @@ export class TransactionWatcher extends LitElement {
     }
     return html`
       ${this.transactionTask.render({
-        // initial: () => html`
-        //   <p>Just here to help with styling</p>
-        // `,
         pending: () => html`
           <slot name="pending">
             <p>Waiting for transaction...</p>

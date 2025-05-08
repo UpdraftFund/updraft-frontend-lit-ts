@@ -25,6 +25,7 @@ import {
 } from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
+import { TokenHandler } from '@utils/token-handler';
 
 import { updraftSettings } from '@state/common';
 import layout from '@state/layout';
@@ -41,16 +42,14 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
-import { getBalance, refreshBalances } from '@state/user/balances';
 import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
 import { ethAddressPattern } from '@utils/validation';
 import { hasProfile, connectWallet } from '@state/user';
 import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
 import solutionSchema from '@schemas/solution-schema.json';
 
 @customElement('create-solution-page-two')
-export class CreateSolution extends SignalWatcher(SaveableForm) {
+export class CreateSolution extends TokenHandler(SignalWatcher(SaveableForm)) {
   @property() ideaId!: string;
 
   @query('sl-range', true) rewardRange!: SlRange;
@@ -66,7 +65,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   @query('sl-select[name="fundingTokenSelection"]', true)
   fundingTokenSelect!: SlSelect;
 
-  @state() private depositError: string | null = null;
+  // depositError is now handled by UpdTransactionMixin as updError
   @state() private showCustomTokenInput = false;
 
   private resizeObserver!: ResizeObserver;
@@ -194,28 +193,18 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     `,
   ];
 
+  // Set includeAntiSpamFee to false for stake
+  constructor() {
+    super();
+    this.includeAntiSpamFee = false;
+  }
+
   private handleDepositFocus() {
-    refreshBalances();
+    this.handleUpdFocus();
   }
 
   private handleDepositInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = Number(input.value);
-    const userBalance = getBalance('updraft');
-
-    if (isNaN(value)) {
-      this.depositError = 'Enter a number';
-    } else if (value > userBalance) {
-      this.depositError = `You have ${userBalance} UPD`;
-    } else {
-      this.depositError = null;
-    }
-
-    if (this.depositError) {
-      input.classList.add('invalid');
-    } else {
-      input.classList.remove('invalid');
-    }
+    this.handleUpdInput(e);
   }
 
   private handleGoalInput(e: Event) {
@@ -329,27 +318,16 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       ]);
       this.shareDialog.topic = solutionData.name as string;
     } catch (e) {
-      console.error('Solution creation error:', e);
-      if (e instanceof Error) {
-        if (
-          e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId')
-        ) {
-          await connectWallet();
-        } else if (e.message?.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (
-          e.message?.includes('exceeds allowance') &&
-          updraftSettings.get().updAddress
-        ) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(updraftSettings.get().updAddress!);
-          this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address,
-            parseUnits('1', 29), // approve for total supply of UPD
-          ]);
-        }
+      if (
+        e instanceof Error &&
+        (e.message?.startsWith('connection') ||
+          e.message?.includes('getChainId'))
+      ) {
+        await connectWallet();
+      } else {
+        this.handleUpdTransactionError(e, updraft.address, () => {
+          this.createSolution();
+        });
       }
     }
   }
@@ -464,18 +442,20 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
             <sl-input
               name="stake"
               autocomplete="off"
+              .value=${this.updValue}
               @focus=${this.handleDepositFocus}
               @input=${this.handleDepositInput}
+              class=${this.updError ? 'invalid' : ''}
             >
             </sl-input>
             <span>UPD</span>
-            <sl-button variant="primary" @click=${() => this.updDialog.show()}
+            <sl-button variant="primary" @click=${() => this.showUpdDialog()}
               >Get more UPD
             </sl-button>
             <span>Anti-Spam Fee: ${fee} UPD</span>
           </div>
-          ${this.depositError
-            ? html` <div class="error">${this.depositError}</div>`
+          ${this.updError
+            ? html` <div class="error">${this.updError}</div>`
             : ''}
         </div>
         <div class="reward-container">

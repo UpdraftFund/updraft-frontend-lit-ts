@@ -21,18 +21,16 @@ import {
   TransactionSuccess,
 } from '@components/common/transaction-watcher';
 import { SaveableForm, formToJson } from '@components/common/saveable-form';
+import { TokenHandler } from '@utils/token-handler';
 
 import layout from '@state/layout';
-import { getBalance, refreshBalances } from '@state/user/balances';
-import { updraftSettings, defaultFunderReward } from '@state/common';
 import { hasProfile, connectWallet } from '@state/user';
-
+import { defaultFunderReward } from '@state/common';
 import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
 import ideaSchema from '@schemas/idea-schema.json';
 
 @customElement('create-idea')
-export class CreateIdea extends SignalWatcher(SaveableForm) {
+export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('transaction-watcher.submit', true)
@@ -42,8 +40,8 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('sl-input[name="deposit"]', true) depositInput!: SlInput;
 
-  @state() private depositError: string | null = null;
-  @state() private antiSpamFee?: string;
+  // depositError is now handled by UpdTransactionMixin as updError
+  @state() private antiSpamFeeDisplay?: string;
 
   static styles = css`
     .container {
@@ -128,38 +126,14 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   }
 
   private handleDepositFocus() {
-    refreshBalances();
+    this.handleUpdFocus();
   }
 
   private handleDepositInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = Number(input.value);
-    const userBalance = getBalance('updraft');
-    const minFee = updraftSettings.get().minFee;
+    this.handleUpdInput(e);
 
-    if (isNaN(value)) {
-      this.depositError = 'Enter a number';
-    } else if (value <= minFee) {
-      this.depositError = `Deposit must be more than ${minFee} UPD to cover fees`;
-    } else if (value > userBalance) {
-      this.depositError = `You have ${userBalance} UPD`;
-    } else {
-      this.depositError = null;
-    }
-
-    if (this.depositError) {
-      input.classList.add('invalid');
-    } else {
-      input.classList.remove('invalid');
-    }
-
-    let fee;
-    if (isNaN(value)) {
-      fee = minFee;
-    } else {
-      fee = Math.max(minFee, value * updraftSettings.get().percentFee);
-    }
-    this.antiSpamFee = fee.toFixed(2);
+    // Format the anti-spam fee for display
+    this.antiSpamFeeDisplay = this.antiSpamFee.toFixed(2);
   }
 
   private nextButtonClick(e: MouseEvent) {
@@ -180,41 +154,25 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     }
 
     const ideaData = formToJson('create-idea', ideaSchema);
-    const deposit = this.depositInput?.value;
-
-    if (!deposit) {
-      return;
-    }
 
     try {
       this.submitTransaction.hash = await updraft.write('createIdea', [
         BigInt(defaultFunderReward.get()),
-        parseUnits(deposit, 18),
+        parseUnits(this.updValue, 18),
         toHex(JSON.stringify(ideaData)),
       ]);
       this.shareDialog.topic = ideaData.name as string;
     } catch (e) {
-      console.error('Idea creation error:', e);
-      if (e instanceof Error) {
-        if (
-          e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId')
-        ) {
-          await connectWallet();
-        } else if (e.message?.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (
-          e.message?.includes('exceeds allowance') &&
-          updraftSettings.get().updAddress
-        ) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(updraftSettings.get().updAddress!);
-          this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address,
-            parseUnits('1', 29), // approve for total supply of UPD
-          ]);
-        }
+      if (
+        e instanceof Error &&
+        (e.message?.startsWith('connection') ||
+          e.message?.includes('getChainId'))
+      ) {
+        await connectWallet();
+      } else {
+        this.handleUpdTransactionError(e, updraft.address, () => {
+          this.createIdea();
+        });
       }
     }
   }
@@ -280,22 +238,26 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
                   name="deposit"
                   required
                   autocomplete="off"
+                  .value=${this.updValue}
                   @focus=${this.handleDepositFocus}
                   @input=${this.handleDepositInput}
+                  class=${this.updError ? 'invalid' : ''}
                 >
                 </sl-input>
                 <span>UPD</span>
                 <sl-button
                   variant="primary"
-                  @click=${() => this.updDialog.show()}
+                  @click=${() => this.showUpdDialog()}
                   >Get more UPD
                 </sl-button>
-                ${this.antiSpamFee
-                  ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
+                ${this.antiSpamFeeDisplay
+                  ? html` <span
+                      >Anti-Spam Fee: ${this.antiSpamFeeDisplay} UPD</span
+                    >`
                   : ''}
               </div>
-              ${this.depositError
-                ? html` <div class="error">${this.depositError}</div>`
+              ${this.updError
+                ? html` <div class="error">${this.updError}</div>`
                 : ''}
             </div>
             <input type="hidden" name="reward" value="50" />
