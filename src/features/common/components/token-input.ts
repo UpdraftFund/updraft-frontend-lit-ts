@@ -442,13 +442,6 @@ export class TokenInput extends LitElement {
     return this._isLowBalance;
   }
 
-  /**
-   * Alias for needMoreTokens to maintain compatibility with old code
-   */
-  get needUpd(): boolean {
-    return this.needMoreTokens;
-  }
-
   render() {
     const approvalDescription =
       this.effectiveApprovalStrategy === 'unlimited'
