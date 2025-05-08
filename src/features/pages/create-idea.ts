@@ -24,7 +24,7 @@ import { SaveableForm, formToJson } from '@components/common/saveable-form';
 import { TokenHandler } from '@utils/token-handler';
 
 import layout from '@state/layout';
-import { hasProfile, connectWallet } from '@state/user';
+import { hasProfile } from '@state/user';
 import { defaultFunderReward } from '@state/common';
 import { updraft } from '@contracts/updraft';
 import ideaSchema from '@schemas/idea-schema.json';
@@ -163,17 +163,12 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
       ]);
       this.shareDialog.topic = ideaData.name as string;
     } catch (e) {
-      if (
-        e instanceof Error &&
-        (e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId'))
-      ) {
-        await connectWallet();
-      } else {
-        this.handleUpdTransactionError(e, updraft.address, () => {
-          this.createIdea();
-        });
-      }
+      this.handleTransactionError(
+        e,
+        updraft.address,
+        () => this.createIdea(), // Retry after approval
+        () => this.updDialog.show() // Show UPD dialog on low balance
+      );
     }
   }
 
@@ -247,7 +242,7 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
                 <span>UPD</span>
                 <sl-button
                   variant="primary"
-                  @click=${() => this.showUpdDialog()}
+                  @click=${() => this.updDialog.show()}
                   >Get more UPD
                 </sl-button>
                 ${this.antiSpamFeeDisplay

@@ -44,7 +44,7 @@ import '@components/common/label-with-hint';
 
 import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
 import { ethAddressPattern } from '@utils/validation';
-import { hasProfile, connectWallet } from '@state/user';
+import { hasProfile } from '@state/user';
 import { updraft } from '@contracts/updraft';
 import solutionSchema from '@schemas/solution-schema.json';
 
@@ -318,17 +318,12 @@ export class CreateSolution extends TokenHandler(SignalWatcher(SaveableForm)) {
       ]);
       this.shareDialog.topic = solutionData.name as string;
     } catch (e) {
-      if (
-        e instanceof Error &&
-        (e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId'))
-      ) {
-        await connectWallet();
-      } else {
-        this.handleUpdTransactionError(e, updraft.address, () => {
-          this.createSolution();
-        });
-      }
+      this.handleTransactionError(
+        e,
+        updraft.address,
+        () => this.createSolution(), // Retry after approval
+        () => this.updDialog.show() // Show UPD dialog on low balance
+      );
     }
   }
 
@@ -449,7 +444,7 @@ export class CreateSolution extends TokenHandler(SignalWatcher(SaveableForm)) {
             >
             </sl-input>
             <span>UPD</span>
-            <sl-button variant="primary" @click=${() => this.showUpdDialog()}
+            <sl-button variant="primary" @click=${() => this.updDialog.show()}
               >Get more UPD
             </sl-button>
             <span>Anti-Spam Fee: ${fee} UPD</span>

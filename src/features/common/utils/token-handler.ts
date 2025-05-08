@@ -3,24 +3,28 @@ import { property, query, state } from 'lit/decorators.js';
 import { SlInput, SlDialog } from '@shoelace-style/shoelace';
 import { parseUnits } from 'viem';
 
-import { UpdDialog } from '@components/common/upd-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { updraftSettings } from '@state/common';
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { Upd } from '@contracts/upd';
+import { modal } from '@utils/web3';
 
 /**
  * A mixin that provides token transaction capabilities to Lit components.
  * Currently supports UPD tokens but designed to be extended for other tokens.
  *
  * Components using this mixin should include:
- * - upd-dialog element
  * - transaction-watcher.approve element
  * - sl-dialog for approval
+ *
+ * For UPD token handling, components should also include:
+ * - upd-dialog element (and provide an onLowBalance callback to show it)
  *
  * @example
  * ```ts
  * class MyComponent extends TokenHandler(LitElement) {
+ *   @query('upd-dialog') updDialog!: UpdDialog;
+ *
  *   render() {
  *     return html`
  *       <input @input=${this.handleUpdInput} .value=${this.updValue}>
@@ -30,6 +34,20 @@ import { Upd } from '@contracts/upd';
  *         <transaction-watcher class="approve"></transaction-watcher>
  *       </sl-dialog>
  *     `;
+ *   }
+ *
+ *   // Example of handling a transaction with proper error handling
+ *   private async handleTransaction() {
+ *     try {
+ *       // Contract interaction code
+ *     } catch (err) {
+ *       this.handleUpdTransactionError(
+ *         err,
+ *         contractAddress,
+ *         () => this.retryTransaction(), // Optional approval success callback
+ *         () => this.updDialog.show()    // Optional low balance callback
+ *       );
+ *     }
  *   }
  * }
  * ```
@@ -43,7 +61,6 @@ export const TokenHandler = <T extends Constructor<LitElement>>(
   superClass: T
 ) => {
   class TokenHandlerElement extends superClass {
-    @query('upd-dialog') updDialog!: UpdDialog;
     @query('transaction-watcher.approve')
     approveTransaction!: TransactionWatcher;
     @query('sl-dialog') approveDialog!: SlDialog;
@@ -135,13 +152,6 @@ export const TokenHandler = <T extends Constructor<LitElement>>(
     }
 
     /**
-     * Show the UPD dialog to get more UPD
-     */
-    protected showUpdDialog() {
-      this.updDialog?.show();
-    }
-
-    /**
      * Handle UPD approval for a contract
      * @param contractAddress Contract address to approve
      * @param amount Amount to approve (defaults to total UPD supply)
@@ -181,22 +191,38 @@ export const TokenHandler = <T extends Constructor<LitElement>>(
     }
 
     /**
-     * Handle common transaction errors related to UPD
+     * Handle common transaction errors related to UPD and wallet connections
      * @param e Error object
      * @param contractAddress Contract address for approval
-     * @param onApprovalSuccess Callback after successful approval
+     * @param onApprovalSuccess Callback to execute after successful approval
+     * @param onLowBalance Callback to execute when balance is insufficient
      * @returns Whether the error was handled
      */
-    protected handleUpdTransactionError(
+    protected handleTransactionError(
       e: unknown,
       contractAddress: `0x${string}`,
-      onApprovalSuccess?: () => void
+      onApprovalSuccess?: () => void,
+      onLowBalance?: () => void
     ): boolean {
       if (e instanceof Error) {
-        if (e.message.includes('exceeds balance')) {
-          this.showUpdDialog();
+        // Handle connection errors
+        if (
+          e.message.startsWith('connection') ||
+          e.message.includes('getChainId')
+        ) {
+          modal.open({ view: 'Connect' });
           return true;
-        } else if (e.message.includes('exceeds allowance')) {
+        }
+        // Handle UPD balance errors
+        else if (e.message.includes('exceeds balance')) {
+          if (onLowBalance) {
+            onLowBalance();
+            return true;
+          }
+          return false;
+        }
+        // Handle UPD allowance errors
+        else if (e.message.includes('exceeds allowance')) {
           this.handleUpdApproval(contractAddress, undefined, onApprovalSuccess);
           return true;
         }

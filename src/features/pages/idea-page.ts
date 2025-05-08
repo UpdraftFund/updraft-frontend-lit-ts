@@ -42,7 +42,6 @@ import { UrqlQueryController } from '@utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { updraftSettings } from '@state/common';
-import { modal } from '@utils/web3';
 import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
 import { markComplete } from '@state/user/beginner-tasks';
@@ -389,11 +388,12 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
         currentPosition.positionIndex,
       ]);
     } catch (e) {
-      if (e instanceof Error) {
-        if (e.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        }
-      }
+      this.handleTransactionError(
+        e,
+        this.ideaId,
+        undefined, // No approval callback needed for withdraw
+        () => this.updDialog.show() // Show UPD dialog on low balance
+      );
       console.error('Withdraw error:', e);
     }
   }
@@ -434,13 +434,12 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
       } catch (err) {
-        if (err instanceof Error && err.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        } else {
-          this.handleUpdTransactionError(err, this.ideaId, () => {
-            this.handleSubmit(e);
-          });
-        }
+        this.handleTransactionError(
+          err,
+          this.ideaId,
+          () => this.handleSubmit(e), // Retry after approval
+          () => this.updDialog.show() // Show UPD dialog on low balance
+        );
       }
     } else {
       this.form.reportValidity(); // Show validation messages
