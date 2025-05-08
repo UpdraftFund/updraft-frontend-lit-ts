@@ -19,6 +19,10 @@ import { modal } from '@utils/web3';
  *
  * For UPD token handling, components should also include:
  * - upd-dialog element (and provide an onLowBalance callback to show it)
+ * - An input field with one of these names: 'deposit', 'stake', 'support', or 'fundingToken'
+ *
+ * The mixin automatically attaches event handlers to the input field during the
+ * firstUpdated lifecycle method, so you don't need to wire them up manually.
  *
  * @example
  * ```ts
@@ -27,7 +31,7 @@ import { modal } from '@utils/web3';
  *
  *   render() {
  *     return html`
- *       <input @input=${this.handleUpdInput} .value=${this.updValue}>
+ *       <sl-input name="deposit"></sl-input>
  *       <div class="error">${this.updError}</div>
  *       <upd-dialog></upd-dialog>
  *       <sl-dialog label="Set Allowance">
@@ -64,6 +68,10 @@ export const TokenHandler = <T extends Constructor<LitElement>>(
     @query('transaction-watcher.approve')
     approveTransaction!: TransactionWatcher;
     @query('sl-dialog') approveDialog!: SlDialog;
+    @query(
+      'sl-input[name="deposit"], sl-input[name="stake"], sl-input[name="support"], sl-input[name="fundingToken"]'
+    )
+    protected updInput?: SlInput;
 
     @state() protected updValue: string = '';
     @state() protected updError: string | null = null;
@@ -104,6 +112,33 @@ export const TokenHandler = <T extends Constructor<LitElement>>(
     }
 
     /**
+     * Attach event handlers to the UPD input field
+     * This is called during the firstUpdated lifecycle method
+     */
+    protected setupUpdInput() {
+      if (this.updInput) {
+        // Set initial value if the input has a value
+        if (this.updInput.value) {
+          this.updValue = this.updInput.value;
+          this.validateUpdValue(this.updInput);
+        }
+
+        // Add focus event listener to refresh balances
+        this.updInput.addEventListener('focus', () => {
+          refreshBalances();
+        });
+
+        // Add input event listener to update value and validate
+        this.updInput.addEventListener('input', (e: Event) => {
+          const input = e.target as SlInput;
+          this.updValue = input.value;
+          this.validateUpdValue(input);
+        });
+      }
+    }
+
+    /**
+     * @deprecated Use setupUpdInput() instead
      * Handle UPD input focus event
      */
     protected handleUpdFocus() {
@@ -111,6 +146,7 @@ export const TokenHandler = <T extends Constructor<LitElement>>(
     }
 
     /**
+     * @deprecated Use setupUpdInput() instead
      * Handle UPD input change event
      * @param e Input event
      */
@@ -229,6 +265,15 @@ export const TokenHandler = <T extends Constructor<LitElement>>(
       }
       console.error('Transaction error:', e);
       return false;
+    }
+
+    /**
+     * Called after the component's first update
+     * Sets up the UPD input field event handlers
+     */
+    firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
+      super.firstUpdated(changedProperties);
+      this.setupUpdInput();
     }
   }
 

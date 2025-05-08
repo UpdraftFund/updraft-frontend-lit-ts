@@ -417,14 +417,8 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  // Use the mixin's handleUpdFocus and handleUpdInput methods
-  private handleSupportFocus() {
-    this.handleUpdFocus();
-  }
-
-  private handleSupportInput(e: Event) {
-    this.handleUpdInput(e);
-  }
+  // The TokenHandler mixin now automatically handles input events
+  // No need for manual event handlers
 
   private async handleSubmit(e: Event) {
     e.preventDefault();
@@ -571,9 +565,6 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
               name="support"
               required
               autocomplete="off"
-              .value=${this.updValue}
-              @focus=${this.handleSupportFocus}
-              @input=${this.handleSupportInput}
               class=${this.updError ? 'invalid' : ''}
             >
             </sl-input>

@@ -1,4 +1,4 @@
-import { customElement, query, state } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
@@ -40,8 +40,7 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('sl-input[name="deposit"]', true) depositInput!: SlInput;
 
-  // depositError is now handled by UpdTransactionMixin as updError
-  @state() private antiSpamFeeDisplay?: string;
+  // depositError is now handled by TokenHandler mixin as updError
 
   static styles = css`
     .container {
@@ -125,16 +124,7 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
     }
   }
 
-  private handleDepositFocus() {
-    this.handleUpdFocus();
-  }
-
-  private handleDepositInput(e: Event) {
-    this.handleUpdInput(e);
-
-    // Format the anti-spam fee for display
-    this.antiSpamFeeDisplay = this.antiSpamFee.toFixed(2);
-  }
+  // The TokenHandler mixin now automatically handles input events
 
   private nextButtonClick(e: MouseEvent) {
     if (!this.form.checkValidity()) {
@@ -191,6 +181,10 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
     layout.rightSidebarContent.set(html``);
   }
 
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+  }
+
   render() {
     return html`
       <div class="container">
@@ -233,9 +227,6 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
                   name="deposit"
                   required
                   autocomplete="off"
-                  .value=${this.updValue}
-                  @focus=${this.handleDepositFocus}
-                  @input=${this.handleDepositInput}
                   class=${this.updError ? 'invalid' : ''}
                 >
                 </sl-input>
@@ -245,11 +236,7 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
                   @click=${() => this.updDialog.show()}
                   >Get more UPD
                 </sl-button>
-                ${this.antiSpamFeeDisplay
-                  ? html` <span
-                      >Anti-Spam Fee: ${this.antiSpamFeeDisplay} UPD</span
-                    >`
-                  : ''}
+                <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>
               </div>
               ${this.updError
                 ? html` <div class="error">${this.updError}</div>`

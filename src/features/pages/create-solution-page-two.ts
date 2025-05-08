@@ -199,13 +199,8 @@ export class CreateSolution extends TokenHandler(SignalWatcher(SaveableForm)) {
     this.includeAntiSpamFee = false;
   }
 
-  private handleDepositFocus() {
-    this.handleUpdFocus();
-  }
-
-  private handleDepositInput(e: Event) {
-    this.handleUpdInput(e);
-  }
+  // The TokenHandler mixin now automatically handles input events
+  // No need for manual event handlers
 
   private handleGoalInput(e: Event) {
     const input = e.target as SlInput;
@@ -437,9 +432,6 @@ export class CreateSolution extends TokenHandler(SignalWatcher(SaveableForm)) {
             <sl-input
               name="stake"
               autocomplete="off"
-              .value=${this.updValue}
-              @focus=${this.handleDepositFocus}
-              @input=${this.handleDepositInput}
               class=${this.updError ? 'invalid' : ''}
             >
             </sl-input>
