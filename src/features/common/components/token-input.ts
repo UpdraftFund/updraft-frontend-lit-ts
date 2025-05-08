@@ -14,6 +14,7 @@ import { userAddress } from '@state/user';
 
 import { modal } from '@utils/web3';
 import { shortenAddress } from '@utils/address-utils';
+import { shortNum } from '@utils/short-num';
 
 import { Upd } from '@contracts/upd';
 import { IContract } from '@contracts/contract';
@@ -90,12 +91,18 @@ export class TokenInput extends SignalWatcher(LitElement) {
     .input-row {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
       flex: 1;
     }
 
     .input-row sl-input {
-      flex: 1;
+      flex: none;
+      width: calc(10ch + var(--sl-input-spacing-medium) * 2);
+      box-sizing: content-box;
+    }
+
+    .input-row sl-input::part(input) {
+      text-align: right;
     }
 
     .input-row sl-input.invalid {
@@ -107,18 +114,25 @@ export class TokenInput extends SignalWatcher(LitElement) {
       font-size: 0.875rem;
       color: var(--sl-color-neutral-900);
       white-space: nowrap;
+      margin-left: 0.5rem;
     }
 
     .error {
       color: red;
       font-size: 0.8rem;
       padding-top: 0.25rem;
+      min-height: 1.2rem; /* Reserve space for error message */
+    }
+
+    .error-placeholder {
+      min-height: 1.2rem; /* Same height as error message */
+      visibility: hidden;
     }
 
     .slot-container {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
     }
   `;
 
@@ -489,19 +503,20 @@ export class TokenInput extends SignalWatcher(LitElement) {
                       ? html` <slot name="low-balance"></slot>`
                       : html` <slot name="sufficient-balance"></slot>`}
                   </div>
+
+                  ${this.showAntiSpamFee
+                    ? html`<div class="fee-info">
+                        <span
+                          >Anti-Spam Fee: ${shortNum(this.antiSpamFee)}
+                          ${this.tokenSymbol}</span
+                        >
+                      </div>`
+                    : html``}
                 </div>
-                ${this.showAntiSpamFee
-                  ? html` <div class="fee-info">
-                      <span
-                        >Anti-Spam Fee: ${this.antiSpamFee}
-                        ${this.tokenSymbol}</span
-                      >
-                    </div>`
-                  : html``}
               </div>
               ${this._error
                 ? html` <div class="error">${this._error}</div>`
-                : html``}
+                : html` <div class="error-placeholder">No error</div>`}
             `
           : html``}
       </div>
