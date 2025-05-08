@@ -599,24 +599,22 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               @low-balance=${() => {
                 this.isLowBalance = true;
               }}
-            ></token-input>
-
-            ${this.isLowBalance
-              ? html`
-                  <div class="low-balance-warning">
-                    <sl-button
-                      variant="primary"
-                      @click=${() => this.updDialog.show()}
-                    >
-                      Get more UPD
-                    </sl-button>
-                  </div>
-                `
-              : html`
-                  <sl-button variant="primary" type="submit">
-                    Support this Idea
-                  </sl-button>
-                `}
+            >
+              <sl-button
+                slot="low-balance"
+                variant="primary"
+                @click=${() => this.updDialog.show()}
+              >
+                Get more UPD
+              </sl-button>
+              <sl-button
+                slot="sufficient-balance"
+                variant="primary"
+                type="submit"
+              >
+                Support this Idea
+              </sl-button>
+            </token-input>
           </div>
         </form>
         <p>${description}</p>

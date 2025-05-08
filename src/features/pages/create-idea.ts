@@ -40,9 +40,6 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('token-input', true) tokenInput!: HTMLElement;
 
-  // Track low balance status
-  private isLowBalance: boolean = false;
-
   static styles = css`
     .container {
       display: flex;
@@ -242,23 +239,15 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
                   spendingContractName="Updraft"
                   antiSpamFeeMode="variable"
                   showDialogs="false"
-                  @low-balance=${() => {
-                    this.isLowBalance = true;
-                  }}
-                ></token-input>
-
-                ${this.isLowBalance
-                  ? html`
-                      <div class="low-balance-warning">
-                        <sl-button
-                          variant="primary"
-                          @click=${() => this.updDialog.show()}
-                        >
-                          Get more UPD
-                        </sl-button>
-                      </div>
-                    `
-                  : html``}
+                >
+                  <sl-button
+                    slot="low-balance"
+                    variant="primary"
+                    @click=${() => this.updDialog.show()}
+                  >
+                    Get more UPD
+                  </sl-button>
+                </token-input>
               </div>
             </div>
             <input type="hidden" name="reward" value="50" />

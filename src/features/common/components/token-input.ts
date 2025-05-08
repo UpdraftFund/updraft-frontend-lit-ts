@@ -31,20 +31,26 @@ import { ITransactionWatcher } from '@components/common/transaction-watcher';
  * - Provides options to show/hide input controls and dialogs
  * - Dispatches events for low balance conditions
  * - Exposes isLowBalance property for parent components to handle low balance UI
+ * - Provides two slots for custom content based on balance state:
+ *   - "low-balance": shown when balance is low or unknown
+ *   - "sufficient-balance": shown when balance is sufficient
  *
  * @example
  * ```html
  * <!-- Basic usage -->
  * <token-input></token-input>
  *
- * <!-- For creating an idea -->
+ * <!-- For creating an idea with custom balance slots -->
  * <token-input
  *   name="deposit"
  *   required
  *   spendingContract=${updraft.address}
  *   spendingContractName="Updraft"
  *   antiSpamFeeMode="variable"
- * ></token-input>
+ * >
+ *   <sl-button slot="low-balance" variant="primary">Get more UPD</sl-button>
+ *   <span slot="sufficient-balance">Balance is sufficient</span>
+ * </token-input>
  *
  * <!-- For supporting an idea -->
  * <token-input
@@ -75,10 +81,17 @@ export class TokenInput extends SignalWatcher(LitElement) {
       gap: 0.5rem;
     }
 
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
     .input-row {
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      flex: 1;
     }
 
     .input-row sl-input {
@@ -91,14 +104,21 @@ export class TokenInput extends SignalWatcher(LitElement) {
     }
 
     .fee-info {
-      display: flex;
       font-size: 0.875rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--sl-color-neutral-900);
+      white-space: nowrap;
     }
 
     .error {
-      color: var(--sl-color-danger-600);
-      font-size: 0.875rem;
+      color: red;
+      font-size: 0.8rem;
+      padding-top: 0.25rem;
+    }
+
+    .slot-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
   `;
 
@@ -451,27 +471,34 @@ export class TokenInput extends SignalWatcher(LitElement) {
       <div class="token-input-container">
         ${this.showInputControl
           ? html`
-              <div class="input-row">
-                <sl-input
-                  name=${this.name}
-                  ?required=${this.required}
-                  autocomplete="off"
-                  .value=${this.value}
-                  @focus=${this.handleFocus}
-                  @input=${this.handleInput}
-                  class=${this._error ? 'invalid' : ''}
-                ></sl-input>
-                <span>${this.tokenSymbol}</span>
-              </div>
+              <div class="input-container">
+                <div class="input-row">
+                  <sl-input
+                    name=${this.name}
+                    ?required=${this.required}
+                    autocomplete="off"
+                    .value=${this.value}
+                    @focus=${this.handleFocus}
+                    @input=${this.handleInput}
+                    class=${this._error ? 'invalid' : ''}
+                  ></sl-input>
+                  <span>${this.tokenSymbol}</span>
 
-              ${this.showAntiSpamFee
-                ? html` <div class="fee-info">
-                    <span
-                      >Anti-Spam Fee: ${this.antiSpamFee}
-                      ${this.tokenSymbol}</span
-                    >
-                  </div>`
-                : html``}
+                  <div class="slot-container">
+                    ${this._isLowBalance
+                      ? html` <slot name="low-balance"></slot>`
+                      : html` <slot name="sufficient-balance"></slot>`}
+                  </div>
+                </div>
+                ${this.showAntiSpamFee
+                  ? html` <div class="fee-info">
+                      <span
+                        >Anti-Spam Fee: ${this.antiSpamFee}
+                        ${this.tokenSymbol}</span
+                      >
+                    </div>`
+                  : html``}
+              </div>
               ${this._error
                 ? html` <div class="error">${this._error}</div>`
                 : html``}
