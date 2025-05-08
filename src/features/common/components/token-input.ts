@@ -1,4 +1,5 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, css } from 'lit';
+import { SignalWatcher, html } from '@lit-labs/signals';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { parseUnits, formatUnits } from 'viem';
 
@@ -66,7 +67,7 @@ import { ITransactionWatcher } from '@components/common/transaction-watcher';
  * ```
  */
 @customElement('token-input')
-export class TokenInput extends LitElement {
+export class TokenInput extends SignalWatcher(LitElement) {
   static styles = css`
     .token-input-container {
       display: flex;
