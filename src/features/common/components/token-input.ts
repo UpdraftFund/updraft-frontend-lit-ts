@@ -124,8 +124,10 @@ export class TokenInput extends LitElement {
   // Anti-spam fee configuration - defaults to none
   @property() antiSpamFeeMode: 'none' | 'fixed' | 'variable' = 'none';
 
+  // Public properties
+  @property() value = '';
+
   // Internal state
-  @state() private _value = '';
   @state() private _error: string | null = null;
   @state() private _balance: number = 0;
   @state() private _isLowBalance: boolean = false;
@@ -146,7 +148,7 @@ export class TokenInput extends LitElement {
   firstUpdated(changedProperties: Map<string, unknown>) {
     super.firstUpdated(changedProperties);
     // Initial validation if there's a value
-    if (this._value) {
+    if (this.value) {
       this.validateValue();
     }
   }
@@ -209,7 +211,7 @@ export class TokenInput extends LitElement {
     }
 
     // Variable mode - max of fixed fee or percentage of value
-    const value = Number(this._value || 0);
+    const value = Number(this.value || 0);
     if (isNaN(value)) {
       return minFee;
     }
@@ -271,14 +273,14 @@ export class TokenInput extends LitElement {
     }
 
     // For exact approval strategy, only approve the exact amount
-    const value = Number(this._value || 0);
+    const value = Number(this.value || 0);
     if (isNaN(value) || value <= 0) return BigInt(0);
 
     return parseUnits(value.toString(), 18);
   }
 
   get needMoreTokens(): boolean {
-    const value = Number(this._value || 0);
+    const value = Number(this.value || 0);
     const fee = this.showAntiSpamFee ? this.antiSpamFee : 0;
 
     return (
@@ -291,7 +293,7 @@ export class TokenInput extends LitElement {
 
   // Validate the current value
   private validateValue() {
-    const value = Number(this._value);
+    const value = Number(this.value);
 
     // Update the low balance state based on the needMoreTokens check
     this._isLowBalance = this.needMoreTokens;
@@ -307,7 +309,7 @@ export class TokenInput extends LitElement {
     }
 
     // Set appropriate error message
-    if (this._value === '') {
+    if (this.value === '') {
       this._error = this.required ? 'Required' : null;
     } else if (isNaN(value)) {
       this._error = 'Enter a number';
@@ -334,7 +336,7 @@ export class TokenInput extends LitElement {
   // Handle input events
   private handleInput(e: Event) {
     const input = e.target as SlInput;
-    this._value = input.value;
+    this.value = input.value;
     this.validateValue();
   }
 
@@ -414,18 +416,6 @@ export class TokenInput extends LitElement {
     return false;
   }
 
-  // Public API
-  get value(): string {
-    return this._value;
-  }
-
-  set value(val: string) {
-    const oldValue = this._value;
-    this._value = val;
-    this.validateValue();
-    this.requestUpdate('value', oldValue);
-  }
-
   get error(): string | null {
     return this._error;
   }
@@ -442,11 +432,19 @@ export class TokenInput extends LitElement {
     return this._isLowBalance;
   }
 
+  // When value property changes, validate it
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('value')) {
+      this.validateValue();
+    }
+  }
+
   render() {
     const approvalDescription =
       this.effectiveApprovalStrategy === 'unlimited'
         ? `allow ${this.spendingContractDisplayName} to spend your ${this.tokenSymbol} tokens`
-        : `allow ${this.spendingContractDisplayName} to spend ${this._value} ${this.tokenSymbol}`;
+        : `allow ${this.spendingContractDisplayName} to spend ${this.value} ${this.tokenSymbol}`;
 
     return html`
       <div class="token-input-container">
@@ -457,7 +455,7 @@ export class TokenInput extends LitElement {
                   name=${this.name}
                   ?required=${this.required}
                   autocomplete="off"
-                  .value=${this._value}
+                  .value=${this.value}
                   @focus=${this.handleFocus}
                   @input=${this.handleInput}
                   class=${this._error ? 'invalid' : ''}
