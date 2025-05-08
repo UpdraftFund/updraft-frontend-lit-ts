@@ -1,42 +1,22 @@
-import { LitElement, html, nothing, css } from 'lit';
+import { LitElement, html, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { parseUnits, formatUnits } from 'viem';
-import { updraftSettings } from '@state/common';
-import { getBalance, refreshBalances } from '@state/user/balances';
-import { userAddress } from '@state/user';
-import { modal } from '@utils/web3';
 
-// Helper function to shorten addresses for display
-function shortenAddress(address: string): string {
-  if (!address) return '';
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
-import { Upd } from '@contracts/upd';
 import type { SlInput } from '@shoelace-style/shoelace';
 import type { SlDialog } from '@shoelace-style/shoelace';
 
-// Interface for transaction watcher
-interface TransactionWatcher extends HTMLElement {
-  hash: string;
+import type { UpdDialog } from '@components/common/upd-dialog';
 
-  reset(): void;
+import { updraftSettings } from '@state/common';
+import { getBalance, refreshBalances } from '@state/user/balances';
+import { userAddress } from '@state/user';
 
-  addEventListener(
-    type: string,
-    listener: EventListener,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-}
+import { modal } from '@utils/web3';
+import { shortenAddress } from '@utils/address-utils';
 
-import type { UpdDialog } from '@/features/common/components/upd-dialog';
-
-// Simple interface for contract interactions
-interface Contract {
-  read(method: string, args: unknown[]): Promise<unknown>;
-
-  write(method: string, args: unknown[]): Promise<string>;
-}
+import { Upd } from '@contracts/upd';
+import { IContract } from '@contracts/contract';
+import { ITransactionWatcher } from '@components/common/transaction-watcher';
 
 /**
  * A component that provides token input capabilities.
@@ -48,8 +28,8 @@ interface Contract {
  * - Supports different approval strategies (unlimited for trusted contracts, exact for others)
  * - Identifies the Updraft contract by name in the approval dialog
  * - Provides options to show/hide input controls and dialogs
- * - Includes a slot for low balance notifications
  * - Dispatches events for low balance conditions
+ * - Exposes isLowBalance property for parent components to handle low balance UI
  *
  * @example
  * ```html
@@ -73,13 +53,6 @@ interface Contract {
  *   antiSpamFeeMode="variable"
  * ></token-input>
  *
- * <!-- With low balance slot -->
- * <token-input>
- *   <div slot="low-balance" class="warning">
- *     Your balance is too low. <a href="#">Get more UPD</a>
- *   </div>
- * </token-input>
- *
  * <!-- Input only (no dialogs) -->
  * <token-input
  *   showDialogs="false"
@@ -94,6 +67,40 @@ interface Contract {
  */
 @customElement('token-input')
 export class TokenInput extends LitElement {
+  static styles = css`
+    .token-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .input-row sl-input {
+      flex: 1;
+    }
+
+    .input-row sl-input.invalid {
+      --sl-input-border-color: var(--sl-color-danger-500);
+      --sl-input-focus-ring-color: var(--sl-color-danger-200);
+    }
+
+    .fee-info {
+      display: flex;
+      font-size: 0.875rem;
+      color: var(--sl-color-neutral-600);
+    }
+
+    .error {
+      color: var(--sl-color-danger-600);
+      font-size: 0.875rem;
+    }
+  `;
+
   // Token configuration with sensible defaults
   @property() tokenSymbol = 'UPD';
   @property() tokenName = 'updraft'; // Default to UPD
@@ -126,7 +133,8 @@ export class TokenInput extends LitElement {
   // Element references
   @query('sl-input') input!: SlInput;
   @query('upd-dialog') updDialog!: UpdDialog;
-  @query('transaction-watcher.approve') approveTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve')
+  approveTransaction!: ITransactionWatcher;
   @query('sl-dialog') approveDialog!: SlDialog;
 
   // Lifecycle methods
@@ -210,25 +218,12 @@ export class TokenInput extends LitElement {
     return Math.max(minFee, percentFee);
   }
 
-  // Get the effective value (after deducting fee if applicable)
-  public get effectiveValue(): number {
-    const value = Number(this._value || 0);
-    if (isNaN(value)) return 0;
-
-    if (this.showAntiSpamFee) {
-      return Math.max(0, value - this.antiSpamFee);
-    }
-
-    return value;
-  }
-
   // Get the token contract instance
-  private getTokenContract(): Contract | null {
+  private getTokenContract(): IContract | null {
     // If tokenAddress is provided, use it directly
     if (this.tokenAddress) {
-      // Create contract instance based on tokenAddress
-      // This would need appropriate ABI detection or configuration
-      return new Upd(this.tokenAddress);
+      // TODO: Add support for custom tokens
+      return null;
     }
 
     // Otherwise use the named token
@@ -238,8 +233,6 @@ export class TokenInput extends LitElement {
         return new Upd(updAddress);
       }
     }
-
-    // Add support for other tokens here
 
     return null;
   }
@@ -363,10 +356,10 @@ export class TokenInput extends LitElement {
     try {
       const approvalAmount = this.getApprovalAmount();
 
-      this.approveTransaction.hash = await contract.write('approve', [
+      this.approveTransaction.hash = (await contract.write('approve', [
         this.spendingContract,
         approvalAmount,
-      ]);
+      ])) as `0x${string}`;
 
       // Set up success handler if provided
       if (onSuccess) {
@@ -477,11 +470,6 @@ export class TokenInput extends LitElement {
                   class=${this._error ? 'invalid' : ''}
                 ></sl-input>
                 <span>${this.tokenSymbol}</span>
-                ${this.tokenName === 'updraft' && this.showDialogs
-                  ? html` <sl-button @click=${() => this.updDialog.show()}>
-                      Get more ${this.tokenSymbol}
-                    </sl-button>`
-                  : nothing}
               </div>
 
               ${this.showAntiSpamFee
@@ -490,27 +478,18 @@ export class TokenInput extends LitElement {
                       >Anti-Spam Fee: ${this.antiSpamFee}
                       ${this.tokenSymbol}</span
                     >
-                    ${this.antiSpamFeeMode === 'variable' &&
-                    Number(this._value) > 0
-                      ? html`<span
-                          >Effective contribution: ${this.effectiveValue}
-                          ${this.tokenSymbol}</span
-                        >`
-                      : nothing}
                   </div>`
-                : nothing}
+                : html``}
               ${this._error
                 ? html` <div class="error">${this._error}</div>`
-                : nothing}
+                : html``}
             `
-          : nothing}
-
-        <slot name="low-balance" ?hidden=${!this._isLowBalance}></slot>
+          : html``}
       </div>
 
       ${this.tokenName === 'updraft' && this.showDialogs
         ? html` <upd-dialog></upd-dialog>`
-        : nothing}
+        : html``}
       ${this.showDialogs
         ? html`
             <sl-dialog label="Set Allowance">
@@ -521,44 +500,9 @@ export class TokenInput extends LitElement {
               <transaction-watcher class="approve"></transaction-watcher>
             </sl-dialog>
           `
-        : nothing}
+        : html``}
     `;
   }
-
-  static styles = css`
-    .token-input-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .input-row sl-input {
-      flex: 1;
-    }
-
-    .input-row sl-input.invalid {
-      --sl-input-border-color: var(--sl-color-danger-500);
-      --sl-input-focus-ring-color: var(--sl-color-danger-200);
-    }
-
-    .fee-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.875rem;
-      color: var(--sl-color-neutral-600);
-    }
-
-    .error {
-      color: var(--sl-color-danger-600);
-      font-size: 0.875rem;
-    }
-  `;
 }
 
 declare global {

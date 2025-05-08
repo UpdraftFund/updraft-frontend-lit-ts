@@ -37,6 +37,7 @@ import '@/features/common/components/transaction-watcher';
 import { UpdDialog } from '@/features/common/components/upd-dialog';
 import { ShareDialog } from '@/features/common/components/share-dialog';
 import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
+import { TokenInput } from '@/features/common/components/token-input';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { Idea, IdeaDocument } from '@gql';
@@ -245,6 +246,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         font-size: 1.875rem;
         font-weight: 500;
       }
+
+      .connect-container {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
     `,
   ];
 
@@ -259,6 +266,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   withdrawTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('sl-input[name="support"]', true) supportInput!: SlInput;
+  @query('token-input', true) tokenInput!: TokenInput;
 
   // supportValue is now handled by UpdTransactionMixin as updValue
   @state() private idea?: Idea;
@@ -266,6 +274,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @state() private loaded: boolean = false;
   // Track current position index for navigation
   @state() private positionIndex: number = 0;
+  // Track low balance status
+  @state() private isLowBalance: boolean = false;
 
   // Array to store viable positions
   private positions: Position[] = [];
@@ -399,9 +409,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       ]);
     } catch (e) {
       // Use token-input's error handling
-      const tokenInput = this.shadowRoot?.querySelector('token-input');
-      if (tokenInput) {
-        tokenInput.handleTransactionError(
+      if (this.tokenInput) {
+        this.tokenInput.handleTransactionError(
           e,
           undefined, // No approval callback needed for withdraw
           () => this.updDialog.show() // Show UPD dialog on low balance
@@ -437,19 +446,18 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
-      const tokenInput = this.shadowRoot?.querySelector('token-input');
-      if (!tokenInput || tokenInput.error) {
+      if (!this.tokenInput || this.tokenInput.error || this.isLowBalance) {
         return;
       }
 
-      const support = parseUnits(tokenInput.value, 18);
+      const support = parseUnits(this.tokenInput.value, 18);
       this.submitTransaction.reset();
 
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
       } catch (err) {
-        tokenInput.handleTransactionError(
+        this.tokenInput.handleTransactionError(
           err,
           () => this.handleSubmit(e), // Retry after approval
           () => this.updDialog.show() // Show UPD dialog on low balance
@@ -587,20 +595,28 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               spendingContract=${this.ideaId}
               spendingContractName="This Idea"
               antiSpamFeeMode="variable"
-            >
-              <div slot="low-balance" class="low-balance-warning">
-                <sl-button
-                  variant="primary"
-                  @click=${() => this.updDialog.show()}
-                >
-                  Get more UPD
-                </sl-button>
-              </div>
-            </token-input>
-            <span>UPD</span>
-            <sl-button variant="primary" type="submit">
-              Support this Idea
-            </sl-button>
+              showDialogs="false"
+              @low-balance=${() => {
+                this.isLowBalance = true;
+              }}
+            ></token-input>
+
+            ${this.isLowBalance
+              ? html`
+                  <div class="low-balance-warning">
+                    <sl-button
+                      variant="primary"
+                      @click=${() => this.updDialog.show()}
+                    >
+                      Get more UPD
+                    </sl-button>
+                  </div>
+                `
+              : html`
+                  <sl-button variant="primary" type="submit">
+                    Support this Idea
+                  </sl-button>
+                `}
           </div>
         </form>
         <p>${description}</p>
@@ -669,11 +685,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
 
-    // Initialize updValue when the component is connected
     this.updateComplete.then(() => {
-      if (this.supportInput) {
-        // No longer needed with token-input
-      }
+      this.addEventListener('low-balance', () => {
+        this.isLowBalance = true;
+      });
     });
   }
 

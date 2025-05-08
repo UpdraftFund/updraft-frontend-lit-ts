@@ -65,9 +65,11 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   fundingTokenInput!: SlInput;
   @query('sl-select[name="fundingTokenSelection"]', true)
   fundingTokenSelect!: SlSelect;
+  @query('token-input', true) tokenInput!: HTMLElement;
 
   // depositError is now handled by UpdTransactionMixin as updError
   @state() private showCustomTokenInput = false;
+  @state() private isLowBalance: boolean = false;
 
   private resizeObserver!: ResizeObserver;
   private unsubHeading?: Subscription;
@@ -443,16 +445,24 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
               spendingContract=${updraft.address}
               spendingContractName="Updraft"
               antiSpamFeeMode="fixed"
-            >
-              <div slot="low-balance" class="low-balance-warning">
-                <sl-button
-                  variant="primary"
-                  @click=${() => this.updDialog.show()}
-                >
-                  Get more UPD
-                </sl-button>
-              </div>
-            </token-input>
+              showDialogs="false"
+              @low-balance=${() => {
+                this.isLowBalance = true;
+              }}
+            ></token-input>
+
+            ${this.isLowBalance
+              ? html`
+                  <div class="low-balance-warning">
+                    <sl-button
+                      variant="primary"
+                      @click=${() => this.updDialog.show()}
+                    >
+                      Get more UPD
+                    </sl-button>
+                  </div>
+                `
+              : html``}
           </div>
         </div>
         <div class="reward-container">
