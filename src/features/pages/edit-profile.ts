@@ -19,6 +19,7 @@ import '@components/user/activity-feed';
 import '@components/common/transaction-watcher';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
+import '@/features/common/components/token-input';
 import {
   TransactionWatcher,
   TransactionSuccess,
@@ -235,26 +236,38 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         }
       } catch (e) {
         console.error('Profile update error:', e);
-        if (e instanceof Error) {
-          if (
-            e.message?.startsWith('connection') ||
-            e.message?.includes('getChainId')
-          ) {
-            await connectWallet();
-          } else if (e.message?.includes('exceeds balance')) {
-            this.updDialog.show();
-          } else if (
-            e.message?.includes('exceeds allowance') &&
-            settings.updAddress
-          ) {
-            this.approveTransaction.reset();
-            this.approveDialog.show();
 
-            const upd = new Upd(settings.updAddress);
-            this.approveTransaction.hash = await upd.write('approve', [
-              updraft.address,
-              parseUnits('1', 29), // approve for total supply of UPD
-            ]);
+        // Use token-input's error handling
+        const tokenInput = this.shadowRoot?.querySelector('token-input');
+        if (tokenInput) {
+          tokenInput.handleTransactionError(
+            e,
+            () => this.handleSubmit(), // Retry after approval
+            () => this.updDialog.show() // Show UPD dialog on low balance
+          );
+        } else {
+          // Fallback if token-input is not available
+          if (e instanceof Error) {
+            if (
+              e.message?.startsWith('connection') ||
+              e.message?.includes('getChainId')
+            ) {
+              await connectWallet();
+            } else if (e.message?.includes('exceeds balance')) {
+              this.updDialog.show();
+            } else if (
+              e.message?.includes('exceeds allowance') &&
+              settings.updAddress
+            ) {
+              this.approveTransaction.reset();
+              this.approveDialog.show();
+
+              const upd = new Upd(settings.updAddress);
+              this.approveTransaction.hash = await upd.write('approve', [
+                updraft.address,
+                parseUnits('1', 29), // approve for total supply of UPD
+              ]);
+            }
           }
         }
       }
@@ -478,6 +491,13 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           @transaction-success=${this.handleSubmitSuccess}
         ></transaction-watcher>
       </form>
+      <!-- Hidden token-input for transaction handling -->
+      <token-input
+        showInputControl="false"
+        spendingContract=${updraft.address}
+        spendingContractName="Updraft"
+      ></token-input>
+
       <upd-dialog></upd-dialog>
       <sl-dialog label="Set Allowance">
         <p>

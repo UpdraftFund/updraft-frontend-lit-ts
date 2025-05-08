@@ -1,0 +1,568 @@
+import { LitElement, html, nothing, css } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { parseUnits, formatUnits } from 'viem';
+import { updraftSettings } from '@state/common';
+import { getBalance, refreshBalances } from '@state/user/balances';
+import { userAddress } from '@state/user';
+import { modal } from '@utils/web3';
+
+// Helper function to shorten addresses for display
+function shortenAddress(address: string): string {
+  if (!address) return '';
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+import { Upd } from '@contracts/upd';
+import type { SlInput } from '@shoelace-style/shoelace';
+import type { SlDialog } from '@shoelace-style/shoelace';
+
+// Interface for transaction watcher
+interface TransactionWatcher extends HTMLElement {
+  hash: string;
+
+  reset(): void;
+
+  addEventListener(
+    type: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+}
+
+import type { UpdDialog } from '@/features/common/components/upd-dialog';
+
+// Simple interface for contract interactions
+interface Contract {
+  read(method: string, args: unknown[]): Promise<unknown>;
+
+  write(method: string, args: unknown[]): Promise<string>;
+}
+
+/**
+ * A component that provides token input capabilities.
+ * Currently supports UPD tokens but designed to be extended for other tokens.
+ *
+ * Features:
+ * - Validates input against balance and anti-spam fee requirements
+ * - Handles token approvals and transactions
+ * - Supports different approval strategies (unlimited for trusted contracts, exact for others)
+ * - Identifies the Updraft contract by name in the approval dialog
+ * - Provides options to show/hide input controls and dialogs
+ * - Includes a slot for low balance notifications
+ * - Dispatches events for low balance conditions
+ *
+ * @example
+ * ```html
+ * <!-- Basic usage -->
+ * <token-input></token-input>
+ *
+ * <!-- For creating an idea -->
+ * <token-input
+ *   name="deposit"
+ *   required
+ *   spendingContract=${updraft.address}
+ *   spendingContractName="Updraft"
+ *   antiSpamFeeMode="variable"
+ * ></token-input>
+ *
+ * <!-- For supporting an idea -->
+ * <token-input
+ *   name="support"
+ *   required
+ *   spendingContract=${ideaId}
+ *   antiSpamFeeMode="variable"
+ * ></token-input>
+ *
+ * <!-- With low balance slot -->
+ * <token-input>
+ *   <div slot="low-balance" class="warning">
+ *     Your balance is too low. <a href="#">Get more UPD</a>
+ *   </div>
+ * </token-input>
+ *
+ * <!-- Input only (no dialogs) -->
+ * <token-input
+ *   showDialogs="false"
+ * ></token-input>
+ *
+ * <!-- Validation only (no input control) -->
+ * <token-input
+ *   showInputControl="false"
+ *   .value=${someExternalValue}
+ * ></token-input>
+ * ```
+ */
+@customElement('token-input')
+export class TokenInput extends LitElement {
+  // Token configuration with sensible defaults
+  @property() tokenSymbol = 'UPD';
+  @property() tokenName = 'updraft'; // Default to UPD
+  @property() tokenAddress?: `0x${string}`; // Optional direct contract address
+
+  // Spending contract configuration
+  @property() spendingContract?: `0x${string}`;
+  @property() spendingContractName?: string; // Optional friendly name for the spending contract
+
+  // Approval strategy - can be explicitly set or computed
+  @property() approvalStrategy?: 'unlimited' | 'exact';
+
+  // Input configuration
+  @property() name = 'token-amount';
+  @property({ type: Boolean }) required = false;
+
+  // Display options
+  @property({ type: Boolean }) showInputControl = true; // Whether to show the input field
+  @property({ type: Boolean }) showDialogs = true; // Whether to show dialogs
+
+  // Anti-spam fee configuration - defaults to none
+  @property() antiSpamFeeMode: 'none' | 'fixed' | 'variable' = 'none';
+
+  // Internal state
+  @state() private _value = '';
+  @state() private _error: string | null = null;
+  @state() private _balance: number = 0;
+  @state() private _isLowBalance: boolean = false;
+
+  // Element references
+  @query('sl-input') input!: SlInput;
+  @query('upd-dialog') updDialog!: UpdDialog;
+  @query('transaction-watcher.approve') approveTransaction!: TransactionWatcher;
+  @query('sl-dialog') approveDialog!: SlDialog;
+
+  // Lifecycle methods
+  connectedCallback() {
+    super.connectedCallback();
+    this.refreshBalance();
+  }
+
+  firstUpdated(changedProperties: Map<string, unknown>) {
+    super.firstUpdated(changedProperties);
+    // Initial validation if there's a value
+    if (this._value) {
+      this.validateValue();
+    }
+  }
+
+  // Computed properties
+
+  // Automatically determine if this is the Updraft contract
+  private get isUpdraftContract(): boolean {
+    if (!this.spendingContract) return false;
+
+    const settings = updraftSettings.get();
+    return (
+      this.spendingContract.toLowerCase() === settings.updAddress?.toLowerCase()
+    );
+  }
+
+  // Get the spending contract name for display
+  private get spendingContractDisplayName(): string {
+    if (this.spendingContractName) {
+      return this.spendingContractName;
+    }
+
+    if (this.isUpdraftContract) {
+      return 'Updraft';
+    }
+
+    return this.spendingContract
+      ? shortenAddress(this.spendingContract)
+      : 'the contract';
+  }
+
+  // Get effective approval strategy - use explicit value if set, otherwise compute
+  private get effectiveApprovalStrategy(): 'unlimited' | 'exact' {
+    // If explicitly set, use that value
+    if (this.approvalStrategy) {
+      return this.approvalStrategy;
+    }
+
+    // Otherwise compute based on contract
+    return this.isUpdraftContract ? 'unlimited' : 'exact';
+  }
+
+  // Determine if anti-spam fee should be shown
+  protected get showAntiSpamFee(): boolean {
+    return this.tokenName === 'updraft' && this.antiSpamFeeMode !== 'none';
+  }
+
+  // Calculate anti-spam fee based on the selected mode
+  protected get antiSpamFee(): number {
+    // Only apply for UPD token
+    if (!this.showAntiSpamFee) {
+      return 0;
+    }
+
+    const settings = updraftSettings.get();
+    const minFee = settings.minFee;
+
+    if (this.antiSpamFeeMode === 'fixed') {
+      return minFee;
+    }
+
+    // Variable mode - max of fixed fee or percentage of value
+    const value = Number(this._value || 0);
+    if (isNaN(value)) {
+      return minFee;
+    }
+
+    const percentFee = value * settings.percentFee;
+    return Math.max(minFee, percentFee);
+  }
+
+  // Get the effective value (after deducting fee if applicable)
+  public get effectiveValue(): number {
+    const value = Number(this._value || 0);
+    if (isNaN(value)) return 0;
+
+    if (this.showAntiSpamFee) {
+      return Math.max(0, value - this.antiSpamFee);
+    }
+
+    return value;
+  }
+
+  // Get the token contract instance
+  private getTokenContract(): Contract | null {
+    // If tokenAddress is provided, use it directly
+    if (this.tokenAddress) {
+      // Create contract instance based on tokenAddress
+      // This would need appropriate ABI detection or configuration
+      return new Upd(this.tokenAddress);
+    }
+
+    // Otherwise use the named token
+    if (this.tokenName === 'updraft') {
+      const updAddress = updraftSettings.get().updAddress;
+      if (updAddress) {
+        return new Upd(updAddress);
+      }
+    }
+
+    // Add support for other tokens here
+
+    return null;
+  }
+
+  // Refresh the token balance
+  public refreshBalance() {
+    if (this.tokenName === 'updraft') {
+      // Use existing balance service for UPD
+      refreshBalances();
+      this._balance = getBalance('updraft');
+    } else if (this.tokenAddress) {
+      // For custom token addresses, fetch balance directly
+      const contract = this.getTokenContract();
+      if (contract) {
+        const address = userAddress.get();
+        if (address) {
+          contract
+            .read('balanceOf', [address])
+            .then((balance: unknown) => {
+              this._balance = Number(formatUnits(balance as bigint, 18));
+              this.validateValue(); // Re-validate with new balance
+            })
+            .catch((err: unknown) =>
+              console.error('Error fetching token balance:', err)
+            );
+        }
+      }
+    }
+  }
+
+  // Get the appropriate approval amount based on strategy and contract
+  private getApprovalAmount(): bigint {
+    // For unlimited approval strategy, approve the total supply
+    if (this.effectiveApprovalStrategy === 'unlimited') {
+      return parseUnits('1', 29); // Total supply of UPD
+    }
+
+    // For exact approval strategy, only approve the exact amount
+    const value = Number(this._value || 0);
+    if (isNaN(value) || value <= 0) return BigInt(0);
+
+    return parseUnits(value.toString(), 18);
+  }
+
+  get needMoreTokens(): boolean {
+    const value = Number(this._value || 0);
+    const fee = this.showAntiSpamFee ? this.antiSpamFee : 0;
+
+    return (
+      isNaN(value) ||
+      value === 0 ||
+      value > this._balance ||
+      (this.showAntiSpamFee && value <= fee)
+    );
+  }
+
+  // Validate the current value
+  private validateValue() {
+    const value = Number(this._value);
+
+    // Update the low balance state based on the needMoreTokens check
+    this._isLowBalance = this.needMoreTokens;
+
+    // If low balance, dispatch the event
+    if (this._isLowBalance) {
+      this.dispatchEvent(
+        new CustomEvent('low-balance', {
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+
+    // Set appropriate error message
+    if (this._value === '') {
+      this._error = this.required ? 'Required' : null;
+    } else if (isNaN(value)) {
+      this._error = 'Enter a number';
+    } else if (value <= 0) {
+      this._error = 'Amount must be greater than 0';
+    } else if (this.showAntiSpamFee && value <= this.antiSpamFee) {
+      this._error = `Amount must be more than ${this.antiSpamFee} ${this.tokenSymbol} to cover fees`;
+    } else if (value > this._balance) {
+      this._error = `You have ${this._balance.toFixed(0)} ${this.tokenSymbol}`;
+    } else {
+      this._error = null;
+    }
+
+    // Update input styling
+    if (this.input) {
+      if (this._error) {
+        this.input.classList.add('invalid');
+      } else {
+        this.input.classList.remove('invalid');
+      }
+    }
+  }
+
+  // Handle input events
+  private handleInput(e: Event) {
+    const input = e.target as SlInput;
+    this._value = input.value;
+    this.validateValue();
+  }
+
+  // Handle focus events
+  private handleFocus() {
+    this.refreshBalance();
+  }
+
+  // Handle token approval
+  private async handleApproval(onSuccess?: () => void) {
+    if (!this.spendingContract) return;
+
+    const contract = this.getTokenContract();
+    if (!contract) return;
+
+    this.approveTransaction.reset();
+    this.approveDialog.show();
+
+    try {
+      const approvalAmount = this.getApprovalAmount();
+
+      this.approveTransaction.hash = await contract.write('approve', [
+        this.spendingContract,
+        approvalAmount,
+      ]);
+
+      // Set up success handler if provided
+      if (onSuccess) {
+        this.approveTransaction.addEventListener(
+          'transaction-success',
+          () => {
+            this.approveDialog.hide();
+            onSuccess();
+          },
+          { once: true }
+        );
+      }
+    } catch (e) {
+      console.error(`${this.tokenSymbol} approval error:`, e);
+    }
+  }
+
+  // Public API for error handling
+  public handleTransactionError(
+    e: unknown,
+    onApprovalSuccess?: () => void,
+    onLowBalance?: () => void
+  ): boolean {
+    if (e instanceof Error) {
+      // Connection errors
+      if (
+        e.message.startsWith('connection') ||
+        e.message.includes('getChainId')
+      ) {
+        modal.open({ view: 'Connect' });
+        return true;
+      }
+      // Balance errors
+      else if (e.message.includes('exceeds balance')) {
+        if (onLowBalance) {
+          onLowBalance();
+        } else if (this.tokenName === 'updraft') {
+          // Default behavior for UPD
+          this.updDialog.show();
+        }
+        return true;
+      }
+      // Allowance errors
+      else if (e.message.includes('exceeds allowance')) {
+        if (this.spendingContract) {
+          this.handleApproval(onApprovalSuccess);
+          return true;
+        }
+      }
+    }
+    console.error('Transaction error:', e);
+    return false;
+  }
+
+  // Public API
+  get value(): string {
+    return this._value;
+  }
+
+  set value(val: string) {
+    const oldValue = this._value;
+    this._value = val;
+    this.validateValue();
+    this.requestUpdate('value', oldValue);
+  }
+
+  get error(): string | null {
+    return this._error;
+  }
+
+  get valid(): boolean {
+    return !this._error;
+  }
+
+  get balance(): number {
+    return this._balance;
+  }
+
+  get isLowBalance(): boolean {
+    return this._isLowBalance;
+  }
+
+  /**
+   * Alias for needMoreTokens to maintain compatibility with old code
+   */
+  get needUpd(): boolean {
+    return this.needMoreTokens;
+  }
+
+  render() {
+    const approvalDescription =
+      this.effectiveApprovalStrategy === 'unlimited'
+        ? `allow ${this.spendingContractDisplayName} to spend your ${this.tokenSymbol} tokens`
+        : `allow ${this.spendingContractDisplayName} to spend ${this._value} ${this.tokenSymbol}`;
+
+    return html`
+      <div class="token-input-container">
+        ${this.showInputControl
+          ? html`
+              <div class="input-row">
+                <sl-input
+                  name=${this.name}
+                  ?required=${this.required}
+                  autocomplete="off"
+                  .value=${this._value}
+                  @focus=${this.handleFocus}
+                  @input=${this.handleInput}
+                  class=${this._error ? 'invalid' : ''}
+                ></sl-input>
+                <span>${this.tokenSymbol}</span>
+                ${this.tokenName === 'updraft' && this.showDialogs
+                  ? html` <sl-button @click=${() => this.updDialog.show()}>
+                      Get more ${this.tokenSymbol}
+                    </sl-button>`
+                  : nothing}
+              </div>
+
+              ${this.showAntiSpamFee
+                ? html` <div class="fee-info">
+                    <span
+                      >Anti-Spam Fee: ${this.antiSpamFee}
+                      ${this.tokenSymbol}</span
+                    >
+                    ${this.antiSpamFeeMode === 'variable' &&
+                    Number(this._value) > 0
+                      ? html`<span
+                          >Effective contribution: ${this.effectiveValue}
+                          ${this.tokenSymbol}</span
+                        >`
+                      : nothing}
+                  </div>`
+                : nothing}
+              ${this._error
+                ? html` <div class="error">${this._error}</div>`
+                : nothing}
+            `
+          : nothing}
+
+        <slot name="low-balance" ?hidden=${!this._isLowBalance}></slot>
+      </div>
+
+      ${this.tokenName === 'updraft' && this.showDialogs
+        ? html` <upd-dialog></upd-dialog>`
+        : nothing}
+      ${this.showDialogs
+        ? html`
+            <sl-dialog label="Set Allowance">
+              <p>
+                Before you can proceed, you need to sign a transaction to
+                ${approvalDescription}.
+              </p>
+              <transaction-watcher class="approve"></transaction-watcher>
+            </sl-dialog>
+          `
+        : nothing}
+    `;
+  }
+
+  static styles = css`
+    .token-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .input-row sl-input {
+      flex: 1;
+    }
+
+    .input-row sl-input.invalid {
+      --sl-input-border-color: var(--sl-color-danger-500);
+      --sl-input-focus-ring-color: var(--sl-color-danger-200);
+    }
+
+    .fee-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: var(--sl-color-neutral-600);
+    }
+
+    .error {
+      color: var(--sl-color-danger-600);
+      font-size: 0.875rem;
+    }
+  `;
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'token-input': TokenInput;
+  }
+}

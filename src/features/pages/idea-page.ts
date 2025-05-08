@@ -18,7 +18,7 @@ dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
-import { TokenHandler } from '@utils/token-handler';
+import '@/features/common/components/token-input';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -43,12 +43,13 @@ import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
 import { updraftSettings } from '@state/common';
 import { shortNum } from '@utils/short-num';
+import { modal } from '@utils/web3';
 import layout from '@state/layout';
 import { markComplete } from '@state/user/beginner-tasks';
 import { userAddress } from '@state/user';
 
 @customElement('idea-page')
-export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
+export class IdeaPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
@@ -88,6 +89,15 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
         color: red;
         font-size: 0.8rem;
         padding-top: 0.25rem;
+      }
+
+      .low-balance-warning {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: var(--sl-color-warning-100);
+        border-radius: var(--sl-border-radius-medium);
+        display: flex;
+        justify-content: center;
       }
 
       .heading {
@@ -388,13 +398,20 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
         currentPosition.positionIndex,
       ]);
     } catch (e) {
-      this.handleTransactionError(
-        e,
-        this.ideaId,
-        undefined, // No approval callback needed for withdraw
-        () => this.updDialog.show() // Show UPD dialog on low balance
-      );
-      console.error('Withdraw error:', e);
+      // Use token-input's error handling
+      const tokenInput = this.shadowRoot?.querySelector('token-input');
+      if (tokenInput) {
+        tokenInput.handleTransactionError(
+          e,
+          undefined, // No approval callback needed for withdraw
+          () => this.updDialog.show() // Show UPD dialog on low balance
+        );
+      } else {
+        console.error('Withdraw error:', e);
+        if (e instanceof Error && e.message.startsWith('connection')) {
+          modal.open({ view: 'Connect' });
+        }
+      }
     }
   }
 
@@ -417,20 +434,23 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  // The TokenHandler mixin now automatically handles input events
-  // No need for manual event handlers
-
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
-      const support = parseUnits(this.updValue, 18);
+      const tokenInput = this.shadowRoot?.querySelector('token-input');
+      if (!tokenInput || tokenInput.error) {
+        return;
+      }
+
+      const support = parseUnits(tokenInput.value, 18);
+      this.submitTransaction.reset();
+
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
       } catch (err) {
-        this.handleTransactionError(
+        tokenInput.handleTransactionError(
           err,
-          this.ideaId,
           () => this.handleSubmit(e), // Retry after approval
           () => this.updDialog.show() // Show UPD dialog on low balance
         );
@@ -561,35 +581,27 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
         })}
         <form @submit=${this.handleSubmit}>
           <div class="support">
-            <sl-input
+            <token-input
               name="support"
               required
-              autocomplete="off"
-              class=${this.updError ? 'invalid' : ''}
+              spendingContract=${this.ideaId}
+              spendingContractName="This Idea"
+              antiSpamFeeMode="variable"
             >
-            </sl-input>
+              <div slot="low-balance" class="low-balance-warning">
+                <sl-button
+                  variant="primary"
+                  @click=${() => this.updDialog.show()}
+                >
+                  Get more UPD
+                </sl-button>
+              </div>
+            </token-input>
             <span>UPD</span>
-            ${this.needUpd
-              ? html`
-                  <sl-button
-                    variant="primary"
-                    @click=${() => this.updDialog.show()}
-                  >
-                    Get more UPD
-                  </sl-button>
-                `
-              : html`
-                  <sl-button variant="primary" type="submit">
-                    Support this Idea
-                  </sl-button>
-                `}
-            ${this.antiSpamFee
-              ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-              : html``}
+            <sl-button variant="primary" type="submit">
+              Support this Idea
+            </sl-button>
           </div>
-          ${this.updError
-            ? html` <div class="error">${this.updError}</div>`
-            : html``}
         </form>
         <p>${description}</p>
         ${tags
@@ -660,7 +672,7 @@ export class IdeaPage extends TokenHandler(SignalWatcher(LitElement)) {
     // Initialize updValue when the component is connected
     this.updateComplete.then(() => {
       if (this.supportInput) {
-        this.updValue = this.supportInput.value;
+        // No longer needed with token-input
       }
     });
   }

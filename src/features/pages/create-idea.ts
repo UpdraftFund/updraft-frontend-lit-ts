@@ -21,7 +21,7 @@ import {
   TransactionSuccess,
 } from '@components/common/transaction-watcher';
 import { SaveableForm, formToJson } from '@components/common/saveable-form';
-import { TokenHandler } from '@utils/token-handler';
+import '@/features/common/components/token-input';
 
 import layout from '@state/layout';
 import { hasProfile } from '@state/user';
@@ -30,7 +30,7 @@ import { updraft } from '@contracts/updraft';
 import ideaSchema from '@schemas/idea-schema.json';
 
 @customElement('create-idea')
-export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
+export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('transaction-watcher.submit', true)
@@ -38,9 +38,6 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
   @query('transaction-watcher.approve', true)
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
-  @query('sl-input[name="deposit"]', true) depositInput!: SlInput;
-
-  // depositError is now handled by TokenHandler mixin as updError
 
   static styles = css`
     .container {
@@ -92,6 +89,15 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
       padding-top: 0.25rem;
     }
 
+    .low-balance-warning {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background-color: var(--sl-color-warning-100);
+      border-radius: var(--sl-border-radius-medium);
+      display: flex;
+      justify-content: center;
+    }
+
     .submit-button {
       width: fit-content;
     }
@@ -124,8 +130,6 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
     }
   }
 
-  // The TokenHandler mixin now automatically handles input events
-
   private nextButtonClick(e: MouseEvent) {
     if (!this.form.checkValidity()) {
       e.preventDefault(); // If the form is invalid, prevent the click
@@ -143,19 +147,23 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
       return;
     }
 
+    const tokenInput = this.shadowRoot?.querySelector('token-input');
+    if (!tokenInput || tokenInput.error) {
+      return;
+    }
+
     const ideaData = formToJson('create-idea', ideaSchema);
 
     try {
       this.submitTransaction.hash = await updraft.write('createIdea', [
         BigInt(defaultFunderReward.get()),
-        parseUnits(this.updValue, 18),
+        parseUnits(tokenInput.value, 18),
         toHex(JSON.stringify(ideaData)),
       ]);
       this.shareDialog.topic = ideaData.name as string;
     } catch (e) {
-      this.handleTransactionError(
+      tokenInput.handleTransactionError(
         e,
-        updraft.address,
         () => this.createIdea(), // Retry after approval
         () => this.updDialog.show() // Show UPD dialog on low balance
       );
@@ -223,24 +231,23 @@ export class CreateIdea extends TokenHandler(SignalWatcher(SaveableForm)) {
               >
               </label-with-hint>
               <div class="deposit-row">
-                <sl-input
+                <token-input
                   name="deposit"
                   required
-                  autocomplete="off"
-                  class=${this.updError ? 'invalid' : ''}
+                  spendingContract=${updraft.address}
+                  spendingContractName="Updraft"
+                  antiSpamFeeMode="variable"
                 >
-                </sl-input>
-                <span>UPD</span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => this.updDialog.show()}
-                  >Get more UPD
-                </sl-button>
-                <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>
+                  <div slot="low-balance" class="low-balance-warning">
+                    <sl-button
+                      variant="primary"
+                      @click=${() => this.updDialog.show()}
+                    >
+                      Get more UPD
+                    </sl-button>
+                  </div>
+                </token-input>
               </div>
-              ${this.updError
-                ? html` <div class="error">${this.updError}</div>`
-                : ''}
             </div>
             <input type="hidden" name="reward" value="50" />
             ${hasProfile.get()
