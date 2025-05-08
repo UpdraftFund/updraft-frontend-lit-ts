@@ -331,7 +331,7 @@ export class TokenInput extends SignalWatcher(LitElement) {
 
     // Set appropriate error message
     if (this.value === '') {
-      this._error = this.required ? 'Required' : null;
+      this._error = null;
     } else if (isNaN(value)) {
       this._error = 'Enter a number';
     } else if (value <= 0) {
