@@ -468,7 +468,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       </form>
       <!-- Hidden token-input for transaction handling -->
       <token-input
-        showInputControl="false"
+        .showInputControl=${false}
         spendingContract=${updraft.address}
         spendingContractName="Updraft"
       ></token-input>
