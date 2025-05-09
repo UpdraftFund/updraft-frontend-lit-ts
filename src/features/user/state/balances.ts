@@ -3,7 +3,7 @@ import { getAccount, getBalance as getEthBalance } from '@wagmi/core';
 import { config } from '@utils/web3.ts';
 import { formatUnits } from 'viem';
 
-import { updraftSettings } from '@state/common';
+import { refreshUpdraftSettings, updraftSettings } from '@state/common';
 import { Upd } from '@contracts/upd.ts';
 import { Balances } from '@/types';
 import { markComplete } from '@state/user/beginner-tasks';
@@ -24,27 +24,24 @@ export const refreshBalances = async () => {
     });
     return;
   }
-  let ethBalance;
+  let ethBalance = '0';
   try {
     const eth = await getEthBalance(config, { address });
     ethBalance = formatUnits(eth.value, eth.decimals);
-  } catch {
-    ethBalance = '0';
-  }
+  } catch {}
   console.log('refreshBalances: eth', ethBalance);
-  let updBalance;
+  let updBalance = '0';
   try {
     const updAddress = updraftSettings.get().updAddress;
+    if (!updAddress) {
+      await refreshUpdraftSettings();
+    }
     if (updAddress) {
       const upd = new Upd(updAddress);
       const rawUpd = await upd.read('balanceOf', [address]);
       updBalance = formatUnits(rawUpd as bigint, 18);
-    } else {
-      updBalance = '0';
     }
-  } catch {
-    updBalance = '0';
-  }
+  } catch {}
   console.log('refreshBalances: upd', updBalance);
   balances.set({
     eth: { symbol: 'ETH', balance: ethBalance },
