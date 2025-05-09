@@ -355,12 +355,16 @@ export class TokenInput
 
       // Update component state with the new balance
       this._balance = balance;
-      // Don't validate on initial balance fetch to avoid showing errors prematurely
+      this.validate();
       return balance;
     },
     // Include all dependencies that should trigger a refresh
     () => [userAddress.get(), this.tokenName, this.tokenAddress]
   );
+
+  private get invalid() {
+    return this._error && this.value !== '';
+  }
 
   private getApprovalAmount(): bigint {
     if (this.effectiveApprovalStrategy === 'unlimited') {
@@ -431,14 +435,6 @@ export class TokenInput
       this.internals_.setFormValue(this.value);
     } else {
       this.internals_.setFormValue('');
-    }
-
-    if (this.input) {
-      if (this._error) {
-        this.input.classList.add('invalid');
-      } else {
-        this.input.classList.remove('invalid');
-      }
     }
 
     // Dispatch a change event to notify the form of validity changes
@@ -552,25 +548,6 @@ export class TokenInput
     return this.internals_.form;
   }
 
-  constructor() {
-    super();
-    // Initialize ElementInternals
-    this.internals_ = this.attachInternals();
-  }
-
-  // Lifecycle methods
-  connectedCallback() {
-    super.connectedCallback();
-    this.refreshBalance.run();
-
-    // Add a form-associated validation listener
-    if (this.closest('form')) {
-      this.addEventListener('invalid', () => {
-        this.validate();
-      });
-    }
-  }
-
   // Called when the element is associated with a form
   formAssociatedCallback(form: HTMLFormElement) {
     // When the form is reset, clear our value
@@ -590,6 +567,25 @@ export class TokenInput
     if (state) {
       this.value = state;
       this.validate();
+    }
+  }
+
+  constructor() {
+    super();
+    // Initialize ElementInternals
+    this.internals_ = this.attachInternals();
+  }
+
+  // Lifecycle methods
+  connectedCallback() {
+    super.connectedCallback();
+    this.refreshBalance.run();
+
+    // Add a form-associated validation listener
+    if (this.closest('form')) {
+      this.addEventListener('invalid', () => {
+        this.validate();
+      });
     }
   }
 
@@ -618,14 +614,14 @@ export class TokenInput
                   .value=${this.value}
                   @focus=${this.handleFocus}
                   @input=${this.handleInput}
-                  class=${this._error && this.value !== '' ? 'invalid' : ''}
+                  class=${this.invalid ? 'invalid' : ''}
                 ></sl-input>
                 <span>${this.tokenSymbol}</span>
 
                 <div class="slot-container">
                   ${this.refreshBalance.render({
                     complete: () =>
-                      this._error
+                      this.invalid
                         ? html` <slot name="invalid"></slot>`
                         : html` <slot name="valid"></slot>`,
                     error: () => html` <slot name="invalid"></slot>`,
@@ -641,7 +637,7 @@ export class TokenInput
                     </div>`
                   : html``}
               </div>
-              ${this._error && this.value !== ''
+              ${this.invalid
                 ? html` <div class="error">${this._error}</div>`
                 : html` <div class="error-placeholder">No error</div>`}
             `
