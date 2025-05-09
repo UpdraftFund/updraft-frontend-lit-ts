@@ -455,10 +455,6 @@ export class TokenInput
     this.refreshBalance.run();
   }
 
-  private handleBlur() {
-    this.validate();
-  }
-
   private async handleApproval(onSuccess?: () => void) {
     if (!this.spendingContract) return;
 
@@ -542,7 +538,6 @@ export class TokenInput
 
   // Form validation methods
   checkValidity(): boolean {
-    // Only validate when explicitly called, typically on form submission
     this.validate();
     return this.internals_.checkValidity();
   }
@@ -561,14 +556,6 @@ export class TokenInput
     super();
     // Initialize ElementInternals
     this.internals_ = this.attachInternals();
-
-    // Initialize with no error state
-    this._error = null;
-    this._validationMessage = '';
-
-    // Set validity to valid initially
-    // This prevents showing validation errors before user interaction
-    this.internals_.setValidity({});
   }
 
   // Lifecycle methods
@@ -602,7 +589,14 @@ export class TokenInput
   formStateRestoreCallback(state: string) {
     if (state) {
       this.value = state;
-      // Don't validate on state restoration to avoid showing errors prematurely
+      this.validate();
+    }
+  }
+
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('value')) {
+      this.validate();
     }
   }
 
@@ -623,7 +617,6 @@ export class TokenInput
                   autocomplete="off"
                   .value=${this.value}
                   @focus=${this.handleFocus}
-                  @blur=${this.handleBlur}
                   @input=${this.handleInput}
                   class=${this._error && this.value !== '' ? 'invalid' : ''}
                 ></sl-input>
