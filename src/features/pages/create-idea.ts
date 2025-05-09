@@ -258,11 +258,12 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
                   @click=${this.createIdea}
                   >Create Idea
                 </sl-button>`
-              : html`<a href="/submit-profile-and-create-idea" rel="next">
-                  <sl-button
-                    class="submit-button"
-                    variant="primary"
-                    @click=${this.nextButtonClick}
+              : html`<a
+                  class="submit-button"
+                  href="/submit-profile-and-create-idea"
+                  rel="next"
+                >
+                  <sl-button variant="primary" @click=${this.nextButtonClick}
                     >Next: Create your Profile
                   </sl-button>
                 </a>`}
