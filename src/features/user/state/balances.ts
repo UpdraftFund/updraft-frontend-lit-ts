@@ -32,9 +32,10 @@ export const refreshBalances = async () => {
   console.log('refreshBalances: eth', ethBalance);
   let updBalance = '0';
   try {
-    const updAddress = updraftSettings.get().updAddress;
+    let updAddress = updraftSettings.get().updAddress;
     if (!updAddress) {
       await refreshUpdraftSettings();
+      updAddress = updraftSettings.get().updAddress;
     }
     if (updAddress) {
       const upd = new Upd(updAddress);
