@@ -126,12 +126,6 @@ export class TokenInput
   implements ITokenInput
 {
   static styles = css`
-    .token-input-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
     .input-container {
       display: flex;
       flex-direction: column;
@@ -140,9 +134,9 @@ export class TokenInput
 
     .input-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 1rem;
-      flex: 1;
     }
 
     .input-row sl-input {
@@ -520,41 +514,39 @@ export class TokenInput
         : `allow ${this.spendingContractDisplayName} to spend ${this.value} ${this.tokenSymbol}`;
 
     return html`
-      <div class="token-input-container">
+      <div class="input-container">
         ${this.showInputControl
           ? html`
-              <div class="input-container">
-                <div class="input-row">
-                  <sl-input
-                    name=${this.name}
-                    ?required=${this.required}
-                    autocomplete="off"
-                    .value=${this.value}
-                    @focus=${this.handleFocus}
-                    @input=${this.handleInput}
-                    class=${this._error ? 'invalid' : ''}
-                  ></sl-input>
-                  <span>${this.tokenSymbol}</span>
+              <div class="input-row">
+                <sl-input
+                  name=${this.name}
+                  ?required=${this.required}
+                  autocomplete="off"
+                  .value=${this.value}
+                  @focus=${this.handleFocus}
+                  @input=${this.handleInput}
+                  class=${this._error ? 'invalid' : ''}
+                ></sl-input>
+                <span>${this.tokenSymbol}</span>
 
-                  <div class="slot-container">
-                    ${this.refreshBalance.render({
-                      complete: () =>
-                        this._isLowBalance
-                          ? html` <slot name="low-balance"></slot>`
-                          : html` <slot name="sufficient-balance"></slot>`,
-                      error: () => html` <slot name="low-balance"></slot>`,
-                    })}
-                  </div>
-
-                  ${this.showAntiSpamFee
-                    ? html`<div class="fee-info">
-                        <span
-                          >Anti-Spam Fee: ${shortNum(this.antiSpamFee)}
-                          ${this.tokenSymbol}</span
-                        >
-                      </div>`
-                    : html``}
+                <div class="slot-container">
+                  ${this.refreshBalance.render({
+                    complete: () =>
+                      this._isLowBalance
+                        ? html` <slot name="low-balance"></slot>`
+                        : html` <slot name="sufficient-balance"></slot>`,
+                    error: () => html` <slot name="low-balance"></slot>`,
+                  })}
                 </div>
+
+                ${this.showAntiSpamFee
+                  ? html` <div class="fee-info">
+                      <span
+                        >Anti-Spam Fee: ${shortNum(this.antiSpamFee)}
+                        ${this.tokenSymbol}</span
+                      >
+                    </div>`
+                  : html``}
               </div>
               ${this._error
                 ? html` <div class="error">${this._error}</div>`
