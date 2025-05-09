@@ -266,9 +266,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             .tags=${this.idea.tags}
           ></related-ideas>
         `);
-
-        // Refresh user support data when idea is loaded
-        this.userSupportTask.run();
       }
     }
   );
