@@ -348,7 +348,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Handle withdraw support
   private async handleWithdraw() {
     try {
-      // Make sure we have positions and a valid index
       if (this.positions.length === 0 || this.positionIndex < 0) {
         console.warn('No valid position to withdraw');
         return;
@@ -357,7 +356,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const currentPosition = this.positions[this.positionIndex];
       const idea = new IdeaContract(this.ideaId);
 
-      // Use the withdraw method that takes a position index
       this.withdrawTransaction.hash = await idea.write('withdraw', [
         currentPosition.positionIndex,
       ]);
@@ -378,7 +376,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     }
   }
 
-  // Navigate to previous position
   private previousPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
 
@@ -389,7 +386,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         : this.positionIndex - 1;
   }
 
-  // Navigate to next position
   private nextPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
 
@@ -457,7 +453,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const date = dayjs(startTime * 1000);
       const interest = shortNum(formatUnits(shares, 18));
 
-      return html`
+      return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
         <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
         <span class="created">
@@ -596,7 +592,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
         <share-dialog action="supported an Idea" .topic=${name}></share-dialog>
-      `;
+      `);
     } else {
       if (this.error) {
         return html`
@@ -655,7 +651,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      ${cache(this.renderIdea())}
+      ${this.renderIdea()}
       <upd-dialog></upd-dialog>
       <sl-dialog label="Set Allowance">
         <p>
