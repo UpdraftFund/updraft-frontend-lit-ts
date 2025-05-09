@@ -55,7 +55,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
-      main {
+      :host {
         flex: 1;
         box-sizing: border-box;
         display: flex;
@@ -71,35 +71,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         align-items: center;
         gap: 1rem;
         margin-top: 0.25rem;
-      }
-
-      .support sl-input {
-        flex: none;
-        width: calc(10ch + var(--sl-input-spacing-medium) * 2);
-        box-sizing: content-box;
-      }
-
-      .support sl-input::part(input) {
-        text-align: right;
-      }
-
-      sl-input[name='support'].invalid {
-        --sl-input-focus-ring-color: red;
-      }
-
-      .error {
-        color: red;
-        font-size: 0.8rem;
-        padding-top: 0.25rem;
-      }
-
-      .low-balance-warning {
-        margin-top: 0.5rem;
-        padding: 0.5rem;
-        background-color: var(--sl-color-warning-100);
-        border-radius: var(--sl-border-radius-medium);
-        display: flex;
-        justify-content: center;
       }
 
       .heading {
@@ -127,11 +98,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
       .fire {
         align-items: center;
-      }
-
-      .description {
-        font-size: 1rem;
-        margin-bottom: 1rem;
       }
 
       .tags {
@@ -246,12 +212,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         margin: 0;
         font-size: 1.875rem;
         font-weight: 500;
-      }
-
-      .connect-container {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
       }
     `,
   ];
@@ -698,30 +658,28 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <main>
-        ${cache(this.renderIdea())}
-        <upd-dialog></upd-dialog>
-        <sl-dialog label="Set Allowance">
-          <p>
-            Before you can support this Idea, you need to sign a transaction to
-            allow the Idea contract to spend your UPD tokens.
-          </p>
-          <transaction-watcher
-            class="approve"
-            @transaction-success=${this.handleSubmit}
-          ></transaction-watcher>
-        </sl-dialog>
+      ${cache(this.renderIdea())}
+      <upd-dialog></upd-dialog>
+      <sl-dialog label="Set Allowance">
+        <p>
+          Before you can support this Idea, you need to sign a transaction to
+          allow the Idea contract to spend your UPD tokens.
+        </p>
         <transaction-watcher
-          class="submit"
-          @transaction-success=${this.handleSupportSucces}
-        >
-        </transaction-watcher>
-        <transaction-watcher
-          class="withdraw"
-          @transaction-success=${this.handleWithdrawSuccess}
-        >
-        </transaction-watcher>
-      </main>
+          class="approve"
+          @transaction-success=${this.handleSubmit}
+        ></transaction-watcher>
+      </sl-dialog>
+      <transaction-watcher
+        class="submit"
+        @transaction-success=${this.handleSupportSucces}
+      >
+      </transaction-watcher>
+      <transaction-watcher
+        class="withdraw"
+        @transaction-success=${this.handleWithdrawSuccess}
+      >
+      </transaction-watcher>
     `;
   }
 }
