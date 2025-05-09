@@ -12,13 +12,10 @@ import utc from 'dayjs/plugin/utc';
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 
-import type { Position } from '@/features/idea/types';
-
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-import { dialogStyles } from '@/features/common/styles/dialog-styles';
-import '@/features/common/components/token-input';
+import { dialogStyles } from '@styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -31,20 +28,24 @@ import '@components/navigation/search-bar';
 import '@components/idea/top-supporters';
 import '@components/idea/related-ideas';
 import '@components/idea/idea-solutions';
-import '@/features/common/components/upd-dialog';
-import '@/features/common/components/share-dialog';
-import '@/features/common/components/transaction-watcher';
-import { UpdDialog } from '@/features/common/components/upd-dialog';
-import { ShareDialog } from '@/features/common/components/share-dialog';
-import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
-import { TokenInput } from '@/features/common/components/token-input';
+import '@components/common/token-input';
+import '@components/common/upd-dialog';
+import '@components/common/share-dialog';
+import '@components/common/transaction-watcher';
+import { UpdDialog } from '@components/common/upd-dialog';
+import { ShareDialog } from '@components/common/share-dialog';
+import { TransactionWatcher } from '@components/common/transaction-watcher';
+import { TokenInput } from '@components/common/token-input';
 
-import { UrqlQueryController } from '@utils/urql-query-controller';
-import { Idea, IdeaDocument } from '@gql';
-import { IdeaContract } from '@contracts/idea';
-import { updraftSettings } from '@state/common';
 import { shortNum } from '@utils/short-num';
 import { modal } from '@utils/web3';
+import { UrqlQueryController } from '@utils/urql-query-controller';
+
+import { Idea, IdeaDocument } from '@gql';
+import { IdeaContract } from '@contracts/idea';
+import type { Position } from '@/features/idea/types';
+
+import { updraftSettings } from '@state/common';
 import layout from '@state/layout';
 import { markComplete } from '@state/user/beginner-tasks';
 import { userAddress } from '@state/user';
@@ -277,15 +278,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Track low balance status
   @state() private isLowBalance: boolean = false;
 
-  // Array to store viable positions
   private positions: Position[] = [];
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
   //@property() network!: string;
-
-  // antiSpamFee, needUpd, and validation are now handled by UpdTransactionMixin
-  // We can access them as this.antiSpamFee, this.needUpd, and this.updError
 
   private readonly ideaController = new UrqlQueryController(
     this,
