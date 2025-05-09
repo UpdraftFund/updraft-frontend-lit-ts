@@ -170,7 +170,6 @@ export class TokenInput
     .error {
       color: red;
       font-size: 0.8rem;
-      padding-top: 0.25rem;
       min-height: 1.2rem; /* Reserve space for error message */
     }
 
