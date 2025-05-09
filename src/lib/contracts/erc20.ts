@@ -9,7 +9,9 @@ import { Contract } from './contract';
  * This class provides a standard interface for interacting with ERC20 tokens
  * using the OpenZeppelin ERC20 standard interface.
  *
+ * This ERC20 ABI is based on the OpenZeppelin ERC20 implementation
  * @see https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol
+ * @license MIT
  */
 
 export class ERC20 extends Contract {
