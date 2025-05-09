@@ -4,6 +4,21 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { parseUnits, formatUnits, maxUint256 } from 'viem';
 import { Task } from '@lit/task';
 
+// Interface for ValidityStateFlags
+interface ValidityStateFlags {
+  badInput?: boolean;
+  customError?: boolean;
+  patternMismatch?: boolean;
+  rangeOverflow?: boolean;
+  rangeUnderflow?: boolean;
+  stepMismatch?: boolean;
+  tooLong?: boolean;
+  tooShort?: boolean;
+  typeMismatch?: boolean;
+  valid?: boolean;
+  valueMissing?: boolean;
+}
+
 import type { SlInput } from '@shoelace-style/shoelace';
 import type { SlDialog } from '@shoelace-style/shoelace';
 
@@ -57,7 +72,6 @@ export interface ITokenInput {
   readonly error: string | null;
   readonly valid: boolean;
   readonly balance: number;
-  readonly isLowBalance: boolean;
 
   // Public methods
   handleTransactionError(
@@ -65,6 +79,13 @@ export interface ITokenInput {
     onApprovalSuccess?: () => void,
     onLowBalance?: () => void
   ): boolean;
+
+  // Form validation methods
+  checkValidity(): boolean;
+
+  reportValidity(): boolean;
+
+  readonly form: HTMLFormElement | null;
 }
 
 /**
@@ -77,18 +98,16 @@ export interface ITokenInput {
  * - Supports different approval strategies (unlimited for trusted contracts, exact for others)
  * - Identifies the Updraft contract by name in the approval dialog
  * - Provides options to show/hide input controls and dialogs
- * - Dispatches events for low balance conditions
- * - Exposes isLowBalance property for parent components to handle low balance UI
- * - Provides two slots for custom content based on balance state:
- *   - "low-balance": shown when balance is low or unknown
- *   - "sufficient-balance": shown when balance is sufficient
+ * - Provides two slots for custom content based on validation state:
+ *   - "invalid": shown when the input is invalid (e.g., required but empty, insufficient balance)
+ *   - "valid": shown when the input is valid
  *
  * @example
  * ```html
  * <!-- Basic usage -->
  * <token-input></token-input>
  *
- * <!-- For creating an idea with custom balance slots -->
+ * <!-- For creating an idea with custom validation slots -->
  * <token-input
  *   name="deposit"
  *   required
@@ -96,8 +115,8 @@ export interface ITokenInput {
  *   spendingContractName="Updraft"
  *   antiSpamFeeMode="variable"
  * >
- *   <sl-button slot="low-balance" variant="primary">Get more UPD</sl-button>
- *   <span slot="sufficient-balance">Balance is sufficient</span>
+ *   <sl-button slot="invalid" variant="primary">Get more UPD</sl-button>
+ *   <span slot="valid">Balance is sufficient</span>
  * </token-input>
  *
  * <!-- For supporting an idea -->
@@ -125,6 +144,11 @@ export class TokenInput
   extends SignalWatcher(LitElement)
   implements ITokenInput
 {
+  // Indicate that this component can be associated with forms
+  static formAssociated = true;
+
+  // ElementInternals for form association
+  private internals_: ElementInternals;
   static styles = css`
     .input-container {
       display: flex;
@@ -196,7 +220,7 @@ export class TokenInput
 
   // Input configuration
   @property() name = 'token-amount';
-  @property({ type: Boolean }) required = false;
+  @property({ type: Boolean, reflect: true }) required = false;
 
   // Display options
   @property({ type: Boolean }) showInputControl = true; // Whether to show the input field
@@ -211,7 +235,7 @@ export class TokenInput
   // Internal state
   @state() private _error: string | null = null;
   @state() private _balance: number = 0;
-  @state() private _isLowBalance: boolean = false;
+  @state() private _validationMessage: string = '';
 
   // Element references
   @query('sl-input') input!: SlInput;
@@ -331,7 +355,7 @@ export class TokenInput
 
       // Update component state with the new balance
       this._balance = balance;
-      this.validateValue();
+      this.validate();
       return balance;
     },
     // Include all dependencies that should trigger a refresh
@@ -349,45 +373,64 @@ export class TokenInput
     return parseUnits(value.toString(), 18);
   }
 
-  private checkLowBalance(): boolean {
-    const value = Number(this.value || 0);
-    const fee = this.showAntiSpamFee ? this.antiSpamFee : 0;
-
-    return (
-      isNaN(value) ||
-      value === 0 ||
-      value > this._balance ||
-      (this.showAntiSpamFee && value <= fee)
-    );
-  }
-
-  // Validate the current value
-  private validateValue() {
+  private validate() {
     const value = Number(this.value);
 
-    this._isLowBalance = this.checkLowBalance();
+    // Prepare validity state object
+    const validityState: ValidityStateFlags = {};
 
-    if (this._isLowBalance) {
-      this.dispatchEvent(
-        new CustomEvent('low-balance', {
-          bubbles: true,
-          composed: true,
-        })
-      );
-    }
-
-    if (this.value === '') {
+    // Check if the field is required and empty
+    if (
+      this.required &&
+      (this.value === '' || this.value === null || this.value === undefined)
+    ) {
+      this._error = 'This field is required';
+      this._validationMessage = 'This field is required';
+      validityState.valueMissing = true;
+    } else if (
+      this.value === '' ||
+      this.value === null ||
+      this.value === undefined
+    ) {
       this._error = null;
+      this._validationMessage = '';
     } else if (isNaN(value)) {
       this._error = 'Enter a number';
+      this._validationMessage = 'Please enter a valid number';
+      validityState.typeMismatch = true;
     } else if (value <= 0) {
       this._error = 'Amount must be greater than 0';
+      this._validationMessage = 'Amount must be greater than 0';
+      validityState.rangeUnderflow = true;
     } else if (this.showAntiSpamFee && value <= this.antiSpamFee) {
       this._error = `Amount must be more than ${this.antiSpamFee} ${this.tokenSymbol} to cover fees`;
+      this._validationMessage = `Amount must be more than ${this.antiSpamFee} ${this.tokenSymbol} to cover fees`;
+      validityState.customError = true;
     } else if (value > this._balance) {
       this._error = `You have ${this._balance.toFixed(0)} ${this.tokenSymbol}`;
+      this._validationMessage = `Insufficient balance. You have ${this._balance.toFixed(0)} ${this.tokenSymbol}`;
+      validityState.customError = true;
     } else {
       this._error = null;
+      this._validationMessage = '';
+    }
+
+    // Update the element's validity state using ElementInternals
+    if (this._error) {
+      this.internals_.setValidity(
+        validityState,
+        this._validationMessage,
+        this.input || undefined
+      );
+    } else {
+      this.internals_.setValidity({});
+    }
+
+    // Set form value
+    if (this.value) {
+      this.internals_.setFormValue(this.value);
+    } else {
+      this.internals_.setFormValue('');
     }
 
     if (this.input) {
@@ -397,12 +440,15 @@ export class TokenInput
         this.input.classList.remove('invalid');
       }
     }
+
+    // Dispatch a change event to notify the form of validity changes
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
   }
 
   private handleInput(e: Event) {
     const input = e.target as SlInput;
     this.value = input.value;
-    this.validateValue();
+    this.validate();
   }
 
   private handleFocus() {
@@ -490,20 +536,75 @@ export class TokenInput
     return this._balance;
   }
 
-  get isLowBalance(): boolean {
-    return this._isLowBalance;
+  // Form validation methods
+  checkValidity(): boolean {
+    this.validate();
+    return this.internals_.checkValidity();
+  }
+
+  reportValidity(): boolean {
+    this.validate();
+    return this.internals_.reportValidity();
+  }
+
+  // Getter for form property
+  get form(): HTMLFormElement | null {
+    return this.internals_.form;
+  }
+
+  constructor() {
+    super();
+    // Initialize ElementInternals
+    this.internals_ = this.attachInternals();
+
+    // Set initial validity state if required
+    if (this.required && !this.value) {
+      this.internals_.setValidity(
+        { valueMissing: true },
+        'This field is required'
+      );
+    }
   }
 
   // Lifecycle methods
   connectedCallback() {
     super.connectedCallback();
     this.refreshBalance.run();
+
+    // Add a form-associated validation listener
+    if (this.closest('form')) {
+      this.addEventListener('invalid', () => {
+        this.validate();
+      });
+    }
+  }
+
+  // Called when the element is associated with a form
+  formAssociatedCallback(form: HTMLFormElement) {
+    // When the form is reset, clear our value
+    form.addEventListener('reset', () => {
+      this.value = '';
+      this._error = null;
+      this._validationMessage = '';
+      this.internals_.setValidity({});
+      if (this.input) {
+        this.input.classList.remove('invalid');
+      }
+    });
+  }
+
+  // Form state restoration callback
+  formStateRestoreCallback(state: string) {
+    if (state) {
+      this.value = state;
+      this.validate();
+    }
   }
 
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
-    if (changedProperties.has('value')) {
-      this.validateValue();
+    if (changedProperties.has('value') || changedProperties.has('required')) {
+      this.validate();
     }
   }
 
@@ -532,10 +633,10 @@ export class TokenInput
                 <div class="slot-container">
                   ${this.refreshBalance.render({
                     complete: () =>
-                      this._isLowBalance
-                        ? html` <slot name="low-balance"></slot>`
-                        : html` <slot name="sufficient-balance"></slot>`,
-                    error: () => html` <slot name="low-balance"></slot>`,
+                      this._error
+                        ? html` <slot name="invalid"></slot>`
+                        : html` <slot name="valid"></slot>`,
+                    error: () => html` <slot name="invalid"></slot>`,
                   })}
                 </div>
 

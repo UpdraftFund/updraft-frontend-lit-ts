@@ -446,7 +446,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
               showDialogs="false"
             >
               <sl-button
-                slot="low-balance"
+                slot="invalid"
                 variant="primary"
                 @click=${() => this.updDialog.show()}
               >

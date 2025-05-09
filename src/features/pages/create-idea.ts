@@ -14,6 +14,7 @@ import '@components/common/label-with-hint';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/common/token-input';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
 import {
@@ -21,13 +22,13 @@ import {
   TransactionSuccess,
 } from '@components/common/transaction-watcher';
 import { SaveableForm, formToJson } from '@components/common/saveable-form';
-import '@/features/common/components/token-input';
 
 import layout from '@state/layout';
 import { hasProfile } from '@state/user';
 import { defaultFunderReward } from '@state/common';
 import { updraft } from '@contracts/updraft';
 import ideaSchema from '@schemas/idea-schema.json';
+import { ITokenInput } from '@components/common/token-input';
 
 @customElement('create-idea')
 export class CreateIdea extends SignalWatcher(SaveableForm) {
@@ -38,7 +39,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('transaction-watcher.approve', true)
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
-  @query('token-input', true) tokenInput!: HTMLElement;
+  @query('token-input', true) tokenInput!: ITokenInput;
 
   static styles = css`
     .container {
@@ -148,22 +149,17 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
       return;
     }
 
-    const tokenInput = this.shadowRoot?.querySelector('token-input');
-    if (!tokenInput || tokenInput.error) {
-      return;
-    }
-
     const ideaData = formToJson('create-idea', ideaSchema);
 
     try {
       this.submitTransaction.hash = await updraft.write('createIdea', [
         BigInt(defaultFunderReward.get()),
-        parseUnits(tokenInput.value, 18),
+        parseUnits(this.tokenInput.value, 18),
         toHex(JSON.stringify(ideaData)),
       ]);
       this.shareDialog.topic = ideaData.name as string;
     } catch (e) {
-      tokenInput.handleTransactionError(
+      this.tokenInput.handleTransactionError(
         e,
         () => this.createIdea(), // Retry after approval
         () => this.updDialog.show() // Show UPD dialog on low balance
@@ -241,7 +237,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
                   showDialogs="false"
                 >
                   <sl-button
-                    slot="low-balance"
+                    slot="invalid"
                     variant="primary"
                     @click=${() => this.updDialog.show()}
                   >

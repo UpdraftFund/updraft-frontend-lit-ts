@@ -235,8 +235,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @state() private loaded: boolean = false;
   // Track current position index for navigation
   @state() private positionIndex: number = 0;
-  // Track low balance status
-  @state() private isLowBalance: boolean = false;
 
   private positions: Position[] = [];
 
@@ -396,13 +394,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
-      if (!this.tokenInput || this.tokenInput.error || this.isLowBalance) {
-        return;
-      }
-
       const support = parseUnits(this.tokenInput.value, 18);
       this.submitTransaction.reset();
-
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
@@ -546,22 +539,15 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               spendingContractName="This Idea"
               antiSpamFeeMode="variable"
               showDialogs="false"
-              @low-balance=${() => {
-                this.isLowBalance = true;
-              }}
             >
               <sl-button
-                slot="low-balance"
+                slot="invalid"
                 variant="primary"
                 @click=${() => this.updDialog.show()}
               >
                 Get more UPD
               </sl-button>
-              <sl-button
-                slot="sufficient-balance"
-                variant="primary"
-                type="submit"
-              >
+              <sl-button slot="valid" variant="primary" type="submit">
                 Support this Idea
               </sl-button>
             </token-input>
@@ -632,12 +618,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     // initially set the right sidebar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
-
-    this.updateComplete.then(() => {
-      this.addEventListener('low-balance', () => {
-        this.isLowBalance = true;
-      });
-    });
   }
 
   updated(changedProperties: Map<string, unknown>) {
