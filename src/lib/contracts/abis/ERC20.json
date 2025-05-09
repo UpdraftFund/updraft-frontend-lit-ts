@@ -1,6 +1,3 @@
-// This ERC20 ABI is based on the OpenZeppelin ERC20 implementation
-// Source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol
-// License: MIT
 [
   {
     "inputs": [
