@@ -2,6 +2,7 @@ import { LitElement, css } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { parseUnits, formatUnits } from 'viem';
+import { Task } from '@lit/task';
 
 import type { SlInput } from '@shoelace-style/shoelace';
 import type { SlDialog } from '@shoelace-style/shoelace';
@@ -17,6 +18,7 @@ import { shortenAddress } from '@utils/address-utils';
 import { shortNum } from '@utils/short-num';
 
 import { Upd } from '@contracts/upd';
+import { ERC20 } from '@contracts/erc20';
 import { IContract } from '@contracts/contract';
 import { ITransactionWatcher } from '@components/common/transaction-watcher';
 
@@ -174,20 +176,6 @@ export class TokenInput extends SignalWatcher(LitElement) {
   approveTransaction!: ITransactionWatcher;
   @query('sl-dialog') approveDialog!: SlDialog;
 
-  // Lifecycle methods
-  connectedCallback() {
-    super.connectedCallback();
-    this.refreshBalance();
-  }
-
-  firstUpdated(changedProperties: Map<string, unknown>) {
-    super.firstUpdated(changedProperties);
-    // Initial validation if there's a value
-    if (this.value) {
-      this.validateValue();
-    }
-  }
-
   // Computed properties
 
   // Automatically determine if this is the Updraft contract
@@ -259,8 +247,7 @@ export class TokenInput extends SignalWatcher(LitElement) {
   private getTokenContract(): IContract | null {
     // If tokenAddress is provided, use it directly
     if (this.tokenAddress) {
-      // TODO: Add support for custom tokens
-      return null;
+      return new ERC20(this.tokenAddress);
     }
 
     // Otherwise use the named token
@@ -274,31 +261,38 @@ export class TokenInput extends SignalWatcher(LitElement) {
     return null;
   }
 
-  // Refresh the token balance
-  public refreshBalance() {
-    if (this.tokenName === 'updraft') {
-      // Use existing balance service for UPD
-      refreshBalances();
-      this._balance = getBalance('updraft');
-    } else if (this.tokenAddress) {
-      // For custom token addresses, fetch balance directly
-      const contract = this.getTokenContract();
-      if (contract) {
-        const address = userAddress.get();
-        if (address) {
-          contract
-            .read('balanceOf', [address])
-            .then((balance: unknown) => {
-              this._balance = Number(formatUnits(balance as bigint, 18));
-              this.validateValue(); // Re-validate with new balance
-            })
-            .catch((err: unknown) =>
-              console.error('Error fetching token balance:', err)
-            );
+  private refreshBalance = new Task(
+    this,
+    async ([address, tokenName, tokenAddress]) => {
+      let balance = 0;
+
+      if (address) {
+        if (tokenName === 'updraft') {
+          // For UPD token, use the global balances state
+          await refreshBalances();
+          balance = getBalance('updraft');
+        } else if (tokenAddress) {
+          // For custom token addresses, fetch balance directly from contract
+          const contract = this.getTokenContract();
+          if (contract) {
+            try {
+              const rawBalance = await contract.read('balanceOf', [address]);
+              balance = Number(formatUnits(rawBalance as bigint, 18));
+            } catch (err) {
+              console.error('Error fetching token balance:', err);
+            }
+          }
         }
       }
-    }
-  }
+
+      // Update component state with the new balance
+      this._balance = balance;
+      this.validateValue();
+      return balance;
+    },
+    // Include all dependencies that should trigger a refresh
+    () => [userAddress.get(), this.tokenName, this.tokenAddress]
+  );
 
   // Get the appropriate approval amount based on strategy and contract
   private getApprovalAmount(): bigint {
@@ -330,10 +324,8 @@ export class TokenInput extends SignalWatcher(LitElement) {
   private validateValue() {
     const value = Number(this.value);
 
-    // Update the low balance state based on the needMoreTokens check
     this._isLowBalance = this.needMoreTokens;
 
-    // If low balance, dispatch the event
     if (this._isLowBalance) {
       this.dispatchEvent(
         new CustomEvent('low-balance', {
@@ -343,7 +335,6 @@ export class TokenInput extends SignalWatcher(LitElement) {
       );
     }
 
-    // Set appropriate error message
     if (this.value === '') {
       this._error = null;
     } else if (isNaN(value)) {
@@ -358,7 +349,6 @@ export class TokenInput extends SignalWatcher(LitElement) {
       this._error = null;
     }
 
-    // Update input styling
     if (this.input) {
       if (this._error) {
         this.input.classList.add('invalid');
@@ -368,19 +358,16 @@ export class TokenInput extends SignalWatcher(LitElement) {
     }
   }
 
-  // Handle input events
   private handleInput(e: Event) {
     const input = e.target as SlInput;
     this.value = input.value;
     this.validateValue();
   }
 
-  // Handle focus events
   private handleFocus() {
-    this.refreshBalance();
+    this.refreshBalance.run();
   }
 
-  // Handle token approval
   private async handleApproval(onSuccess?: () => void) {
     if (!this.spendingContract) return;
 
@@ -434,7 +421,6 @@ export class TokenInput extends SignalWatcher(LitElement) {
         if (onLowBalance) {
           onLowBalance();
         } else if (this.tokenName === 'updraft') {
-          // Default behavior for UPD
           this.updDialog.show();
         }
         return true;
@@ -467,7 +453,12 @@ export class TokenInput extends SignalWatcher(LitElement) {
     return this._isLowBalance;
   }
 
-  // When value property changes, validate it
+  // Lifecycle methods
+  connectedCallback() {
+    super.connectedCallback();
+    this.refreshBalance.run();
+  }
+
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('value')) {
@@ -499,9 +490,13 @@ export class TokenInput extends SignalWatcher(LitElement) {
                   <span>${this.tokenSymbol}</span>
 
                   <div class="slot-container">
-                    ${this._isLowBalance
-                      ? html` <slot name="low-balance"></slot>`
-                      : html` <slot name="sufficient-balance"></slot>`}
+                    ${this.refreshBalance.render({
+                      complete: () =>
+                        this._isLowBalance
+                          ? html` <slot name="low-balance"></slot>`
+                          : html` <slot name="sufficient-balance"></slot>`,
+                      error: () => html` <slot name="low-balance"></slot>`,
+                    })}
                   </div>
 
                   ${this.showAntiSpamFee
