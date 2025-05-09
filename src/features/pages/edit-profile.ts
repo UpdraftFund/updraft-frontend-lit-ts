@@ -13,20 +13,21 @@ import { dialogStyles } from '@styles/dialog-styles';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import { SlDialog } from '@shoelace-style/shoelace';
 
 import '@layout/page-heading';
 import '@components/user/activity-feed';
 import '@components/common/transaction-watcher';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
-import '@/features/common/components/token-input';
+import '@components/common/token-input';
+import { ITokenInput } from '@components/common/token-input';
 import {
   TransactionWatcher,
   TransactionSuccess,
 } from '@components/common/transaction-watcher';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
-import { SlDialog } from '@shoelace-style/shoelace';
 import {
   SaveableForm,
   loadForm,
@@ -34,8 +35,6 @@ import {
 } from '@components/common/saveable-form';
 
 import layout from '@state/layout';
-import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
 import { defaultFunderReward } from '@state/common';
 import {
   userAddress,
@@ -46,12 +45,14 @@ import {
   setProfileImage,
 } from '@state/user';
 import { updraftSettings } from '@state/common';
+import { markComplete } from '@state/user/beginner-tasks';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
 import { Profile } from '@/types/user/profile';
-import { markComplete } from '@state/user/beginner-tasks';
+
+import { updraft } from '@contracts/updraft';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -157,6 +158,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('share-dialog', true) shareDialog!: ShareDialog;
+  @query('token-input', true) tokenInput!: ITokenInput;
 
   private handleInput() {
     this.submitTransaction.reset();
@@ -238,38 +240,11 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         console.error('Profile update error:', e);
 
         // Use token-input's error handling
-        const tokenInput = this.shadowRoot?.querySelector('token-input');
-        if (tokenInput) {
-          tokenInput.handleTransactionError(
-            e,
-            () => this.handleSubmit(), // Retry after approval
-            () => this.updDialog.show() // Show UPD dialog on low balance
-          );
-        } else {
-          // Fallback if token-input is not available
-          if (e instanceof Error) {
-            if (
-              e.message?.startsWith('connection') ||
-              e.message?.includes('getChainId')
-            ) {
-              await connectWallet();
-            } else if (e.message?.includes('exceeds balance')) {
-              this.updDialog.show();
-            } else if (
-              e.message?.includes('exceeds allowance') &&
-              settings.updAddress
-            ) {
-              this.approveTransaction.reset();
-              this.approveDialog.show();
-
-              const upd = new Upd(settings.updAddress);
-              this.approveTransaction.hash = await upd.write('approve', [
-                updraft.address,
-                parseUnits('1', 29), // approve for total supply of UPD
-              ]);
-            }
-          }
-        }
+        this.tokenInput.handleTransactionError(
+          e,
+          () => this.handleSubmit(), // Retry after approval
+          () => this.updDialog.show() // Show UPD dialog on low balance
+        );
       }
     }
   }

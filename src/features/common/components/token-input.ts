@@ -23,6 +23,51 @@ import { IContract } from '@contracts/contract';
 import { ITransactionWatcher } from '@components/common/transaction-watcher';
 
 /**
+ * Interface for the token-input component.
+ * Defines the public API that can be used by parent components.
+ */
+export interface ITokenInput {
+  // Token configuration
+  tokenSymbol: string;
+  tokenName: string;
+  tokenAddress?: `0x${string}`;
+
+  // Spending contract configuration
+  spendingContract?: `0x${string}`;
+  spendingContractName?: string;
+
+  // Approval strategy
+  approvalStrategy?: 'unlimited' | 'exact';
+
+  // Input configuration
+  name: string;
+  required: boolean;
+
+  // Display options
+  showInputControl: boolean;
+  showDialogs: boolean;
+
+  // Anti-spam fee configuration
+  antiSpamFeeMode: 'none' | 'fixed' | 'variable';
+
+  // Value and state
+  value: string;
+
+  // Public getters
+  readonly error: string | null;
+  readonly valid: boolean;
+  readonly balance: number;
+  readonly isLowBalance: boolean;
+
+  // Public methods
+  handleTransactionError(
+    e: unknown,
+    onApprovalSuccess?: () => void,
+    onLowBalance?: () => void
+  ): boolean;
+}
+
+/**
  * A component that provides token input capabilities.
  * Currently supports UPD tokens but designed to be extended for other tokens.
  *
@@ -76,7 +121,10 @@ import { ITransactionWatcher } from '@components/common/transaction-watcher';
  * ```
  */
 @customElement('token-input')
-export class TokenInput extends SignalWatcher(LitElement) {
+export class TokenInput
+  extends SignalWatcher(LitElement)
+  implements ITokenInput
+{
   static styles = css`
     .token-input-container {
       display: flex;
@@ -308,7 +356,7 @@ export class TokenInput extends SignalWatcher(LitElement) {
     return parseUnits(value.toString(), 18);
   }
 
-  get needMoreTokens(): boolean {
+  private checkLowBalance(): boolean {
     const value = Number(this.value || 0);
     const fee = this.showAntiSpamFee ? this.antiSpamFee : 0;
 
@@ -324,7 +372,7 @@ export class TokenInput extends SignalWatcher(LitElement) {
   private validateValue() {
     const value = Number(this.value);
 
-    this._isLowBalance = this.needMoreTokens;
+    this._isLowBalance = this.checkLowBalance();
 
     if (this._isLowBalance) {
       this.dispatchEvent(
@@ -539,3 +587,6 @@ declare global {
     'token-input': TokenInput;
   }
 }
+
+// Export the TokenInput class as the default implementation of ITokenInput
+export { TokenInput as TokenInputElement };
