@@ -1,7 +1,7 @@
 import { LitElement, css } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { parseUnits, formatUnits } from 'viem';
+import { parseUnits, formatUnits, maxUint256 } from 'viem';
 import { Task } from '@lit/task';
 
 import type { SlInput } from '@shoelace-style/shoelace';
@@ -338,14 +338,11 @@ export class TokenInput
     () => [userAddress.get(), this.tokenName, this.tokenAddress]
   );
 
-  // Get the appropriate approval amount based on strategy and contract
   private getApprovalAmount(): bigint {
-    // For unlimited approval strategy, approve the total supply
     if (this.effectiveApprovalStrategy === 'unlimited') {
-      return parseUnits('1', 29); // Total supply of UPD
+      return maxUint256;
     }
 
-    // For exact approval strategy, only approve the exact amount
     const value = Number(this.value || 0);
     if (isNaN(value) || value <= 0) return BigInt(0);
 
