@@ -99,7 +99,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
       justify-content: center;
     }
 
-    .submit-button {
+    .submit {
       width: fit-content;
     }
 
@@ -253,13 +253,13 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
             <input type="hidden" name="reward" value="50" />
             ${hasProfile.get()
               ? html` <sl-button
-                  class="submit-button"
+                  class="submit"
                   variant="primary"
                   @click=${this.createIdea}
                   >Create Idea
                 </sl-button>`
               : html`<a
-                  class="submit-button"
+                  class="submit"
                   href="/submit-profile-and-create-idea"
                   rel="next"
                 >
