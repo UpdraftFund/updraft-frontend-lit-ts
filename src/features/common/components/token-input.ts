@@ -149,9 +149,12 @@ export class TokenInput
       text-align: right;
     }
 
-    .input-row sl-input.invalid {
-      --sl-input-border-color: var(--sl-color-danger-500);
-      --sl-input-focus-ring-color: var(--sl-color-danger-200);
+    .input-container .input-row sl-input.invalid::part(base) {
+      border-color: var(--sl-color-danger-500);
+    }
+
+    .input-container .input-row sl-input.invalid:focus-within::part(base) {
+      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-500);
     }
 
     .fee-info {
