@@ -355,7 +355,7 @@ export class TokenInput
 
       // Update component state with the new balance
       this._balance = balance;
-      this.validate();
+      // Don't validate on initial balance fetch to avoid showing errors prematurely
       return balance;
     },
     // Include all dependencies that should trigger a refresh
@@ -455,6 +455,10 @@ export class TokenInput
     this.refreshBalance.run();
   }
 
+  private handleBlur() {
+    this.validate();
+  }
+
   private async handleApproval(onSuccess?: () => void) {
     if (!this.spendingContract) return;
 
@@ -538,6 +542,7 @@ export class TokenInput
 
   // Form validation methods
   checkValidity(): boolean {
+    // Only validate when explicitly called, typically on form submission
     this.validate();
     return this.internals_.checkValidity();
   }
@@ -557,13 +562,13 @@ export class TokenInput
     // Initialize ElementInternals
     this.internals_ = this.attachInternals();
 
-    // Set initial validity state if required
-    if (this.required && !this.value) {
-      this.internals_.setValidity(
-        { valueMissing: true },
-        'This field is required'
-      );
-    }
+    // Initialize with no error state
+    this._error = null;
+    this._validationMessage = '';
+
+    // Set validity to valid initially
+    // This prevents showing validation errors before user interaction
+    this.internals_.setValidity({});
   }
 
   // Lifecycle methods
@@ -597,14 +602,7 @@ export class TokenInput
   formStateRestoreCallback(state: string) {
     if (state) {
       this.value = state;
-      this.validate();
-    }
-  }
-
-  updated(changedProperties: Map<string, unknown>) {
-    super.updated(changedProperties);
-    if (changedProperties.has('value') || changedProperties.has('required')) {
-      this.validate();
+      // Don't validate on state restoration to avoid showing errors prematurely
     }
   }
 
@@ -625,8 +623,9 @@ export class TokenInput
                   autocomplete="off"
                   .value=${this.value}
                   @focus=${this.handleFocus}
+                  @blur=${this.handleBlur}
                   @input=${this.handleInput}
-                  class=${this._error ? 'invalid' : ''}
+                  class=${this._error && this.value !== '' ? 'invalid' : ''}
                 ></sl-input>
                 <span>${this.tokenSymbol}</span>
 
@@ -649,7 +648,7 @@ export class TokenInput
                     </div>`
                   : html``}
               </div>
-              ${this._error
+              ${this._error && this.value !== ''
                 ? html` <div class="error">${this._error}</div>`
                 : html` <div class="error-placeholder">No error</div>`}
             `
