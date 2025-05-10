@@ -207,10 +207,6 @@ export class ActivityCard extends LitElement {
     }
   }
 
-  private calculateProgress(contributed: number, goal: number) {
-    return calculateProgress(BigInt(contributed), BigInt(goal));
-  }
-
   private formatDeadline(timestamp: number) {
     const date = formatDate(timestamp);
     const now = dayjs();
@@ -221,10 +217,6 @@ export class ActivityCard extends LitElement {
       deadlineString = `❌ ${deadlineString}`;
     }
     return deadlineString;
-  }
-
-  private formatReward(reward: number) {
-    return formatReward(reward);
   }
 
   private renderEntity() {
@@ -276,7 +268,7 @@ export class ActivityCard extends LitElement {
             ${formatDate(this.activity.timestamp / 1000).fromNow}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🎁</span>${this.formatReward(
+            ><span class="emoji">🎁</span>${formatReward(
               this.activity.idea.funderReward
             )}
             Funder Reward</span
@@ -296,7 +288,7 @@ export class ActivityCard extends LitElement {
         solution = this.activity;
       }
 
-      const progress = this.calculateProgress(
+      const progress = calculateProgress(
         solution?.tokensContributed,
         solution?.fundingGoal
       );
@@ -334,7 +326,7 @@ export class ActivityCard extends LitElement {
             )}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🎁</span> ${this.formatReward(
+            ><span class="emoji">🎁</span> ${formatReward(
               solution?.funderReward
             )}</span
           >
