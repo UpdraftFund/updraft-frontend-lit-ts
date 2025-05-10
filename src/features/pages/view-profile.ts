@@ -25,10 +25,6 @@ import { Profile } from '@/features/user/types/profile';
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
   static styles = css`
-    activity-feed {
-      flex: 0 0 789px;
-    }
-
     main {
       flex: 1;
       box-sizing: border-box;
