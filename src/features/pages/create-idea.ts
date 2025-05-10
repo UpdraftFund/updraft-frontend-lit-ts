@@ -85,21 +85,6 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
       --sl-input-focus-ring-color: red;
     }
 
-    .error {
-      color: red;
-      font-size: 0.8rem;
-      padding-top: 0.25rem;
-    }
-
-    .low-balance-warning {
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      background-color: var(--sl-color-warning-100);
-      border-radius: var(--sl-border-radius-medium);
-      display: flex;
-      justify-content: center;
-    }
-
     .submit {
       width: fit-content;
     }
