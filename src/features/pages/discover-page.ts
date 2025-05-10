@@ -67,19 +67,13 @@ type AnyVariables =
 @customElement('discover-page')
 export class DiscoverPage extends SignalWatcher(LitElement) {
   static styles = css`
-    .container {
-      display: flex;
-      flex: auto;
-      overflow: hidden;
-    }
-
     main {
       flex: 1;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       gap: 0.2rem;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0 0.5rem 2rem;
       color: var(--main-foreground);
       background: var(--main-background);
     }
@@ -357,12 +351,10 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <div class="container">
-        <main>
-          ${this.tab === 'tags' ? this.renderTagList() : html``}
-          ${this.renderQueryResults()}
-        </main>
-      </div>
+      <main>
+        ${this.tab === 'tags' ? this.renderTagList() : html``}
+        ${this.renderQueryResults()}
+      </main>
     `;
   }
 }
