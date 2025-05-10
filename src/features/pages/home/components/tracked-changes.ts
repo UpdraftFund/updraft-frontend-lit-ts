@@ -36,16 +36,6 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
       width: 100%;
     }
 
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      gap: 1rem;
-      color: var(--sl-color-neutral-600);
-    }
-
     .empty-state {
       text-align: center;
       color: var(--no-results);
