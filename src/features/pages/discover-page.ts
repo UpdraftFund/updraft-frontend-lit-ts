@@ -71,11 +71,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       display: flex;
       flex: auto;
       overflow: hidden;
-      background: linear-gradient(
-        to bottom,
-        var(--subtle-background),
-        var(--main-background)
-      );
     }
 
     main {
