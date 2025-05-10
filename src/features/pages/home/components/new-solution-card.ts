@@ -1,13 +1,13 @@
 import { customElement } from 'lit/decorators.js';
 import { html, css } from 'lit';
 import { fromHex } from 'viem';
+
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
 import { TrackedChangeCard } from './tracked-change-card';
-
 import { NewSolution } from '@pages/home/types';
 import { SolutionInfo, Profile } from '@/types';
 
