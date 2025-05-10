@@ -22,10 +22,12 @@ import '@components/solution/solution-card-large';
 import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 
 import layout from '@state/layout';
+
 import { watchTag, isWatched } from '@state/user/watched-tags';
 import { followedUsers } from '@state/user/follow';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
+import { sortIdeasByNewest } from '@utils/idea/sort-ideas';
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,
@@ -138,7 +140,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   private getVariablesForQuery(queryType: DiscoverQueryType) {
     switch (queryType) {
       case 'hot-ideas':
-        return { first: 4, detailed: true };
+        return { first: 10, detailed: true };
       case 'new-ideas':
         return {};
       case 'solutions':
@@ -167,7 +169,9 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     // Mapping of query types to their corresponding data properties
     switch (queryType) {
       case 'hot-ideas':
-        return (data as IdeasBySharesQuery).ideas as Idea[];
+        // Get ideas ordered by shares, then sub-sort by newest first and take the first 4
+        const ideasByShares = (data as IdeasBySharesQuery).ideas as Idea[];
+        return sortIdeasByNewest(ideasByShares, 4);
       case 'new-ideas':
         return (data as IdeasByStartTimeQuery).ideas as Idea[];
       case 'solutions':
