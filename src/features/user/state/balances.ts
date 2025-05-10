@@ -1,11 +1,11 @@
 import { signal } from '@lit-labs/signals';
 import { getAccount, getBalance as getEthBalance } from '@wagmi/core';
-import { config } from '@utils/web3.ts';
 import { formatUnits } from 'viem';
+import { config } from '@utils/web3.ts';
 
-import { refreshUpdraftSettings, updraftSettings } from '@state/common';
 import { Upd } from '@contracts/upd.ts';
 import { Balances } from '@/types';
+import { refreshUpdraftSettings, updraftSettings } from '@state/common';
 import { markComplete } from '@state/user/beginner-tasks';
 
 export const balances = signal<Balances>({
