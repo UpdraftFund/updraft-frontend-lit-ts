@@ -46,6 +46,13 @@ export class RightSideBar extends SignalWatcher(LitElement) {
         border-top: 1px solid var(--border-default);
       }
     }
+
+    @media (max-width: 1090px) {
+      activity-feed {
+        flex: 0 0 0;
+        pointer-events: none;
+      }
+    }
   `;
 
   @property({

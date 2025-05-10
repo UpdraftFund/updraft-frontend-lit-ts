@@ -9,8 +9,8 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
-import '@/features/user/components/activity-feed';
-import '@/features/user/components/user-avatar';
+import '@components/user/activity-feed';
+import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -103,13 +103,6 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     .link:hover {
       text-decoration: underline;
       color: var(--sl-color-primary-600);
-    }
-
-    @media (max-width: 1090px) {
-      activity-feed {
-        flex: 0 0 0;
-        pointer-events: none;
-      }
     }
   `;
 
