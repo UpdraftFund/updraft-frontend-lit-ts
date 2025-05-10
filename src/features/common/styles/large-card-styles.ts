@@ -9,7 +9,7 @@ export const largeCardStyles = css`
   .card {
     background-color: var(--sl-color-neutral-0);
     overflow: hidden;
-    padding: 1.5rem;
+    padding: 1.5rem 0;
     width: 100%;
     border-bottom: 1px solid var(--border-default);
   }
