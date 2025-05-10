@@ -67,12 +67,12 @@ export class ActivityCard extends LitElement {
       -webkit-box-orient: vertical;
     }
 
-    .name-link {
+    .entity-link {
       text-decoration: none;
       color: var(--sl-color-neutral-900);
     }
 
-    .name-link:hover {
+    .entity-link:hover {
       text-decoration: underline;
       color: var(--accent);
     }
@@ -233,7 +233,7 @@ export class ActivityCard extends LitElement {
       name = this.solutionInfo?.name || 'Untitled';
     }
 
-    return html`<a href="${href}" class="name-link">${name}</a>`;
+    return html`<a href="${href}" class="entity-link">${name}</a>`;
   }
 
   private renderFundButton() {
