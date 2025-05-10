@@ -91,7 +91,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         margin: 1rem 0;
       }
 
-      .reward-fire span {
+      .reward {
         display: flex;
         gap: 0.3rem;
       }
