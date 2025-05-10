@@ -26,6 +26,7 @@ import {
 
 import { dialogStyles } from '@styles/dialog-styles';
 import '@/features/common/components/token-input';
+import { ITokenInput } from '@components/common/token-input';
 
 import { updraftSettings } from '@state/common';
 import { modal } from '@utils/web3';
@@ -65,7 +66,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   fundingTokenInput!: SlInput;
   @query('sl-select[name="fundingTokenSelection"]', true)
   fundingTokenSelect!: SlSelect;
-  @query('token-input', true) tokenInput!: HTMLElement;
+  @query('token-input', true) tokenInput!: ITokenInput;
 
   @state() private showCustomTokenInput = false;
 
@@ -151,39 +152,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         visibility: hidden;
       }
 
-      .error {
-        color: red;
-        font-size: 0.8rem;
-        padding-top: 0.25rem;
-      }
-
-      .low-balance-warning {
-        margin-top: 0.5rem;
-        padding: 0.5rem;
-        background-color: var(--sl-color-warning-100);
-        border-radius: var(--sl-border-radius-medium);
-        display: flex;
-        justify-content: center;
-      }
-
       /* Keep the calendar control close to the date */
       sl-input[name='deadline']::part(form-control-input) {
         box-sizing: content-box;
         width: calc(14ch + var(--sl-input-spacing-medium) * 2);
-      }
-
-      sl-input[name='deposit'] {
-        flex: none;
-        width: calc(10ch + var(--sl-input-spacing-medium) * 2);
-        box-sizing: content-box;
-      }
-
-      sl-input[name='deposit']::part(input) {
-        text-align: right;
-      }
-
-      sl-input[name='deposit'].invalid {
-        --sl-input-focus-ring-color: red;
       }
 
       .hidden {
@@ -192,10 +164,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
       /* Responsive behavior for smaller screens */
       @media (max-width: 768px) {
-        .container {
-          flex-direction: column;
-        }
-
         form {
           margin: 1rem;
         }
@@ -315,9 +283,8 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       this.shareDialog.topic = solutionData.name as string;
     } catch (e) {
       // Use token-input's error handling
-      const tokenInput = this.shadowRoot?.querySelector('token-input');
-      if (tokenInput) {
-        tokenInput.handleTransactionError(
+      if (this.tokenInput) {
+        this.tokenInput.handleTransactionError(
           e,
           () => this.createSolution(), // Retry after approval
           () => this.updDialog.show() // Show UPD dialog on low balance
@@ -376,6 +343,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     super.disconnectedCallback();
     if (this.unsubHeading) {
       this.unsubHeading.unsubscribe();
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 
