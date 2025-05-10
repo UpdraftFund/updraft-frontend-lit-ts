@@ -13,6 +13,7 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import { Solution, SolutionInfo } from '@/features/solution/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
+
 import {
   formatFunderReward,
   formatTokenAmount,
@@ -82,10 +83,6 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
 
       .status-danger {
         color: var(--sl-color-danger-600);
-      }
-
-      .status-progress {
-        color: var(--sl-color-primary-600);
       }
 
       .idea-link {
