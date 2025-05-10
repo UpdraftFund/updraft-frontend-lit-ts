@@ -4,20 +4,9 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { parseUnits, formatUnits, maxUint256 } from 'viem';
 import { Task } from '@lit/task';
 
-// Interface for ValidityStateFlags
-interface ValidityStateFlags {
-  badInput?: boolean;
-  customError?: boolean;
-  patternMismatch?: boolean;
-  rangeOverflow?: boolean;
-  rangeUnderflow?: boolean;
-  stepMismatch?: boolean;
-  tooLong?: boolean;
-  tooShort?: boolean;
-  typeMismatch?: boolean;
-  valid?: boolean;
-  valueMissing?: boolean;
-}
+// Use a type based on the standard ValidityState interface
+// This creates a type with the same properties as ValidityState but makes them writable
+type ValidityStateFlags = Partial<Record<keyof ValidityState, boolean>>;
 
 import type { SlInput } from '@shoelace-style/shoelace';
 import type { SlDialog } from '@shoelace-style/shoelace';
