@@ -15,7 +15,7 @@ import '@components/user/user-avatar';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
 import layout from '@state/layout';
-import { userAddress, isConnected } from '@state/user';
+import { userAddress } from '@state/user';
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
 import { markComplete } from '@state/user/beginner-tasks';
 
@@ -152,13 +152,9 @@ export class ViewProfile extends SignalWatcher(LitElement) {
   }
 
   private get profileButton() {
-    // Get data from signals
     const walletAddress = userAddress.get()?.toLowerCase() || '';
     const profileAddress = this.address?.toLowerCase() || '';
-    const walletConnected = isConnected.get();
-
-    // Determine if the user is viewing their own profile
-    const isCurrentUser = walletConnected && walletAddress === profileAddress;
+    const isCurrentUser = walletAddress === profileAddress;
 
     // If the address is the current user's address, show Edit Profile button
     if (isCurrentUser) {
