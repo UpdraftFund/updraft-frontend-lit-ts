@@ -378,6 +378,13 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     this.rewardRange.tooltipFormatter = (value: number) => `${value}%`;
     this.rewardRange.defaultValue = 25;
     this.rewardRange.max = 80;
+
+    // Set the slider value to 25 only if there's no saved form value
+    const savedForm = loadForm('create-solution-two');
+    if (!savedForm || !savedForm.reward) {
+      this.rewardRange.value = 25;
+    }
+
     this.rewardRange.updateComplete.then(this.syncRangeTooltip);
 
     this.resizeObserver = new ResizeObserver(this.syncRangeTooltip);
@@ -487,7 +494,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           </label-with-hint>
           <div class="range-and-labels">
             <span class="left-label">More for solution</span>
-            <sl-range name="reward" value="25"></sl-range>
+            <sl-range name="reward"></sl-range>
             <span class="right-label">More for funders</span>
           </div>
         </div>
