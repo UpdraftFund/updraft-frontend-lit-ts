@@ -439,7 +439,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           <div class="deposit-row">
             <token-input
               name="stake"
-              required
               spendingContract=${updraft.address}
               spendingContractName="Updraft"
               antiSpamFeeMode="fixed"
