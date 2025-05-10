@@ -12,7 +12,7 @@ import '@components/user/my-ideas';
 import '@components/user/my-solutions';
 
 import { leftSidebarCollapsed, toggleLeftSidebar } from '@state/layout';
-import { isConnected } from '@state/user';
+import { userAddress } from '@state/user';
 
 @customElement('left-side-bar')
 export class LeftSideBar extends SignalWatcher(LitElement) {
@@ -187,6 +187,7 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
   render() {
     this.collapsed = leftSidebarCollapsed.get();
     this.expanded = !this.collapsed;
+    const address = userAddress.get();
     return html`
       <div class="toggle-button" @click=${this.handleToggle}>
         <sl-icon
@@ -195,12 +196,8 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         ></sl-icon>
       </div>
       <left-nav></left-nav>
-      ${isConnected.get()
-        ? html`
-            <my-ideas></my-ideas>
-            <my-solutions></my-solutions>
-          `
-        : ''}
+      <my-ideas .address=${address}></my-ideas>
+      <my-solutions .address=${address}></my-solutions>
     `;
   }
 }

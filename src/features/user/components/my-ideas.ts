@@ -1,13 +1,11 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 import { SignalWatcher } from '@lit-labs/signals';
 
 import '@components/common/section-heading';
 import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
-
-import { userAddress } from '@state/user';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeasByFunderOrCreatorDocument, Idea } from '@gql';
@@ -29,17 +27,15 @@ export class MyIdeas extends SignalWatcher(LitElement) {
     }
   `;
 
+  @property({ type: String }) address: string | null = null;
   @state() private ideas: Idea[] = [];
   @state() private loading = true;
-
-  // Track the current user address to detect changes
-  private lastAddress: string | null = null;
 
   // Controller for fetching ideas
   private readonly ideasController = new UrqlQueryController(
     this,
     IdeasByFunderOrCreatorDocument,
-    { user: userAddress.get() || '' },
+    { user: this.address || '' },
     (result) => {
       this.loading = false;
 
@@ -91,20 +87,12 @@ export class MyIdeas extends SignalWatcher(LitElement) {
     }
   );
 
-  private checkForAddressChangeAndSubscribe() {
-    const currentAddress = userAddress.get();
-    if (this.lastAddress !== currentAddress) {
-      this.lastAddress = currentAddress;
-      if (currentAddress) {
-        this.loading = true;
-        this.ideasController.setVariablesAndSubscribe({ user: currentAddress });
-      }
-    }
-  }
-
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
-    this.checkForAddressChangeAndSubscribe();
+    if (changedProperties.has('address') && this.address) {
+      this.loading = true;
+      this.ideasController.setVariablesAndSubscribe({ user: this.address });
+    }
   }
 
   render() {
