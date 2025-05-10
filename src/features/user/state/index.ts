@@ -1,9 +1,6 @@
 import { signal, computed } from '@lit-labs/signals';
 import type { Address } from 'viem';
 import { fromHex } from 'viem';
-
-import type { Profile, CurrentUser } from '@/features/user/types';
-
 import { modal, config } from '@utils/web3';
 import {
   disconnect,
@@ -13,9 +10,9 @@ import {
   getChainId,
 } from '@wagmi/core';
 
-import urqlClient from '@utils/urql-client';
-
+import type { Profile, CurrentUser } from '@/features/user/types';
 import { ProfileDocument } from '@gql';
+import urqlClient from '@utils/urql-client';
 
 import { refreshUpdraftSettings } from '@state/common';
 import { refreshBalances } from '@state/user/balances';
@@ -128,8 +125,9 @@ export const setNetwork = (chainId: number | undefined): void => {
       : null;
     if (currentNetworkName !== newNetworkName) {
       setNetworkName(newNetworkName);
-      refreshUpdraftSettings();
-      refreshBalances();
+      refreshUpdraftSettings().then(() => {
+        refreshBalances();
+      });
     }
   }
 };
@@ -182,8 +180,6 @@ export const disconnectWallet = async (): Promise<void> => {
     console.log('Wallet disconnected and internal state reset.');
   } catch (err) {
     console.error('Error disconnecting wallet:', err);
-    // Optionally set an error state here if needed
-    // setConnectionError(err instanceof Error ? err.message : 'Unknown error');
   }
 };
 
