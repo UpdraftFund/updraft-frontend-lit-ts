@@ -46,6 +46,7 @@ import {
 } from '@state/user';
 import { updraftSettings } from '@state/common';
 import { markComplete } from '@state/user/beginner-tasks';
+import { capitalize } from '@utils/format-utils';
 
 import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
@@ -487,10 +488,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       <share-dialog></share-dialog>
     `;
   }
-}
-
-function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 declare global {
