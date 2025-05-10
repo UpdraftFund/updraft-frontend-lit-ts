@@ -34,6 +34,7 @@
    See https://shoelace.style/tokens/color for built-in theme and palette names. */
 :root, .sl-theme-dark, .sl-theme-light {
   --sl-input-border-color: var(--sl-color-primary-300);
+  --sl-input-focus-ring-color: var(--sl-color-primary-300);
   --main-background: var(--sl-color-neutral-0);
   --accent: var(--sl-color-primary-800);
   --link: var(--sl-color-primary-500);

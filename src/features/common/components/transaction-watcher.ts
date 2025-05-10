@@ -28,8 +28,39 @@ export class TransactionError extends Event {
   }
 }
 
+/**
+ * Interface for transaction watcher components
+ * Used to track and display transaction status
+ */
+export interface ITransactionWatcher extends HTMLElement {
+  /**
+   * The transaction hash being watched
+   */
+  hash?: `0x${string}`;
+
+  /**
+   * Reset the transaction watcher state
+   */
+  reset(): void;
+
+  /**
+   * Add an event listener to the transaction watcher
+   * @param type Event type to listen for (e.g., 'transaction-success')
+   * @param listener The callback function
+   * @param options Optional event listener options
+   */
+  addEventListener(
+    type: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+}
+
 @customElement('transaction-watcher')
-export class TransactionWatcher extends LitElement {
+export class TransactionWatcher
+  extends LitElement
+  implements ITransactionWatcher
+{
   @property({ type: String }) hash?: `0x${string}`;
   @property({ type: Number }) timeout = 60000; // 60 seconds default
 
@@ -78,9 +109,6 @@ export class TransactionWatcher extends LitElement {
     }
     return html`
       ${this.transactionTask.render({
-        // initial: () => html`
-        //   <p>Just here to help with styling</p>
-        // `,
         pending: () => html`
           <slot name="pending">
             <p>Waiting for transaction...</p>

@@ -25,8 +25,10 @@ import {
 } from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
+import '@/features/common/components/token-input';
 
 import { updraftSettings } from '@state/common';
+import { modal } from '@utils/web3';
 import layout from '@state/layout';
 
 import {
@@ -41,12 +43,10 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
-import { getBalance, refreshBalances } from '@state/user/balances';
 import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
 import { ethAddressPattern } from '@utils/validation';
-import { hasProfile, connectWallet } from '@state/user';
+import { hasProfile } from '@state/user';
 import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
 import solutionSchema from '@schemas/solution-schema.json';
 
 @customElement('create-solution-page-two')
@@ -65,8 +65,8 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   fundingTokenInput!: SlInput;
   @query('sl-select[name="fundingTokenSelection"]', true)
   fundingTokenSelect!: SlSelect;
+  @query('token-input', true) tokenInput!: HTMLElement;
 
-  @state() private depositError: string | null = null;
   @state() private showCustomTokenInput = false;
 
   private resizeObserver!: ResizeObserver;
@@ -157,6 +157,15 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         padding-top: 0.25rem;
       }
 
+      .low-balance-warning {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background-color: var(--sl-color-warning-100);
+        border-radius: var(--sl-border-radius-medium);
+        display: flex;
+        justify-content: center;
+      }
+
       /* Keep the calendar control close to the date */
       sl-input[name='deadline']::part(form-control-input) {
         box-sizing: content-box;
@@ -193,30 +202,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       }
     `,
   ];
-
-  private handleDepositFocus() {
-    refreshBalances();
-  }
-
-  private handleDepositInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = Number(input.value);
-    const userBalance = getBalance('updraft');
-
-    if (isNaN(value)) {
-      this.depositError = 'Enter a number';
-    } else if (value > userBalance) {
-      this.depositError = `You have ${userBalance} UPD`;
-    } else {
-      this.depositError = null;
-    }
-
-    if (this.depositError) {
-      input.classList.add('invalid');
-    } else {
-      input.classList.remove('invalid');
-    }
-  }
 
   private handleGoalInput(e: Event) {
     const input = e.target as SlInput;
@@ -329,26 +314,18 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       ]);
       this.shareDialog.topic = solutionData.name as string;
     } catch (e) {
-      console.error('Solution creation error:', e);
-      if (e instanceof Error) {
-        if (
-          e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId')
-        ) {
-          await connectWallet();
-        } else if (e.message?.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (
-          e.message?.includes('exceeds allowance') &&
-          updraftSettings.get().updAddress
-        ) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(updraftSettings.get().updAddress!);
-          this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address,
-            parseUnits('1', 29), // approve for total supply of UPD
-          ]);
+      // Use token-input's error handling
+      const tokenInput = this.shadowRoot?.querySelector('token-input');
+      if (tokenInput) {
+        tokenInput.handleTransactionError(
+          e,
+          () => this.createSolution(), // Retry after approval
+          () => this.updDialog.show() // Show UPD dialog on low balance
+        );
+      } else {
+        console.error('Transaction error:', e);
+        if (e instanceof Error && e.message.startsWith('connection')) {
+          modal.open({ view: 'Connect' });
         }
       }
     }
@@ -404,7 +381,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
   render() {
     const updAddress = updraftSettings.get().updAddress;
-    const fee = updraftSettings.get().minFee;
     return html`
       <form name="create-solution-two" @submit=${this.handleFormSubmit}>
         <h2>Funding details</h2>
@@ -468,22 +444,22 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           >
           </label-with-hint>
           <div class="deposit-row">
-            <sl-input
+            <token-input
               name="stake"
-              autocomplete="off"
-              @focus=${this.handleDepositFocus}
-              @input=${this.handleDepositInput}
+              spendingContract=${updraft.address}
+              spendingContractName="Updraft"
+              antiSpamFeeMode="fixed"
+              showDialogs="false"
             >
-            </sl-input>
-            <span>UPD</span>
-            <sl-button variant="primary" @click=${() => this.updDialog.show()}
-              >Get more UPD
-            </sl-button>
-            <span>Anti-Spam Fee: ${fee} UPD</span>
+              <sl-button
+                slot="invalid"
+                variant="primary"
+                @click=${() => this.updDialog.show()}
+              >
+                Get more UPD
+              </sl-button>
+            </token-input>
           </div>
-          ${this.depositError
-            ? html` <div class="error">${this.depositError}</div>`
-            : ''}
         </div>
         <div class="reward-container">
           <label-with-hint

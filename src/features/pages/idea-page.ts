@@ -12,12 +12,10 @@ import utc from 'dayjs/plugin/utc';
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 
-import type { Position } from '@/features/idea/types';
-
 dayjs.extend(relativeTime);
 dayjs.extend(utc);
 
-import { dialogStyles } from '@/features/common/styles/dialog-styles';
+import { dialogStyles } from '@styles/dialog-styles';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
@@ -30,22 +28,25 @@ import '@components/navigation/search-bar';
 import '@components/idea/top-supporters';
 import '@components/idea/related-ideas';
 import '@components/idea/idea-solutions';
-import '@/features/common/components/upd-dialog';
-import '@/features/common/components/share-dialog';
-import '@/features/common/components/transaction-watcher';
-import { UpdDialog } from '@/features/common/components/upd-dialog';
-import { ShareDialog } from '@/features/common/components/share-dialog';
-import { TransactionWatcher } from '@/features/common/components/transaction-watcher';
+import '@components/common/token-input';
+import '@components/common/upd-dialog';
+import '@components/common/share-dialog';
+import '@components/common/transaction-watcher';
+import { UpdDialog } from '@components/common/upd-dialog';
+import { ShareDialog } from '@components/common/share-dialog';
+import { TransactionWatcher } from '@components/common/transaction-watcher';
+import { TokenInput } from '@components/common/token-input';
 
+import { shortNum } from '@utils/short-num';
+import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
+
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
-import { Upd } from '@contracts/upd';
+import type { Position } from '@/features/idea/types';
+
 import { updraftSettings } from '@state/common';
-import { modal } from '@utils/web3';
-import { shortNum } from '@utils/short-num';
 import layout from '@state/layout';
-import { getBalance, refreshBalances } from '@state/user/balances';
 import { markComplete } from '@state/user/beginner-tasks';
 import { userAddress } from '@state/user';
 
@@ -54,7 +55,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
-      main {
+      :host {
         flex: 1;
         box-sizing: border-box;
         display: flex;
@@ -70,26 +71,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         align-items: center;
         gap: 1rem;
         margin-top: 0.25rem;
-      }
-
-      .support sl-input {
-        flex: none;
-        width: calc(10ch + var(--sl-input-spacing-medium) * 2);
-        box-sizing: content-box;
-      }
-
-      .support sl-input::part(input) {
-        text-align: right;
-      }
-
-      sl-input[name='support'].invalid {
-        --sl-input-focus-ring-color: red;
-      }
-
-      .error {
-        color: red;
-        font-size: 0.8rem;
-        padding-top: 0.25rem;
       }
 
       .heading {
@@ -110,18 +91,13 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         margin: 1rem 0;
       }
 
-      .reward-fire span {
+      .reward {
         display: flex;
         gap: 0.3rem;
       }
 
       .fire {
         align-items: center;
-      }
-
-      .description {
-        font-size: 1rem;
-        margin-bottom: 1rem;
       }
 
       .tags {
@@ -251,60 +227,20 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   withdrawTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('sl-input[name="support"]', true) supportInput!: SlInput;
+  @query('token-input', true) tokenInput!: TokenInput;
 
-  @state() private supportValue: string = '';
+  // supportValue is now handled by UpdTransactionMixin as updValue
   @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
   // Track current position index for navigation
   @state() private positionIndex: number = 0;
 
-  // Array to store viable positions
   private positions: Position[] = [];
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
   //@property() network!: string;
-
-  private get antiSpamFee(): number {
-    const value = Number(this.supportValue || 0);
-    if (isNaN(value)) {
-      return updraftSettings.get().minFee;
-    }
-    return Math.max(
-      updraftSettings.get().minFee,
-      value * updraftSettings.get().percentFee
-    );
-  }
-
-  private get needUpd(): boolean {
-    const value = Number(this.supportValue || 0);
-    const userBalance = getBalance('updraft');
-    return (
-      isNaN(value) ||
-      value == 0 ||
-      value > userBalance ||
-      value < this.antiSpamFee
-    );
-  }
-
-  private get depositError(): string | null {
-    if (this.supportValue) {
-      const value = Number(this.supportValue);
-      const userBalance = getBalance('updraft');
-      if (isNaN(value)) {
-        return 'Enter a number';
-      } else if (value <= updraftSettings.get().minFee) {
-        return `Deposit must be more than ${updraftSettings.get().minFee} UPD to cover fees`;
-      } else if (value > userBalance) {
-        return `You have ${userBalance.toFixed(0)} UPD`;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
 
   private readonly ideaController = new UrqlQueryController(
     this,
@@ -328,9 +264,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             .tags=${this.idea.tags}
           ></related-ideas>
         `);
-
-        // Refresh user support data when idea is loaded
-        this.userSupportTask.run();
       }
     }
   );
@@ -413,7 +346,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Handle withdraw support
   private async handleWithdraw() {
     try {
-      // Make sure we have positions and a valid index
       if (this.positions.length === 0 || this.positionIndex < 0) {
         console.warn('No valid position to withdraw');
         return;
@@ -422,21 +354,26 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const currentPosition = this.positions[this.positionIndex];
       const idea = new IdeaContract(this.ideaId);
 
-      // Use the withdraw method that takes a position index
       this.withdrawTransaction.hash = await idea.write('withdraw', [
         currentPosition.positionIndex,
       ]);
     } catch (e) {
-      if (e instanceof Error) {
-        if (e.message.startsWith('connection')) {
+      // Use token-input's error handling
+      if (this.tokenInput) {
+        this.tokenInput.handleTransactionError(
+          e,
+          undefined, // No approval callback needed for withdraw
+          () => this.updDialog.show() // Show UPD dialog on low balance
+        );
+      } else {
+        console.error('Withdraw error:', e);
+        if (e instanceof Error && e.message.startsWith('connection')) {
           modal.open({ view: 'Connect' });
         }
       }
-      console.error('Withdraw error:', e);
     }
   }
 
-  // Navigate to previous position
   private previousPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
 
@@ -447,7 +384,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         : this.positionIndex - 1;
   }
 
-  // Navigate to next position
   private nextPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
 
@@ -455,50 +391,27 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  private handleSupportFocus() {
-    refreshBalances();
-  }
-
-  private handleSupportInput(e: Event) {
-    const input = e.target as SlInput;
-    this.supportValue = input.value; // Update the state property to trigger re-render
-  }
-
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
-      const support = parseUnits(this.supportValue, 18);
-      const total = support + parseUnits(this.antiSpamFee.toString(), 18);
+      const support = parseUnits(this.tokenInput.value, 18);
+      this.submitTransaction.reset();
       try {
         const idea = new IdeaContract(this.ideaId);
         this.submitTransaction.hash = await idea.write('contribute', [support]);
-      } catch (e) {
-        if (e instanceof Error) {
-          if (e.message.startsWith('connection')) {
-            modal.open({ view: 'Connect' });
-          } else if (e.message.includes('exceeds balance')) {
-            this.updDialog.show();
-          } else if (e.message.includes('exceeds allowance')) {
-            const updAddress = updraftSettings.get().updAddress;
-            if (updAddress) {
-              this.approveTransaction.reset();
-              this.approveDialog.show();
-              const upd = new Upd(updAddress);
-              this.approveTransaction.hash = await upd.write('approve', [
-                this.ideaId,
-                total,
-              ]);
-            }
-          }
-        }
-        console.error(e);
+      } catch (err) {
+        this.tokenInput.handleTransactionError(
+          err,
+          () => this.handleSubmit(e), // Retry after approval
+          () => this.updDialog.show() // Show UPD dialog on low balance
+        );
       }
     } else {
       this.form.reportValidity(); // Show validation messages
     }
   }
 
-  private async handleTransactionSuccess() {
+  private async handleSupportSucces() {
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.approveDialog.hide();
     this.shareDialog.show();
@@ -533,7 +446,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const date = dayjs(startTime * 1000);
       const interest = shortNum(formatUnits(shares, 18));
 
-      return html`
+      return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
         <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
         <span class="created">
@@ -619,38 +532,26 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         })}
         <form @submit=${this.handleSubmit}>
           <div class="support">
-            <sl-input
+            <token-input
               name="support"
               required
-              autocomplete="off"
-              .value=${this.supportValue}
-              @focus=${this.handleSupportFocus}
-              @input=${this.handleSupportInput}
-              class=${this.depositError ? 'invalid' : ''}
+              spendingContract=${this.ideaId}
+              spendingContractName="This Idea"
+              antiSpamFeeMode="variable"
+              showDialogs="false"
             >
-            </sl-input>
-            <span>UPD</span>
-            ${this.needUpd
-              ? html`
-                  <sl-button
-                    variant="primary"
-                    @click=${() => this.updDialog.show()}
-                  >
-                    Get more UPD
-                  </sl-button>
-                `
-              : html`
-                  <sl-button variant="primary" type="submit">
-                    Support this Idea
-                  </sl-button>
-                `}
-            ${this.antiSpamFee
-              ? html`<span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-              : html``}
+              <sl-button
+                slot="invalid"
+                variant="primary"
+                @click=${() => this.updDialog.show()}
+              >
+                Get more UPD
+              </sl-button>
+              <sl-button slot="valid" variant="primary" type="submit">
+                Support this Idea
+              </sl-button>
+            </token-input>
           </div>
-          ${this.depositError
-            ? html` <div class="error">${this.depositError}</div>`
-            : html``}
         </form>
         <p>${description}</p>
         ${tags
@@ -667,17 +568,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
         <div class="solutions-header">
           <h2>Solutions</h2>
-          <sl-button
-            class="add-solution-button"
-            href="/create-solution/${this.ideaId}"
-            variant="primary"
+          <sl-button href="/create-solution/${this.ideaId}" variant="primary"
             >Add Solution
           </sl-button>
         </div>
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
         <share-dialog action="supported an Idea" .topic=${name}></share-dialog>
-      `;
+      `);
     } else {
       if (this.error) {
         return html`
@@ -717,13 +615,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     // initially set the right sidebar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
-
-    // Initialize supportValue when the component is connected
-    this.updateComplete.then(() => {
-      if (this.supportInput) {
-        this.supportValue = this.supportInput.value;
-      }
-    });
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -737,30 +628,28 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <main>
-        ${cache(this.renderIdea())}
-        <upd-dialog></upd-dialog>
-        <sl-dialog label="Set Allowance">
-          <p>
-            Before you can support this Idea, you need to sign a transaction to
-            allow the Idea contract to spend your UPD tokens.
-          </p>
-          <transaction-watcher
-            class="approve"
-            @transaction-success=${this.handleSubmit}
-          ></transaction-watcher>
-        </sl-dialog>
+      ${this.renderIdea()}
+      <upd-dialog></upd-dialog>
+      <sl-dialog label="Set Allowance">
+        <p>
+          Before you can support this Idea, you need to sign a transaction to
+          allow the Idea contract to spend your UPD tokens.
+        </p>
         <transaction-watcher
-          class="submit"
-          @transaction-success=${this.handleTransactionSuccess}
-        >
-        </transaction-watcher>
-        <transaction-watcher
-          class="withdraw"
-          @transaction-success=${this.handleWithdrawSuccess}
-        >
-        </transaction-watcher>
-      </main>
+          class="approve"
+          @transaction-success=${this.handleSubmit}
+        ></transaction-watcher>
+      </sl-dialog>
+      <transaction-watcher
+        class="submit"
+        @transaction-success=${this.handleSupportSucces}
+      >
+      </transaction-watcher>
+      <transaction-watcher
+        class="withdraw"
+        @transaction-success=${this.handleWithdrawSuccess}
+      >
+      </transaction-watcher>
     `;
   }
 }

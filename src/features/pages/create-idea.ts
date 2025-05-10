@@ -1,4 +1,4 @@
-import { customElement, query, state } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
@@ -14,6 +14,7 @@ import '@components/common/label-with-hint';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/common/token-input';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
 import {
@@ -23,13 +24,11 @@ import {
 import { SaveableForm, formToJson } from '@components/common/saveable-form';
 
 import layout from '@state/layout';
-import { getBalance, refreshBalances } from '@state/user/balances';
-import { updraftSettings, defaultFunderReward } from '@state/common';
-import { hasProfile, connectWallet } from '@state/user';
-
+import { hasProfile } from '@state/user';
+import { defaultFunderReward } from '@state/common';
 import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
 import ideaSchema from '@schemas/idea-schema.json';
+import { ITokenInput } from '@components/common/token-input';
 
 @customElement('create-idea')
 export class CreateIdea extends SignalWatcher(SaveableForm) {
@@ -40,10 +39,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('transaction-watcher.approve', true)
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
-  @query('sl-input[name="deposit"]', true) depositInput!: SlInput;
-
-  @state() private depositError: string | null = null;
-  @state() private antiSpamFee?: string;
+  @query('token-input', true) tokenInput!: ITokenInput;
 
   static styles = css`
     .container {
@@ -89,13 +85,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
       --sl-input-focus-ring-color: red;
     }
 
-    .error {
-      color: red;
-      font-size: 0.8rem;
-      padding-top: 0.25rem;
-    }
-
-    .submit-button {
+    .submit {
       width: fit-content;
     }
 
@@ -127,41 +117,6 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     }
   }
 
-  private handleDepositFocus() {
-    refreshBalances();
-  }
-
-  private handleDepositInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = Number(input.value);
-    const userBalance = getBalance('updraft');
-    const minFee = updraftSettings.get().minFee;
-
-    if (isNaN(value)) {
-      this.depositError = 'Enter a number';
-    } else if (value <= minFee) {
-      this.depositError = `Deposit must be more than ${minFee} UPD to cover fees`;
-    } else if (value > userBalance) {
-      this.depositError = `You have ${userBalance} UPD`;
-    } else {
-      this.depositError = null;
-    }
-
-    if (this.depositError) {
-      input.classList.add('invalid');
-    } else {
-      input.classList.remove('invalid');
-    }
-
-    let fee;
-    if (isNaN(value)) {
-      fee = minFee;
-    } else {
-      fee = Math.max(minFee, value * updraftSettings.get().percentFee);
-    }
-    this.antiSpamFee = fee.toFixed(2);
-  }
-
   private nextButtonClick(e: MouseEvent) {
     if (!this.form.checkValidity()) {
       e.preventDefault(); // If the form is invalid, prevent the click
@@ -180,42 +135,20 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     }
 
     const ideaData = formToJson('create-idea', ideaSchema);
-    const deposit = this.depositInput?.value;
-
-    if (!deposit) {
-      return;
-    }
 
     try {
       this.submitTransaction.hash = await updraft.write('createIdea', [
         BigInt(defaultFunderReward.get()),
-        parseUnits(deposit, 18),
+        parseUnits(this.tokenInput.value, 18),
         toHex(JSON.stringify(ideaData)),
       ]);
       this.shareDialog.topic = ideaData.name as string;
     } catch (e) {
-      console.error('Idea creation error:', e);
-      if (e instanceof Error) {
-        if (
-          e.message?.startsWith('connection') ||
-          e.message?.includes('getChainId')
-        ) {
-          await connectWallet();
-        } else if (e.message?.includes('exceeds balance')) {
-          this.updDialog.show();
-        } else if (
-          e.message?.includes('exceeds allowance') &&
-          updraftSettings.get().updAddress
-        ) {
-          this.approveTransaction.reset();
-          this.approveDialog.show();
-          const upd = new Upd(updraftSettings.get().updAddress!);
-          this.approveTransaction.hash = await upd.write('approve', [
-            updraft.address,
-            parseUnits('1', 29), // approve for total supply of UPD
-          ]);
-        }
-      }
+      this.tokenInput.handleTransactionError(
+        e,
+        () => this.createIdea(), // Retry after approval
+        () => this.updDialog.show() // Show UPD dialog on low balance
+      );
     }
   }
 
@@ -236,6 +169,10 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
+  }
+
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
   }
 
   render() {
@@ -276,41 +213,38 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
               >
               </label-with-hint>
               <div class="deposit-row">
-                <sl-input
+                <token-input
                   name="deposit"
                   required
-                  autocomplete="off"
-                  @focus=${this.handleDepositFocus}
-                  @input=${this.handleDepositInput}
+                  spendingContract=${updraft.address}
+                  spendingContractName="Updraft"
+                  antiSpamFeeMode="variable"
+                  showDialogs="false"
                 >
-                </sl-input>
-                <span>UPD</span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => this.updDialog.show()}
-                  >Get more UPD
-                </sl-button>
-                ${this.antiSpamFee
-                  ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-                  : ''}
+                  <sl-button
+                    slot="invalid"
+                    variant="primary"
+                    @click=${() => this.updDialog.show()}
+                  >
+                    Get more UPD
+                  </sl-button>
+                </token-input>
               </div>
-              ${this.depositError
-                ? html` <div class="error">${this.depositError}</div>`
-                : ''}
             </div>
             <input type="hidden" name="reward" value="50" />
             ${hasProfile.get()
               ? html` <sl-button
-                  class="submit-button"
+                  class="submit"
                   variant="primary"
                   @click=${this.createIdea}
                   >Create Idea
                 </sl-button>`
-              : html`<a href="/submit-profile-and-create-idea" rel="next">
-                  <sl-button
-                    class="submit-button"
-                    variant="primary"
-                    @click=${this.nextButtonClick}
+              : html`<a
+                  class="submit"
+                  href="/submit-profile-and-create-idea"
+                  rel="next"
+                >
+                  <sl-button variant="primary" @click=${this.nextButtonClick}
                     >Next: Create your Profile
                   </sl-button>
                 </a>`}
