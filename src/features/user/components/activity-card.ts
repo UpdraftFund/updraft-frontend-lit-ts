@@ -247,7 +247,7 @@ export class ActivityCard extends LitElement {
       name = this.solutionInfo?.name || 'Untitled';
     }
 
-    return html`<a href="${href}" class="name-link">${name}</a>`;
+    return html`<a href="${href}" class="entity-link">${name}</a>`;
   }
 
   private renderFundButton() {
