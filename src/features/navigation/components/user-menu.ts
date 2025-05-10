@@ -52,11 +52,6 @@ export class UserMenu extends SignalWatcher(LitElement) {
       text-overflow: ellipsis;
       font-weight: 500;
     }
-    img {
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-    }
     .menu-avatar {
       width: 32px;
       height: 32px;
