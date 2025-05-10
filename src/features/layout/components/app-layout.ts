@@ -48,6 +48,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
       height: 100%;
     }
 
+    /* The edit-profile and view-profile pages need a wider right sidebar */
     :host([page='edit-profile']) right-side-bar,
     :host([page='view-profile']) right-side-bar {
       flex: 0 0 50%;

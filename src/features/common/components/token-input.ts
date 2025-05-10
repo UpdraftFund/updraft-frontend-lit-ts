@@ -18,8 +18,7 @@ import { getBalance, refreshBalances } from '@state/user/balances';
 import { userAddress } from '@state/user';
 
 import { modal } from '@utils/web3';
-import { shortenAddress } from '@utils/address-utils';
-import { shortNum } from '@utils/short-num';
+import { shortenAddress, shortNum } from '@utils/format-utils';
 
 import { Upd } from '@contracts/upd';
 import { ERC20 } from '@contracts/erc20';

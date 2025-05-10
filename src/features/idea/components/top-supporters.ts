@@ -11,7 +11,7 @@ import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeaContributionsDocument } from '@gql';
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 
 import { Profile } from '@/types';
 

@@ -45,7 +45,7 @@ import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
 import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
-import { ethAddressPattern } from '@utils/validation';
+import { ethAddressPattern } from '@utils/format-utils';
 import { hasProfile } from '@state/user';
 import { updraft } from '@contracts/updraft';
 import solutionSchema from '@schemas/solution-schema.json';

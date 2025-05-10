@@ -13,7 +13,7 @@ import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import { Activity, Profile, SolutionInfo } from '@/types';
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 import { updraftSettings } from '@state/common';
 
 @customElement('activity-card')

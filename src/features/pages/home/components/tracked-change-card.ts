@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 import { Change } from '@/types';
 import { SolutionFieldsFragment, SolutionFieldsDetailedFragment } from '@gql';
 import { updraftSettings } from '@state/common';

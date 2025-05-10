@@ -15,7 +15,7 @@ import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import { SlDialog, SlTooltip } from '@shoelace-style/shoelace';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 import { updraftSettings } from '@state/common';
 
 @customElement('upd-dialog')
