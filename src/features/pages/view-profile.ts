@@ -9,13 +9,13 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
-import '@/features/user/components/activity-feed';
-import '@/features/user/components/user-avatar';
+import '@components/user/activity-feed';
+import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
 import layout from '@state/layout';
-import { userAddress, isConnected } from '@state/user';
+import { userAddress } from '@state/user';
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
 import { markComplete } from '@state/user/beginner-tasks';
 
@@ -25,10 +25,6 @@ import { Profile } from '@/features/user/types/profile';
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
   static styles = css`
-    activity-feed {
-      flex: 0 0 789px;
-    }
-
     main {
       flex: 1;
       box-sizing: border-box;
@@ -104,13 +100,6 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       text-decoration: underline;
       color: var(--sl-color-primary-600);
     }
-
-    @media (max-width: 1090px) {
-      activity-feed {
-        flex: 0 0 0;
-        pointer-events: none;
-      }
-    }
   `;
 
   @property() address!: string;
@@ -163,13 +152,9 @@ export class ViewProfile extends SignalWatcher(LitElement) {
   }
 
   private get profileButton() {
-    // Get data from signals
     const walletAddress = userAddress.get()?.toLowerCase() || '';
     const profileAddress = this.address?.toLowerCase() || '';
-    const walletConnected = isConnected.get();
-
-    // Determine if the user is viewing their own profile
-    const isCurrentUser = walletConnected && walletAddress === profileAddress;
+    const isCurrentUser = walletAddress === profileAddress;
 
     // If the address is the current user's address, show Edit Profile button
     if (isCurrentUser) {

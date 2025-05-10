@@ -9,8 +9,8 @@ export const watchedTags = signal<Set<string>>(tagSet);
 
 export const watchTag = (tag: string) => {
   const currentTags = watchedTags.get();
+  // Only update if the tag isn't already present
   if (!currentTags.has(tag)) {
-    // Only update if the tag isn't already present
     const updatedTags = new Set(currentTags);
     updatedTags.add(tag);
     watchedTags.set(updatedTags);
@@ -21,8 +21,8 @@ export const watchTag = (tag: string) => {
 
 export const unwatchTag = (tag: string) => {
   const currentTags = watchedTags.get();
+  // Only update if the tag exists
   if (currentTags.has(tag)) {
-    // Only update if the tag exists
     const updatedTags = new Set(currentTags);
     updatedTags.delete(tag);
     watchedTags.set(updatedTags);

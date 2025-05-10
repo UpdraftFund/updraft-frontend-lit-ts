@@ -36,9 +36,7 @@ export class MyApp extends LitElement {
         nav.set('discover');
         return true;
       },
-      render: () => {
-        return html` <discover-page></discover-page>`;
-      },
+      render: () => html` <discover-page></discover-page>`,
     },
     {
       path: '/idea/:id',

@@ -13,8 +13,9 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import { Solution, SolutionInfo } from '@/features/solution/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
+
 import {
-  formatFunderReward,
+  formatReward,
   formatTokenAmount,
   parseProfile,
   formatDate,
@@ -84,10 +85,6 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         color: var(--sl-color-danger-600);
       }
 
-      .status-progress {
-        color: var(--sl-color-primary-600);
-      }
-
       .idea-link {
         margin-top: 1rem;
         font-size: 0.9rem;
@@ -153,9 +150,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
     );
     const fundingGoal = formatTokenAmount(this.solution.fundingGoal);
     const stake = formatTokenAmount(this.solution.stake);
-    const funderRewardFormatted = formatFunderReward(
-      this.solution.funderReward
-    );
+    const funderRewardFormatted = formatReward(this.solution.funderReward);
 
     return html`
       <div class="card">

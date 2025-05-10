@@ -21,6 +21,10 @@ export class RightSideBar extends SignalWatcher(LitElement) {
       gap: 1.5rem;
     }
 
+    activity-feed {
+      flex: 0 0 789px;
+    }
+
     /* Responsive behavior */
     @media (max-width: 1024px) and (min-width: 769px) {
       :host {
@@ -44,6 +48,13 @@ export class RightSideBar extends SignalWatcher(LitElement) {
       :host {
         border-left: none;
         border-top: 1px solid var(--border-default);
+      }
+    }
+
+    @media (max-width: 1090px) {
+      activity-feed {
+        flex: 0 0 0;
+        pointer-events: none;
       }
     }
   `;

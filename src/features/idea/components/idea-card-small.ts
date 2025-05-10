@@ -6,7 +6,7 @@ import { Idea } from '@/features/idea/types';
 
 import { smallCardStyles } from '@styles/small-card-styles';
 import {
-  formatFunderReward,
+  formatReward,
   formatTokenAmount,
   formatDate,
 } from '@utils/format-utils';
@@ -30,7 +30,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
         ${description ? html` <p>${description}</p>` : html``}
         <ul class="info-row">
           <li>🌱 ${date.fromNow}</li>
-          <li>🎁 ${formatFunderReward(funderReward)}</li>
+          <li>🎁 ${formatReward(funderReward)}</li>
           <li>🔥 ${interest}</li>
         </ul>
       </a>

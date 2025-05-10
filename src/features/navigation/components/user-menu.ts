@@ -19,7 +19,7 @@ import reconnectIcon from '@icons/common/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3';
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 
 import {
   userAddress,
@@ -51,11 +51,6 @@ export class UserMenu extends SignalWatcher(LitElement) {
       overflow: hidden;
       text-overflow: ellipsis;
       font-weight: 500;
-    }
-    img {
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
     }
     .menu-avatar {
       width: 32px;

@@ -1,8 +1,3 @@
-/***
- * This component displays the popular tags section in the right sidebar.
- * It fetches and displays the most popular tags from the API.
- ***/
-
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
@@ -82,9 +77,6 @@ export class PopularTags extends LitElement {
     }
   }
 
-  /**
-   * Filters out tags that contain any blacklisted strings
-   */
   private filterBlacklistedTags(tags: TagCount[] | undefined): TagCount[] {
     if (!tags) return [];
 

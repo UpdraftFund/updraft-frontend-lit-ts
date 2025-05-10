@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 import { Change } from '@/types';
 import { SolutionFieldsFragment, SolutionFieldsDetailedFragment } from '@gql';
 import { updraftSettings } from '@state/common';
@@ -80,17 +80,6 @@ export class TrackedChangeCard extends LitElement {
 
       .emoji {
         font-size: 1rem;
-      }
-
-      .person-list {
-        margin-top: 0.5rem;
-      }
-
-      .person-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.25rem;
       }
 
       .additional-count {

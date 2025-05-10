@@ -1,6 +1,6 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { formatUnits, fromHex } from 'viem';
+import { fromHex } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -13,8 +13,13 @@ import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import { Activity, Profile, SolutionInfo } from '@/types';
-import { shortNum } from '@utils/short-num';
-import { updraftSettings } from '@state/common';
+import {
+  formatReward,
+  calculateProgress,
+  parseProfile,
+  formatTokenAmount,
+  formatDate,
+} from '@utils/format-utils';
 
 @customElement('activity-card')
 export class ActivityCard extends LitElement {
@@ -140,14 +145,14 @@ export class ActivityCard extends LitElement {
 
   get creatorProfile(): Profile | undefined {
     if (!this._creatorProfile) {
-      let profile;
+      let profileHex: `0x${string}` | undefined;
       if (this.activity.type === 'ideaFunded') {
-        profile = this.activity.idea.creator.profile;
+        profileHex = this.activity.idea.creator.profile as `0x${string}`;
       } else if (this.activity.type === 'solutionFunded') {
-        profile = this.activity.solution.drafter.profile;
+        profileHex = this.activity.solution.drafter.profile as `0x${string}`;
       }
-      if (profile) {
-        this._creatorProfile = JSON.parse(fromHex(profile, 'string'));
+      if (profileHex) {
+        this._creatorProfile = parseProfile(profileHex);
       }
     }
     return this._creatorProfile;
@@ -155,14 +160,14 @@ export class ActivityCard extends LitElement {
 
   get solutionInfo(): SolutionInfo | undefined {
     if (!this._solutionInfo) {
-      let info;
+      let infoHex: `0x${string}` | undefined;
       if (this.activity.type === 'solutionFunded') {
-        info = this.activity.solution.info;
+        infoHex = this.activity.solution.info as `0x${string}`;
       } else if (this.activity.type === 'solutionDrafted') {
-        info = this.activity.info;
+        infoHex = this.activity.info as `0x${string}`;
       }
-      if (info) {
-        this._solutionInfo = JSON.parse(fromHex(info, 'string'));
+      if (infoHex) {
+        this._solutionInfo = JSON.parse(fromHex(infoHex, 'string'));
       }
     }
     return this._solutionInfo;
@@ -184,13 +189,9 @@ export class ActivityCard extends LitElement {
   private getActivityAction() {
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${this.userName} supported an Idea with ${shortNum(
-          formatUnits(this.activity.contribution, 18)
-        )} UPD`;
+        return `${this.userName} supported an Idea with ${formatTokenAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a solution with ${shortNum(
-          formatUnits(this.activity.contribution, 18)
-        )} UPD`;
+        return `${this.userName} funded a solution with ${formatTokenAmount(this.activity.contribution)} UPD`;
       case 'solutionDrafted':
         return `${this.userName} drafted a solution`;
       default:
@@ -206,31 +207,16 @@ export class ActivityCard extends LitElement {
     }
   }
 
-  private calculateProgress(contributed: number, goal: number) {
-    if (isNaN(contributed) || isNaN(goal) || goal === 0) {
-      return 0;
-    }
-    return (contributed / goal) * 100;
-  }
-
   private formatDeadline(timestamp: number) {
-    const deadline = dayjs(timestamp * 1000);
+    const date = formatDate(timestamp);
     const now = dayjs();
+    const deadline = dayjs(timestamp * 1000);
 
-    let deadlineString = deadline.fromNow();
+    let deadlineString = date.fromNow;
     if (deadline.isBefore(now)) {
       deadlineString = `❌ ${deadlineString}`;
     }
     return deadlineString;
-  }
-
-  private formatReward(reward: number) {
-    const percentScale = updraftSettings.get().percentScale;
-    if (percentScale > 0) {
-      return ((reward * 100) / percentScale).toFixed(0) + '%';
-    } else {
-      return '0%';
-    }
   }
 
   private renderEntity() {
@@ -247,7 +233,7 @@ export class ActivityCard extends LitElement {
       name = this.solutionInfo?.name || 'Untitled';
     }
 
-    return html`<a href="${href}" class="name-link">${name}</a>`;
+    return html`<a href="${href}" class="entity-link">${name}</a>`;
   }
 
   private renderFundButton() {
@@ -279,17 +265,17 @@ export class ActivityCard extends LitElement {
         <div class="details-bar">
           <span class="emoji-badge"
             ><span class="emoji">🌱</span> Created
-            ${dayjs(this.activity.timestamp).fromNow()}</span
+            ${formatDate(this.activity.timestamp / 1000).fromNow}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🎁</span>${this.formatReward(
+            ><span class="emoji">🎁</span>${formatReward(
               this.activity.idea.funderReward
             )}
             Funder Reward</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🔥</span>${shortNum(
-              formatUnits(this.activity.idea.shares, 18)
+            ><span class="emoji">🔥</span>${formatTokenAmount(
+              this.activity.idea.shares
             )}</span
           >
         </div>
@@ -302,7 +288,7 @@ export class ActivityCard extends LitElement {
         solution = this.activity;
       }
 
-      const progress = this.calculateProgress(
+      const progress = calculateProgress(
         solution?.tokensContributed,
         solution?.fundingGoal
       );
@@ -315,8 +301,8 @@ export class ActivityCard extends LitElement {
               value="${Math.min(progress, 100)}"
             ></sl-progress-bar>
             <div class="goal-text">
-              ${shortNum(formatUnits(solution?.tokensContributed, 18))} out of
-              ${shortNum(formatUnits(solution?.fundingGoal, 18))} UPD
+              ${formatTokenAmount(solution?.tokensContributed)} out of
+              ${formatTokenAmount(solution?.fundingGoal)} UPD
             </div>
           </div>
           ${isCompleted
@@ -330,17 +316,17 @@ export class ActivityCard extends LitElement {
             )}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🌱</span>${dayjs(
-              this.activity.timestamp
-            ).fromNow()}</span
+            ><span class="emoji">🌱</span>${formatDate(
+              this.activity.timestamp / 1000
+            ).fromNow}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💎</span> ${shortNum(
-              formatUnits(solution?.stake, 18)
+            ><span class="emoji">💎</span> ${formatTokenAmount(
+              solution?.stake
             )}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🎁</span> ${this.formatReward(
+            ><span class="emoji">🎁</span> ${formatReward(
               solution?.funderReward
             )}</span
           >
@@ -357,14 +343,14 @@ export class ActivityCard extends LitElement {
   }
 
   render() {
-    const date = dayjs(this.activity.timestamp);
+    const date = formatDate(this.activity.timestamp / 1000); // Convert to seconds if needed
     return html`
       <sl-card>
         <div class="action-time">
           <div class="action">
             ${this.getActivityIcon()} ${this.getActivityAction()}
           </div>
-          <div class="time">${date.fromNow()}</div>
+          <div class="time">${date.fromNow}</div>
         </div>
 
         <div class="entity">${this.renderEntity()}</div>

@@ -1,20 +1,23 @@
 import { customElement, query } from 'lit/decorators.js';
 import { html, css } from 'lit';
-import { GoalFailed } from '@pages/home/types';
-import { TrackedChangeCard } from './tracked-change-card';
+import { Task } from '@lit/task';
+import { fromHex } from 'viem';
+
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { fromHex } from 'viem';
-import { SolutionInfo } from '@/features/solution/types';
-import { Task } from '@lit/task';
-import { userAddress } from '@state/user';
-import { SolutionContract } from '@contracts/solution';
-import { TransactionWatcher } from '@components/common/transaction-watcher';
+
+dayjs.extend(relativeTime);
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-dayjs.extend(relativeTime);
+import { TransactionWatcher } from '@components/common/transaction-watcher';
+import { TrackedChangeCard } from './tracked-change-card';
+import { GoalFailed } from '@pages/home/types';
+import { SolutionContract } from '@contracts/solution';
+import { SolutionInfo } from '@/features/solution/types';
+
+import { userAddress } from '@state/user';
 
 @customElement('goal-failed-card')
 export class GoalFailedCard extends TrackedChangeCard {
@@ -37,7 +40,6 @@ export class GoalFailedCard extends TrackedChangeCard {
 
   @query('transaction-watcher') refundTransaction!: TransactionWatcher;
 
-  // Task to check if the current user has funded this solution
   private readonly hasFundedTask = new Task(
     this,
     async ([solutionAddress, userAddr]) => {
@@ -56,7 +58,6 @@ export class GoalFailedCard extends TrackedChangeCard {
     () => [this.change.solution.id, userAddress.get()] as const
   );
 
-  // Handle refund button click
   private async handleRefund() {
     try {
       const solution = new SolutionContract(

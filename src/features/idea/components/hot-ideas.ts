@@ -2,10 +2,12 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
-import '@/features/idea/components/idea-card-small';
+import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
+import { sortIdeasByNewest } from '@utils/idea/sort-ideas';
 import { UrqlQueryController } from '@utils/urql-query-controller';
+
 import { IdeasBySharesDocument } from '@gql';
 import { Idea } from '@/features/idea/types';
 
@@ -44,7 +46,7 @@ export class HotIdeas extends LitElement {
   private readonly hotIdeasController = new UrqlQueryController(
     this,
     IdeasBySharesDocument,
-    {},
+    { first: 10 },
     (result) => {
       if (result.error) {
         console.error('Error fetching hot ideas:', result.error);
@@ -53,7 +55,9 @@ export class HotIdeas extends LitElement {
       }
 
       if (result.data?.ideas) {
-        this.hotIdeas = result.data.ideas as Idea[];
+        // Get ideas ordered by shares, then sub-sort by newest first and take the first 3
+        const ideasByShares = result.data.ideas as Idea[];
+        this.hotIdeas = sortIdeasByNewest(ideasByShares, 3);
       } else {
         this.hotIdeas = [];
       }

@@ -1,4 +1,5 @@
 import { css, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { html, SignalWatcher } from '@lit-labs/signals';
 
 import compass from '@icons/navigation/compass.svg';
@@ -6,7 +7,6 @@ import house from '@icons/navigation/house.svg';
 
 import { nav } from '@state/navigation';
 import { leftSidebarCollapsed } from '@state/layout';
-import { customElement } from 'lit/decorators.js';
 
 @customElement('left-nav')
 export class LeftNav extends SignalWatcher(LitElement) {

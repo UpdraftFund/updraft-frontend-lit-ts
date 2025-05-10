@@ -1,13 +1,15 @@
 import { customElement } from 'lit/decorators.js';
 import { html, css } from 'lit';
-import { SolutionUpdated } from '@pages/home/types';
-import { TrackedChangeCard } from './tracked-change-card';
+import { fromHex } from 'viem';
+
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { fromHex } from 'viem';
-import { SolutionInfo } from '@/features/solution/types';
 
 dayjs.extend(relativeTime);
+
+import { SolutionUpdated } from '@pages/home/types';
+import { TrackedChangeCard } from './tracked-change-card';
+import { SolutionInfo } from '@/features/solution/types';
 
 @customElement('solution-updated-card')
 export class SolutionUpdatedCard extends TrackedChangeCard {
