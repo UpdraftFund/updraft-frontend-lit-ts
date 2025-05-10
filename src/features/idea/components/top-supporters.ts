@@ -100,28 +100,50 @@ export class TopSupporters extends LitElement {
       if (!result.data?.ideaContributions) {
         this.supporters = [];
       } else {
-        this.supporters = result.data.ideaContributions.map((contribution) => {
-          let name = contribution.funder.id;
-          let avatar;
+        // Use a Map to combine contributions from the same supporter
+        const supporterMap = new Map<string, Supporter>();
 
-          if (contribution.funder.profile) {
-            try {
-              const profile: Profile = JSON.parse(
-                fromHex(contribution.funder.profile as `0x${string}`, 'string')
-              );
-              name = profile.name || profile.team || contribution.funder.id;
-              avatar = profile.image;
-            } catch (e) {
-              console.error('Error parsing profile', e);
+        result.data.ideaContributions.forEach((contribution) => {
+          const funderId = contribution.funder.id;
+          if (supporterMap.has(funderId)) {
+            const existingSupporter = supporterMap.get(funderId)!;
+            const newContribution =
+              BigInt(existingSupporter.contribution) +
+              BigInt(contribution.contribution);
+            supporterMap.set(funderId, {
+              ...existingSupporter,
+              contribution: newContribution.toString(),
+            });
+          } else {
+            let name = funderId;
+            let avatar;
+
+            if (contribution.funder.profile) {
+              try {
+                const profile: Profile = JSON.parse(
+                  fromHex(
+                    contribution.funder.profile as `0x${string}`,
+                    'string'
+                  )
+                );
+                name = profile.name || profile.team || funderId;
+                avatar = profile.image;
+              } catch (e) {
+                console.error('Error parsing profile', e);
+              }
             }
+            supporterMap.set(funderId, {
+              id: funderId,
+              name,
+              avatar,
+              contribution: contribution.contribution,
+            });
           }
+        });
 
-          return {
-            id: contribution.funder.id,
-            name,
-            avatar,
-            contribution: contribution.contribution,
-          };
+        // Convert map to array and sort by contribution amount (descending)
+        this.supporters = Array.from(supporterMap.values()).sort((a, b) => {
+          return BigInt(b.contribution) > BigInt(a.contribution) ? 1 : -1;
         });
       }
     }
