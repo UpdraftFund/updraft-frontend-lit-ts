@@ -62,27 +62,25 @@ export class IdeaSolutions extends LitElement {
 
   render() {
     return html`
-      <div>
-        ${this.solutions === undefined
-          ? html` <sl-spinner></sl-spinner>`
-          : this.solutions.length > 0
-            ? cache(html`
-                <div class="solutions-list">
-                  ${this.solutions.map(
-                    (solution) => html`
-                      <solution-card-large
-                        .solution=${solution}
-                      ></solution-card-large>
-                    `
-                  )}
-                </div>
-              `)
-            : html`
-                <div class="no-solutions">
-                  No solutions yet. Be the first to add one!
-                </div>
-              `}
-      </div>
+      ${this.solutions === undefined
+        ? html` <sl-spinner></sl-spinner>`
+        : this.solutions.length > 0
+          ? cache(html`
+              <div class="solutions-list">
+                ${this.solutions.map(
+                  (solution) => html`
+                    <solution-card-large
+                      .solution=${solution}
+                    ></solution-card-large>
+                  `
+                )}
+              </div>
+            `)
+          : html`
+              <div class="no-solutions">
+                No solutions yet. Be the first to add one!
+              </div>
+            `}
     `;
   }
 }
