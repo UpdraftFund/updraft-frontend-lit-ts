@@ -2,6 +2,7 @@ import { customElement, query } from 'lit/decorators.js';
 import { html, css } from 'lit';
 import { Task } from '@lit/task';
 import { fromHex } from 'viem';
+
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
