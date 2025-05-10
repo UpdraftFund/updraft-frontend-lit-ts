@@ -24,7 +24,7 @@ export function shortenAddress(address: string): string {
  * @param funderReward The raw funder reward value
  * @returns Formatted percentage string with 0 decimal places
  */
-export function formatFunderReward(funderReward: number): string {
+export function formatReward(funderReward: number): string {
   const pctFunderReward =
     (funderReward * 100) / updraftSettings.get().percentScale;
   return `${pctFunderReward.toFixed(0)}%`;

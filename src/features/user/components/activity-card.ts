@@ -14,7 +14,7 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import { Activity, Profile, SolutionInfo } from '@/types';
 import {
-  formatFunderReward,
+  formatReward,
   calculateProgress,
   parseProfile,
   formatTokenAmount,
@@ -224,7 +224,7 @@ export class ActivityCard extends LitElement {
   }
 
   private formatReward(reward: number) {
-    return formatFunderReward(reward);
+    return formatReward(reward);
   }
 
   private renderEntity() {
