@@ -58,6 +58,7 @@
       "@utils/common/*": ["src/features/common/utils/*"],
       "@utils/create-solution/*": ["src/features/pages/create-solution/utils/*"],
       "@utils/home/*": ["src/features/pages/home/utils/*"],
+      "@utils/idea/*": ["src/features/idea/utils/*"],
       "@images/*": ["src/features/common/assets/images/*"],
       "@pages/*": ["src/features/pages/*"],
       "@layout/*": ["src/features/layout/components/*"],
