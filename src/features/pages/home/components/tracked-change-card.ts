@@ -82,17 +82,6 @@ export class TrackedChangeCard extends LitElement {
         font-size: 1rem;
       }
 
-      .person-list {
-        margin-top: 0.5rem;
-      }
-
-      .person-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.25rem;
-      }
-
       .additional-count {
         font-style: italic;
         color: var(--sl-color-neutral-600);
