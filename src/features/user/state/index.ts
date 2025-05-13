@@ -25,7 +25,9 @@ export const connectionError = signal<string | null>(null);
 export const profileError = signal<string | null>(null);
 export const networkName = signal<string | null>(null);
 export const isConnected = computed(() => Boolean(userAddress.get()));
-export const hasProfile = computed(() => userProfile.get() !== null);
+export const hasProfile = computed(
+  () => userProfile.get()?.name || userProfile.get()?.team
+);
 
 // Variables to track urql subscription for profile data
 let profileSubscription: { unsubscribe: () => void } | null = null;
