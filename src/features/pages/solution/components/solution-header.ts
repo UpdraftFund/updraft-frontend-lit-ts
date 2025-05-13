@@ -13,9 +13,9 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js'; // For loa
 import urqlClient from '@utils/urql-client';
 import { SolutionDocument } from '@gql'; // Import generated types/query
 
-// TODO: Import actual UserLink and formatAddress when ready
+// TODO: Import actual UserLink when ready
 // import '@/features/user/components/user-link';
-// import { formatAddress } from '@utils/format-address';
+import { shortenAddress } from '@utils/format-utils';
 
 interface UserProfile {
   name?: string;
@@ -244,24 +244,19 @@ export class SolutionHeader extends LitElement {
                       label="Creator Avatar"
                       initials="${this._creatorName
                         ? ''
-                        : /* formatAddress(this._creatorAddress, 2, 0) */ this._creatorAddress.substring(
-                            0,
-                            6
-                          )}"
+                        : shortenAddress(this._creatorAddress).substring(0, 6)}"
                     ></sl-avatar>
                   </sl-tooltip>
                   <!-- <user-link userId=${this
                     ._creatorAddress}></user-link> -->
                   <span
                     >${this._creatorName ||
-                    /* formatAddress(this._creatorAddress) */ this
-                      ._creatorAddress}</span
+                    shortenAddress(this._creatorAddress)}</span
                   >
                 </div>
                 <div class="action-buttons">
                   <!-- TODO: Conditionally render buttons based on user role/status -->
                   <sl-button variant="success" outline>Fund</sl-button>
-                  <sl-button>Discuss</sl-button>
                   <sl-button variant="primary">Edit</sl-button>
                 </div>
               </div>
