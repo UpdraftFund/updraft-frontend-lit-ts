@@ -13,15 +13,11 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js'; // For loa
 import urqlClient from '@utils/urql-client';
 import { SolutionDocument } from '@gql'; // Import generated types/query
 
+import { Profile } from '@/features/user/types';
+
 // TODO: Import actual UserLink when ready
 // import '@/features/user/components/user-link';
 import { shortenAddress } from '@utils/format-utils';
-
-interface UserProfile {
-  name?: string;
-  avatar?: string;
-  // Add other profile fields if needed
-}
 
 @customElement('solution-header')
 export class SolutionHeader extends LitElement {
@@ -93,14 +89,14 @@ export class SolutionHeader extends LitElement {
           // Parse creator profile JSON
           if (solution.drafter?.profile) {
             try {
-              const profile: UserProfile = JSON.parse(
+              const profile: Profile = JSON.parse(
                 Buffer.from(
                   solution.drafter.profile.substring(2), // Remove '0x'
                   'hex'
                 ).toString()
               );
               this._creatorName = profile.name || '';
-              this._creatorAvatar = profile.avatar || '';
+              this._creatorAvatar = profile.image || '';
             } catch (e) {
               console.error('Error parsing creator profile JSON:', e);
               // Keep address as fallback, clear name/avatar
