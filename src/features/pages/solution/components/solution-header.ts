@@ -1,23 +1,19 @@
-import { LitElement, html, css, PropertyValueMap } from 'lit';
+import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { Subscription } from 'wonka';
 
-// Shoelace components
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
-import '@shoelace-style/shoelace/dist/components/spinner/spinner.js'; // For loading state
+import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 // GraphQL
-import urqlClient from '@utils/urql-client';
 import { SolutionDocument } from '@gql'; // Import generated types/query
-
-import { Profile } from '@/features/user/types';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 
 // TODO: Import actual UserLink when ready
 // import '@/features/user/components/user-link';
-import { shortenAddress } from '@utils/format-utils';
+import { shortenAddress, parseProfile } from '@utils/format-utils';
 
 @customElement('solution-header')
 export class SolutionHeader extends LitElement {
@@ -37,81 +33,34 @@ export class SolutionHeader extends LitElement {
   @state() private _isLoading = false;
   @state() private _error?: string;
 
-  // Subscription management
-  private _solutionSubscription?: Subscription;
+  // Controller for fetching solution data
+  private readonly solutionController = new UrqlQueryController(
+    this,
+    SolutionDocument,
+    { solutionId: this.solutionId || '' },
+    (result) => {
+      this._isLoading = false;
 
-  // --- Lifecycle Methods ---
+      if (result.error) {
+        console.error('Error fetching solution header data:', result.error);
+        this._error = `Error loading solution: ${result.error.message}`;
+        return;
+      }
 
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this._unsubscribe(); // Clean up subscription
-  }
-
-  protected updated(changedProperties: PropertyValueMap<this>): void {
-    super.updated(changedProperties);
-
-    // Resubscribe if solutionId changes
-    if (changedProperties.has('solutionId') && this.solutionId) {
-      this._subscribeToSolution(this.solutionId);
+      if (result.data?.solution) {
+        const { solution } = result.data;
+        this._solutionTitle = solution.idea?.name || 'Untitled Solution';
+        this._ideaId = solution.idea?.id || '';
+        this._ideaName = solution.idea?.name || 'Unknown Idea';
+        this._creatorAddress = solution.drafter?.id || '';
+        const profile = parseProfile(solution.drafter.profile);
+        this._creatorName = profile.name || '';
+        this._creatorAvatar = profile.image || '';
+      } else {
+        this._error = 'Solution not found.';
+      }
     }
-  }
-
-  // --- Private Methods ---
-
-  private _unsubscribe(): void {
-    this._solutionSubscription?.unsubscribe();
-    this._solutionSubscription = undefined;
-  }
-
-  private _subscribeToSolution(solutionId: string): void {
-    this._unsubscribe(); // Ensure previous subscription is cleaned up
-    this._isLoading = true;
-    this._error = undefined; // Clear previous errors
-
-    this._solutionSubscription = urqlClient
-      .query(SolutionDocument, { solutionId })
-      .subscribe((result) => {
-        this._isLoading = false;
-
-        if (result.error) {
-          console.error('Error fetching solution header data:', result.error);
-          this._error = `Error loading solution: ${result.error.message}`;
-          return;
-        }
-
-        if (result.data?.solution) {
-          const { solution } = result.data;
-          this._solutionTitle = solution.idea?.name || 'Untitled Solution';
-          this._ideaId = solution.idea?.id || '';
-          this._ideaName = solution.idea?.name || 'Unknown Idea';
-          this._creatorAddress = solution.drafter?.id || '';
-
-          // Parse creator profile JSON
-          if (solution.drafter?.profile) {
-            try {
-              const profile: Profile = JSON.parse(
-                Buffer.from(
-                  solution.drafter.profile.substring(2), // Remove '0x'
-                  'hex'
-                ).toString()
-              );
-              this._creatorName = profile.name || '';
-              this._creatorAvatar = profile.image || '';
-            } catch (e) {
-              console.error('Error parsing creator profile JSON:', e);
-              // Keep address as fallback, clear name/avatar
-              this._creatorName = '';
-              this._creatorAvatar = '';
-            }
-          } else {
-            this._creatorName = '';
-            this._creatorAvatar = '';
-          }
-        } else {
-          this._error = 'Solution not found.';
-        }
-      });
-  }
+  );
 
   // --- Styles ---
 
@@ -196,13 +145,23 @@ export class SolutionHeader extends LitElement {
     }
   `;
 
-  // --- Template ---
+  // --- Lifecycle Methods ---
+
+  protected updated(changedProperties: Map<string, unknown>): void {
+    super.updated(changedProperties);
+
+    // Update controller variables if solutionId changes
+    if (changedProperties.has('solutionId') && this.solutionId) {
+      this._isLoading = true;
+      this._error = undefined; // Clear previous errors
+      this.solutionController.setVariablesAndSubscribe({
+        solutionId: this.solutionId,
+      });
+    }
+  }
 
   render() {
-    console.log('SolutionHeader render', {
-      isLoading: this._isLoading,
-      error: this._error,
-    });
+    // Render solution header
     return html`
       <div class="header-container">
         ${this._isLoading
