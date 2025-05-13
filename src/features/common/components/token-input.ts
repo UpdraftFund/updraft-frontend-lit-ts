@@ -238,9 +238,9 @@ export class TokenInput
   private get isUpdraftContract(): boolean {
     if (!this.spendingContract) return false;
 
-    const settings = updraftSettings.get();
     return (
-      this.spendingContract.toLowerCase() === settings.updAddress?.toLowerCase()
+      this.spendingContract.toLowerCase() ===
+      updraftSettings.get().updraftAddress.toLowerCase()
     );
   }
 
