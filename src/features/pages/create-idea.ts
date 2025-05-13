@@ -1,39 +1,45 @@
-import { customElement, query, state } from 'lit/decorators.js';
-import { css, html } from 'lit';
-import { consume } from '@lit/context';
+import { customElement, query } from 'lit/decorators.js';
+import { css } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
+import { parseUnits, toHex, trim } from 'viem';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import type { SlInput } from '@shoelace-style/shoelace';
-
-import layout from '@state/layout';
+import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+import type { SlInput, SlDialog } from '@shoelace-style/shoelace';
 
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
 import '@components/common/upd-dialog';
+import '@components/common/share-dialog';
+import '@components/common/transaction-watcher';
+import '@components/common/token-input';
 import { UpdDialog } from '@components/common/upd-dialog';
-import { SaveableForm } from '@components/common/saveable-form';
-
+import { ShareDialog } from '@components/common/share-dialog';
 import {
-  balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings,
-} from '@state/common';
-import { Balances } from '@/features/user/types/current-user';
-import { UpdraftSettings } from '@/features/common/types';
+  TransactionWatcher,
+  TransactionSuccess,
+} from '@components/common/transaction-watcher';
+import { SaveableForm, formToJson } from '@components/common/saveable-form';
+
+import layout from '@state/layout';
+import { hasProfile } from '@state/user';
+import { defaultFunderReward } from '@state/common';
+import { updraft } from '@contracts/updraft';
+import ideaSchema from '@schemas/idea-schema.json';
+import { ITokenInput } from '@components/common/token-input';
 
 @customElement('create-idea')
-export class CreateIdea extends SaveableForm {
+export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('upd-dialog', true) updDialog!: UpdDialog;
-
-  @consume({ context: balanceContext, subscribe: true })
-  userBalances!: Balances;
-  @consume({ context: updraftSettings, subscribe: true })
-  updraftSettings!: UpdraftSettings;
-
-  @state() private depositError: string | null = null;
-  @state() private antiSpamFee?: string;
+  @query('share-dialog', true) shareDialog!: ShareDialog;
+  @query('transaction-watcher.submit', true)
+  submitTransaction!: TransactionWatcher;
+  @query('transaction-watcher.approve', true)
+  approveTransaction!: TransactionWatcher;
+  @query('sl-dialog', true) approveDialog!: SlDialog;
+  @query('token-input', true) tokenInput!: ITokenInput;
 
   static styles = css`
     .container {
@@ -79,10 +85,8 @@ export class CreateIdea extends SaveableForm {
       --sl-input-focus-ring-color: red;
     }
 
-    .error {
-      color: red;
-      font-size: 0.8rem;
-      padding-top: 0.25rem;
+    .submit {
+      width: fit-content;
     }
 
     /* Responsive behavior for smaller screens */
@@ -113,43 +117,6 @@ export class CreateIdea extends SaveableForm {
     }
   }
 
-  private handleDepositFocus() {
-    this.dispatchEvent(new RequestBalanceRefresh());
-  }
-
-  private handleDepositInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = Number(input.value);
-    const userBalance = Number(
-      this.userBalances?.updraft?.balance || 'Infinity'
-    );
-    const minFee = this.updraftSettings.minFee;
-
-    if (isNaN(value)) {
-      this.depositError = 'Enter a number';
-    } else if (value <= minFee) {
-      this.depositError = `Deposit must be more than ${minFee} UPD to cover fees`;
-    } else if (value > userBalance) {
-      this.depositError = `You have ${userBalance} UPD`;
-    } else {
-      this.depositError = null;
-    }
-
-    if (this.depositError) {
-      input.classList.add('invalid');
-    } else {
-      input.classList.remove('invalid');
-    }
-
-    let fee;
-    if (isNaN(value)) {
-      fee = minFee;
-    } else {
-      fee = Math.max(minFee, value * this.updraftSettings.percentFee);
-    }
-    this.antiSpamFee = fee.toFixed(2);
-  }
-
   private nextButtonClick(e: MouseEvent) {
     if (!this.form.checkValidity()) {
       e.preventDefault(); // If the form is invalid, prevent the click
@@ -161,13 +128,54 @@ export class CreateIdea extends SaveableForm {
     e.preventDefault(); // Prevent the default form submission when Enter is pressed
   }
 
-  render() {
+  private async createIdea() {
+    if (!this.form.checkValidity()) {
+      this.form.reportValidity(); // Show validation messages
+      return;
+    }
+
+    const ideaData = formToJson('create-idea', ideaSchema);
+
+    try {
+      this.submitTransaction.hash = await updraft.write('createIdea', [
+        BigInt(defaultFunderReward.get()),
+        parseUnits(this.tokenInput.value, 18),
+        toHex(JSON.stringify(ideaData)),
+      ]);
+      this.shareDialog.topic = ideaData.name as string;
+    } catch (e) {
+      this.tokenInput.handleTransactionError(
+        e,
+        () => this.createIdea(), // Retry after approval
+        () => this.updDialog.show() // Show UPD dialog on low balance
+      );
+    }
+  }
+
+  private async handleTransactionSuccess(t: TransactionSuccess) {
+    const address = t.receipt?.logs?.[0]?.topics?.[1];
+    if (address) {
+      this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
+      this.shareDialog.action = 'created an Idea';
+      this.shareDialog.show();
+    }
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
     layout.topBarContent.set(html`
       <page-heading>Create a new Idea</page-heading>
     `);
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
+  }
+
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+  }
+
+  render() {
     return html`
       <div class="container">
         <main>
@@ -191,7 +199,7 @@ export class CreateIdea extends SaveableForm {
               <label-with-hint
                 slot="label"
                 label="Tags"
-                hint="Enter up to five tags separated by spaces to help people find your idea. 
+                hint="Enter up to five tags separated by spaces to help people find your idea.
                 Use hyphens for multi-word-tags."
               >
               </label-with-hint>
@@ -205,36 +213,62 @@ export class CreateIdea extends SaveableForm {
               >
               </label-with-hint>
               <div class="deposit-row">
-                <sl-input
+                <token-input
                   name="deposit"
                   required
-                  autocomplete="off"
-                  @focus=${this.handleDepositFocus}
-                  @input=${this.handleDepositInput}
+                  spendingContract=${updraft.address}
+                  spendingContractName="Updraft"
+                  antiSpamFeeMode="variable"
+                  showDialogs="false"
                 >
-                </sl-input>
-                <span>UPD</span>
-                <sl-button
-                  variant="primary"
-                  @click=${() => this.updDialog.show()}
-                  >Get more UPD
-                </sl-button>
-                ${this.antiSpamFee
-                  ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-                  : ''}
+                  <sl-button
+                    slot="invalid"
+                    variant="primary"
+                    @click=${() => this.updDialog.show()}
+                  >
+                    Get more UPD
+                  </sl-button>
+                </token-input>
               </div>
-              ${this.depositError
-                ? html` <div class="error">${this.depositError}</div>`
-                : ''}
             </div>
             <input type="hidden" name="reward" value="50" />
-            <a href="/submit-profile-and-create-idea" rel="next">
-              <sl-button variant="primary" @click=${this.nextButtonClick}
-                >Next: Create your Profile
-              </sl-button>
-            </a>
+            ${hasProfile.get()
+              ? html` <sl-button
+                  class="submit"
+                  variant="primary"
+                  @click=${this.createIdea}
+                  >Create Idea
+                </sl-button>`
+              : html`<a
+                  class="submit"
+                  href="/submit-profile-and-create-idea"
+                  rel="next"
+                >
+                  <sl-button variant="primary" @click=${this.nextButtonClick}
+                    >Next: Create your Profile
+                  </sl-button>
+                </a>`}
+            <transaction-watcher
+              class="submit"
+              @transaction-success=${this.handleTransactionSuccess}
+            ></transaction-watcher>
           </form>
           <upd-dialog></upd-dialog>
+          <share-dialog></share-dialog>
+          <transaction-watcher class="approve"></transaction-watcher>
+          <sl-dialog label="Set Allowance">
+            <p>
+              Before you can create your idea, you need to sign a transaction to
+              allow Updraft to spend your UPD tokens.
+            </p>
+            <transaction-watcher
+              class="approve"
+              @transaction-success=${() => {
+                this.approveDialog.hide();
+                this.createIdea();
+              }}
+            ></transaction-watcher>
+          </sl-dialog>
         </main>
       </div>
     `;

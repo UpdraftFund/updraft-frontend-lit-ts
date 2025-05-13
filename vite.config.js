@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
-export default defineConfig({
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -55,20 +56,55 @@ export default defineConfig({
         'src/features/solution/assets/icons'
       ),
       '@icons/user': resolve(__dirname, 'src/features/user/assets/icons'),
+      '@utils/common': resolve(__dirname, 'src/features/common/utils'),
+      '@utils/create-solution': resolve(
+        __dirname,
+        'src/features/pages/create-solution/utils'
+      ),
+      '@utils/home': resolve(__dirname, 'src/features/pages/home/utils'),
+      '@utils/idea': resolve(__dirname, 'src/features/idea/utils'),
       '@images': resolve(__dirname, 'src/features/common/assets/images'),
       '@pages': resolve(__dirname, 'src/features/pages'),
       '@layout': resolve(__dirname, 'src/features/layout/components'),
       '@styles': resolve(__dirname, 'src/features/common/styles'),
-      '@utils': resolve(__dirname, 'src/lib/utils'),
+      '@utils': resolve(__dirname, 'src/features/common/utils'),
       '@contracts': resolve(__dirname, 'src/lib/contracts'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
       '@gql': resolve(__dirname, '.graphclient'),
     },
   },
   define: {
+    // Legacy compatibility for process.env
     'process.env': {},
   },
   build: {
     target: 'es2022', // Should match tsconfig.json target
+    // Improve build performance and output size
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production',
+      },
+    },
+    // Split chunks for better caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'lit-core': ['lit'],
+          shoelace: ['@shoelace-style/shoelace'],
+          vendor: [
+            '@lit-labs/router',
+            '@lit-labs/signals',
+            '@lit/context',
+            '@lit/task',
+            'urql',
+            'graphql',
+          ],
+        },
+      },
+    },
+    // Generate sourcemaps for debugging
+    sourcemap: mode !== 'production',
   },
-});
+}));

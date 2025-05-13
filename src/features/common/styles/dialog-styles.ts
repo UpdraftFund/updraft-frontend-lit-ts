@@ -5,6 +5,7 @@ export const dialogStyles = css`
     border-radius: 15px;
     color: var(--main-foreground);
     background-color: var(--main-background);
+    border: 2px solid var(--dialog-border);
   }
 
   sl-dialog::part(title) {

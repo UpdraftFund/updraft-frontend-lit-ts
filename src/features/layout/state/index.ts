@@ -11,3 +11,15 @@ export default {
   topBarContent,
   rightSidebarContent,
 };
+
+const storedLeftSidebarState = localStorage.getItem('leftSidebarCollapsed');
+
+export const leftSidebarCollapsed = signal<boolean>(
+  storedLeftSidebarState ? JSON.parse(storedLeftSidebarState) : false
+);
+
+export const toggleLeftSidebar = () => {
+  const newState = !leftSidebarCollapsed.get();
+  leftSidebarCollapsed.set(newState);
+  localStorage.setItem('leftSidebarCollapsed', JSON.stringify(newState));
+};

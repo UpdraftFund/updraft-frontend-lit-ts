@@ -1,22 +1,26 @@
-import { customElement } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
 import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/button/button';
-import {
-  allTasksComplete,
-  isComplete,
-} from '@pages/home/state/beginner-tasks.ts';
+
+import '@components/common/upd-dialog';
+import { UpdDialog } from '@components/common/upd-dialog';
+
+import { allTasksComplete, isComplete } from '@state/user/beginner-tasks.ts';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
   static styles = css`
+    h2 {
+      margin: 1.5rem 0 1rem;
+    }
+
     section {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 1.25rem;
-      padding: 1rem 0;
     }
 
     sl-card {
@@ -32,15 +36,15 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
     sl-card p {
       font-size: 0.875rem;
       line-height: 1.5;
-      margin-bottom: 1.5rem;
     }
 
-    .button-upd-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    sl-card::part(base),
+    sl-card::part(body) {
+      height: 100%;
     }
   `;
+
+  @query('upd-dialog', true) updDialog!: UpdDialog;
 
   render() {
     if (allTasksComplete.get()) {
@@ -59,7 +63,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     see a user's activity on their profile page. Go to Adam's
                     profile and follow him from there.
                   </p>
-                  <sl-button variant="primary">Adam's profile</sl-button>
+                  <sl-button slot="footer" variant="primary"
+                    >Adam's profile</sl-button
+                  >
                 </sl-card>
               `}
           ${isComplete('watch-tag')
@@ -72,7 +78,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     investor, builder, or topic. Search for the [updraft] tag
                     and watch it.
                   </p>
-                  <sl-button variant="primary">Search for [updraft]</sl-button>
+                  <sl-button slot="footer" variant="primary"
+                    >Search for [updraft]</sl-button
+                  >
                 </sl-card>
               `}
           ${isComplete('connect-wallet')
@@ -85,7 +93,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     provider, install it, then click "Connect Wallet"
                   </p>
                   <p>⬩Enkrypt ⬩Frame ⬩Metamask ⬩MEW ⬩Rabby</p>
-                  <sl-button variant="primary">Connect Wallet</sl-button>
+                  <sl-button slot="footer" variant="primary"
+                    >Connect Wallet</sl-button
+                  >
                 </sl-card>
               `}
           ${isComplete('get-upd')
@@ -98,10 +108,13 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     You'll need at least 5 UPD to complete the rest of the
                     tasks. Swap some ETH for UPD.
                   </p>
-                  <div class="button-upd-container">
-                    <sl-button variant="primary">Swap for UPD</sl-button>
-                    <div>🪁 525 UPD</div>
-                  </div>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    @click=${() => this.updDialog.show()}
+                    >Get UPD</sl-button
+                  >
+                  <upd-dialog></upd-dialog>
                 </sl-card>
               `}
           ${isComplete('support-idea')
@@ -114,7 +127,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     deposit, the more you stand to earn. Find an Idea and
                     support it with UPD.
                   </p>
-                  <sl-button variant="primary">Go to "Example" Idea</sl-button>
+                  <sl-button slot="footer" variant="primary"
+                    >Go to "Example" Idea</sl-button
+                  >
                 </sl-card>
               `}
           ${isComplete('fund-solution')
@@ -127,7 +142,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     change the world. Fund a Solution you love and earn a reward
                     if others feel the same way.
                   </p>
-                  <sl-button variant="primary"
+                  <sl-button slot="footer" variant="primary"
                     >Go to "Example" Solution</sl-button
                   >
                 </sl-card>
@@ -142,7 +157,12 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     others will follow and learn from you. Create a profile so
                     they can see what you're up to and follow your lead.
                   </p>
-                  <sl-button variant="primary">Go to Your Profile</sl-button>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/edit-profile"
+                    >Go to Your Profile</sl-button
+                  >
                 </sl-card>
               `}
         </section>

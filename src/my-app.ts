@@ -1,40 +1,17 @@
 import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import { provide } from '@lit/context';
-import { Task } from '@lit/task';
+import { customElement } from 'lit/decorators.js';
 import { Router } from '@lit-labs/router';
-import { formatUnits } from 'viem';
-import { watchAccount } from '@wagmi/core';
 
 import '@layout/app-layout';
 
 import '@shoelace-style/shoelace/dist/themes/light.css';
 import '@shoelace-style/shoelace/dist/themes/dark.css';
-import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/drawer/drawer.js';
-import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
 import '@styles/global.css';
 import '@styles/theme.css';
 import '@styles/reset.css';
 
-import urqlClient from '@utils/urql-client';
-
-import {
-  urqlClientContext,
-  updraftSettings as updraftSettingsContext,
-  balanceContext,
-} from '@state/common';
-
 import { nav } from '@state/navigation';
-
-import { UpdraftSettings } from '@/features/common/types';
-import { initializeUserState, userContext, getUserState } from '@state/user';
-
-import { updraft } from '@contracts/updraft';
-import { Upd } from '@contracts/upd';
-import { getAccount, getBalance } from '@wagmi/core';
-import { config } from '@utils/web3';
+import { initializeUserState } from '@state/user';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -59,9 +36,7 @@ export class MyApp extends LitElement {
         nav.set('discover');
         return true;
       },
-      render: () => {
-        return html` <discover-page></discover-page>`;
-      },
+      render: () => html` <discover-page></discover-page>`,
     },
     {
       path: '/idea/:id',
@@ -148,137 +123,32 @@ export class MyApp extends LitElement {
     },
   ]);
 
-  @provide({ context: urqlClientContext })
-  urqlClient = urqlClient;
-
-  @provide({ context: updraftSettingsContext })
-  updraftSettings = {
-    percentScale: 0,
-    updAddress: '0x',
-    percentFee: 0,
-    minFee: 0,
-  } as UpdraftSettings;
-
-  // Explicitly provide user state via context
-  @provide({ context: userContext })
-  userState = getUserState();
-
-  @state()
-  @provide({ context: balanceContext })
-  balances = {
-    eth: { symbol: 'ETH', balance: '0' },
-    updraft: { symbol: 'UPD', balance: '0' },
-  };
-
-  // Make sure the context stays updated
-  updated() {
-    // Update the context provider value when anything changes
-    this.userState = getUserState();
-  }
-
-  constructor() {
-    super();
-    console.log('MyApp constructor - initializing');
-    this.setupTheme();
-    this.getUpdraftSettings.run();
-    window.addEventListener('request-balance-refresh', this.refreshBalances);
-    this.refreshBalances();
-    watchAccount(config, {
-      onChange: () => this.refreshBalances(),
-    });
-  }
-
   connectedCallback(): void {
     super.connectedCallback();
+    this.setupTheme();
     // Initialize user state including reconnect attempt
     initializeUserState();
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    window.removeEventListener('request-balance-refresh', this.refreshBalances);
-  }
-
   private setupTheme() {
-    // Apply the appropriate theme class to the document element
+    // Initial theme setup based on user preference
     const prefersDark = window.matchMedia?.(
       '(prefers-color-scheme: dark)'
     ).matches;
-    document.documentElement.classList.toggle('sl-theme-dark', prefersDark);
-    document.documentElement.classList.toggle('sl-theme-light', !prefersDark);
-
-    // Also apply to the component itself for shadow DOM styling
-    this.classList.toggle('sl-theme-dark', prefersDark);
-    this.classList.toggle('sl-theme-light', !prefersDark);
+    this.applyTheme(prefersDark);
 
     // Listen for changes in color scheme preference
     window
       .matchMedia('(prefers-color-scheme: dark)')
       .addEventListener('change', (e) => {
-        const isDark = e.matches;
-        document.documentElement.classList.toggle('sl-theme-dark', isDark);
-        document.documentElement.classList.toggle('sl-theme-light', !isDark);
-        this.classList.toggle('sl-theme-dark', isDark);
-        this.classList.toggle('sl-theme-light', !isDark);
+        this.applyTheme(e.matches);
       });
   }
 
-  public getUpdraftSettings = new Task(this, {
-    task: async () => {
-      const percentScaleBigInt = (await updraft.read('percentScale')) as bigint;
-      const minFee = (await updraft.read('minFee')) as bigint;
-      const percentFee = (await updraft.read('percentFee')) as bigint;
-      const percentScale = Number(percentScaleBigInt);
-      const updAddress = (await updraft.read('feeToken')) as `0x${string}`;
-      this.updraftSettings = {
-        percentScale,
-        updAddress,
-        percentFee: Number(percentFee) / percentScale,
-        minFee: Number(formatUnits(minFee, 18)),
-      };
-    },
-    autoRun: false,
-  });
-
-  async refreshBalances() {
-    const account = getAccount(config);
-    const address = account?.address as `0x${string}` | undefined;
-    console.log('refreshBalances: address', address);
-    if (!address) {
-      this.balances = {
-        eth: { symbol: 'ETH', balance: '0' },
-        updraft: { symbol: 'UPD', balance: '0' },
-      };
-      return;
-    }
-    // Fetch ETH balance
-    let ethBalance = '0';
-    try {
-      const eth = await getBalance(config, { address });
-      ethBalance = formatUnits(eth.value, eth.decimals);
-    } catch {
-      ethBalance = '0';
-    }
-    console.log('refreshBalances: eth', ethBalance);
-    // Fetch UPD balance
-    let updBalance = '0';
-    try {
-      // Get UPD token address from updraft contract
-      const updraftContract = (await import('@contracts/updraft')).updraft;
-      const updAddress = (await updraftContract.read(
-        'feeToken'
-      )) as `0x${string}`;
-      const upd = new Upd(updAddress);
-      const rawUpd = await upd.read('balanceOf', [address]);
-      updBalance = formatUnits(rawUpd as bigint, 18);
-    } catch {
-      updBalance = '0';
-    }
-    console.log('refreshBalances: upd', updBalance);
-    this.balances = {
-      eth: { symbol: 'ETH', balance: ethBalance },
-      updraft: { symbol: 'UPD', balance: updBalance },
-    };
+  private applyTheme(isDark: boolean) {
+    // Apply the appropriate theme class to the document (root) element
+    document.documentElement.classList.toggle('sl-theme-dark', isDark);
+    document.documentElement.classList.toggle('sl-theme-light', !isDark);
   }
 
   render() {

@@ -1,15 +1,11 @@
-/***
- * This component displays the popular tags section in the right sidebar.
- * It fetches and displays the most popular tags from the API.
- ***/
-
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { TopTagsDocument } from '@gql';
 import { TagCount } from '@/types';
+import { tagBlacklist } from '../config/blacklist';
 
 @customElement('popular-tags')
 export class PopularTags extends LitElement {
@@ -48,40 +44,48 @@ export class PopularTags extends LitElement {
   `;
 
   @state() private topTags?: TagCount[];
-  private unsubTopTags?: () => void;
+  @property({ type: Number }) first = 14;
 
-  private subscribe() {
-    this.unsubTopTags?.();
+  // Controller for fetching top tags
+  private readonly tagsController = new UrqlQueryController(
+    this,
+    TopTagsDocument,
+    { first: this.first },
+    (result) => {
+      if (result.error) {
+        console.error('Error fetching top tags:', result.error);
+        return;
+      }
 
-    const topTagsSub = urqlClient
-      .query(TopTagsDocument, {})
-      .subscribe((result) => {
-        this.topTags = result.data?.tagCounts as TagCount[];
-      });
-    this.unsubTopTags = topTagsSub.unsubscribe;
-  }
-
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubTopTags?.();
-    } else {
-      this.subscribe();
+      // Filter out blacklisted tags
+      const allTags = result.data?.tagCounts as TagCount[];
+      this.topTags = this.filterBlacklistedTags(allTags);
     }
-  };
+  );
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.subscribe();
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+  // Method to manually refresh tags if needed
+  refreshTags() {
+    this.tagsController.refresh();
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubTopTags?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
+  // Update the query when properties change
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+
+    if (changedProperties.has('first')) {
+      this.tagsController.setVariablesAndSubscribe({ first: this.first });
+    }
+  }
+
+  private filterBlacklistedTags(tags: TagCount[] | undefined): TagCount[] {
+    if (!tags) return [];
+
+    return tags.filter((tag) => {
+      // Check if the tag contains any blacklisted string
+      return !tagBlacklist.some((blacklistedStr) =>
+        tag.id.toLowerCase().includes(blacklistedStr.toLowerCase())
+      );
+    });
   }
 
   render() {

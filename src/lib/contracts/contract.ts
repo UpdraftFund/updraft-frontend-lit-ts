@@ -2,7 +2,42 @@ import { Abi } from 'abitype';
 import { readContract, simulateContract, writeContract } from '@wagmi/core';
 import { config } from '@utils/web3';
 
-export class Contract {
+/**
+ * Interface for contract interactions
+ * Provides a standardized way to interact with smart contracts
+ */
+export interface IContract {
+  /**
+   * The contract address
+   */
+  readonly address: `0x${string}`;
+
+  /**
+   * The contract ABI
+   */
+  readonly abi: Abi;
+
+  /**
+   * Read data from a contract
+   * @param functionName The name of the function to call
+   * @param args Optional arguments to pass to the function
+   * @returns A promise that resolves to the function result
+   */
+  read(functionName: string, args?: unknown[]): Promise<unknown>;
+
+  /**
+   * Write data to a contract (execute a transaction)
+   * @param functionName The name of the function to call
+   * @param args Optional arguments to pass to the function
+   * @returns A promise that resolves to the transaction hash
+   */
+  write(functionName: string, args?: unknown[]): Promise<string>;
+}
+
+/**
+ * Base implementation of the IContract interface
+ */
+export class Contract implements IContract {
   constructor(
     public abi: Abi,
     private _address: `0x${string}` = '0x0'

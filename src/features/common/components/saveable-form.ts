@@ -39,10 +39,15 @@ export class SaveableForm extends LitElement {
     if (this.formName) {
       const savedForm = localStorage.getItem(`form:${this.formName}`);
       if (savedForm) {
-        for (const [name, value] of Object.entries(JSON.parse(savedForm))) {
-          const field = this.form.querySelector(`[name="${name}"]`);
-          if (field && 'value' in field) {
-            field.value = <string>value;
+        const values = JSON.parse(savedForm);
+        for (const [name, value] of Object.entries(values)) {
+          const element = this.form.querySelector(`[name="${name}"]`);
+          // Check if the element exists and its value property is accessible
+          if (element && 'value' in element) {
+            // Preserve values previously set by a signal
+            if (!element.value) {
+              element.value = <string>value;
+            }
           }
         }
       }

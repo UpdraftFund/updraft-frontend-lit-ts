@@ -1,32 +1,33 @@
 import { customElement, state } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { consume } from '@lit/context';
 import { SignalWatcher } from '@lit-labs/signals';
 import { repeat } from 'lit/directives/repeat.js';
 import { cache } from 'lit/directives/cache.js';
+
+import dayjs from 'dayjs';
 
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import '@components/idea/idea-card-large';
-import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
+import '@components/navigation/search-bar';
+import '@components/navigation/discover-tabs';
+import '@components/tags/popular-tags';
+import '@components/tags/watched-tags';
+import '@components/idea/idea-card-large';
+import '@components/solution/solution-card-large';
 
-import {
-  Connection,
-  Idea,
-  Solution,
-  IdeaContribution,
-  DiscoverQueryType,
-} from '@/types';
+import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 
-import { connectionContext } from '@state/common';
 import layout from '@state/layout';
-import { watchTag, isWatched } from '@state/user/watched-tags';
 
-import urqlClient from '@utils/urql-client';
+import { watchTag, isWatched } from '@state/user/watched-tags';
+import { followedUsers } from '@state/user/follow';
+
+import { UrqlQueryController } from '@utils/urql-query-controller';
+import { sortIdeasByNewest } from '@utils/idea/sort-ideas';
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,
@@ -40,7 +41,14 @@ import {
   IdeasByFundersQuery,
   IdeasFullTextQuery,
   IdeasByTagsQuery,
+  IdeasBySharesQueryVariables,
+  IdeasByStartTimeQueryVariables,
+  SolutionsByDeadlineQueryVariables,
+  IdeasByFundersQueryVariables,
+  IdeasFullTextQueryVariables,
+  IdeasByTagsQueryVariables,
 } from '@gql';
+import { TypedDocumentNode } from '@urql/core';
 
 type AnyResult =
   | IdeasBySharesQuery
@@ -50,27 +58,24 @@ type AnyResult =
   | IdeasFullTextQuery
   | IdeasByTagsQuery;
 
+type AnyVariables =
+  | IdeasBySharesQueryVariables
+  | IdeasByStartTimeQueryVariables
+  | SolutionsByDeadlineQueryVariables
+  | IdeasByFundersQueryVariables
+  | IdeasFullTextQueryVariables
+  | IdeasByTagsQueryVariables;
+
 @customElement('discover-page')
 export class DiscoverPage extends SignalWatcher(LitElement) {
   static styles = css`
-    .container {
-      display: flex;
-      flex: auto;
-      overflow: hidden;
-      background: linear-gradient(
-        to bottom,
-        var(--subtle-background),
-        var(--main-background)
-      );
-    }
-
     main {
       flex: 1;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       gap: 0.2rem;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0 0.5rem 2rem;
       color: var(--main-foreground);
       background: var(--main-background);
     }
@@ -92,10 +97,12 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       gap: 0.5rem;
       align-items: center;
     }
-  `;
 
-  @consume({ context: connectionContext, subscribe: true })
-  connection?: Connection;
+    .no-results {
+      color: var(--no-results);
+      font-style: italic;
+    }
+  `;
 
   @state() private search: string | null = null;
   @state() private tab: DiscoverQueryType = 'hot-ideas';
@@ -103,29 +110,43 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   @state() private results?: Idea[] | Solution[] | IdeaContribution[];
   @state() private isLoading: boolean = false;
 
-  private unsubscribeQuery?: () => void;
-
   private readonly queries = {
     'hot-ideas': IdeasBySharesDocument,
     'new-ideas': IdeasByStartTimeDocument,
-    deadline: SolutionsByDeadlineDocument,
+    solutions: SolutionsByDeadlineDocument,
     followed: IdeasByFundersDocument,
     search: IdeasFullTextDocument,
     tags: IdeasByTagsDocument,
   } as const;
 
+  // Controller for handling query subscriptions
+  private readonly queryController = new UrqlQueryController<
+    AnyResult,
+    AnyVariables
+  >(
+    this,
+    this.queries['hot-ideas'], // default
+    this.getVariablesForQuery('hot-ideas'), // default
+    (result) => {
+      this.isLoading = false;
+      if (result.data) {
+        this.results = this.getResultsFromData(result.data, this.tab);
+      } else {
+        this.results = [];
+      }
+    }
+  );
+
   private getVariablesForQuery(queryType: DiscoverQueryType) {
     switch (queryType) {
       case 'hot-ideas':
-        return { detailed: true };
+        return { first: 10, detailed: true };
       case 'new-ideas':
         return {};
-      case 'deadline':
-        return {};
+      case 'solutions':
+        return { now: dayjs().unix() };
       case 'followed':
-        return {
-          funders: JSON.parse(localStorage.getItem('funders') || '[]'),
-        };
+        return { funders: Array.from(followedUsers.get()) };
       case 'search':
         return {
           text: this.search ?? '', // Ensure text is always string, default to '' if null
@@ -148,10 +169,12 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     // Mapping of query types to their corresponding data properties
     switch (queryType) {
       case 'hot-ideas':
-        return (data as IdeasBySharesQuery).ideas as Idea[];
+        // Get ideas ordered by shares, then sub-sort by newest first and take the first 4
+        const ideasByShares = (data as IdeasBySharesQuery).ideas as Idea[];
+        return sortIdeasByNewest(ideasByShares, 4);
       case 'new-ideas':
         return (data as IdeasByStartTimeQuery).ideas as Idea[];
-      case 'deadline':
+      case 'solutions':
         return (data as SolutionsByDeadlineQuery).solutions as Solution[];
       case 'followed':
         return (data as IdeasByFundersQuery)
@@ -163,25 +186,16 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   }
 
-  private subscribe(queryType: DiscoverQueryType) {
-    // Clean up previous subscription if it exists
-    this.unsubscribeQuery?.();
-
+  private subscribe() {
     this.isLoading = true;
     this.results = undefined;
 
-    const query = this.queries[queryType];
-    const variables = this.getVariablesForQuery(queryType);
-    const querySub = urqlClient.query(query, variables).subscribe((result) => {
-      this.isLoading = false;
-      if (result.data) {
-        this.results = this.getResultsFromData(result.data, queryType);
-      } else {
-        this.results = [];
-      }
-    });
-
-    this.unsubscribeQuery = querySub.unsubscribe;
+    const query = this.queries[this.tab] as TypedDocumentNode<
+      AnyResult,
+      AnyVariables
+    >;
+    const variables = this.getVariablesForQuery(this.tab);
+    this.queryController.setQueryAndSubscribe(query, variables);
   }
 
   private renderTagList() {
@@ -230,7 +244,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       }
     }
 
-    this.subscribe(this.tab);
+    this.subscribe();
   };
 
   private renderQueryResults() {
@@ -239,7 +253,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
 
     if (!this.results?.length) {
-      return html`<p>No results found</p>`;
+      return html`<p class="no-results">No results found</p>`;
     }
 
     // Type handling based on the current tab/query type
@@ -250,51 +264,38 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       this.tab === 'tags'
     ) {
       // Ideas result type
-      return html`${repeat(
-        this.results as Idea[],
-        (idea) => idea.id,
-        (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
-      )}`;
-    } else if (this.tab === 'deadline') {
+      return cache(
+        html`${repeat(
+          this.results as Idea[],
+          (idea) => idea.id,
+          (idea) => html` <idea-card-large .idea=${idea}></idea-card-large>`
+        )}`
+      );
+    } else if (this.tab === 'solutions') {
       // Solutions result type
-      return html`${repeat(
-        this.results as Solution[],
-        (solution) => solution.id,
-        (solution) =>
-          html` <solution-card .solution=${solution}></solution-card>`
-      )}`;
+      return cache(
+        html`${repeat(
+          this.results as Solution[],
+          (solution) => solution.id,
+          (solution) =>
+            html` <solution-card-large
+              .solution=${solution}
+            ></solution-card-large>`
+        )}`
+      );
     } else if (this.tab === 'followed') {
       // IdeaContribution result type
-      return html`${repeat(
-        this.results as IdeaContribution[],
-        (contribution) => contribution.id,
-        (contribution) =>
-          html` <idea-card-large .idea=${contribution.idea}></idea-card-large>`
-      )}`;
+      return cache(
+        html`${repeat(
+          this.results as IdeaContribution[],
+          (contribution) => contribution.id,
+          (contribution) =>
+            html` <idea-card-large
+              .idea=${contribution.idea}
+            ></idea-card-large>`
+        )}`
+      );
     }
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.setTabFromUrl();
-    window.addEventListener('popstate', this.setTabFromUrl);
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-
-    // Listen for URL changes that aren't caught by popstate
-    // This is needed for when users click on tags in idea cards
-    this._handleUrlChange = this._handleUrlChange.bind(this);
-    this._setupUrlChangeListener();
-  }
-
-  disconnectedCallback() {
-    window.removeEventListener('popstate', this.setTabFromUrl);
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-    this._teardownUrlChangeListener();
-    this.unsubscribeQuery?.();
-    super.disconnectedCallback();
   }
 
   private _lastUrl = window.location.href;
@@ -323,15 +324,9 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   }
 
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubscribeQuery?.();
-    } else {
-      this.subscribe(this.tab);
-    }
-  };
-
-  render() {
+  connectedCallback() {
+    super.connectedCallback();
+    this.setTabFromUrl();
     layout.topBarContent.set(html`
       <create-idea-button></create-idea-button>
       <div>
@@ -345,14 +340,25 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
     `);
+    window.addEventListener('popstate', this.setTabFromUrl);
+    // Listen for URL changes that aren't caught by popstate
+    // This is needed for when users click on tags in idea cards
+    this._handleUrlChange = this._handleUrlChange.bind(this);
+    this._setupUrlChangeListener();
+  }
 
+  disconnectedCallback() {
+    window.removeEventListener('popstate', this.setTabFromUrl);
+    this._teardownUrlChangeListener();
+    super.disconnectedCallback();
+  }
+
+  render() {
     return html`
-      <div class="container">
-        <main>
-          ${this.tab === 'tags' ? this.renderTagList() : html``}
-          ${cache(this.renderQueryResults())}
-        </main>
-      </div>
+      <main>
+        ${this.tab === 'tags' ? this.renderTagList() : html``}
+        ${this.renderQueryResults()}
+      </main>
     `;
   }
 }

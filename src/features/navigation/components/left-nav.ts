@@ -1,11 +1,12 @@
 import { css, LitElement } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { html, SignalWatcher } from '@lit-labs/signals';
 
 import compass from '@icons/navigation/compass.svg';
 import house from '@icons/navigation/house.svg';
 
 import { nav } from '@state/navigation';
-import { customElement, property } from 'lit/decorators.js';
+import { leftSidebarCollapsed } from '@state/layout';
 
 @customElement('left-nav')
 export class LeftNav extends SignalWatcher(LitElement) {
@@ -32,12 +33,12 @@ export class LeftNav extends SignalWatcher(LitElement) {
       color: var(--accent);
     }
 
-    :host([collapsed]) nav a {
+    nav.collapsed a {
       justify-content: center;
       padding: 0.75rem 0;
     }
 
-    :host([collapsed]) .location {
+    nav.collapsed .location {
       display: none;
     }
 
@@ -60,7 +61,7 @@ export class LeftNav extends SignalWatcher(LitElement) {
         justify-content: center;
       }
 
-      :host([expanded]) nav a {
+      nav.expanded a {
         justify-content: flex-start;
         padding: 0.75rem;
       }
@@ -73,12 +74,9 @@ export class LeftNav extends SignalWatcher(LitElement) {
     }
   `;
 
-  @property({ type: Boolean, reflect: true }) collapsed = false;
-  @property({ type: Boolean, reflect: true }) expanded = false;
-
   render() {
     return html`
-      <nav>
+      <nav class=${leftSidebarCollapsed.get() ? 'collapsed' : 'expanded'}>
         <ul>
           <li>
             <a href="/" class=${nav.get() === 'home' ? 'active' : ''}>

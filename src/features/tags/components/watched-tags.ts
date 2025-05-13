@@ -86,7 +86,7 @@ export class WatchedTags extends SignalWatcher(LitElement) {
 
     .no-tags-message {
       text-align: center;
-      color: var(--subtle-text);
+      color: var(--no-results);
       font-style: italic;
       font-size: 0.9rem;
     }

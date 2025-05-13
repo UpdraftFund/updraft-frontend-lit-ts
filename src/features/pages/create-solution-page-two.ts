@@ -1,25 +1,41 @@
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { html, css } from 'lit';
-import { consume } from '@lit/context';
+import { css } from 'lit';
+import { html, SignalWatcher } from '@lit-labs/signals';
+import { Subscription } from 'wonka';
+import { parseUnits, toHex, trim } from 'viem';
+import dayjs from 'dayjs';
 
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/range/range.js';
-import type { SlDialog, SlInput, SlRange } from '@shoelace-style/shoelace';
-import { SaveableForm } from '@components/common/saveable-form';
+import '@shoelace-style/shoelace/dist/components/select/select.js';
+import '@shoelace-style/shoelace/dist/components/option/option.js';
+import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
+import type {
+  SlDialog,
+  SlInput,
+  SlRange,
+  SlSelect,
+} from '@shoelace-style/shoelace';
+import {
+  SaveableForm,
+  formToJson,
+  loadForm,
+} from '@components/common/saveable-form';
 
 import { dialogStyles } from '@styles/dialog-styles';
+import '@/features/common/components/token-input';
+import { ITokenInput } from '@components/common/token-input';
 
-import {
-  balanceContext,
-  RequestBalanceRefresh,
-  updraftSettings as updraftSettingsContext,
-} from '@state/common';
-import { userContext, UserState } from '@state/user';
+import { updraftSettings } from '@state/common';
+import { modal } from '@utils/web3';
 import layout from '@state/layout';
 
-import { TransactionWatcher } from '@components/common/transaction-watcher';
+import {
+  TransactionWatcher,
+  TransactionSuccess,
+} from '@components/common/transaction-watcher';
 import { ShareDialog } from '@components/common/share-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
 import '@layout/page-heading';
@@ -28,12 +44,14 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
 
-import { UpdraftSettings, Balances } from '@/types';
-import { IdeaDocument } from '@gql';
-import urqlClient from '@utils/urql-client';
+import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
+import { ethAddressPattern } from '@utils/format-utils';
+import { hasProfile } from '@state/user';
+import { updraft } from '@contracts/updraft';
+import solutionSchema from '@schemas/solution-schema.json';
 
 @customElement('create-solution-page-two')
-export class CreateSolution extends SaveableForm {
+export class CreateSolution extends SignalWatcher(SaveableForm) {
   @property() ideaId!: string;
 
   @query('sl-range', true) rewardRange!: SlRange;
@@ -44,18 +62,16 @@ export class CreateSolution extends SaveableForm {
   approveTransaction!: TransactionWatcher;
   @query('share-dialog', true) shareDialog!: ShareDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
+  @query('sl-input[name="fundingToken"]', true)
+  fundingTokenInput!: SlInput;
+  @query('sl-select[name="fundingTokenSelection"]', true)
+  fundingTokenSelect!: SlSelect;
+  @query('token-input', true) tokenInput!: ITokenInput;
 
-  @consume({ context: balanceContext, subscribe: true })
-  userBalances!: Balances;
-  @consume({ context: updraftSettingsContext, subscribe: true })
-  updraftSettings!: UpdraftSettings;
-  @consume({ context: userContext, subscribe: true })
-  userState!: UserState;
-
-  @state() private depositError: string | null = null;
-  @state() private antiSpamFee?: string;
+  @state() private showCustomTokenInput = false;
 
   private resizeObserver!: ResizeObserver;
+  private unsubHeading?: Subscription;
 
   static styles = [
     dialogStyles,
@@ -63,6 +79,10 @@ export class CreateSolution extends SaveableForm {
       :host {
         width: 100%;
         overflow: hidden;
+      }
+
+      h2 {
+        margin: 0 0 0.5rem;
       }
 
       form {
@@ -132,98 +152,24 @@ export class CreateSolution extends SaveableForm {
         visibility: hidden;
       }
 
-      .error {
-        color: red;
-        font-size: 0.8rem;
-        padding-top: 0.25rem;
-      }
-
       /* Keep the calendar control close to the date */
       sl-input[name='deadline']::part(form-control-input) {
         box-sizing: content-box;
         width: calc(14ch + var(--sl-input-spacing-medium) * 2);
       }
 
-      sl-input[name='deposit'] {
-        flex: none;
-        width: calc(10ch + var(--sl-input-spacing-medium) * 2);
-        box-sizing: content-box;
-      }
-
-      sl-input[name='deposit']::part(input) {
-        text-align: right;
-      }
-
-      sl-input[name='deposit'].invalid {
-        --sl-input-focus-ring-color: red;
+      .hidden {
+        display: none;
       }
 
       /* Responsive behavior for smaller screens */
       @media (max-width: 768px) {
-        .container {
-          flex-direction: column;
-        }
-
         form {
           margin: 1rem;
         }
       }
     `,
   ];
-
-  private readonly addIdeaToHeading = async () => {
-    if (this.ideaId) {
-      const result = await urqlClient.query(IdeaDocument, {
-        ideaId: this.ideaId,
-      });
-      const ideaData = result.data?.idea;
-      if (ideaData) {
-        layout.topBarContent.set(html`
-          <page-heading
-            >Create a new Solution
-            <a href="/idea/${this.ideaId}">for ${ideaData.name}</a>
-          </page-heading>
-        `);
-      }
-    }
-  };
-
-  private handleDepositFocus() {
-    this.dispatchEvent(new RequestBalanceRefresh());
-  }
-
-  private handleDepositInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = Number(input.value);
-    const userBalance = Number(
-      this.userBalances?.updraft?.balance || 'Infinity'
-    );
-    const minFee = this.updraftSettings.minFee;
-
-    if (isNaN(value)) {
-      this.depositError = 'Enter a number';
-    } else if (value <= minFee) {
-      this.depositError = `Deposit must be more than ${minFee} UPD to cover fees`;
-    } else if (value > userBalance) {
-      this.depositError = `You have ${userBalance} UPD`;
-    } else {
-      this.depositError = null;
-    }
-
-    if (this.depositError) {
-      input.classList.add('invalid');
-    } else {
-      input.classList.remove('invalid');
-    }
-
-    let fee;
-    if (isNaN(value)) {
-      fee = minFee;
-    } else {
-      fee = Math.max(minFee, value * this.updraftSettings.percentFee);
-    }
-    this.antiSpamFee = fee.toFixed(2);
-  }
 
   private handleGoalInput(e: Event) {
     const input = e.target as SlInput;
@@ -237,16 +183,41 @@ export class CreateSolution extends SaveableForm {
     }
   }
 
-  private handleFundingTokenInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = input.value;
-
-    // Basic validation for Ethereum address format
-    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
-    if (!ethAddressRegex.test(value) && value !== '') {
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
+  private setDefaultFundingToken() {
+    // After loading the saved form values, if no funding token is chosen,
+    // select the default value.
+    if (this.fundingTokenInput.value) {
+      if (this.fundingTokenSelect.value === 'custom') {
+        this.showCustomTokenInput = true;
+      } else {
+        this.fundingTokenSelect.value = this.fundingTokenInput.value;
+      }
     } else {
+      const updraftAddress = updraftSettings.get().updAddress;
+      if (updraftAddress) {
+        this.fundingTokenSelect.value = updraftAddress;
+        this.fundingTokenInput.value = updraftAddress;
+      }
+    }
+  }
+
+  private handleTokenSelection() {
+    if (this.fundingTokenSelect.value === 'custom') {
+      this.showCustomTokenInput = true;
+      this.fundingTokenInput.value = '';
+    } else {
+      this.showCustomTokenInput = false;
+      this.fundingTokenInput.value = this.fundingTokenSelect.value as string;
+    }
+  }
+
+  private handleCustomTokenInput(e: Event) {
+    const input = e.target as SlInput;
+
+    if (input.value === '' || ethAddressPattern.test(input.value)) {
       input.style.removeProperty('--sl-input-focus-ring-color');
+    } else {
+      input.style.setProperty('--sl-input-focus-ring-color', 'red');
     }
   }
 
@@ -270,53 +241,148 @@ export class CreateSolution extends SaveableForm {
     }
   }
 
+  private async createSolution() {
+    if (!this.form.checkValidity()) {
+      this.form.reportValidity(); // Show validation messages
+      return;
+    }
+
+    // Get solution data from the first form
+    const solutionData = formToJson('create-solution', solutionSchema);
+
+    // Check if we have the required solution data
+    if (!solutionData.name || !solutionData.description) {
+      console.error('Missing required solution data');
+      return;
+    }
+
+    // Get funding details from the current form
+    const solutionForm = loadForm('create-solution-two');
+    if (!solutionForm) {
+      console.error('Could not load solution form data');
+      return;
+    }
+
+    const { ideaId, fundingToken, goal, deadline, stake, reward } =
+      solutionForm;
+
+    try {
+      const settings = updraftSettings.get();
+      // Format the deadline date properly
+      const deadlineTimestamp = dayjs(deadline).unix();
+
+      this.submitTransaction.hash = await updraft.write('createSolution', [
+        ideaId,
+        fundingToken,
+        stake ? parseUnits(stake, 18) : BigInt(0),
+        parseUnits(goal, 18),
+        BigInt(deadlineTimestamp),
+        BigInt((Number(reward) * Number(settings.percentScale)) / 100),
+        toHex(JSON.stringify(solutionData)),
+      ]);
+      this.shareDialog.topic = solutionData.name as string;
+    } catch (e) {
+      // Use token-input's error handling
+      if (this.tokenInput) {
+        this.tokenInput.handleTransactionError(
+          e,
+          () => this.createSolution(), // Retry after approval
+          () => this.updDialog.show() // Show UPD dialog on low balance
+        );
+      } else {
+        console.error('Transaction error:', e);
+        if (e instanceof Error && e.message.startsWith('connection')) {
+          modal.open({ view: 'Connect' });
+        }
+      }
+    }
+  }
+
+  private async handleTransactionSuccess(t: TransactionSuccess) {
+    const address = t.receipt?.logs?.[1]?.topics?.[1];
+    const ideaId = t.receipt?.logs?.[1]?.topics?.[3];
+    if (address && ideaId) {
+      this.shareDialog.url = `${window.location.origin}/solution/${trim(address)}?ideaId=${trim(ideaId)}`;
+      this.shareDialog.action = 'created a Solution';
+      this.shareDialog.show();
+    }
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    layout.showLeftSidebar.set(true);
+    layout.showRightSidebar.set(false);
+    layout.rightSidebarContent.set(html``);
+    this.unsubHeading = createSolutionHeading(this.ideaId);
+  }
+
   firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
     super.firstUpdated(changedProperties);
-
-    this.addIdeaToHeading();
 
     this.rewardRange.tooltipFormatter = (value: number) => `${value}%`;
     this.rewardRange.defaultValue = 25;
     this.rewardRange.max = 80;
+
+    // Set the slider value to 25 only if there's no saved form value
+    const savedForm = loadForm('create-solution-two');
+    if (!savedForm || !savedForm.reward) {
+      this.rewardRange.value = 25;
+    }
+
     this.rewardRange.updateComplete.then(this.syncRangeTooltip);
 
     this.resizeObserver = new ResizeObserver(this.syncRangeTooltip);
     this.resizeObserver.observe(this.rewardRange);
-  }
 
-  constructor() {
-    super();
-    layout.topBarContent.set(html`
-      <page-heading>Create a new Solution</page-heading>
-    `);
-    layout.showLeftSidebar.set(true);
-    layout.showRightSidebar.set(false);
-    layout.rightSidebarContent.set(html``);
+    this.updateComplete.then(() => {
+      this.setDefaultFundingToken();
+    });
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.resizeObserver?.disconnect();
+    if (this.unsubHeading) {
+      this.unsubHeading.unsubscribe();
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 
   render() {
+    const updAddress = updraftSettings.get().updAddress;
     return html`
       <form name="create-solution-two" @submit=${this.handleFormSubmit}>
         <h2>Funding details</h2>
 
         <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
-        <sl-input
-          name="fundingToken"
-          required
-          autocomplete="off"
-          @input=${this.handleFundingTokenInput}
-          placeholder="0x..."
+        <sl-select
+          name="fundingTokenSelection"
+          @sl-change=${this.handleTokenSelection}
         >
           <label-with-hint
             slot="label"
             label="Funding Token*"
-            hint="The address of the token you want to use to fund your solution"
+            hint="The token you want to use to fund your solution"
+          ></label-with-hint>
+          <sl-option value="${updAddress}">UPD</sl-option>
+          <sl-option value="custom">Custom Token Address</sl-option>
+        </sl-select>
+
+        <sl-input
+          name="fundingToken"
+          class=${this.showCustomTokenInput ? '' : 'hidden'}
+          pattern=${ethAddressPattern.source}
+          required
+          placeholder="0x..."
+          @input=${this.handleCustomTokenInput}
+        >
+          <label-with-hint
+            slot="label"
+            label="Custom Token Address*"
+            hint="Enter the address of the token you want to use"
           ></label-with-hint>
         </sl-input>
 
@@ -344,40 +410,38 @@ export class CreateSolution extends SaveableForm {
         <div class="deposit-container">
           <label-with-hint
             label="Stake"
-            hint="Add a stake to attract more funders. If don't reach your 
+            hint="Add a stake to attract more funders. If don't reach your
                 funding goal, this amount will be distributed to your funders."
           >
           </label-with-hint>
           <div class="deposit-row">
-            <sl-input
+            <token-input
               name="stake"
-              autocomplete="off"
-              @focus=${this.handleDepositFocus}
-              @input=${this.handleDepositInput}
+              spendingContract=${updraft.address}
+              spendingContractName="Updraft"
+              antiSpamFeeMode="fixed"
+              showDialogs="false"
             >
-            </sl-input>
-            <span>UPD</span>
-            <sl-button variant="primary" @click=${() => this.updDialog.show()}
-              >Get more UPD
-            </sl-button>
-            ${this.antiSpamFee
-              ? html` <span>Anti-Spam Fee: ${this.antiSpamFee} UPD</span>`
-              : ''}
+              <sl-button
+                slot="invalid"
+                variant="primary"
+                @click=${() => this.updDialog.show()}
+              >
+                Get more UPD
+              </sl-button>
+            </token-input>
           </div>
-          ${this.depositError
-            ? html` <div class="error">${this.depositError}</div>`
-            : ''}
         </div>
         <div class="reward-container">
           <label-with-hint
             label="Funder Reward"
-            hint="Allow funders to earn a % of the funds contributed by later funders. 
+            hint="Allow funders to earn a % of the funds contributed by later funders.
             A higher reward lets funders earn more but adds less to the solution fund."
           >
           </label-with-hint>
           <div class="range-and-labels">
             <span class="left-label">More for solution</span>
-            <sl-range name="reward" value="25"></sl-range>
+            <sl-range name="reward"></sl-range>
             <span class="right-label">More for funders</span>
           </div>
         </div>
@@ -385,15 +449,38 @@ export class CreateSolution extends SaveableForm {
           <sl-button href="/create-solution/${this.ideaId}" variant="primary"
             >Previous
           </sl-button>
-          <sl-button
-            href="/submit-profile-and-create-solution"
-            variant="primary"
-            @click=${this.nextButtonClick}
-            >Next: Create your Profile
-          </sl-button>
+          ${hasProfile.get()
+            ? html` <sl-button variant="primary" @click=${this.createSolution}
+                >Create Solution
+              </sl-button>`
+            : html` <sl-button
+                href="/submit-profile-and-create-solution"
+                variant="primary"
+                @click=${this.nextButtonClick}
+                >Next: Create your Profile
+              </sl-button>`}
         </span>
+        <transaction-watcher
+          class="submit"
+          @transaction-success=${this.handleTransactionSuccess}
+        ></transaction-watcher>
       </form>
       <upd-dialog></upd-dialog>
+      <share-dialog></share-dialog>
+      <transaction-watcher class="approve"></transaction-watcher>
+      <sl-dialog label="Set Allowance">
+        <p>
+          Before you can create your solution, you need to sign a transaction to
+          allow Updraft to spend your UPD tokens.
+        </p>
+        <transaction-watcher
+          class="approve"
+          @transaction-success=${() => {
+            this.approveDialog.hide();
+            this.createSolution();
+          }}
+        ></transaction-watcher>
+      </sl-dialog>
     `;
   }
 }

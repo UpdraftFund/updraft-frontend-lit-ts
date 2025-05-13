@@ -3,14 +3,15 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
 import { fromHex, formatUnits } from 'viem';
-import makeBlockie from 'ethereum-blockies-base64';
 
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import urqlClient from '@utils/urql-client';
+import '@components/user/user-avatar';
+
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeaContributionsDocument } from '@gql';
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 
 import { Profile } from '@/types';
 
@@ -68,100 +69,97 @@ export class TopSupporters extends LitElement {
 
     .supporter-contribution {
       font-size: 0.8rem;
-      color: var(--section-heading);
+      color: var(--subtle-text);
     }
 
     .no-supporters {
-      color: var(--sl-color-neutral-500);
+      color: var(--no-results);
       font-style: italic;
     }
   `;
 
   @property({ type: String }) ideaId = '';
   @state() private supporters?: Supporter[];
-  private unsubscribe?: () => void;
 
-  private subscribe() {
-    // Disconnect any previous subscriptions
-    this.unsubscribe?.();
+  // Controller for fetching top supporters
+  private readonly supportersController = new UrqlQueryController(
+    this,
+    IdeaContributionsDocument,
+    {
+      ideaId: this.ideaId || '',
+      first: 5,
+      skip: 0,
+    },
+    (result) => {
+      if (result.error) {
+        console.error('Error fetching supporters:', result.error);
+        this.supporters = [];
+        return;
+      }
 
-    if (!this.ideaId) {
-      this.supporters = [];
-      return;
-    }
+      if (!result.data?.ideaContributions) {
+        this.supporters = [];
+      } else {
+        // Use a Map to combine contributions from the same supporter
+        const supporterMap = new Map<string, Supporter>();
 
-    const supportersSub = urqlClient
-      .query(IdeaContributionsDocument, {
-        ideaId: this.ideaId,
-        first: 5,
-        skip: 0,
-      })
-      .subscribe((result) => {
-        if (!result.data?.ideaContributions) {
-          this.supporters = [];
-        } else {
-          this.supporters = result.data.ideaContributions.map(
-            (contribution) => {
-              let name = contribution.funder.id;
-              let avatar = makeBlockie(contribution.funder.id);
+        result.data.ideaContributions.forEach((contribution) => {
+          const funderId = contribution.funder.id;
+          if (supporterMap.has(funderId)) {
+            const existingSupporter = supporterMap.get(funderId)!;
+            const newContribution =
+              BigInt(existingSupporter.contribution) +
+              BigInt(contribution.contribution);
+            supporterMap.set(funderId, {
+              ...existingSupporter,
+              contribution: newContribution.toString(),
+            });
+          } else {
+            let name = funderId;
+            let avatar;
 
-              if (contribution.funder.profile) {
-                try {
-                  const profile: Profile = JSON.parse(
-                    fromHex(
-                      contribution.funder.profile as `0x${string}`,
-                      'string'
-                    )
-                  );
-                  name = profile.name || profile.team || contribution.funder.id;
-                  avatar = profile.image || avatar;
-                } catch (e) {
-                  console.error('Error parsing profile', e);
-                }
+            if (contribution.funder.profile) {
+              try {
+                const profile: Profile = JSON.parse(
+                  fromHex(
+                    contribution.funder.profile as `0x${string}`,
+                    'string'
+                  )
+                );
+                name = profile.name || profile.team || funderId;
+                avatar = profile.image;
+              } catch (e) {
+                console.error('Error parsing profile', e);
               }
-
-              return {
-                id: contribution.funder.id,
-                name,
-                avatar,
-                contribution: contribution.contribution,
-              };
             }
-          );
-        }
-      });
+            supporterMap.set(funderId, {
+              id: funderId,
+              name,
+              avatar,
+              contribution: contribution.contribution,
+            });
+          }
+        });
 
-    this.unsubscribe = supportersSub.unsubscribe;
-  }
-
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubscribe?.();
-    } else {
-      this.subscribe();
+        // Convert map to array and sort by contribution amount (descending)
+        this.supporters = Array.from(supporterMap.values()).sort((a, b) => {
+          return BigInt(b.contribution) > BigInt(a.contribution) ? 1 : -1;
+        });
+      }
     }
-  };
-
-  connectedCallback() {
-    super.connectedCallback();
-    if (this.ideaId) {
-      this.subscribe();
-    }
-    document.addEventListener('visibilitychange', this.handleVisibilityChange);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubscribe?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
-  }
+  );
 
   updated(changedProperties: Map<string, unknown>) {
     if (changedProperties.has('ideaId')) {
-      this.subscribe();
+      if (this.ideaId) {
+        this.supportersController.setVariablesAndSubscribe({
+          ideaId: this.ideaId,
+          first: 5,
+          skip: 0,
+        });
+      } else {
+        this.supporters = [];
+      }
     }
   }
 
@@ -171,40 +169,35 @@ export class TopSupporters extends LitElement {
         <h2>Top Supporters</h2>
         ${this.supporters === undefined
           ? html` <sl-spinner></sl-spinner>`
-          : cache(
-              this.supporters.length === 0
-                ? html` <div class="no-supporters">No supporters yet</div>`
-                : html`
-                    <div class="supporters-list">
-                      ${this.supporters.map(
-                        (supporter) => html`
-                          <div class="supporter">
-                            <sl-avatar
-                              image="${supporter.avatar}"
-                              label="Avatar for ${supporter.name}"
-                            ></sl-avatar>
-                            <div class="supporter-info">
-                              <a
-                                href="/profile/${supporter.id}"
-                                class="supporter-name"
-                                >${supporter.name}</a
-                              >
-                              <div class="supporter-contribution">
-                                ${shortNum(
-                                  formatUnits(
-                                    BigInt(supporter.contribution),
-                                    18
-                                  )
-                                )}
-                                UPD
-                              </div>
-                            </div>
+          : this.supporters.length === 0
+            ? html` <div class="no-supporters">No supporters yet</div>`
+            : cache(html`
+                <div class="supporters-list">
+                  ${this.supporters.map(
+                    (supporter) => html`
+                      <div class="supporter">
+                        <user-avatar
+                          .image=${supporter.avatar}
+                          .address=${supporter.id}
+                        ></user-avatar>
+                        <div class="supporter-info">
+                          <a
+                            href="/profile/${supporter.id}"
+                            class="supporter-name"
+                            >${supporter.name}</a
+                          >
+                          <div class="supporter-contribution">
+                            ${shortNum(
+                              formatUnits(BigInt(supporter.contribution), 18)
+                            )}
+                            UPD
                           </div>
-                        `
-                      )}
-                    </div>
-                  `
-            )}
+                        </div>
+                      </div>
+                    `
+                  )}
+                </div>
+              `)}
       </div>
     `;
   }

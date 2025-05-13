@@ -11,6 +11,7 @@
   --sl-color-primary-900: rgb(10 67 100);
   --sl-color-primary-950: rgb(6 41 62);
   --subtle-background: #dff5fc;
+  --dialog-border: var(--sl-color-neutral-100);
 }
 
 .sl-theme-dark {
@@ -26,16 +27,20 @@
   --sl-color-primary-900: rgb(228 238 243);
   --sl-color-primary-950: rgb(247 250 251);
   --subtle-background: var(--sl-color-primary-100);
+  --dialog-border: var(--sl-color-neutral-400);
 }
 
 /* Use var(--sl-color-{name}-{n}) to have inverted colors for dark and light themes.
    See https://shoelace.style/tokens/color for built-in theme and palette names. */
 :root, .sl-theme-dark, .sl-theme-light {
   --sl-input-border-color: var(--sl-color-primary-300);
+  --sl-input-focus-ring-color: var(--sl-color-primary-300);
   --main-background: var(--sl-color-neutral-0);
   --accent: var(--sl-color-primary-800);
+  --link: var(--sl-color-primary-500);
   --main-foreground: var(--sl-color-neutral-800);
   --subtle-text: var(--sl-color-neutral-600);
+  --no-results: var(--sl-color-neutral-500);
   --control-background: var(--sl-color-sky-200);
   --section-heading: var(--sl-color-neutral-500);
   --layout-divider: var(--sl-color-neutral-200);

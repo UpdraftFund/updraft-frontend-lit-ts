@@ -12,12 +12,13 @@ export class CreateIdeaButton extends LitElement {
     :host {
       display: inline-block;
     }
-    sl-icon-button {
+    sl-icon-button::part(base) {
       color: var(--main-foreground);
       background: var(--main-background);
       border-color: var(--main-foreground);
+      border-radius: 27%;
     }
-    sl-icon-button:hover {
+    sl-icon-button::part(base):hover {
       color: var(--main-background);
       background: var(--main-foreground);
     }

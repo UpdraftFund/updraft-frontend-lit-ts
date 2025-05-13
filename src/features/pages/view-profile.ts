@@ -1,38 +1,30 @@
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
-import { Task } from '@lit/task';
+import { cache } from 'lit/directives/cache.js';
 
 import { fromHex } from 'viem';
 
-import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@layout/page-heading';
-import '@/features/user/components/activity-feed';
-import '@/features/user/components/user-avatar';
 
-import {
-  userAddress,
-  isConnected,
-  userProfile,
-  USER_CONNECTED_EVENT,
-  USER_DISCONNECTED_EVENT,
-  USER_PROFILE_UPDATED_EVENT,
-} from '@state/user';
+import '@components/navigation/search-bar';
+import '@components/navigation/create-idea-button';
+import '@components/user/activity-feed';
+import '@components/user/user-avatar';
+
+import { UrqlQueryController } from '@utils/urql-query-controller';
+
+import layout from '@state/layout';
+import { userAddress } from '@state/user';
 import { followUser, isFollowed, unfollowUser } from '@state/user/follow';
-import { markComplete } from '@pages/home/state/beginner-tasks';
+import { markComplete } from '@state/user/beginner-tasks';
 
-import urqlClient from '@utils/urql-client';
 import { ProfileDocument } from '@gql';
-import layout, { topBarContent } from '@state/layout';
+import { Profile } from '@/features/user/types/profile';
 
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
   static styles = css`
-    activity-feed {
-      flex: 0 0 789px;
-    }
-
     main {
       flex: 1;
       box-sizing: border-box;
@@ -51,17 +43,8 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       margin-bottom: 1rem;
     }
 
-    .avatar {
-      border-radius: 50%;
-      width: 64px;
-      height: 64px;
-      aspect-ratio: 1/1;
-    }
-
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
+    user-avatar {
+      --avatar-size: 64px;
     }
 
     .name {
@@ -117,140 +100,61 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       text-decoration: underline;
       color: var(--sl-color-primary-600);
     }
-
-    @media (max-width: 1090px) {
-      activity-feed {
-        flex: 0 0 0;
-        pointer-events: none;
-      }
-    }
   `;
 
   @property() address!: string;
+  @state() private profileData: Profile | null = null;
+  @state() private loading = true;
+  @state() private error: Error | null = null;
 
-  private async fetchUserProfile(address: string) {
-    const result = await urqlClient
-      .query(ProfileDocument, { userId: address })
-      .toPromise();
-    return result.data?.user?.profile;
-  }
+  // Controller for fetching profile data
+  private readonly profileController = new UrqlQueryController(
+    this,
+    ProfileDocument,
+    { userId: this.address || '' },
+    (result) => {
+      this.loading = false;
 
-  private async loadProfile(address: string) {
-    if (!address) return;
-
-    try {
-      const profile = await this.fetchUserProfile(address);
-      if (profile) {
-        userProfile.set(profile);
-      }
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-    }
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-
-    // Load profile if not already loaded
-    if (!userProfile.get() && this.address) {
-      this.loadProfile(this.address);
-    }
-
-    // Set page title
-    topBarContent.set(html`<page-heading>Profile</page-heading>`);
-
-    // Add listeners for user state events to trigger updates
-    document.addEventListener(
-      USER_CONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.addEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.addEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.handleUserStateChanged
-    );
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    topBarContent.set(html``);
-
-    // Remove event listeners
-    document.removeEventListener(
-      USER_CONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.removeEventListener(
-      USER_DISCONNECTED_EVENT,
-      this.handleUserStateChanged
-    );
-    document.removeEventListener(
-      USER_PROFILE_UPDATED_EVENT,
-      this.handleUserStateChanged
-    );
-  }
-
-  private handleUserStateChanged = () => {
-    // Force a re-render when user state changes
-    this.requestUpdate();
-  };
-
-  // Task for fetching profile data
-  private readonly profile = new Task(this, {
-    task: async ([userId]) => {
-      if (!userId) return null;
-
-      // If viewing the current user and we already have their profile, use it
-      const currentUserAddress = userAddress.get();
-      const currentUserProfile = userProfile.get();
-
-      if (
-        currentUserAddress &&
-        userId.toLowerCase() === currentUserAddress.toLowerCase() &&
-        currentUserProfile
-      ) {
-        return currentUserProfile;
+      if (result.error) {
+        this.error = new Error(result.error.message);
+        return;
       }
 
-      // Otherwise fetch the profile
-      const result = await urqlClient.query(ProfileDocument, { userId });
       if (result.data?.user?.profile) {
-        return JSON.parse(
-          fromHex(result.data.user.profile as `0x${string}`, 'string')
-        );
-      }
-      return null;
-    },
-    args: () => [this.address] as const,
-  });
+        try {
+          this.profileData = JSON.parse(
+            fromHex(result.data.user.profile as `0x${string}`, 'string')
+          );
 
-  // Task for checking follow status
-  private readonly followStatus = new Task(this, {
-    task: async ([userId]) => {
-      if (!userId) return false;
-      return isFollowed(userId);
-    },
-    args: () => [this.address] as const,
-  });
+          // Update the activity feed in the right sidebar
+          if (this.profileData) {
+            const { name, team } = this.profileData;
+            layout.rightSidebarContent.set(
+              html` <activity-feed
+                .userId=${this.address}
+                .userName=${name || team}
+              ></activity-feed>`
+            );
+          }
+        } catch (e) {
+          this.error =
+            e instanceof Error ? e : new Error('Failed to parse profile data');
+        }
+      } else {
+        this.profileData = null;
+      }
+    }
+  );
 
   private handleFollow(): void {
     followUser(this.address);
     markComplete('follow-someone');
-    // Re-run follow status task to update UI
-    this.followStatus.run();
   }
 
   private get profileButton() {
-    // Get data from signals
     const walletAddress = userAddress.get()?.toLowerCase() || '';
     const profileAddress = this.address?.toLowerCase() || '';
-    const walletConnected = isConnected.get();
-
-    // Determine if the user is viewing their own profile
-    const isCurrentUser = walletConnected && walletAddress === profileAddress;
+    const isCurrentUser = walletAddress === profileAddress;
 
     // If the address is the current user's address, show Edit Profile button
     if (isCurrentUser) {
@@ -261,34 +165,20 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       `;
     } else {
       // Otherwise, show Follow/Unfollow button based on follow status task
-      return html`
-        ${this.followStatus.render({
-          pending: () =>
-            html`<sl-button variant="primary" disabled>Loading...</sl-button>`,
-          complete: (isFollowing) => {
-            if (isFollowing) {
-              return html` <sl-button
-                variant="primary"
-                @click=${() => {
-                  unfollowUser(this.address);
-                  this.followStatus.run();
-                }}
-              >
-                Unfollow
-              </sl-button>`;
-            } else {
-              return html` <sl-button
-                variant="primary"
-                @click=${this.handleFollow}
-              >
-                Follow
-              </sl-button>`;
-            }
-          },
-          error: () =>
-            html`<sl-button variant="primary" disabled>Error</sl-button>`,
-        })}
-      `;
+      if (isFollowed(this.address)) {
+        return html` <sl-button
+          variant="primary"
+          @click=${() => {
+            unfollowUser(this.address);
+          }}
+        >
+          Unfollow
+        </sl-button>`;
+      } else {
+        return html` <sl-button variant="primary" @click=${this.handleFollow}>
+          Follow
+        </sl-button>`;
+      }
     }
   }
 
@@ -323,82 +213,84 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     imgElement.src = '/src/assets/icons/link-45deg.svg'; // Fallback icon
   }
 
-  updated(changedProperties: Map<string, unknown>) {
-    // If the address changes, re-run the profile and follow status tasks
-    if (changedProperties.has('address')) {
-      this.profile.run();
-      this.followStatus.run();
-    }
-  }
-
-  render() {
+  connectedCallback() {
+    super.connectedCallback();
     layout.topBarContent.set(html`
       <create-idea-button></create-idea-button>
       <search-bar></search-bar>
     `);
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(true);
-    layout.rightSidebarContent.set(
-      html` <activity-feed
-        .userId=${this.address}
-        .userName=${this.profile.value?.name}
-      ></activity-feed>`
-    );
+
+    // Initialize the profile controller with the current address
+    if (this.address) {
+      this.profileController.setVariablesAndSubscribe({ userId: this.address });
+    }
+  }
+
+  updated(changedProperties: Map<string, unknown>) {
+    // If the address changes, update the controller variables
+    if (changedProperties.has('address') && this.address) {
+      this.loading = true;
+      this.error = null;
+      this.profileController.setVariablesAndSubscribe({ userId: this.address });
+    }
+  }
+
+  render() {
     return html`
       <main>
-        ${this.profile.render({
-          pending: () => html`<p>Loading profile...</p>`,
-          complete: (value) => {
-            const { name, team, image, about, news, links } = value || {};
-            return html`
-              <div class="profile-header">
-                <user-avatar
-                  .address=${this.address}
-                  .imageUrl=${image || ''}
-                  size="64px"
-                ></user-avatar>
-                <div>
-                  ${name || team
-                    ? html` <h1 class="name">${name || team}</h1>`
-                    : ''}
-                  <div class="address">${this.address}</div>
-                  ${name && team ? html` <div class="team">${team}</div>` : ''}
+        ${this.loading
+          ? html`<p>Loading profile...</p>`
+          : this.error
+            ? html`<p>Error loading profile: ${this.error.message}</p>`
+            : cache(html`
+                <div class="profile-header">
+                  <user-avatar
+                    .address=${this.address}
+                    .image=${this.profileData?.image}
+                  ></user-avatar>
+                  <div>
+                    ${this.profileData?.name || this.profileData?.team
+                      ? html` <h1 class="name">
+                          ${this.profileData?.name || this.profileData?.team}
+                        </h1>`
+                      : html``}
+                    <div class="address">${this.address}</div>
+                    ${this.profileData?.team && this.profileData?.name
+                      ? html` <div class="team">${this.profileData.team}</div>`
+                      : html``}
+                  </div>
                 </div>
-              </div>
 
-              ${this.profileButton}
-              ${about
-                ? html`
-                    <div class="about section">
-                      <h2>About</h2>
-                      <p>${about}</p>
-                    </div>
-                  `
-                : ''}
-              ${news
-                ? html`
-                    <div class="news section">
-                      <h2>Latest Updates</h2>
-                      <p>${news}</p>
-                    </div>
-                  `
-                : ''}
-              ${links?.length
-                ? html`
-                    <div class="links section">
-                      <h2>Links</h2>
-                      ${links.map((link: string) => this.createLink(link))}
-                    </div>
-                  `
-                : ''}
-            `;
-          },
-          error: (error: unknown) => {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
-            return html`<p>Error loading profile: ${errorMessage}</p>`;
-          },
-        })}
+                ${this.profileButton}
+                ${this.profileData?.about
+                  ? html`
+                      <div class="about section">
+                        <h2>About</h2>
+                        <p>${this.profileData.about}</p>
+                      </div>
+                    `
+                  : html``}
+                ${this.profileData?.news
+                  ? html`
+                      <div class="news section">
+                        <h2>Latest Updates</h2>
+                        <p>${this.profileData.news}</p>
+                      </div>
+                    `
+                  : html``}
+                ${this.profileData?.links?.length
+                  ? html`
+                      <div class="links section">
+                        <h2>Links</h2>
+                        ${this.profileData.links.map((link: string) =>
+                          this.createLink(link)
+                        )}
+                      </div>
+                    `
+                  : html``}
+              `)}
       </main>
     `;
   }

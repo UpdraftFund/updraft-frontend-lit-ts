@@ -57,8 +57,34 @@ export const setIsConnecting = (connecting: boolean): void => {
   isConnecting.set(connecting);
 };
 
-export const setConnectionError = (error: string | null): void => {
-  connectionError.set(error);
+/**
+ * Type for error message arguments
+ * Can be a string, Error, or any other value that can be converted to string
+ */
+type ErrorArg = string | Error | unknown;
+
+/**
+ * Helper function to extract error message from arguments
+ * @param args Arguments passed to the error handler
+ * @returns The extracted error message or null if no arguments
+ */
+const extractErrorMessage = (...args: ErrorArg[]): string | null => {
+  if (args.length > 0) {
+    console.error(...args);
+
+    // Extract error message for the signal
+    const lastArg = args[args.length - 1];
+    return lastArg instanceof Error
+      ? lastArg.message
+      : lastArg
+        ? String(lastArg)
+        : 'Unknown error';
+  }
+  return null;
+};
+
+export const setConnectionError = (...args: ErrorArg[]): void => {
+  connectionError.set(extractErrorMessage(...args));
 };
 
 export const setNetworkName = (name: string | null): void => {
@@ -84,9 +110,7 @@ export const connectWallet = async (): Promise<void> => {
     setUserAddress('0x1234567890123456789012345678901234567890' as Address);
     setConnectionError(null);
   } catch (error) {
-    setConnectionError(
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    setConnectionError(error);
   } finally {
     setIsConnecting(false);
   }

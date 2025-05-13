@@ -1,0 +1,22 @@
+query IdeasByFunderOrCreator($user: String!, $first: Int = 3, $skip: Int = 0) {
+    # Get ideas where user is a funder
+    fundedIdeas: ideaContributions(
+        first: $first,
+        skip: $skip,
+        where: { funder: $user }
+    ) {
+        idea {
+            ...IdeaFields
+        }
+        createdTime
+    }
+
+    # Get ideas where user is the creator
+    createdIdeas: ideas(
+        first: $first,
+        skip: $skip,
+        where: { creator: $user }
+    ) {
+        ...IdeaFields
+    }
+}

@@ -1,4 +1,4 @@
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
@@ -7,6 +7,7 @@ import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 
 import { showLeftSidebar, showRightSidebar } from '@state/layout';
+import { nav } from '@state/navigation';
 
 @customElement('app-layout')
 export class AppLayout extends SignalWatcher(LitElement) {
@@ -47,6 +48,12 @@ export class AppLayout extends SignalWatcher(LitElement) {
       height: 100%;
     }
 
+    /* The edit-profile and view-profile pages need a wider right sidebar */
+    :host([page='edit-profile']) right-side-bar,
+    :host([page='view-profile']) right-side-bar {
+      flex: 0 0 50%;
+    }
+
     /* Responsive layout */
     @media (max-width: 1024px) {
       .main-content {
@@ -55,7 +62,6 @@ export class AppLayout extends SignalWatcher(LitElement) {
 
       /* Ensure right sidebar is visible in tablet view by default */
       right-side-bar {
-        flex: 0 0 300px;
         display: block;
       }
     }
@@ -96,7 +102,10 @@ export class AppLayout extends SignalWatcher(LitElement) {
     }
   `;
 
+  @property({ reflect: true }) page = nav.get();
+
   render() {
+    this.page = nav.get();
     return html`
       <top-bar></top-bar>
       <div class="app-layout">

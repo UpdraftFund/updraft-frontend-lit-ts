@@ -1,117 +1,109 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { SignalWatcher } from '@lit-labs/signals';
 
 import '@components/common/section-heading';
 import '@components/solution/solution-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import { userAddress } from '@state/user';
-
-import urqlClient from '@utils/urql-client';
+import { UrqlQueryController } from '@utils/urql-query-controller';
 import { SolutionsByFunderOrDrafterDocument } from '@gql';
 import { Solution } from '@/types';
 
 @customElement('my-solutions')
-export class MySolutions extends LitElement {
-  @state() private solutions?: Solution[];
-  private unsubSolutions?: () => void;
-
+export class MySolutions extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
     }
 
     .content {
-      padding: 1rem 1.4rem 0;
+      padding: 1rem 0 0;
       box-sizing: border-box;
     }
 
     solution-card-small {
       width: 100%;
     }
-
-    .loading {
-      padding: 1rem;
-      color: var(--sl-color-neutral-500);
-    }
   `;
 
-  private subscribe() {
-    // Clean up previous subscription if it exists
-    this.unsubSolutions?.();
+  @property({ type: String }) address: string | null = null;
+  @state() private solutions: Solution[] = [];
+  @state() private loading = true;
 
-    if (userAddress.get()) {
-      const solutionsSub = urqlClient
-        .query(SolutionsByFunderOrDrafterDocument, {
-          user: userAddress.get() as string,
-        })
-        .subscribe((result) => {
-          if (result.data) {
-            // Get solutions from both queries
-            const fundedSolutions =
-              result.data.fundedSolutions?.map(
-                (contribution) => contribution.solution
-              ) || [];
-            const draftedSolutions = result.data.draftedSolutions || [];
+  // Controller for fetching solutions
+  private readonly solutionsController = new UrqlQueryController(
+    this,
+    SolutionsByFunderOrDrafterDocument,
+    { user: this.address || '' },
+    (result) => {
+      this.loading = false;
 
-            // Combine and deduplicate solutions based on their ID
-            const solutionMap = new Map();
+      if (result.error) {
+        console.error('Error fetching solutions:', result.error);
+        this.solutions = [];
+        return;
+      }
 
-            // Add funded solutions to map
-            fundedSolutions.forEach((solution) => {
-              solutionMap.set(solution.id, solution);
-            });
+      if (result.data) {
+        // Create a map to store solutions with their activity timestamps
+        const solutionActivityMap = new Map();
 
-            // Add drafted solutions to map (will overwrite any duplicates)
-            draftedSolutions.forEach((solution) => {
-              solutionMap.set(solution.id, solution);
-            });
-
-            // Convert map values back to array
-            this.solutions = Array.from(solutionMap.values());
-          } else {
-            this.solutions = [];
-          }
+        // Process funded solutions
+        const fundedSolutions = result.data.fundedSolutions || [];
+        fundedSolutions.forEach((contribution) => {
+          const solution = contribution.solution;
+          // Store the solution with its activity time (contribution time)
+          solutionActivityMap.set(solution.id, {
+            solution,
+            // Use the latest activity time if this solution already exists in the map
+            activityTime: Math.max(
+              Number(contribution.createdTime),
+              solutionActivityMap.get(solution.id)?.activityTime || 0
+            ),
+          });
         });
 
-      this.unsubSolutions = solutionsSub.unsubscribe;
-    }
-  }
+        // Process drafted solutions
+        const draftedSolutions = result.data.draftedSolutions || [];
+        draftedSolutions.forEach((solution) => {
+          // Store the solution with its activity time (creation time)
+          solutionActivityMap.set(solution.id, {
+            solution,
+            // Use the latest activity time if this solution already exists in the map
+            activityTime: Math.max(
+              Number(solution.startTime),
+              solutionActivityMap.get(solution.id)?.activityTime || 0
+            ),
+          });
+        });
 
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubSolutions?.();
-    } else {
-      this.subscribe();
+        // Sort solutions by activity time (newest first) and extract just the solutions
+        this.solutions = Array.from(solutionActivityMap.values())
+          .sort((a, b) => b.activityTime - a.activityTime)
+          .map((item) => item.solution);
+      } else {
+        this.solutions = [];
+      }
     }
-  };
+  );
 
-  connectedCallback() {
-    super.connectedCallback();
-    if (userAddress.get()) {
-      this.subscribe();
-      document.addEventListener(
-        'visibilitychange',
-        this.handleVisibilityChange
-      );
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('address') && this.address) {
+      this.loading = true;
+      this.solutionsController.setVariablesAndSubscribe({
+        user: this.address,
+      });
     }
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubSolutions?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
   }
 
   render() {
     return html`
       <section-heading>My Solutions</section-heading>
       <div class="content">
-        ${this.solutions === undefined
+        ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : cache(
               this.solutions.map(

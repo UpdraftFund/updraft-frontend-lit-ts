@@ -1,8 +1,6 @@
 import { LitElement, css } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
-import { consume } from '@lit/context';
-import { balanceContext } from '@state/common';
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dropdown/dropdown.js';
@@ -17,11 +15,11 @@ import { UpdDialog } from '@components/common/upd-dialog';
 
 import layersIcon from '@icons/navigation/layers.svg';
 import creditCardIcon from '@icons/navigation/credit-card.svg';
-import reconnectIcon from '@icons/navigation/arrow-clockwise.svg';
+import reconnectIcon from '@icons/common/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3';
-import { shortNum } from '@utils/short-num';
+import { shortNum } from '@utils/format-utils';
 
 import {
   userAddress,
@@ -31,13 +29,10 @@ import {
   connectWallet,
   disconnectWallet,
 } from '@state/user';
+import { balances, refreshBalances } from '@state/user/balances';
 
-@customElement('profile-area')
-export class ProfileArea extends SignalWatcher(LitElement) {
-  @consume({ context: balanceContext, subscribe: true }) balances!: {
-    [key: string]: { symbol: string; balance: string };
-  };
-
+@customElement('user-menu')
+export class UserMenu extends SignalWatcher(LitElement) {
   static styles = css`
     :host,
     .trigger-content {
@@ -56,11 +51,6 @@ export class ProfileArea extends SignalWatcher(LitElement) {
       overflow: hidden;
       text-overflow: ellipsis;
       font-weight: 500;
-    }
-    img {
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
     }
     .menu-avatar {
       width: 32px;
@@ -125,12 +115,13 @@ export class ProfileArea extends SignalWatcher(LitElement) {
     const currentNetworkName = networkName.get();
     const profile = userProfile.get();
     const connectingValue = isConnecting.get();
-    const displayName = profile?.name || (address ? address : 'Connecting...');
-    const avatarUrl = profile?.image || profile?.avatar || '';
-    const ethBalanceRaw = this.balances?.eth?.balance || '0';
-    const ethSymbol = this.balances?.eth?.symbol || 'ETH';
-    const updBalanceRaw = this.balances?.updraft?.balance || '0';
-    const updSymbol = this.balances?.updraft?.symbol || 'UPD';
+    const displayName =
+      profile?.name || profile?.team || (address ? address : 'Connecting...');
+    const avatar = profile?.avatar;
+    const ethBalanceRaw = balances.get()?.eth?.balance || '0';
+    const ethSymbol = balances.get()?.eth?.symbol || 'ETH';
+    const updBalanceRaw = balances.get()?.updraft?.balance || '0';
+    const updSymbol = balances.get()?.updraft?.symbol || 'UPD';
     const ethBalance = isNaN(Number(ethBalanceRaw))
       ? '0.00000'
       : parseFloat(ethBalanceRaw).toFixed(5);
@@ -142,18 +133,12 @@ export class ProfileArea extends SignalWatcher(LitElement) {
             distance="12"
             skidding="22"
             placement="top-end"
-            @sl-show=${() =>
-              this.dispatchEvent(
-                new CustomEvent('request-balance-refresh', {
-                  bubbles: true,
-                  composed: true,
-                })
-              )}
+            @sl-show=${refreshBalances}
           >
             <span slot="trigger" class="trigger-content" title="Profile menu">
               <user-avatar
                 .address=${address}
-                .imageUrl=${avatarUrl}
+                .image=${avatar}
                 size="42px"
               ></user-avatar>
               <span class="name">${displayName}</span>
@@ -190,7 +175,7 @@ export class ProfileArea extends SignalWatcher(LitElement) {
                     slot="prefix"
                     class="menu-avatar"
                     .address=${address}
-                    .imageUrl=${avatarUrl}
+                    .image=${avatar}
                     size="32px"
                   ></user-avatar>
                   <div>
@@ -216,6 +201,6 @@ export class ProfileArea extends SignalWatcher(LitElement) {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'profile-area': ProfileArea;
+    'user-menu': UserMenu;
   }
 }

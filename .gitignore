@@ -7,10 +7,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependency directories
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+
+# Local env files
 *.local
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
@@ -26,5 +33,15 @@ dist-ssr
 # Graphclient output
 /.graphclient/
 
+# Temporary files
 tmp.txt
-.aider*
+.temp
+.tmp
+
+# Coverage reports
+coverage
+.nyc_output
+
+# Testing artifacts
+test-results/
+.jest-cache

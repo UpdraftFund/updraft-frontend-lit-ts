@@ -1,100 +1,110 @@
-declare global {
-  interface HTMLElementTagNameMap {
-    'my-ideas': MyIdeas;
-  }
-}
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
+import { SignalWatcher } from '@lit-labs/signals';
 
 import '@components/common/section-heading';
 import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
-import { userAddress } from '@state/user';
-
-import urqlClient from '@utils/urql-client';
-import { IdeasByFunderDocument, IdeasByFunderQuery } from '@gql';
+import { UrqlQueryController } from '@utils/urql-query-controller';
+import { IdeasByFunderOrCreatorDocument, Idea } from '@gql';
 
 @customElement('my-ideas')
-export class MyIdeas extends LitElement {
-  @state() private ideasQueryResult?: IdeasByFunderQuery;
-  private unsubIdeas?: () => void;
-
+export class MyIdeas extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
     }
 
     .content {
-      padding: 1rem 1.4rem 0;
+      padding: 1rem 0 0;
       box-sizing: border-box;
     }
 
     idea-card-small {
       width: 100%;
     }
-
-    .loading {
-      padding: 1rem;
-      color: var(--sl-color-neutral-500);
-    }
   `;
 
-  private subscribe() {
-    // Clean up previous subscription if it exists
-    this.unsubIdeas?.();
+  @property({ type: String }) address: string | null = null;
+  @state() private ideas: Idea[] = [];
+  @state() private loading = true;
 
-    if (userAddress.get()) {
-      const ideasSub = urqlClient
-        .query(IdeasByFunderDocument, {
-          funder: userAddress.get() as string,
-        })
-        .subscribe((result) => {
-          this.ideasQueryResult = result.data;
+  // Controller for fetching ideas
+  private readonly ideasController = new UrqlQueryController(
+    this,
+    IdeasByFunderOrCreatorDocument,
+    { user: this.address || '' },
+    (result) => {
+      this.loading = false;
+
+      if (result.error) {
+        console.error('Error fetching ideas:', result.error);
+        this.ideas = [];
+        return;
+      }
+
+      if (result.data) {
+        // Create a map to store ideas with their activity timestamps
+        const ideaActivityMap = new Map();
+
+        const fundedIdeas = result.data.fundedIdeas || [];
+        fundedIdeas.forEach((contribution) => {
+          const idea = contribution.idea;
+          // Store the idea with its activity time (contribution time)
+          ideaActivityMap.set(idea.id, {
+            idea,
+            // Use the latest activity time if this idea already exists in the map
+            activityTime: Math.max(
+              Number(contribution.createdTime) || Number(idea.startTime),
+              ideaActivityMap.get(idea.id)?.activityTime || 0
+            ),
+          });
         });
-      this.unsubIdeas = ideasSub.unsubscribe;
-    }
-  }
 
-  private handleVisibilityChange = () => {
-    if (document.hidden) {
-      this.unsubIdeas?.();
-    } else {
-      this.subscribe();
-    }
-  };
+        const createdIdeas = result.data.createdIdeas || [];
+        createdIdeas.forEach((idea) => {
+          // Store the idea with its activity time (creation time)
+          ideaActivityMap.set(idea.id, {
+            idea,
+            // Use the latest activity time if this idea already exists in the map
+            activityTime: Math.max(
+              Number(idea.startTime),
+              ideaActivityMap.get(idea.id)?.activityTime || 0
+            ),
+          });
+        });
 
-  connectedCallback() {
-    super.connectedCallback();
-    if (userAddress.get()) {
-      this.subscribe();
-      document.addEventListener(
-        'visibilitychange',
-        this.handleVisibilityChange
-      );
+        // Sort ideas by activity time (newest first), extract just the ideas, and limit to 3
+        this.ideas = Array.from(ideaActivityMap.values())
+          .sort((a, b) => b.activityTime - a.activityTime)
+          .map((item) => item.idea)
+          .slice(0, 3); // Limit to 3 ideas total
+      } else {
+        this.ideas = [];
+      }
     }
-  }
+  );
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.unsubIdeas?.();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('address') && this.address) {
+      this.loading = true;
+      this.ideasController.setVariablesAndSubscribe({ user: this.address });
+    }
   }
 
   render() {
     return html`
       <section-heading>My Ideas</section-heading>
       <div class="content">
-        ${this.ideasQueryResult === undefined
+        ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : cache(
-              this.ideasQueryResult.ideaContributions.map(
-                (ic) => html`
-                  <idea-card-small .idea=${ic.idea}></idea-card-small>
+              this.ideas.map(
+                (idea) => html`
+                  <idea-card-small .idea=${idea}></idea-card-small>
                 `
               )
             )}

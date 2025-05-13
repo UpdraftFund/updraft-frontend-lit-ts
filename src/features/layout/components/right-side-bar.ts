@@ -1,19 +1,8 @@
-/***
- * This is the right-hand sidebar for the Home and Discover screens.
- * https://www.figma.com/design/lfPeBM41v53XQZLkYRUt5h/Updraft?node-id=920-7089&m=dev
- ***/
-
 import { LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
-import '@components/idea/hot-ideas';
-import '@components/idea/related-ideas';
-import '@components/idea/top-supporters';
-import '@components/tags/watched-tags';
-import '@components/tags/popular-tags';
-
-import { rightSidebarContent } from '@state/layout';
+import { rightSidebarContent, leftSidebarCollapsed } from '@state/layout';
 
 @customElement('right-side-bar')
 export class RightSideBar extends SignalWatcher(LitElement) {
@@ -30,6 +19,10 @@ export class RightSideBar extends SignalWatcher(LitElement) {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+    }
+
+    activity-feed {
+      flex: 0 0 789px;
     }
 
     /* Responsive behavior */
@@ -57,6 +50,13 @@ export class RightSideBar extends SignalWatcher(LitElement) {
         border-top: 1px solid var(--border-default);
       }
     }
+
+    @media (max-width: 1090px) {
+      activity-feed {
+        flex: 0 0 0;
+        pointer-events: none;
+      }
+    }
   `;
 
   @property({
@@ -66,33 +66,11 @@ export class RightSideBar extends SignalWatcher(LitElement) {
   })
   hiddenByLeftSidebar = false;
 
-  @property() ideaId?: string;
-
-  connectedCallback() {
-    super.connectedCallback();
-    document.addEventListener(
-      'expanded',
-      this.handleLeftSidebarExpanded as EventListener
-    );
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    document.removeEventListener(
-      'expanded',
-      this.handleLeftSidebarExpanded as EventListener
-    );
-  }
-
-  private handleLeftSidebarExpanded = (e: Event) => {
-    // Only respond to this event in tablet view
-    if (window.innerWidth <= 1024 && window.innerWidth > 768) {
-      // The event detail is now just the boolean value
-      this.hiddenByLeftSidebar = (e as CustomEvent<boolean>).detail;
-    }
-  };
-
   render() {
+    this.hiddenByLeftSidebar =
+      !leftSidebarCollapsed.get() &&
+      window.innerWidth <= 1024 &&
+      window.innerWidth > 768;
     return html` <div class="content">${rightSidebarContent.get()}</div>`;
   }
 }
