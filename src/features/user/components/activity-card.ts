@@ -208,11 +208,10 @@ export class ActivityCard extends LitElement {
   }
 
   private formatDeadline(timestamp: number) {
-    const date = formatDate(timestamp);
     const now = dayjs();
     const deadline = dayjs(timestamp * 1000);
 
-    let deadlineString = date.fromNow;
+    let deadlineString = deadline.fromNow();
     if (deadline.isBefore(now)) {
       deadlineString = `❌ ${deadlineString}`;
     }
@@ -261,21 +260,20 @@ export class ActivityCard extends LitElement {
 
   private renderDetailsBar() {
     if (this.activity.type === 'ideaFunded') {
+      const idea = this.activity.idea;
       return html`
         <div class="details-bar">
           <span class="emoji-badge"
             ><span class="emoji">🌱</span> Created
-            ${formatDate(this.activity.timestamp / 1000).fromNow}</span
+            ${formatDate(idea.startTime).fromNow}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🎁</span>${formatReward(
-              this.activity.idea.funderReward
-            )}
+            ><span class="emoji">🎁</span>${formatReward(idea.funderReward)}
             Funder Reward</span
           >
           <span class="emoji-badge"
             ><span class="emoji">🔥</span>${formatTokenAmount(
-              this.activity.idea.shares
+              idea.shares
             )}</span
           >
         </div>
