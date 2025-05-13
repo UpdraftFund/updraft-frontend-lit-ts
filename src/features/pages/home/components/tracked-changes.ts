@@ -199,7 +199,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         result.data.newSupporters.forEach((item) => {
           this.changesManager.addChange({
             type: 'newSupporter',
-            time: Number(item.createdTime),
+            time: Number(item.createdTime) * 1000,
             idea: item.idea,
             supporters: [
               {
@@ -214,7 +214,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         result.data.newSolutions.forEach((item) => {
           this.changesManager.addChange({
             type: 'newSolution',
-            time: Number(item.startTime),
+            time: Number(item.startTime) * 1000,
             solution: item,
           });
         });
@@ -222,7 +222,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         // Process updates to solutions you created or funded
         result.data.solutionUpdated.forEach((item) => {
           const now = dayjs();
-          const deadlineDate = dayjs(Number(item.deadline));
+          const deadlineDate = dayjs(Number(item.deadline) * 1000);
           const progressBigInt = BigInt(item.tokensContributed || '0');
           const goalBigInt = BigInt(item.fundingGoal || '0');
 
@@ -230,7 +230,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
           if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
             this.changesManager.addChange({
               type: 'goalReached',
-              time: Number(item.startTime),
+              time: Number(item.startTime) * 1000,
               solution: item,
             });
           }
@@ -238,7 +238,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
           else if (now.isAfter(deadlineDate) && progressBigInt < goalBigInt) {
             this.changesManager.addChange({
               type: 'goalFailed',
-              time: Number(item.startTime),
+              time: Number(item.startTime) * 1000,
               solution: item,
             });
           }
@@ -246,7 +246,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
           else {
             this.changesManager.addChange({
               type: 'solutionUpdated',
-              time: Number(item.startTime),
+              time: Number(item.startTime) * 1000,
               solution: item,
             });
           }
@@ -256,7 +256,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         result.data.newFunders.forEach((item) => {
           this.changesManager.addChange({
             type: 'newFunder',
-            time: Number(item.createdTime),
+            time: Number(item.createdTime) * 1000,
             solution: item.solution,
             funders: [
               {
