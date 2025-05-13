@@ -21,7 +21,9 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import { SlDialog, SlInput } from '@shoelace-style/shoelace';
+import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
+import { SlDialog, SlCheckbox } from '@shoelace-style/shoelace';
 
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
@@ -68,9 +70,20 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
       .support {
         display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-top: 0.25rem;
+        flex-direction: column;
+        margin-bottom: 1rem;
+      }
+
+      .airdrop-option {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+        margin-left: 0.25rem;
+      }
+
+      .airdrop-option .info-icon {
+        font-size: 0.75rem;
+        cursor: help;
       }
 
       .heading {
@@ -226,8 +239,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.withdraw', true)
   withdrawTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
-  @query('sl-input[name="support"]', true) supportInput!: SlInput;
   @query('token-input', true) tokenInput!: TokenInput;
+  @query('sl-checkbox', true) airdropCheckbox!: SlCheckbox;
 
   // supportValue is now handled by UpdTransactionMixin as updValue
   @state() private idea?: Idea;
@@ -391,14 +404,27 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
+  @state() private isAirdropMode = false;
+
+  private updateAirdropMode = () => {
+    this.isAirdropMode = this.airdropCheckbox.checked;
+  };
+
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
       const support = parseUnits(this.tokenInput.value, 18);
+      this.updateAirdropMode();
       this.submitTransaction.reset();
       try {
         const idea = new IdeaContract(this.ideaId);
-        this.submitTransaction.hash = await idea.write('contribute', [support]);
+        if (this.isAirdropMode) {
+          this.submitTransaction.hash = await idea.write('airdrop', [support]);
+        } else {
+          this.submitTransaction.hash = await idea.write('contribute', [
+            support,
+          ]);
+        }
       } catch (err) {
         this.tokenInput.handleTransactionError(
           err,
@@ -412,6 +438,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   }
 
   private async handleSupportSucces() {
+    // Handle the success of the contribution or airdrop
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.approveDialog.hide();
     this.shareDialog.show();
@@ -536,7 +563,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               name="support"
               required
               spendingContract=${this.ideaId}
-              spendingContractName="This Idea"
+              spendingContractName=${this.idea.name}
               antiSpamFeeMode="variable"
               showDialogs="false"
             >
@@ -548,9 +575,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 Get more UPD
               </sl-button>
               <sl-button slot="valid" variant="primary" type="submit">
-                Support this Idea
+                ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
               </sl-button>
             </token-input>
+            <div class="airdrop-option">
+              <sl-checkbox name="airdrop" @sl-change=${this.updateAirdropMode}
+                >Airdrop to past contributors
+              </sl-checkbox>
+              <sl-tooltip
+                content="An airdrop uses 100% of its funds to reward past contributors and increase 🔥."
+              >
+                <span class="info-icon">ℹ️</span>
+              </sl-tooltip>
+            </div>
           </div>
         </form>
         <p>${description}</p>
@@ -574,7 +611,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         </div>
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
-        <share-dialog action="supported an Idea" .topic=${name}></share-dialog>
+        <share-dialog
+          action=${this.isAirdropMode
+            ? 'airdropped to an Idea'
+            : 'supported an Idea'}
+          .topic=${name}
+        ></share-dialog>
       `);
     } else {
       if (this.error) {
