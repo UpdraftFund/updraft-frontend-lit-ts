@@ -62,21 +62,6 @@ export class SolutionPage extends LitElement {
     }
   );
 
-  // --- Lifecycle Methods ---
-
-  protected updated(changedProperties: Map<string, unknown>): void {
-    super.updated(changedProperties);
-
-    // Update controller variables if solutionId changes
-    if (changedProperties.has('solutionId') && this.solutionId) {
-      this._isLoading = true;
-      this._error = undefined; // Clear previous errors
-      this.solutionController.setVariablesAndSubscribe({
-        solutionId: this.solutionId,
-      });
-    }
-  }
-
   // --- Styles ---
 
   static styles = css`
@@ -162,6 +147,21 @@ export class SolutionPage extends LitElement {
       flex-wrap: wrap; /* Allow buttons to wrap */
     }
   `;
+
+  // --- Lifecycle Methods ---
+
+  protected updated(changedProperties: Map<string, unknown>): void {
+    super.updated(changedProperties);
+
+    // Update controller variables if solutionId changes
+    if (changedProperties.has('solutionId') && this.solutionId) {
+      this._isLoading = true;
+      this._error = undefined; // Clear previous errors
+      this.solutionController.setVariablesAndSubscribe({
+        solutionId: this.solutionId,
+      });
+    }
+  }
 
   render() {
     if (!this.solutionId) {
