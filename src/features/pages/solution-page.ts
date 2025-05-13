@@ -19,9 +19,6 @@ export class SolutionPage extends LitElement {
       <div class="solution-content container mx-auto px-4 py-8">
         <!-- Solution Header -->
         <solution-header .solutionId=${this.solutionId}></solution-header>
-
-        <!-- Solution Tabs -->
-        <solution-tabs .solutionId=${this.solutionId}></solution-tabs>
       </div>
     `;
   }
