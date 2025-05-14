@@ -27,6 +27,7 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import { SlDialog } from '@shoelace-style/shoelace';
 
 // Components
+import '@components/solution/top-funders';
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
 import '@components/common/token-input';
@@ -330,6 +331,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           this.solution.tokensContributed || '0'
         );
         this.goalFailed = now > deadline && tokensContributed < fundingGoal;
+
+        layout.rightSidebarContent.set(html`
+          <top-funders .solutionId=${this.solutionId}></top-funders>
+        `);
       } else {
         this.error = 'Solution not found.';
       }
