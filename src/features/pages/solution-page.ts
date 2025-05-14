@@ -102,7 +102,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .top-row {
         display: flex;
-        justify-content: space-between;
         align-items: flex-start;
         gap: var(--sl-spacing-medium);
       }
