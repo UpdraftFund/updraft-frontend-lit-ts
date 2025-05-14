@@ -67,59 +67,48 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         color: var(--main-foreground);
         background: var(--main-background);
       }
-
       .support {
         display: flex;
         flex-direction: column;
         margin-bottom: 1rem;
       }
-
       .airdrop-option {
         display: flex;
         align-items: flex-end;
         gap: 0.5rem;
         margin-left: 0.25rem;
       }
-
       .airdrop-option .info-icon {
         font-size: 0.75rem;
         cursor: help;
       }
-
       .heading {
-        font-size: 1.9rem;
-        font-weight: 500;
+        font-size: 2rem;
         margin-bottom: 0;
       }
-
       .created {
         font-size: 0.9rem;
         margin-top: 0.4rem;
       }
-
       .reward-fire {
         display: flex;
         align-items: center;
         gap: 1rem;
         margin: 1rem 0;
       }
-
       .reward {
         display: flex;
         gap: 0.3rem;
       }
-
       .fire {
         align-items: center;
       }
-
       .tags {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
         margin-bottom: 1rem;
       }
-
       .tag {
         display: inline-block;
         padding: 0.25rem 0.75rem;
@@ -129,98 +118,80 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         text-decoration: none;
         color: var(--main-foreground);
       }
-
       .tag:hover {
         background-color: var(--accent);
         color: var(--sl-color-neutral-0);
       }
-
       .error-container {
         display: flex;
         flex-direction: column;
         padding: 2rem;
         gap: 1rem;
       }
-
       .error-container h2 {
         color: var(--sl-color-danger-600);
         margin: 0;
       }
-
       .error-container p {
         max-width: 500px;
       }
-
       sl-button {
         max-width: fit-content;
       }
-
       sl-dialog::part(body) {
         padding-top: 0;
       }
-
       .user-support {
         background-color: var(--subtle-background);
         border-radius: 0.5rem;
         padding: 1rem;
         margin: 1rem 0;
       }
-
       .support-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.5rem;
       }
-
       .user-support h3 {
         margin: 0;
         font-size: 1.2rem;
         font-weight: 500;
       }
-
       .position-navigation {
         display: flex;
         align-items: center;
         gap: 0.5rem;
       }
-
       .position-navigation sl-icon-button::part(base) {
         font-size: 1.2rem;
         color: var(--sl-color-neutral-600);
       }
-
       .position-navigation sl-icon-button::part(base):hover {
         color: var(--accent);
       }
-
       .position-navigation span {
         font-size: 0.9rem;
         color: var(--sl-color-neutral-600);
       }
-
       .support-details {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
       }
-
       .support-details p {
         margin: 0;
       }
-
       .support-details sl-button {
         margin-top: 0.5rem;
         align-self: flex-start;
       }
-
       .solutions-header {
         display: flex;
         gap: 1rem;
         align-items: center;
         margin: 1rem 0 0;
       }
-
       .solutions-header h2 {
         margin: 0;
         font-size: 1.875rem;
