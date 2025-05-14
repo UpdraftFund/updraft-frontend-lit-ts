@@ -45,6 +45,7 @@ import {
   shortNum,
   formatDate,
   calculateProgress,
+  formatReward,
 } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
@@ -170,6 +171,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-small);
+        padding: 0 1rem;
         background-color: var(--sl-color-neutral-50);
         border-radius: var(--sl-border-radius-medium);
         box-shadow: var(--sl-shadow-x-small);
@@ -726,6 +728,12 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       <div class="stat-row">
                         <span class="stat-label">Total Staked:</span>
                         <span>💎 ${totalStake} ${stakingTokenSymbol}</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Funder Reward:</span>
+                        <span
+                          >🎁 ${formatReward(this.solution!.funderReward)}</span
+                        >
                       </div>
                     `;
                   })()}
