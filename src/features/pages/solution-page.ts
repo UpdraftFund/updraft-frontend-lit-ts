@@ -23,6 +23,7 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import { SlDialog } from '@shoelace-style/shoelace';
 
 // Components
@@ -38,7 +39,14 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
-import { shortenAddress, parseProfile, shortNum } from '@utils/format-utils';
+import {
+  shortenAddress,
+  parseProfile,
+  shortNum,
+  formatDate,
+  calculateProgress,
+  formatReward,
+} from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -157,6 +165,47 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       .action-buttons token-input {
         min-width: 250px;
+      }
+
+      .solution-stats {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sl-spacing-small);
+        padding: 0 1rem;
+        background-color: var(--sl-color-neutral-50);
+        border-radius: var(--sl-border-radius-medium);
+        box-shadow: var(--sl-shadow-x-small);
+      }
+
+      .solution-stats h3 {
+        margin-top: 0;
+        margin-bottom: var(--sl-spacing-small);
+        font-size: var(--sl-font-size-large);
+      }
+
+      .solution-stats .stat-row {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-medium);
+        margin-bottom: var(--sl-spacing-x-small);
+      }
+
+      .solution-stats .stat-label {
+        font-weight: var(--sl-font-weight-semibold);
+        min-width: 120px;
+      }
+
+      .solution-stats .progress-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sl-spacing-x-small);
+        width: 100%;
+      }
+
+      .solution-stats .progress-bar {
+        --height: 8px;
+        --track-color: var(--sl-color-neutral-200);
+        --indicator-color: var(--sl-color-primary-600);
       }
 
       .user-stake h3,
@@ -624,6 +673,72 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   </span>
                 </div>
 
+                <div class="solution-stats">
+                  <h3>Solution Details</h3>
+                  ${(() => {
+                    // Calculate progress percentage
+                    const progress = calculateProgress(
+                      this.solution!.tokensContributed,
+                      this.solution!.fundingGoal
+                    );
+
+                    // Format deadline
+                    const deadline = formatDate(
+                      Number(this.solution!.deadline)
+                    );
+
+                    // Format total stake
+                    const totalStake = shortNum(
+                      formatUnits(this.solution!.stake, 18)
+                    );
+
+                    // Get funding token symbol from the fund-input component
+                    // We'll use a fallback until the token-input loads
+                    const fundingTokenSymbol =
+                      this.fundInput?.tokenSymbol || 'USDC';
+
+                    // Staking is always done in UPD
+                    const stakingTokenSymbol = 'UPD';
+
+                    return html`
+                      <div class="stat-row">
+                        <span class="stat-label">Progress:</span>
+                        <div class="progress-container">
+                          <sl-progress-bar
+                            class="progress-bar"
+                            value="${Math.min(progress, 100)}"
+                          ></sl-progress-bar>
+                          <span
+                            >🚀 <strong>${progress} %</strong> complete
+                            (${shortNum(
+                              formatUnits(this.solution!.tokensContributed, 18)
+                            )}
+                            /
+                            ${shortNum(
+                              formatUnits(this.solution!.fundingGoal, 18)
+                            )}
+                            ${fundingTokenSymbol})</span
+                          >
+                        </div>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Deadline:</span>
+                        <span>⏰ ${deadline.full}</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Total Staked:</span>
+                        <span>💎 ${totalStake} ${stakingTokenSymbol}</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Funder Reward:</span>
+                        <span
+                          >🎁 ${formatReward(this.solution!.funderReward)}</span
+                        >
+                      </div>
+                    `;
+                  })()}
+                </div>
+
                 <div class="bottom-row">
                   <div class="action-buttons">
                     <form class="stake-form" @submit=${this.handleStakeSubmit}>
@@ -741,7 +856,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                                 ${shortNum(
                                   formatUnits(position.contribution, 18)
                                 )}
-                                UPD
+                                ${this.fundInput?.tokenSymbol || 'USDC'}
                               </strong>
                             </p>
                             <p>
@@ -750,7 +865,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                                 ${shortNum(
                                   formatUnits(position.feesEarned, 18)
                                 )}
-                                UPD
+                                ${this.fundInput?.tokenSymbol || 'USDC'}
                               </strong>
                             </p>
 
