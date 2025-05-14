@@ -149,7 +149,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .action-buttons {
         display: flex;
         flex-direction: column;
-        gap: var(--sl-spacing-medium);
         width: 100%;
       }
 
@@ -159,14 +158,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       .action-buttons token-input {
         min-width: 250px;
-      }
-
-      /* User stake and positions styles */
-      .user-stake,
-      .user-positions {
-        margin-top: var(--sl-spacing-large);
-        padding: var(--sl-spacing-medium);
-        background-color: var(--main-background);
       }
 
       .user-stake h3,
@@ -202,15 +193,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       .error {
         color: var(--sl-color-danger-600);
-      }
-
-      /* Solution content styles */
-      .solution-description,
-      .solution-news,
-      .solution-repository {
-        margin-top: var(--sl-spacing-large);
-        padding: var(--sl-spacing-medium);
-        background-color: var(--main-background);
       }
 
       .solution-description h3,
