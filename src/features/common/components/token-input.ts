@@ -58,6 +58,7 @@ export interface ITokenInput {
   readonly error: string | null;
   readonly valid: boolean;
   readonly balance: number;
+  readonly tokenSymbol: string | null;
 
   // Public methods
   handleTransactionError(
@@ -548,6 +549,10 @@ export class TokenInput
 
   get balance(): number {
     return this._balance;
+  }
+
+  get tokenSymbol(): string | null {
+    return this._symbol;
   }
 
   // Form validation methods
