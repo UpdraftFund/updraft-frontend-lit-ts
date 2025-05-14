@@ -228,7 +228,7 @@ export class ActivityCard extends LitElement {
       href = `/solution/${this.activity.solution.id}`;
       name = this.solutionInfo?.name || 'Untitled';
     } else if (this.activity.type === 'solutionDrafted') {
-      href = `/solution/${this.activity.id};`;
+      href = `/solution/${this.activity.id}`;
       name = this.solutionInfo?.name || 'Untitled';
     }
 
