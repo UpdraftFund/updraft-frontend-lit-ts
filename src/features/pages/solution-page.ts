@@ -707,7 +707,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                             value="${Math.min(progress, 100)}"
                           ></sl-progress-bar>
                           <span
-                            >📊 <strong>${progress} %</strong> complete
+                            >🚀 <strong>${progress} %</strong> complete
                             (${shortNum(
                               formatUnits(this.solution!.tokensContributed, 18)
                             )}
