@@ -170,8 +170,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-small);
-        margin-bottom: var(--sl-spacing-medium);
-        padding: var(--sl-spacing-medium);
         background-color: var(--sl-color-neutral-50);
         border-radius: var(--sl-border-radius-medium);
         box-shadow: var(--sl-shadow-x-small);
