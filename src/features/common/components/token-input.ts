@@ -31,8 +31,6 @@ import { ITransactionWatcher } from '@components/common/transaction-watcher';
  */
 export interface ITokenInput {
   // Token configuration
-  tokenSymbol: string;
-  tokenName: string;
   tokenAddress?: `0x${string}`;
 
   // Spending contract configuration
@@ -70,9 +68,7 @@ export interface ITokenInput {
 
   // Form validation methods
   checkValidity(): boolean;
-
   reportValidity(): boolean;
-
   readonly form: HTMLFormElement | null;
 }
 
@@ -194,9 +190,7 @@ export class TokenInput
     }
   `;
 
-  // Token configuration with sensible defaults
-  @property() tokenSymbol = 'UPD';
-  @property() tokenName = 'updraft'; // Default to UPD
+  // Token configuration
   @property() tokenAddress?: `0x${string}`; // Optional direct contract address
 
   // Spending contract configuration
@@ -221,6 +215,7 @@ export class TokenInput
   @property() value = '';
 
   // Internal state
+  @state() private _symbol: string | null = null;
   @state() private _error: string | null = null;
   @state() private _balance: number = 0;
   @state() private _validationMessage: string = '';
@@ -243,6 +238,33 @@ export class TokenInput
       updraftSettings.get().updraftAddress.toLowerCase()
     );
   }
+
+  // Check if the current token is the Updraft token
+  private get isUpdraftToken(): boolean {
+    return this._symbol === 'UPD';
+  }
+
+  private fetchTokenSymbol = new Task(
+    this,
+    async ([tokenAddress]) => {
+      if (tokenAddress) {
+        if (tokenAddress === updraftSettings.get().updAddress) {
+          this._symbol = 'UPD';
+        } else {
+          try {
+            const contract = new ERC20(tokenAddress);
+            this._symbol = (await contract.read('symbol')) as string | null;
+          } catch (err) {
+            console.error('Error fetching token symbol:', err);
+            return shortenAddress(tokenAddress);
+          }
+        }
+      } else {
+        this._symbol = 'UPD';
+      }
+    },
+    () => [this.tokenAddress]
+  );
 
   // Get the spending contract name for display
   private get spendingContractDisplayName(): string {
@@ -272,7 +294,7 @@ export class TokenInput
 
   // Determine if anti-spam fee should be shown
   protected get showAntiSpamFee(): boolean {
-    return this.tokenName === 'updraft' && this.antiSpamFeeMode !== 'none';
+    return this.isUpdraftToken && this.antiSpamFeeMode !== 'none';
   }
 
   // Calculate anti-spam fee based on the selected mode
@@ -306,12 +328,10 @@ export class TokenInput
       return new ERC20(this.tokenAddress);
     }
 
-    // Otherwise use the named token
-    if (this.tokenName === 'updraft') {
-      const updAddress = updraftSettings.get().updAddress;
-      if (updAddress) {
-        return new Upd(updAddress);
-      }
+    // Otherwise use the Updraft token
+    const updAddress = updraftSettings.get().updAddress;
+    if (updAddress) {
+      return new Upd(updAddress);
     }
 
     return null;
@@ -319,11 +339,11 @@ export class TokenInput
 
   private refreshBalance = new Task(
     this,
-    async ([address, tokenName, tokenAddress]) => {
+    async ([address, tokenAddress]) => {
       let balance = 0;
 
       if (address) {
-        if (tokenName === 'updraft') {
+        if (this.isUpdraftToken) {
           // For UPD token, use the global balances state
           await refreshBalances();
           balance = getBalance('updraft');
@@ -347,7 +367,7 @@ export class TokenInput
       return balance;
     },
     // Include all dependencies that should trigger a refresh
-    () => [userAddress.get(), this.tokenName, this.tokenAddress]
+    () => [userAddress.get(), this.tokenAddress]
   );
 
   private get invalid() {
@@ -363,6 +383,16 @@ export class TokenInput
     if (isNaN(value) || value <= 0) return BigInt(0);
 
     return parseUnits(value.toString(), 18);
+  }
+
+  private approvalDescription() {
+    let description = `Before you can proceed, you need to sign a transaction to allow ${this.spendingContractDisplayName} to spend`;
+    if (this.effectiveApprovalStrategy === 'unlimited') {
+      description += `any amount of your ${this._symbol} tokens`;
+    } else {
+      description += `${this.value} ${this._symbol}`;
+    }
+    return description;
   }
 
   private validate() {
@@ -395,12 +425,12 @@ export class TokenInput
       this._validationMessage = 'Amount must be greater than 0';
       validityState.rangeUnderflow = true;
     } else if (this.showAntiSpamFee && value <= this.antiSpamFee) {
-      this._error = `Amount must be more than ${this.antiSpamFee} ${this.tokenSymbol} to cover fees`;
-      this._validationMessage = `Amount must be more than ${this.antiSpamFee} ${this.tokenSymbol} to cover fees`;
+      this._error = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
+      this._validationMessage = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
       validityState.customError = true;
     } else if (value > this._balance) {
-      this._error = `You have ${this._balance.toFixed(0)} ${this.tokenSymbol}`;
-      this._validationMessage = `Insufficient balance. You have ${this._balance.toFixed(0)} ${this.tokenSymbol}`;
+      this._error = `You have ${this._balance.toFixed(0)} ${this._symbol}`;
+      this._validationMessage = `Insufficient balance. You have ${this._balance.toFixed(0)} ${this._symbol}`;
       validityState.customError = true;
     } else {
       this._error = null;
@@ -468,7 +498,7 @@ export class TokenInput
         );
       }
     } catch (e) {
-      console.error(`${this.tokenSymbol} approval error:`, e);
+      console.error(`Token approval error:`, e);
     }
   }
 
@@ -491,7 +521,7 @@ export class TokenInput
       else if (e.message.includes('exceeds balance')) {
         if (onLowBalance) {
           onLowBalance();
-        } else if (this.tokenName === 'updraft') {
+        } else if (this.isUpdraftToken) {
           this.updDialog.show();
         }
         return true;
@@ -568,6 +598,7 @@ export class TokenInput
   connectedCallback() {
     super.connectedCallback();
     this.refreshBalance.run();
+    this.fetchTokenSymbol.run();
 
     // Add a form-associated validation listener
     if (this.closest('form')) {
@@ -585,11 +616,6 @@ export class TokenInput
   }
 
   render() {
-    const approvalDescription =
-      this.effectiveApprovalStrategy === 'unlimited'
-        ? `allow ${this.spendingContractDisplayName} to spend your ${this.tokenSymbol} tokens`
-        : `allow ${this.spendingContractDisplayName} to spend ${this.value} ${this.tokenSymbol}`;
-
     return html`
       <div class="input-container">
         ${this.showInputControl
@@ -604,7 +630,7 @@ export class TokenInput
                   @input=${this.handleInput}
                   class=${this.invalid ? 'invalid' : ''}
                 ></sl-input>
-                <span>${this.tokenSymbol}</span>
+                <span>${this._symbol}</span>
 
                 <div class="slot-container">
                   ${this.refreshBalance.render({
@@ -620,7 +646,7 @@ export class TokenInput
                   ? html` <div class="fee-info">
                       <span
                         >Anti-Spam Fee: ${shortNum(this.antiSpamFee)}
-                        ${this.tokenSymbol}</span
+                        ${this._symbol}</span
                       >
                     </div>`
                   : html``}
@@ -632,16 +658,13 @@ export class TokenInput
           : html``}
       </div>
 
-      ${this.tokenName === 'updraft' && this.showDialogs
+      ${this.isUpdraftToken && this.showDialogs
         ? html` <upd-dialog></upd-dialog>`
         : html``}
       ${this.showDialogs
         ? html`
             <sl-dialog label="Set Allowance">
-              <p>
-                Before you can proceed, you need to sign a transaction to
-                ${approvalDescription}.
-              </p>
+              <p>${this.approvalDescription}.</p>
               <transaction-watcher class="approve"></transaction-watcher>
             </sl-dialog>
           `
