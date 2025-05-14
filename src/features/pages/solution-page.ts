@@ -102,14 +102,12 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .top-row {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start; /* Align items to the start of the cross axis */
+        align-items: flex-start;
         gap: var(--sl-spacing-medium);
       }
       .title-area h1 {
         margin: 0 0 var(--sl-spacing-2x-small) 0;
         font-size: var(--sl-font-size-2x-large);
-        line-height: var(--sl-line-height-dense);
       }
       .idea-link {
         font-size: var(--sl-font-size-small);
@@ -123,8 +121,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         text-decoration: underline;
       }
       .status-tag sl-tag {
-        /* Adjust tag size if needed */
         font-weight: var(--sl-font-weight-semibold);
+        padding-top: 0.5rem;
       }
       .bottom-row {
         display: flex;
@@ -150,7 +148,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .action-buttons {
         display: flex;
         flex-direction: column;
-        gap: var(--sl-spacing-medium);
         width: 100%;
       }
 
@@ -160,14 +157,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       .action-buttons token-input {
         min-width: 250px;
-      }
-
-      /* User stake and positions styles */
-      .user-stake,
-      .user-positions {
-        margin-top: var(--sl-spacing-large);
-        padding: var(--sl-spacing-medium);
-        background-color: var(--main-background);
       }
 
       .user-stake h3,
@@ -203,15 +192,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       .error {
         color: var(--sl-color-danger-600);
-      }
-
-      /* Solution content styles */
-      .solution-description,
-      .solution-news,
-      .solution-repository {
-        margin-top: var(--sl-spacing-large);
-        padding: var(--sl-spacing-medium);
-        background-color: var(--main-background);
       }
 
       .solution-description h3,
