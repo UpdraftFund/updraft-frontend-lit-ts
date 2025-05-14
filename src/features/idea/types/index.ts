@@ -1,6 +1,6 @@
 export type { Idea, IdeaContribution } from '@gql';
 
-export interface Position {
+export interface IdeaPosition {
   originalContribution: bigint;
   currentPosition: bigint;
   earnings: bigint;

@@ -45,7 +45,7 @@ import { UrqlQueryController } from '@utils/urql-query-controller';
 
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
-import type { Position } from '@/features/idea/types';
+import type { IdeaPosition } from '@/features/idea/types';
 
 import { updraftSettings } from '@state/common';
 import layout from '@state/layout';
@@ -249,7 +249,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Track current position index for navigation
   @state() private positionIndex: number = 0;
 
-  private positions: Position[] = [];
+  private positions: IdeaPosition[] = [];
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
@@ -302,51 +302,49 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         }
 
         // Collect all viable positions
-        const viablePositions: Position[] = [];
+        const viablePositions: IdeaPosition[] = [];
 
         // Check each position
-        for (let i = 0n; i < numPositions; i++) {
+        for (
+          let positionIndex = 0n;
+          positionIndex < numPositions;
+          positionIndex++
+        ) {
           try {
             // Get current position (includes original contribution + earnings)
-            const position = (await idea.read('checkPosition', [
+            const [currentPosition] = (await idea.read('checkPosition', [
               address,
-              i,
+              positionIndex,
             ])) as bigint[];
-            const currentPosition = position[0] as bigint;
 
             // Skip positions with zero value (already withdrawn)
             if (currentPosition <= 0n) continue;
 
             // Get original contribution from positionsByAddress mapping
-            const originalPosition = (await idea.read('positionsByAddress', [
-              address,
-              i,
-            ])) as bigint[];
-
-            const originalContribution = originalPosition[1] as bigint;
+            const [, originalContribution] = (await idea.read(
+              'positionsByAddress',
+              [address, positionIndex]
+            )) as bigint[];
 
             // Skip positions with zero value (already withdrawn)
             if (originalContribution <= 0n) continue;
 
-            const earnings = currentPosition - originalContribution;
             viablePositions.push({
               originalContribution,
               currentPosition,
-              earnings,
-              positionIndex: i,
+              earnings: currentPosition - originalContribution,
+              positionIndex,
             });
           } catch (error) {
             // If position doesn't exist (already withdrawn), skip it
-            console.warn(`Position ${i} not available:`, error);
+            console.warn(`Position ${positionIndex} not available:`, error);
           }
         }
 
         // Store the viable positions and reset current index
         this.positions = viablePositions;
-        this.positionIndex = viablePositions.length > 0 ? 0 : -1;
-
-        // Return the positions array for rendering
-        return viablePositions.length > 0 ? viablePositions : null;
+        this.positionIndex = 0;
+        return viablePositions;
       } catch (error) {
         console.warn('Error fetching user support:', error);
         this.positions = [];
@@ -359,7 +357,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Handle withdraw support
   private async handleWithdraw() {
     try {
-      if (this.positions.length === 0 || this.positionIndex < 0) {
+      if (this.positions.length === 0) {
         console.warn('No valid position to withdraw');
         return;
       }
@@ -371,18 +369,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         currentPosition.positionIndex,
       ]);
     } catch (e) {
-      // Use token-input's error handling
-      if (this.tokenInput) {
-        this.tokenInput.handleTransactionError(
-          e,
-          undefined, // No approval callback needed for withdraw
-          () => this.updDialog.show() // Show UPD dialog on low balance
-        );
-      } else {
-        console.error('Withdraw error:', e);
-        if (e instanceof Error && e.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        }
+      console.error('Withdraw error:', e);
+      if (e instanceof Error && e.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
       }
     }
   }
@@ -493,7 +482,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         ${this.userSupportTask.render({
           complete: () => {
             // Check if we have any positions
-            if (this.positions.length > 0 && this.positionIndex >= 0) {
+            if (this.positions.length > 0) {
               const position = this.positions[this.positionIndex];
 
               return html`
