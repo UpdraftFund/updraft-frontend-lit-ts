@@ -692,6 +692,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       formatUnits(this.solution!.stake, 18)
                     );
 
+                    // Get funding token symbol from the fund-input component
+                    // We'll use a fallback until the token-input loads
+                    const fundingTokenSymbol =
+                      this.fundInput?.tokenSymbol || 'USDC';
+
+                    // Staking is always done in UPD
+                    const stakingTokenSymbol = 'UPD';
+
                     return html`
                       <div class="stat-row">
                         <span class="stat-label">Progress:</span>
@@ -709,7 +717,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                             ${shortNum(
                               formatUnits(this.solution!.fundingGoal, 18)
                             )}
-                            UPD)</span
+                            ${fundingTokenSymbol})</span
                           >
                         </div>
                       </div>
@@ -719,7 +727,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       </div>
                       <div class="stat-row">
                         <span class="stat-label">Total Staked:</span>
-                        <span>💎 ${totalStake} UPD</span>
+                        <span>💎 ${totalStake} ${stakingTokenSymbol}</span>
                       </div>
                     `;
                   })()}
@@ -842,7 +850,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                                 ${shortNum(
                                   formatUnits(position.contribution, 18)
                                 )}
-                                UPD
+                                ${this.fundInput?.tokenSymbol || 'USDC'}
                               </strong>
                             </p>
                             <p>
@@ -851,7 +859,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                                 ${shortNum(
                                   formatUnits(position.feesEarned, 18)
                                 )}
-                                UPD
+                                ${this.fundInput?.tokenSymbol || 'USDC'}
                               </strong>
                             </p>
 
