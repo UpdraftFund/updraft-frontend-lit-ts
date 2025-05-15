@@ -12,11 +12,10 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
-import { Activity, Profile, SolutionInfo } from '@/types';
+import { Activity, SolutionInfo } from '@/types';
 import {
   formatReward,
   calculateProgress,
-  parseProfile,
   formatAmount,
   formatDate,
 } from '@utils/format-utils';
@@ -140,23 +139,7 @@ export class ActivityCard extends LitElement {
   @property() userId!: `0x${string}`;
   @property() userName!: string;
 
-  private _creatorProfile: Profile | undefined;
   private _solutionInfo: SolutionInfo | undefined;
-
-  get creatorProfile(): Profile | undefined {
-    if (!this._creatorProfile) {
-      let profileHex: `0x${string}` | undefined;
-      if (this.activity.type === 'ideaFunded') {
-        profileHex = this.activity.idea.creator.profile as `0x${string}`;
-      } else if (this.activity.type === 'solutionFunded') {
-        profileHex = this.activity.solution.drafter.profile as `0x${string}`;
-      }
-      if (profileHex) {
-        this._creatorProfile = parseProfile(profileHex);
-      }
-    }
-    return this._creatorProfile;
-  }
 
   get solutionInfo(): SolutionInfo | undefined {
     if (!this._solutionInfo) {
@@ -333,7 +316,6 @@ export class ActivityCard extends LitElement {
 
   updated(changedProperties: Map<string | number | symbol, unknown>) {
     if (changedProperties.has('activity')) {
-      this._creatorProfile = undefined;
       this._solutionInfo = undefined;
     }
   }
