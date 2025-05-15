@@ -35,6 +35,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
   ];
 
   @property() solution!: Solution;
+  @property() showStake = true;
 
   private renderGoalProgress() {
     const now = dayjs();
@@ -83,7 +84,9 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         ${description ? html`<p>${description}</p>` : html``}
         <ul class="info-row">
           <li>⏰ ${deadlineDate.fromNow}</li>
-          <li>💎 ${formatTokenAmount(stake)}</li>
+          ${this.showStake
+            ? html` <li>💎 ${formatTokenAmount(stake)}</li>`
+            : html``}
           <li>${this.renderGoalProgress()}</li>
         </ul>
       </a>

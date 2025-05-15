@@ -104,7 +104,10 @@ export class MyIdeas extends SignalWatcher(LitElement) {
           : cache(
               this.ideas.map(
                 (idea) => html`
-                  <idea-card-small .idea=${idea}></idea-card-small>
+                  <idea-card-small
+                    .idea=${idea}
+                    .showReward=${false}
+                  ></idea-card-small>
                 `
               )
             )}

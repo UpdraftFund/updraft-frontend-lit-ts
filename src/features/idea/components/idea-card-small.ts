@@ -16,6 +16,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
   static styles = smallCardStyles;
 
   @property() idea!: Idea;
+  @property() showReward = true;
 
   render() {
     const { startTime, funderReward, shares, description, id, name } =
@@ -30,7 +31,9 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
         ${description ? html` <p>${description}</p>` : html``}
         <ul class="info-row">
           <li>🌱 ${date.fromNow}</li>
-          <li>🎁 ${formatReward(funderReward)}</li>
+          ${this.showReward
+            ? html` <li>🎁 ${formatReward(funderReward)}</li>`
+            : html``}
           <li>🔥 ${interest}</li>
         </ul>
       </a>
