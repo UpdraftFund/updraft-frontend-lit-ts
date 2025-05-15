@@ -28,6 +28,7 @@ import { SlDialog } from '@shoelace-style/shoelace';
 
 // Components
 import '@components/solution/top-funders';
+import '@components/solution/other-solutions';
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
 import '@components/common/token-input';
@@ -337,6 +338,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             .solutionId=${this.solutionId}
             .tokenSymbol=${this.fundInput?.tokenSymbol}
           ></top-funders>
+          <other-solutions
+            .ideaId=${this.solution.idea?.id}
+            .currentSolutionId=${this.solutionId}
+          ></other-solutions>
         `);
       } else {
         this.error = 'Solution not found.';
