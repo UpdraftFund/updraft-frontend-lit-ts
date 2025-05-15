@@ -19,6 +19,7 @@ import { dialogStyles } from '@styles/dialog-styles';
 
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
+import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
@@ -70,8 +71,21 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
+      :host {
+        flex: 1;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 1rem;
+        color: var(--main-foreground);
+        background: var(--main-background);
+      }
+
       .solution-content {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
       }
 
       .header-container {
@@ -81,34 +95,26 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         margin-bottom: var(--sl-spacing-large);
         padding: var(--sl-spacing-large);
         background-color: var(--main-background);
-        position: relative; /* For loading overlay */
-        min-height: 150px; /* Ensure space for spinner */
-      }
-      .loading-overlay {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: var(--sl-spacing-large);
-        background-color: var(--main-background);
-        opacity: 0.9;
       }
 
-      .error-message {
+      .error-container {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: var(--sl-spacing-large);
-        color: var(--no-results);
-        font-style: italic;
-        font-size: 1.2rem;
-        background-color: var(--main-background);
-        min-height: 150px;
-        width: 100%;
-        box-sizing: border-box;
+        flex-direction: column;
+        padding: 2rem;
+        gap: 1rem;
+      }
+
+      .error-container h2 {
+        color: var(--sl-color-danger-600);
+        margin: 0;
+      }
+
+      .error-container p {
+        max-width: 500px;
+      }
+
+      sl-button {
+        max-width: fit-content;
       }
       .top-row {
         display: flex;
@@ -130,9 +136,25 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .idea-link a:hover {
         text-decoration: underline;
       }
-      .status-tag sl-tag {
+      .status {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-x-small);
+      }
+
+      .status sl-badge {
         font-weight: var(--sl-font-weight-semibold);
-        padding-top: 0.5rem;
+        font-size: var(--sl-font-size-small);
+        --sl-badge-size: 2rem;
+        padding-top: 0.825rem;
+      }
+
+      .status sl-button::part(base) {
+        color: var(--sl-color-primary-600);
+      }
+
+      .status sl-button::part(base):hover {
+        color: var(--sl-color-primary-700);
       }
       .bottom-row {
         display: flex;
@@ -149,7 +171,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         align-items: center;
         gap: var(--sl-spacing-small);
         flex-shrink: 0; /* Prevent creator info from shrinking too much */
-        margin-bottom: var(--sl-spacing-medium);
       }
       .creator-info span {
         /* Style for the creator name/address */
@@ -173,16 +194,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-small);
-        padding: 0 1rem;
-        background-color: var(--sl-color-neutral-50);
+        padding: 1rem;
+        background-color: var(--sl-color-neutral-100);
         border-radius: var(--sl-border-radius-medium);
         box-shadow: var(--sl-shadow-x-small);
-      }
-
-      .solution-stats h3 {
-        margin-top: 0;
-        margin-bottom: var(--sl-spacing-small);
-        font-size: var(--sl-font-size-large);
+        width: fit-content;
       }
 
       .solution-stats .stat-row {
@@ -201,13 +217,12 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-x-small);
-        width: 100%;
       }
 
       .solution-stats .progress-bar {
         --height: 8px;
-        --track-color: var(--sl-color-neutral-200);
         --indicator-color: var(--sl-color-primary-600);
+        --track-color: var(--sl-color-neutral-300);
       }
 
       .user-stake h3,
@@ -287,9 +302,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @state() private solutionInfo?: SolutionInfo;
   @state() private positionIndex = 0;
   @state() private goalFailed = false;
+  @state() private goalReached = false;
 
   // State for loading and error handling
-  @state() private isLoading = false;
+  @state() private loaded = false;
   @state() private error: string | null = null;
 
   // Array to store user positions
@@ -301,7 +317,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     SolutionDocument,
     { solutionId: this.solutionId },
     (result) => {
-      this.isLoading = false;
+      this.loaded = true;
 
       if (result.error) {
         console.error('Error fetching solution data:', result.error);
@@ -324,13 +340,18 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           console.error('Error parsing solution info:', e);
         }
 
-        // Check if goal has failed (deadline passed and goal not reached)
+        // Check solution status
         const now = dayjs().unix();
         const deadline = Number(this.solution.deadline || 0);
         const fundingGoal = BigInt(this.solution.fundingGoal || '0');
         const tokensContributed = BigInt(
           this.solution.tokensContributed || '0'
         );
+
+        // Goal is reached if tokens contributed >= funding goal
+        this.goalReached = tokensContributed >= fundingGoal;
+
+        // Goal has failed if deadline has passed and goal not reached
         this.goalFailed = now > deadline && tokensContributed < fundingGoal;
 
         layout.rightSidebarContent.set(html`
@@ -557,6 +578,178 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.userPositionsTask.run();
   }
 
+  // Render the status badge based on solution status
+  private renderStatusBadge() {
+    if (this.goalFailed) {
+      return html` <sl-badge variant="danger">Goal Failed</sl-badge> `;
+    } else if (this.goalReached) {
+      return html`
+        <sl-badge variant="success">Goal Reached</sl-badge>
+        ${this.solution?.drafter?.id === userAddress.get()
+          ? html`
+              <sl-button
+                variant="text"
+                size="small"
+                href="/edit-solution/${this.solutionId}"
+              >
+                Edit
+              </sl-button>
+            `
+          : html``}
+      `;
+    } else {
+      return html` <sl-badge variant="primary">Active</sl-badge> `;
+    }
+  }
+
+  // Render the drafter's avatar
+  private renderDrafterAvatar() {
+    const profile = parseProfile(this.solution!.drafter.profile);
+    return html`
+      <sl-avatar
+        image="${profile.image || '/default-avatar.png'}"
+        label="Creator Avatar"
+        initials="${profile.name
+          ? html``
+          : shortenAddress(this.solution!.drafter.id).substring(0, 6)}"
+      ></sl-avatar>
+    `;
+  }
+
+  // Render the drafter's name
+  private renderDrafterName() {
+    const profile = parseProfile(this.solution!.drafter.profile);
+    return profile.name || shortenAddress(this.solution!.drafter.id);
+  }
+
+  // Render the user position
+  private renderUserPosition() {
+    const position = this.positions[this.positionIndex];
+
+    return html`
+      <div class="user-positions">
+        <div class="positions-header">
+          <h3>Your Positions</h3>
+          ${this.positions.length > 1
+            ? html`
+                <div class="position-navigation">
+                  <sl-icon-button
+                    src=${chevronLeft}
+                    label="Previous position"
+                    @click=${this.previousPosition}
+                  ></sl-icon-button>
+                  <span
+                    >Position ${this.positionIndex + 1} of
+                    ${this.positions.length}</span
+                  >
+                  <sl-icon-button
+                    src=${chevronRight}
+                    label="Next position"
+                    @click=${this.nextPosition}
+                  ></sl-icon-button>
+                </div>
+              `
+            : html``}
+        </div>
+        <div class="position-details">
+          <p>
+            Your contribution:
+            <strong>
+              ${shortNum(formatUnits(position.contribution, 18))}
+              ${this.fundInput?.tokenSymbol || 'USDC'}
+            </strong>
+          </p>
+          <p>
+            Fees earned:
+            <strong>
+              ${shortNum(formatUnits(position.feesEarned, 18))}
+              ${this.fundInput?.tokenSymbol || 'USDC'}
+            </strong>
+          </p>
+
+          ${this.goalFailed
+            ? html`
+                <p class="status-message">
+                  <strong>Goal Failed:</strong> You can refund your
+                  contribution.
+                </p>
+                <sl-button variant="primary" @click=${this.handleRefund}>
+                  Refund Position
+                </sl-button>
+              `
+            : position.feesEarned > 0n
+              ? html`
+                  <p class="status-message">
+                    <strong>Rewards Available:</strong> You can collect your
+                    fees.
+                  </p>
+                  <sl-button variant="primary" @click=${this.handleCollectFees}>
+                    Collect Fees
+                  </sl-button>
+                `
+              : html`
+                  <p class="status-message">
+                    <strong>Position Active:</strong> No action needed at this
+                    time.
+                  </p>
+                `}
+        </div>
+      </div>
+    `;
+  }
+
+  // Render the solution stats
+  private renderSolutionStats() {
+    // Calculate progress percentage
+    const progress = calculateProgress(
+      this.solution!.tokensContributed,
+      this.solution!.fundingGoal
+    );
+
+    // Format deadline
+    const deadline = formatDate(Number(this.solution!.deadline));
+
+    // Format total stake
+    const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
+
+    // Get funding token symbol from the fund-input component
+    // We'll use a fallback until the token-input loads
+    const fundingTokenSymbol = this.fundInput?.tokenSymbol || 'USDC';
+
+    // Staking is always done in UPD
+    const stakingTokenSymbol = 'UPD';
+
+    return html`
+      <div class="stat-row">
+        <span class="stat-label">Progress:</span>
+        <div class="progress-container">
+          <sl-progress-bar
+            class="progress-bar"
+            value="${Math.min(progress, 100)}"
+          ></sl-progress-bar>
+          <span
+            >🚀 <strong>${progress} %</strong> complete
+            (${shortNum(formatUnits(this.solution!.tokensContributed, 18))} /
+            ${shortNum(formatUnits(this.solution!.fundingGoal, 18))}
+            ${fundingTokenSymbol})</span
+          >
+        </div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Deadline:</span>
+        <span>⏰ ${deadline.full}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Total Staked:</span>
+        <span>💎 ${totalStake} ${stakingTokenSymbol}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Funder Reward:</span>
+        <span>🎁 ${formatReward(this.solution!.funderReward)}</span>
+      </div>
+    `;
+  }
+
   private handleCollectSuccess() {
     // Refresh positions after successful fee collection
     this.userPositionsTask.run();
@@ -601,7 +794,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     super.updated(changedProperties);
     // Update controller variables if solutionId changes
     if (changedProperties.has('solutionId') && this.solutionId) {
-      this.isLoading = true;
+      this.loaded = false;
       this.error = null; // Clear previous errors
       this.positions = []; // Clear previous positions
       this.solutionController.setVariablesAndSubscribe({
@@ -611,373 +804,219 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   }
 
   render() {
-    if (!this.solutionId && !this.isLoading) {
-      return html` <p>Solution not found or ID missing.</p> `;
-    }
+    if (this.solution) {
+      return cache(html`
+        <div class="solution-content">
+          <div class="header-container">
+            <div class="top-row">
+              <div class="title-area">
+                <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
+                <div class="idea-link">
+                  Solution for idea:
+                  <a
+                    href="/idea/${this.solution.idea?.id}"
+                    title="View linked Idea"
+                    >${this.solution.idea?.name || 'Unknown Idea'}</a
+                  >
+                </div>
+              </div>
+              <div class="status">${this.renderStatusBadge()}</div>
+            </div>
 
-    return html`
-      <div class="solution-content container mx-auto px-4 py-8">
-        <div class="header-container">
-          ${this.isLoading
-            ? html`<div class="loading-overlay">
-                <sl-spinner style="font-size: 2rem;"></sl-spinner>
-              </div>`
-            : html``}
-          ${this.error
-            ? html` <div class="error-message">${this.error}</div>`
-            : html``}
-          ${!this.isLoading && !this.error && this.solution
-            ? cache(html`
-                <div class="top-row">
-                  <div class="title-area">
-                    <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
-                    <div class="idea-link">
-                      Solution for idea:
-                      <a
-                        href="/idea/${this.solution.idea?.id}"
-                        title="View linked Idea"
-                        >${this.solution.idea?.name || 'Unknown Idea'}</a
+            <div class="creator-info">
+              <sl-tooltip content="Solution Drafter">
+                ${this.solution.drafter ? this.renderDrafterAvatar() : html``}
+              </sl-tooltip>
+              <!-- <user-link userId=${this.solution.drafter
+                ?.id}></user-link> -->
+              <span>
+                ${this.solution?.drafter ? this.renderDrafterName() : html``}
+              </span>
+            </div>
+
+            <div class="solution-stats">${this.renderSolutionStats()}</div>
+
+            <div class="bottom-row">
+              <div class="action-buttons">
+                ${!this.goalFailed && !this.goalReached
+                  ? html`
+                      <form
+                        class="stake-form"
+                        @submit=${this.handleStakeSubmit}
                       >
-                    </div>
-                  </div>
-                  <div class="status-tag">
-                    <sl-tag size="large" variant="primary" pill
-                      >${this.goalFailed ? 'Failed' : 'Active'}
-                    </sl-tag>
-                  </div>
-                </div>
-
-                <div class="creator-info">
-                  <sl-tooltip content="Solution Drafter">
-                    ${this.solution.drafter
-                      ? (() => {
-                          const profile = parseProfile(
-                            this.solution!.drafter.profile
-                          );
-                          return html`
-                            <sl-avatar
-                              image="${profile.image || '/default-avatar.png'}"
-                              label="Creator Avatar"
-                              initials="${profile.name
-                                ? html``
-                                : shortenAddress(
-                                    this.solution!.drafter.id
-                                  ).substring(0, 6)}"
-                            ></sl-avatar>
-                          `;
-                        })()
-                      : html``}
-                  </sl-tooltip>
-                  <!-- <user-link userId=${this.solution.drafter
-                    ?.id}></user-link> -->
-                  <span>
-                    ${(() => {
-                      if (this.solution?.drafter) {
-                        const profile = parseProfile(
-                          this.solution.drafter.profile
-                        );
-                        return (
-                          profile.name ||
-                          shortenAddress(this.solution.drafter.id)
-                        );
-                      }
-                      return html``;
-                    })()}
-                  </span>
-                </div>
-
-                <div class="solution-stats">
-                  <h3>Solution Details</h3>
-                  ${(() => {
-                    // Calculate progress percentage
-                    const progress = calculateProgress(
-                      this.solution!.tokensContributed,
-                      this.solution!.fundingGoal
-                    );
-
-                    // Format deadline
-                    const deadline = formatDate(
-                      Number(this.solution!.deadline)
-                    );
-
-                    // Format total stake
-                    const totalStake = shortNum(
-                      formatUnits(this.solution!.stake, 18)
-                    );
-
-                    // Get funding token symbol from the fund-input component
-                    // We'll use a fallback until the token-input loads
-                    const fundingTokenSymbol =
-                      this.fundInput?.tokenSymbol || 'USDC';
-
-                    // Staking is always done in UPD
-                    const stakingTokenSymbol = 'UPD';
-
-                    return html`
-                      <div class="stat-row">
-                        <span class="stat-label">Progress:</span>
-                        <div class="progress-container">
-                          <sl-progress-bar
-                            class="progress-bar"
-                            value="${Math.min(progress, 100)}"
-                          ></sl-progress-bar>
-                          <span
-                            >🚀 <strong>${progress} %</strong> complete
-                            (${shortNum(
-                              formatUnits(this.solution!.tokensContributed, 18)
-                            )}
-                            /
-                            ${shortNum(
-                              formatUnits(this.solution!.fundingGoal, 18)
-                            )}
-                            ${fundingTokenSymbol})</span
+                        <token-input
+                          class="stake-input"
+                          name="stake"
+                          required
+                          spendingContract=${this.solutionId}
+                          spendingContractName="${this.solutionInfo?.name ||
+                          'Solution'}"
+                          antiSpamFeeMode="none"
+                          showDialogs="false"
+                        >
+                          <sl-button
+                            slot="invalid"
+                            variant="primary"
+                            @click=${() => this.updDialog.show()}
                           >
-                        </div>
-                      </div>
-                      <div class="stat-row">
-                        <span class="stat-label">Deadline:</span>
-                        <span>⏰ ${deadline.full}</span>
-                      </div>
-                      <div class="stat-row">
-                        <span class="stat-label">Total Staked:</span>
-                        <span>💎 ${totalStake} ${stakingTokenSymbol}</span>
-                      </div>
-                      <div class="stat-row">
-                        <span class="stat-label">Funder Reward:</span>
-                        <span
-                          >🎁 ${formatReward(this.solution!.funderReward)}</span
+                            Get more UPD
+                          </sl-button>
+                          <sl-button
+                            slot="valid"
+                            variant="primary"
+                            type="submit"
+                          >
+                            Add Stake
+                          </sl-button>
+                        </token-input>
+                      </form>
+                    `
+                  : html``}
+                ${!this.goalFailed
+                  ? html`
+                      <form class="fund-form" @submit=${this.handleFundSubmit}>
+                        <token-input
+                          class="fund-input"
+                          name="fund"
+                          required
+                          spendingContract=${this.solutionId}
+                          spendingContractName="${this.solutionInfo?.name ||
+                          'Solution'}"
+                          tokenAddress=${this.solution.fundingToken}
+                          antiSpamFeeMode="none"
+                          showDialogs="false"
                         >
-                      </div>
-                    `;
-                  })()}
-                </div>
+                          ${this.solution.fundingToken ===
+                          updraftSettings.get().updAddress
+                            ? html`
+                                <sl-button
+                                  slot="invalid"
+                                  variant="primary"
+                                  @click=${() => this.updDialog.show()}
+                                >
+                                  Get more UPD
+                                </sl-button>
+                              `
+                            : html``}
+                          <sl-button
+                            slot="valid"
+                            variant="success"
+                            type="submit"
+                          >
+                            Fund this Solution
+                          </sl-button>
+                        </token-input>
+                      </form>
+                    `
+                  : html``}
+              </div>
+            </div>
 
-                <div class="bottom-row">
-                  <div class="action-buttons">
-                    <form class="stake-form" @submit=${this.handleStakeSubmit}>
-                      <token-input
-                        class="stake-input"
-                        name="stake"
-                        required
-                        spendingContract=${this.solutionId}
-                        spendingContractName="${this.solutionInfo?.name ||
-                        'Solution'}"
-                        antiSpamFeeMode="none"
-                        showDialogs="false"
-                      >
-                        <sl-button
-                          slot="invalid"
-                          variant="primary"
-                          @click=${() => this.updDialog.show()}
-                        >
-                          Get more UPD
-                        </sl-button>
-                        <sl-button slot="valid" variant="primary" type="submit">
-                          Add Stake
-                        </sl-button>
-                      </token-input>
-                    </form>
-
-                    <form class="fund-form" @submit=${this.handleFundSubmit}>
-                      <token-input
-                        class="fund-input"
-                        name="fund"
-                        required
-                        spendingContract=${this.solutionId}
-                        spendingContractName="${this.solutionInfo?.name ||
-                        'Solution'}"
-                        tokenAddress=${this.solution.fundingToken}
-                        antiSpamFeeMode="none"
-                        showDialogs="false"
-                      >
-                        ${this.solution.fundingToken ===
-                        updraftSettings.get().updAddress
-                          ? html`
-                              <sl-button
-                                slot="invalid"
-                                variant="primary"
-                                @click=${() => this.updDialog.show()}
-                              >
-                                Get more UPD
-                              </sl-button>
-                            `
-                          : html``}
-                        <sl-button slot="valid" variant="success" type="submit">
-                          Fund this Solution
-                        </sl-button>
-                      </token-input>
-                    </form>
+            ${this.userStakeTask.render({
+              complete: (stake) => {
+                if (stake) {
+                  return html`
+                    <div class="user-stake">
+                      <h3>Your Stake</h3>
+                      <p>
+                        You have staked
+                        <strong>
+                          ${shortNum(formatUnits(stake, 18))} UPD
+                        </strong>
+                        in this solution.
+                      </p>
+                    </div>
+                  `;
+                }
+                return html``;
+              },
+              pending: () => html` <sl-spinner></sl-spinner>`,
+              error: (error) => html`<p class="error">${error}</p>`,
+            })}
+            ${this.userPositionsTask.render({
+              complete: () =>
+                this.positions.length > 0 ? this.renderUserPosition() : html``,
+            })}
+            ${this.solutionInfo?.description
+              ? html`
+                  <div class="solution-description">
+                    <h3>Description</h3>
+                    <p>${this.solutionInfo.description}</p>
                   </div>
-                </div>
-
-                ${this.userStakeTask.render({
-                  complete: (stake) => {
-                    if (stake) {
-                      return html`
-                        <div class="user-stake">
-                          <h3>Your Stake</h3>
-                          <p>
-                            You have staked
-                            <strong>
-                              ${shortNum(formatUnits(stake, 18))} UPD
-                            </strong>
-                            in this solution.
-                          </p>
-                        </div>
-                      `;
-                    }
-                    return html``;
-                  },
-                  pending: () => html` <sl-spinner></sl-spinner>`,
-                  error: (error) => html`<p class="error">${error}</p>`,
-                })}
-                ${this.userPositionsTask.render({
-                  complete: () => {
-                    // Check if we have any positions
-                    if (this.positions.length > 0) {
-                      const position = this.positions[this.positionIndex];
-
-                      return html`
-                        <div class="user-positions">
-                          <div class="positions-header">
-                            <h3>Your Positions</h3>
-                            ${this.positions.length > 1
-                              ? html`
-                                  <div class="position-navigation">
-                                    <sl-icon-button
-                                      src=${chevronLeft}
-                                      label="Previous position"
-                                      @click=${this.previousPosition}
-                                    ></sl-icon-button>
-                                    <span
-                                      >Position ${this.positionIndex + 1} of
-                                      ${this.positions.length}</span
-                                    >
-                                    <sl-icon-button
-                                      src=${chevronRight}
-                                      label="Next position"
-                                      @click=${this.nextPosition}
-                                    ></sl-icon-button>
-                                  </div>
-                                `
-                              : html``}
-                          </div>
-                          <div class="position-details">
-                            <p>
-                              Your contribution:
-                              <strong>
-                                ${shortNum(
-                                  formatUnits(position.contribution, 18)
-                                )}
-                                ${this.fundInput?.tokenSymbol || 'USDC'}
-                              </strong>
-                            </p>
-                            <p>
-                              Fees earned:
-                              <strong>
-                                ${shortNum(
-                                  formatUnits(position.feesEarned, 18)
-                                )}
-                                ${this.fundInput?.tokenSymbol || 'USDC'}
-                              </strong>
-                            </p>
-
-                            ${this.goalFailed
-                              ? html`
-                                  <p class="status-message">
-                                    <strong>Goal Failed:</strong> You can refund
-                                    your contribution.
-                                  </p>
-                                  <sl-button
-                                    variant="primary"
-                                    @click=${this.handleRefund}
-                                  >
-                                    Refund Position
-                                  </sl-button>
-                                `
-                              : position.feesEarned > 0n
-                                ? html`
-                                    <p class="status-message">
-                                      <strong>Rewards Available:</strong> You
-                                      can collect your fees.
-                                    </p>
-                                    <sl-button
-                                      variant="primary"
-                                      @click=${this.handleCollectFees}
-                                    >
-                                      Collect Fees
-                                    </sl-button>
-                                  `
-                                : html`
-                                    <p class="status-message">
-                                      <strong>Position Active:</strong> No
-                                      action needed at this time.
-                                    </p>
-                                  `}
-                          </div>
-                        </div>
-                      `;
-                    }
-                    return html``;
-                  },
-                })}
-                ${this.solutionInfo?.description
-                  ? html`
-                      <div class="solution-description">
-                        <h3>Description</h3>
-                        <p>${this.solutionInfo.description}</p>
-                      </div>
-                    `
-                  : html``}
-                ${this.solutionInfo?.news
-                  ? html`
-                      <div class="solution-news">
-                        <h3>Latest Updates</h3>
-                        <p>${this.solutionInfo.news}</p>
-                      </div>
-                    `
-                  : html``}
-                ${this.solutionInfo?.repository
-                  ? html`
-                      <div class="solution-repository">
-                        <h3>Repository</h3>
-                        <a
-                          href="${this.solutionInfo.repository}"
-                          target="_blank"
-                          rel="noopener"
-                        >
-                          ${this.solutionInfo.repository}
-                        </a>
-                      </div>
-                    `
-                  : html``}
-              `)
-            : html``}
+                `
+              : html``}
+            ${this.solutionInfo?.news
+              ? html`
+                  <div class="solution-news">
+                    <h3>Latest Updates</h3>
+                    <p>${this.solutionInfo.news}</p>
+                  </div>
+                `
+              : html``}
+            ${this.solutionInfo?.repository
+              ? html`
+                  <div class="solution-repository">
+                    <h3>Repository</h3>
+                    <a
+                      href="${this.solutionInfo.repository}"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      ${this.solutionInfo.repository}
+                    </a>
+                  </div>
+                `
+              : html``}
+          </div>
         </div>
 
-        <!-- Additional solution content can be added here -->
-      </div>
-
-      <!-- Transaction watchers -->
-      <upd-dialog></upd-dialog>
-      <share-dialog></share-dialog>
-      <transaction-watcher
-        class="refund"
-        @transaction-success=${this.handleRefundSuccess}
-      ></transaction-watcher>
-      <transaction-watcher
-        class="collect"
-        @transaction-success=${this.handleCollectSuccess}
-      ></transaction-watcher>
-      <transaction-watcher
-        class="stake"
-        @transaction-success=${this.handleStakeSuccess}
-      ></transaction-watcher>
-      <transaction-watcher
-        class="fund"
-        @transaction-success=${this.handleFundSuccess}
-      ></transaction-watcher>
-    `;
+        <!-- Transaction watchers -->
+        <upd-dialog></upd-dialog>
+        <share-dialog></share-dialog>
+        <transaction-watcher
+          class="refund"
+          @transaction-success=${this.handleRefundSuccess}
+        ></transaction-watcher>
+        <transaction-watcher
+          class="collect"
+          @transaction-success=${this.handleCollectSuccess}
+        ></transaction-watcher>
+        <transaction-watcher
+          class="stake"
+          @transaction-success=${this.handleStakeSuccess}
+        ></transaction-watcher>
+        <transaction-watcher
+          class="fund"
+          @transaction-success=${this.handleFundSuccess}
+        ></transaction-watcher>
+      `);
+    } else {
+      if (this.error) {
+        return html`
+          <div class="error-container">
+            <h2>Error Loading Solution</h2>
+            <p>${this.error}</p>
+            <sl-button
+              variant="primary"
+              @click=${() => this.solutionController.refresh()}
+              >Retry
+            </sl-button>
+          </div>
+        `;
+      } else if (this.loaded) {
+        return html`
+          <div class="error-container">
+            <h2>Solution Not Found</h2>
+            <p>Check the id in the URL.</p>
+            <sl-button href="/discover" variant="primary">
+              Browse Solutions
+            </sl-button>
+          </div>
+        `;
+      } else {
+        return html` <sl-spinner></sl-spinner>`;
+      }
+    }
   }
 }
 
