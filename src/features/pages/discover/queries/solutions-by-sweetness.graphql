@@ -1,0 +1,12 @@
+# Solutions ordered by "sweetness," which is stake * funderReward.
+
+query SolutionsBySweetness($first: Int = 4, $skip: Int = 0, $now: BigInt!) {
+    solutions(
+        first: $first,
+        skip: $skip,
+        orderBy: sweetness,
+        orderDirection: desc
+    ) {
+        ...SolutionFieldsDetailed
+    }
+}

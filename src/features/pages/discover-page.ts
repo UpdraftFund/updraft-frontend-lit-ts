@@ -32,18 +32,18 @@ import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,
   IdeasByStartTimeDocument,
-  SolutionsByDeadlineDocument,
+  SolutionsBySweetnessDocument,
   IdeasFullTextDocument,
   IdeasByTagsDocument,
   IdeasBySharesQuery,
   IdeasByStartTimeQuery,
-  SolutionsByDeadlineQuery,
+  SolutionsBySweetnessQuery,
   IdeasByFundersQuery,
   IdeasFullTextQuery,
   IdeasByTagsQuery,
   IdeasBySharesQueryVariables,
   IdeasByStartTimeQueryVariables,
-  SolutionsByDeadlineQueryVariables,
+  SolutionsBySweetnessQueryVariables,
   IdeasByFundersQueryVariables,
   IdeasFullTextQueryVariables,
   IdeasByTagsQueryVariables,
@@ -53,7 +53,7 @@ import { TypedDocumentNode } from '@urql/core';
 type AnyResult =
   | IdeasBySharesQuery
   | IdeasByStartTimeQuery
-  | SolutionsByDeadlineQuery
+  | SolutionsBySweetnessQuery
   | IdeasByFundersQuery
   | IdeasFullTextQuery
   | IdeasByTagsQuery;
@@ -61,7 +61,7 @@ type AnyResult =
 type AnyVariables =
   | IdeasBySharesQueryVariables
   | IdeasByStartTimeQueryVariables
-  | SolutionsByDeadlineQueryVariables
+  | SolutionsBySweetnessQueryVariables
   | IdeasByFundersQueryVariables
   | IdeasFullTextQueryVariables
   | IdeasByTagsQueryVariables;
@@ -113,7 +113,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   private readonly queries = {
     'hot-ideas': IdeasBySharesDocument,
     'new-ideas': IdeasByStartTimeDocument,
-    solutions: SolutionsByDeadlineDocument,
+    solutions: SolutionsBySweetnessDocument,
     followed: IdeasByFundersDocument,
     search: IdeasFullTextDocument,
     tags: IdeasByTagsDocument,
@@ -175,7 +175,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       case 'new-ideas':
         return (data as IdeasByStartTimeQuery).ideas as Idea[];
       case 'solutions':
-        return (data as SolutionsByDeadlineQuery).solutions as Solution[];
+        return (data as SolutionsBySweetnessQuery).solutions as Solution[];
       case 'followed':
         return (data as IdeasByFundersQuery)
           .ideaContributions as IdeaContribution[];
