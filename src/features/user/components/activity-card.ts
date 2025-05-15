@@ -17,7 +17,7 @@ import {
   formatReward,
   calculateProgress,
   parseProfile,
-  formatTokenAmount,
+  formatAmount,
   formatDate,
 } from '@utils/format-utils';
 
@@ -189,9 +189,9 @@ export class ActivityCard extends LitElement {
   private getActivityAction() {
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${this.userName} supported an Idea with ${formatTokenAmount(this.activity.contribution)} UPD`;
+        return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a solution with ${formatTokenAmount(this.activity.contribution)} UPD`;
+        return `${this.userName} funded a solution with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionDrafted':
         return `${this.userName} drafted a solution`;
       default:
@@ -272,9 +272,7 @@ export class ActivityCard extends LitElement {
             Funder Reward</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🔥</span>${formatTokenAmount(
-              idea.shares
-            )}</span
+            ><span class="emoji">🔥</span>${formatAmount(idea.shares)}</span
           >
         </div>
       `;
@@ -299,8 +297,8 @@ export class ActivityCard extends LitElement {
               value="${Math.min(progress, 100)}"
             ></sl-progress-bar>
             <div class="goal-text">
-              ${formatTokenAmount(solution?.tokensContributed)} out of
-              ${formatTokenAmount(solution?.fundingGoal)} UPD
+              ${formatAmount(solution?.tokensContributed)} out of
+              ${formatAmount(solution?.fundingGoal)} UPD
             </div>
           </div>
           ${isCompleted
@@ -319,7 +317,7 @@ export class ActivityCard extends LitElement {
             ).fromNow}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">💎</span> ${formatTokenAmount(
+            ><span class="emoji">💎</span> ${formatAmount(
               solution?.stake
             )}</span
           >

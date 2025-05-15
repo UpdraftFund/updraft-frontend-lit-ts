@@ -5,11 +5,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { Idea } from '@/features/idea/types';
 
 import { smallCardStyles } from '@styles/small-card-styles';
-import {
-  formatReward,
-  formatTokenAmount,
-  formatDate,
-} from '@utils/format-utils';
+import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
 
 @customElement('idea-card-small')
 export class IdeaCardSmall extends SignalWatcher(LitElement) {
@@ -21,7 +17,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
   render() {
     const { startTime, funderReward, shares, description, id, name } =
       this.idea;
-    const interest = formatTokenAmount(shares);
+    const interest = formatAmount(shares);
     const date = formatDate(startTime);
 
     return html`

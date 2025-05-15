@@ -35,7 +35,7 @@ export function formatReward(funderReward: number): string {
  * @param amount The token amount as a bigint or string
  * @returns Formatted token amount string
  */
-export function formatTokenAmount(amount: bigint): string {
+export function formatAmount(amount: bigint): string {
   return shortNum(formatUnits(amount, 18));
 }
 

@@ -16,7 +16,7 @@ import { largeCardStyles } from '@styles/large-card-styles';
 
 import {
   formatReward,
-  formatTokenAmount,
+  formatAmount,
   parseProfile,
   formatDate,
   calculateProgress,
@@ -144,11 +144,9 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       this.solution.tokensContributed,
       this.solution.fundingGoal
     );
-    const tokensContributed = formatTokenAmount(
-      this.solution.tokensContributed
-    );
-    const fundingGoal = formatTokenAmount(this.solution.fundingGoal);
-    const stake = formatTokenAmount(this.solution.stake);
+    const tokensContributed = formatAmount(this.solution.tokensContributed);
+    const fundingGoal = formatAmount(this.solution.fundingGoal);
+    const stake = formatAmount(this.solution.stake);
     const funderRewardFormatted = formatReward(this.solution.funderReward);
 
     return html`

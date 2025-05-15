@@ -19,7 +19,7 @@ import { smallCardStyles } from '@styles/small-card-styles';
 import {
   formatDate,
   calculateProgress,
-  formatTokenAmount,
+  formatAmount,
 } from '@utils/format-utils';
 
 @customElement('solution-card-small')
@@ -61,10 +61,8 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     }
 
     // Format the progress text
-    const formattedContributed = formatTokenAmount(
-      this.solution.tokensContributed
-    );
-    const formattedGoal = formatTokenAmount(this.solution.fundingGoal);
+    const formattedContributed = formatAmount(this.solution.tokensContributed);
+    const formattedGoal = formatAmount(this.solution.fundingGoal);
     const progressText = `${formattedContributed} / ${formattedGoal}`;
 
     return html` <sl-icon src=${gaugeIcon}></sl-icon>${progressText}`;
@@ -84,9 +82,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         ${description ? html`<p>${description}</p>` : html``}
         <ul class="info-row">
           <li>⏰ ${deadlineDate.fromNow}</li>
-          ${this.showStake
-            ? html` <li>💎 ${formatTokenAmount(stake)}</li>`
-            : html``}
+          ${this.showStake ? html` <li>💎 ${formatAmount(stake)}</li>` : html``}
           <li>${this.renderGoalProgress()}</li>
         </ul>
       </a>
