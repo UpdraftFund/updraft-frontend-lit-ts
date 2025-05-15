@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
-import { fromHex, formatUnits } from 'viem';
+import { formatUnits } from 'viem';
 
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
@@ -11,14 +11,15 @@ import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { shortNum } from '@utils/format-utils';
+import { parseProfile } from '@utils/format-utils';
 
-import { Profile } from '@/types';
 import { TypedDocumentNode } from '@urql/core';
 import {
   IdeaContributionsQuery,
   IdeaContributionsQueryVariables,
   SolutionContributionsQuery,
   SolutionContributionsQueryVariables,
+  User,
 } from '@gql';
 
 /**
@@ -100,6 +101,8 @@ export abstract class TopContributorsBase<
   `;
 
   @property({ type: String }) entityId = '';
+  @property({ type: String }) tokenSymbol = 'UPD';
+  @property({ type: Number }) maxContributors = 5;
 
   @state() protected contributors?: Contributor[];
 
@@ -123,7 +126,7 @@ export abstract class TopContributorsBase<
    * Constructor for the base component
    * @param options Configuration options
    */
-  constructor(options: {
+  protected constructor(options: {
     contributionsDocument: TypedDocumentNode<TData, TVariables>;
     entityIdVariableName: string;
     contributionsPath: string;
@@ -163,61 +166,14 @@ export abstract class TopContributorsBase<
 
         // Get the contributions array from the data
         // Both IdeaContributionsQuery and SolutionContributionsQuery have similar structure
-        const contributions =
-          this.contributionsPath === 'ideaContributions'
-            ? (data as IdeaContributionsQuery).ideaContributions
-            : (data as SolutionContributionsQuery).solutionContributions;
+        const contributions = this.getContributionsFromData(data);
 
         if (!contributions || contributions.length === 0) {
           this.contributors = [];
           return;
         }
 
-        // Use a Map to combine contributions from the same contributor
-        const contributorMap = new Map<string, Contributor>();
-
-        contributions.forEach((contribution) => {
-          const funderId = contribution.funder.id;
-          if (contributorMap.has(funderId)) {
-            const existingContributor = contributorMap.get(funderId)!;
-            const newContribution =
-              BigInt(existingContributor.contribution) +
-              BigInt(contribution.contribution);
-            contributorMap.set(funderId, {
-              ...existingContributor,
-              contribution: newContribution.toString(),
-            });
-          } else {
-            let name = funderId;
-            let avatar;
-
-            if (contribution.funder.profile) {
-              try {
-                const profile: Profile = JSON.parse(
-                  fromHex(
-                    contribution.funder.profile as `0x${string}`,
-                    'string'
-                  )
-                );
-                name = profile.name || profile.team || funderId;
-                avatar = profile.image;
-              } catch (e) {
-                console.error('Error parsing profile', e);
-              }
-            }
-            contributorMap.set(funderId, {
-              id: funderId,
-              name,
-              avatar,
-              contribution: contribution.contribution,
-            });
-          }
-        });
-
-        // Convert map to array and sort by contribution amount (descending)
-        this.contributors = Array.from(contributorMap.values()).sort((a, b) => {
-          return BigInt(b.contribution) > BigInt(a.contribution) ? 1 : -1;
-        });
+        this.contributors = this.processContributions(contributions);
       }
     );
   }
@@ -229,7 +185,7 @@ export abstract class TopContributorsBase<
    */
   private createQueryVariables(entityId: string): TVariables {
     const variables = {
-      first: 5,
+      first: this.maxContributors,
       skip: 0,
     };
 
@@ -245,7 +201,10 @@ export abstract class TopContributorsBase<
   }
 
   updated(changedProperties: Map<string, unknown>) {
-    if (changedProperties.has('entityId')) {
+    if (
+      changedProperties.has('entityId') ||
+      changedProperties.has('maxContributors')
+    ) {
       if (this.entityId) {
         const variables = this.createQueryVariables(this.entityId);
         this.contributorsController.setVariablesAndSubscribe(variables);
@@ -253,6 +212,107 @@ export abstract class TopContributorsBase<
         this.contributors = [];
       }
     }
+  }
+
+  /**
+   * Gets the contributions array from the query data
+   * @param data The query data
+   * @returns The contributions array
+   */
+  private getContributionsFromData(data: TData | null) {
+    if (!data) return [];
+
+    return this.contributionsPath === 'ideaContributions'
+      ? (data as IdeaContributionsQuery).ideaContributions
+      : (data as SolutionContributionsQuery).solutionContributions;
+  }
+
+  /**
+   * Processes the contributions data into a list of contributors
+   * @param contributions The raw contributions data from either IdeaContributionsQuery or SolutionContributionsQuery
+   * @returns A sorted array of contributors
+   */
+  private processContributions(
+    contributions: Array<{
+      funder: { id: string; profile?: string };
+      contribution: string;
+    }>
+  ): Contributor[] {
+    // Use a Map to combine contributions from the same contributor
+    const contributorMap = new Map<string, Contributor>();
+
+    contributions.forEach((contribution) => {
+      const funderId = contribution.funder.id;
+
+      if (contributorMap.has(funderId)) {
+        // Update existing contributor's contribution amount
+        const existingContributor = contributorMap.get(funderId)!;
+        const newContribution =
+          BigInt(existingContributor.contribution) +
+          BigInt(contribution.contribution);
+
+        contributorMap.set(funderId, {
+          ...existingContributor,
+          contribution: newContribution.toString(),
+        });
+      } else {
+        // Create a new contributor entry
+        const { name, avatar } = this.parseContributorProfile(
+          contribution.funder
+        );
+
+        contributorMap.set(funderId, {
+          id: funderId,
+          name,
+          avatar,
+          contribution: contribution.contribution,
+        });
+      }
+    });
+
+    // Convert map to array and sort by contribution amount (descending)
+    return Array.from(contributorMap.values()).sort((a, b) => {
+      const aContrib = BigInt(a.contribution);
+      const bContrib = BigInt(b.contribution);
+
+      // Sort by contribution amount (descending)
+      if (aContrib > bContrib) return -1;
+      if (aContrib < bContrib) return 1;
+
+      // If contributions are equal, sort by ID for consistent ordering
+      return a.id.localeCompare(b.id);
+    });
+  }
+
+  /**
+   * Parses a contributor's profile data
+   * @param funder The funder data from the query
+   * @returns The parsed name and avatar
+   */
+  private parseContributorProfile(funder: Pick<User, 'id' | 'profile'>) {
+    let name = funder.id;
+    let avatar;
+
+    if (funder.profile) {
+      try {
+        const profile = parseProfile(funder.profile);
+        name = profile.name || profile.team || funder.id;
+        avatar = profile.image;
+      } catch (e) {
+        console.error('Error parsing profile', e);
+      }
+    }
+
+    return { name, avatar };
+  }
+
+  /**
+   * Formats a contribution amount for display
+   * @param contribution The contribution amount as a string
+   * @returns Formatted contribution amount with token symbol
+   */
+  private formatContribution(contribution: string): string {
+    return `${shortNum(formatUnits(BigInt(contribution), 18))} ${this.tokenSymbol}`;
   }
 
   render() {
@@ -281,10 +341,7 @@ export abstract class TopContributorsBase<
                             >${contributor.name}</a
                           >
                           <div class="contributor-contribution">
-                            ${shortNum(
-                              formatUnits(BigInt(contributor.contribution), 18)
-                            )}
-                            UPD
+                            ${this.formatContribution(contributor.contribution)}
                           </div>
                         </div>
                       </div>

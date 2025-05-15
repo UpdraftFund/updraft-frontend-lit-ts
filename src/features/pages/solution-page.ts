@@ -332,8 +332,12 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         );
         this.goalFailed = now > deadline && tokensContributed < fundingGoal;
 
+        const tokenSymbol = this.fundInput?.tokenSymbol || '';
         layout.rightSidebarContent.set(html`
-          <top-funders .solutionId=${this.solutionId}></top-funders>
+          <top-funders
+            .solutionId=${this.solutionId}
+            .tokenSymbol=${tokenSymbol}
+          ></top-funders>
         `);
       } else {
         this.error = 'Solution not found.';
