@@ -332,11 +332,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         );
         this.goalFailed = now > deadline && tokensContributed < fundingGoal;
 
-        const tokenSymbol = this.fundInput?.tokenSymbol || '';
         layout.rightSidebarContent.set(html`
           <top-funders
             .solutionId=${this.solutionId}
-            .tokenSymbol=${tokenSymbol}
+            .tokenSymbol=${this.fundInput?.tokenSymbol}
           ></top-funders>
         `);
       } else {

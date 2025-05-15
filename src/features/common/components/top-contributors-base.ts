@@ -101,7 +101,7 @@ export abstract class TopContributorsBase<
   `;
 
   @property({ type: String }) entityId = '';
-  @property({ type: String }) tokenSymbol = 'UPD';
+  @property({ type: String }) tokenSymbol? = 'UPD';
   @property({ type: Number }) maxContributors = 5;
 
   @state() protected contributors?: Contributor[];
@@ -312,7 +312,7 @@ export abstract class TopContributorsBase<
    * @returns Formatted contribution amount with token symbol
    */
   private formatContribution(contribution: string): string {
-    return `${shortNum(formatUnits(BigInt(contribution), 18))} ${this.tokenSymbol}`;
+    return `${shortNum(formatUnits(BigInt(contribution), 18))} ${this.tokenSymbol || ''}`;
   }
 
   render() {
