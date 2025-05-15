@@ -139,7 +139,6 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
     const drafterProfile = parseProfile(
       this.solution.drafter.profile as `0x${string}`
     );
-    const start = formatDate(this.solution.startTime);
     const deadline = formatDate(this.solution.deadline);
     const progress = calculateProgress(
       this.solution.tokensContributed,
@@ -181,18 +180,9 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
               ${this.renderGoalStatus()}
             </div>
           </li>
-          <li>
-            <span>⏰ Deadline ${deadline.fromNow}</span>
-          </li>
-          <li>
-            <span class="created"> 🌱 Created ${start.fromNow} </span>
-          </li>
-          <li>
-            <span>🎁 ${funderRewardFormatted} funder reward</span>
-          </li>
-          <li>
-            <span>💎 ${stake} UPD stake</span>
-          </li>
+          <li>⏰ Deadline ${deadline.fromNow}</li>
+          <li>💎 ${stake} UPD stake</li>
+          <li>🎁 ${funderRewardFormatted} funder reward</li>
         </ul>
 
         ${solutionInfo.description

@@ -70,7 +70,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
   }
 
   render() {
-    const { info: infoRaw, deadline, id } = this.solution;
+    const { info: infoRaw, deadline, id, stake } = this.solution;
     const info = JSON.parse(fromHex(infoRaw as `0x${string}`, 'string'));
     const name = info.name || 'Untitled Solution';
     const deadlineDate = formatDate(deadline);
@@ -83,6 +83,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         ${description ? html`<p>${description}</p>` : html``}
         <ul class="info-row">
           <li>⏰ ${deadlineDate.fromNow}</li>
+          <li>💎 ${formatTokenAmount(stake)}</li>
           <li>${this.renderGoalProgress()}</li>
         </ul>
       </a>
