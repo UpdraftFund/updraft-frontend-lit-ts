@@ -16,7 +16,7 @@ function getDefaultSinceValue(): number {
 
 export const since = signal(getDefaultSinceValue());
 
-export function updateSince(value: number) {
-  since.set(value);
-  localStorage.setItem('tracked-changes-since', value.toString());
+export function updateSince(unixTimestamp: number) {
+  since.set(unixTimestamp);
+  localStorage.setItem('tracked-changes-since', unixTimestamp.toString());
 }

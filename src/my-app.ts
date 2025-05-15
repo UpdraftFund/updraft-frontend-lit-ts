@@ -45,8 +45,7 @@ export class MyApp extends LitElement {
         nav.set('idea');
         return true;
       },
-      render: ({ id }) =>
-        html` <idea-page .ideaId=${id as string}></idea-page>`,
+      render: ({ id }) => html` <idea-page .ideaId=${id}></idea-page>`,
     },
     {
       path: '/create-idea',
@@ -84,7 +83,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ address }) =>
-        html` <view-profile .address=${address as string}></view-profile>`,
+        html` <view-profile .address=${address}></view-profile>`,
     },
     {
       path: '/create-solution/:ideaId',
@@ -93,11 +92,8 @@ export class MyApp extends LitElement {
         nav.set('create-solution');
         return true;
       },
-      render: ({ ideaId }) => {
-        return html` <create-solution
-          .ideaId=${ideaId as string}
-        ></create-solution>`;
-      },
+      render: ({ ideaId }) =>
+        html` <create-solution .ideaId=${ideaId}></create-solution>`,
     },
     {
       path: '/create-solution-two/:ideaId',
@@ -106,11 +102,20 @@ export class MyApp extends LitElement {
         nav.set('create-solution-two');
         return true;
       },
-      render: ({ ideaId }) => {
-        return html` <create-solution-page-two
-          .ideaId=${ideaId as string}
-        ></create-solution-page-two>`;
+      render: ({ ideaId }) =>
+        html` <create-solution-page-two
+          .ideaId=${ideaId}
+        ></create-solution-page-two>`,
+    },
+    {
+      path: '/solution/:solutionId',
+      enter: async () => {
+        await import('@pages/solution-page');
+        nav.set('solution');
+        return true;
       },
+      render: ({ solutionId }) =>
+        html` <solution-page .solutionId=${solutionId}></solution-page>`,
     },
   ]);
 

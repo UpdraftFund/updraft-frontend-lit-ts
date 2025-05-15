@@ -5,4 +5,11 @@ export interface SolutionInfo {
   repository?: string;
 }
 
+export interface SolutionPosition {
+  contribution: bigint;
+  refunded: boolean;
+  feesEarned: bigint;
+  positionIndex: bigint;
+}
+
 export type { Solution, SolutionContribution } from '@gql';

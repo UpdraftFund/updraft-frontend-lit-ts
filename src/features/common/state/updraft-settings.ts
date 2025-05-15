@@ -9,6 +9,7 @@ export const defaultFunderRewardPct = 25;
 export const updraftSettings = signal<UpdraftSettings>({
   percentScale: 1000000,
   updAddress: null,
+  updraftAddress: updraft.address,
   percentFee: 0,
   minFee: 0,
 });
@@ -22,6 +23,7 @@ export const refreshUpdraftSettings = async () => {
   updraftSettings.set({
     percentScale,
     updAddress,
+    updraftAddress: updraft.address,
     percentFee: Number(percentFee) / percentScale,
     minFee: Number(formatUnits(minFee, 18)),
   });

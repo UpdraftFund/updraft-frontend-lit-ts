@@ -231,7 +231,7 @@ export class TrackedChangesManager {
     // If we have more than the target count, update the "since" timestamp
     if (changesArray.length > this.targetCount) {
       const lastChange = changesArray[this.targetCount - 1];
-      updateSince(lastChange.time);
+      updateSince(Math.floor(lastChange.time / 1000));
       return changesArray.slice(0, this.targetCount);
     }
 

@@ -21,7 +21,9 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
-import { SlDialog, SlInput } from '@shoelace-style/shoelace';
+import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
+import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
+import { SlDialog, SlCheckbox } from '@shoelace-style/shoelace';
 
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
@@ -43,7 +45,7 @@ import { UrqlQueryController } from '@utils/urql-query-controller';
 
 import { Idea, IdeaDocument } from '@gql';
 import { IdeaContract } from '@contracts/idea';
-import type { Position } from '@/features/idea/types';
+import type { IdeaPosition } from '@/features/idea/types';
 
 import { updraftSettings } from '@state/common';
 import layout from '@state/layout';
@@ -65,48 +67,48 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         color: var(--main-foreground);
         background: var(--main-background);
       }
-
       .support {
         display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-top: 0.25rem;
+        flex-direction: column;
+        margin-bottom: 1rem;
       }
-
+      .airdrop-option {
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+        margin-left: 0.25rem;
+      }
+      .airdrop-option .info-icon {
+        font-size: 0.75rem;
+        cursor: help;
+      }
       .heading {
-        font-size: 1.9rem;
-        font-weight: 500;
+        font-size: 2rem;
         margin-bottom: 0;
       }
-
       .created {
         font-size: 0.9rem;
         margin-top: 0.4rem;
       }
-
       .reward-fire {
         display: flex;
         align-items: center;
         gap: 1rem;
         margin: 1rem 0;
       }
-
       .reward {
         display: flex;
         gap: 0.3rem;
       }
-
       .fire {
         align-items: center;
       }
-
       .tags {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
         margin-bottom: 1rem;
       }
-
       .tag {
         display: inline-block;
         padding: 0.25rem 0.75rem;
@@ -116,98 +118,80 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         text-decoration: none;
         color: var(--main-foreground);
       }
-
       .tag:hover {
         background-color: var(--accent);
         color: var(--sl-color-neutral-0);
       }
-
       .error-container {
         display: flex;
         flex-direction: column;
         padding: 2rem;
         gap: 1rem;
       }
-
       .error-container h2 {
         color: var(--sl-color-danger-600);
         margin: 0;
       }
-
       .error-container p {
         max-width: 500px;
       }
-
       sl-button {
         max-width: fit-content;
       }
-
       sl-dialog::part(body) {
         padding-top: 0;
       }
-
       .user-support {
         background-color: var(--subtle-background);
         border-radius: 0.5rem;
         padding: 1rem;
         margin: 1rem 0;
       }
-
       .support-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.5rem;
       }
-
       .user-support h3 {
         margin: 0;
         font-size: 1.2rem;
         font-weight: 500;
       }
-
       .position-navigation {
         display: flex;
         align-items: center;
         gap: 0.5rem;
       }
-
       .position-navigation sl-icon-button::part(base) {
         font-size: 1.2rem;
         color: var(--sl-color-neutral-600);
       }
-
       .position-navigation sl-icon-button::part(base):hover {
         color: var(--accent);
       }
-
       .position-navigation span {
         font-size: 0.9rem;
         color: var(--sl-color-neutral-600);
       }
-
       .support-details {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
       }
-
       .support-details p {
         margin: 0;
       }
-
       .support-details sl-button {
         margin-top: 0.5rem;
         align-self: flex-start;
       }
-
       .solutions-header {
         display: flex;
         gap: 1rem;
         align-items: center;
         margin: 1rem 0 0;
       }
-
       .solutions-header h2 {
         margin: 0;
         font-size: 1.875rem;
@@ -226,8 +210,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.withdraw', true)
   withdrawTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
-  @query('sl-input[name="support"]', true) supportInput!: SlInput;
   @query('token-input', true) tokenInput!: TokenInput;
+  @query('sl-checkbox', true) airdropCheckbox!: SlCheckbox;
 
   // supportValue is now handled by UpdTransactionMixin as updValue
   @state() private idea?: Idea;
@@ -236,7 +220,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Track current position index for navigation
   @state() private positionIndex: number = 0;
 
-  private positions: Position[] = [];
+  private positions: IdeaPosition[] = [];
 
   @property() ideaId!: `0x${string}`;
   //TODO: each url should include a network
@@ -289,51 +273,49 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         }
 
         // Collect all viable positions
-        const viablePositions: Position[] = [];
+        const viablePositions: IdeaPosition[] = [];
 
         // Check each position
-        for (let i = 0n; i < numPositions; i++) {
+        for (
+          let positionIndex = 0n;
+          positionIndex < numPositions;
+          positionIndex++
+        ) {
           try {
             // Get current position (includes original contribution + earnings)
-            const position = (await idea.read('checkPosition', [
+            const [currentPosition] = (await idea.read('checkPosition', [
               address,
-              i,
+              positionIndex,
             ])) as bigint[];
-            const currentPosition = position[0] as bigint;
 
             // Skip positions with zero value (already withdrawn)
             if (currentPosition <= 0n) continue;
 
             // Get original contribution from positionsByAddress mapping
-            const originalPosition = (await idea.read('positionsByAddress', [
-              address,
-              i,
-            ])) as bigint[];
-
-            const originalContribution = originalPosition[1] as bigint;
+            const [, originalContribution] = (await idea.read(
+              'positionsByAddress',
+              [address, positionIndex]
+            )) as bigint[];
 
             // Skip positions with zero value (already withdrawn)
             if (originalContribution <= 0n) continue;
 
-            const earnings = currentPosition - originalContribution;
             viablePositions.push({
               originalContribution,
               currentPosition,
-              earnings,
-              positionIndex: i,
+              earnings: currentPosition - originalContribution,
+              positionIndex,
             });
           } catch (error) {
             // If position doesn't exist (already withdrawn), skip it
-            console.warn(`Position ${i} not available:`, error);
+            console.warn(`Position ${positionIndex} not available:`, error);
           }
         }
 
         // Store the viable positions and reset current index
         this.positions = viablePositions;
-        this.positionIndex = viablePositions.length > 0 ? 0 : -1;
-
-        // Return the positions array for rendering
-        return viablePositions.length > 0 ? viablePositions : null;
+        this.positionIndex = 0;
+        return viablePositions;
       } catch (error) {
         console.warn('Error fetching user support:', error);
         this.positions = [];
@@ -346,7 +328,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   // Handle withdraw support
   private async handleWithdraw() {
     try {
-      if (this.positions.length === 0 || this.positionIndex < 0) {
+      if (this.positions.length === 0) {
         console.warn('No valid position to withdraw');
         return;
       }
@@ -358,18 +340,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         currentPosition.positionIndex,
       ]);
     } catch (e) {
-      // Use token-input's error handling
-      if (this.tokenInput) {
-        this.tokenInput.handleTransactionError(
-          e,
-          undefined, // No approval callback needed for withdraw
-          () => this.updDialog.show() // Show UPD dialog on low balance
-        );
-      } else {
-        console.error('Withdraw error:', e);
-        if (e instanceof Error && e.message.startsWith('connection')) {
-          modal.open({ view: 'Connect' });
-        }
+      console.error('Withdraw error:', e);
+      if (e instanceof Error && e.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
       }
     }
   }
@@ -391,14 +364,27 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
+  @state() private isAirdropMode = false;
+
+  private updateAirdropMode = () => {
+    this.isAirdropMode = this.airdropCheckbox.checked;
+  };
+
   private async handleSubmit(e: Event) {
     e.preventDefault();
     if (this.form.checkValidity()) {
       const support = parseUnits(this.tokenInput.value, 18);
+      this.updateAirdropMode();
       this.submitTransaction.reset();
       try {
         const idea = new IdeaContract(this.ideaId);
-        this.submitTransaction.hash = await idea.write('contribute', [support]);
+        if (this.isAirdropMode) {
+          this.submitTransaction.hash = await idea.write('airdrop', [support]);
+        } else {
+          this.submitTransaction.hash = await idea.write('contribute', [
+            support,
+          ]);
+        }
       } catch (err) {
         this.tokenInput.handleTransactionError(
           err,
@@ -412,6 +398,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   }
 
   private async handleSupportSucces() {
+    // Handle the success of the contribution or airdrop
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.approveDialog.hide();
     this.shareDialog.show();
@@ -466,7 +453,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         ${this.userSupportTask.render({
           complete: () => {
             // Check if we have any positions
-            if (this.positions.length > 0 && this.positionIndex >= 0) {
+            if (this.positions.length > 0) {
               const position = this.positions[this.positionIndex];
 
               return html`
@@ -536,7 +523,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               name="support"
               required
               spendingContract=${this.ideaId}
-              spendingContractName="This Idea"
+              spendingContractName=${this.idea.name}
               antiSpamFeeMode="variable"
               showDialogs="false"
             >
@@ -548,9 +535,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 Get more UPD
               </sl-button>
               <sl-button slot="valid" variant="primary" type="submit">
-                Support this Idea
+                ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
               </sl-button>
             </token-input>
+            <div class="airdrop-option">
+              <sl-checkbox name="airdrop" @sl-change=${this.updateAirdropMode}
+                >Airdrop to past contributors
+              </sl-checkbox>
+              <sl-tooltip
+                content="An airdrop uses 100% of its funds to reward past contributors and increase 🔥."
+              >
+                <span class="info-icon">ℹ️</span>
+              </sl-tooltip>
+            </div>
           </div>
         </form>
         <p>${description}</p>
@@ -574,7 +571,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         </div>
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
-        <share-dialog action="supported an Idea" .topic=${name}></share-dialog>
+        <share-dialog
+          action=${this.isAirdropMode
+            ? 'airdropped to an Idea'
+            : 'supported an Idea'}
+          .topic=${name}
+        ></share-dialog>
       `);
     } else {
       if (this.error) {
