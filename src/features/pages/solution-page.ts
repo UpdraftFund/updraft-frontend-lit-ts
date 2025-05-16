@@ -19,7 +19,6 @@ import { dialogStyles } from '@styles/dialog-styles';
 
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
-import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
@@ -70,22 +69,19 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
-      :host {
+      main {
         flex: 1;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
-        padding: 0.5rem 1rem;
-        color: var(--main-foreground);
-        background: var(--main-background);
+        gap: 2rem;
+        padding: 2rem;
       }
 
       .header-container {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-medium);
-        padding: var(--sl-spacing-large);
         background-color: var(--main-background);
       }
 
@@ -114,7 +110,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         gap: var(--sl-spacing-medium);
       }
       .title-area h1 {
-        margin: 0 0 var(--sl-spacing-2x-small) 0;
+        margin: 0 0 var(--sl-spacing-x-small) 0;
         font-size: var(--sl-font-size-2x-large);
       }
       .idea-link {
@@ -129,25 +125,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         text-decoration: underline;
       }
 
-      .status sl-badge {
-        padding-top: 0.825rem;
-      }
-
-      .status sl-button::part(base) {
-        color: var(--sl-color-primary-600);
-      }
-
-      .status sl-button::part(base):hover {
-        color: var(--sl-color-primary-700);
-      }
-      .bottom-section {
-        display: flex;
-        flex-direction: column;
-        flex-wrap: wrap;
-        gap: var(--sl-spacing-large);
-        margin-top: var(--sl-spacing-medium);
-      }
-
       .creator-info a {
         display: flex;
         align-items: center;
@@ -158,7 +135,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .action-buttons {
         display: flex;
         flex-direction: column;
-        width: 100%;
       }
 
       .action-buttons form {
@@ -204,30 +180,62 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       .user-stake h3,
       .user-positions h3 {
-        margin-top: 0;
-        margin-bottom: var(--sl-spacing-small);
-        font-size: var(--sl-font-size-large);
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      .user-stake,
+      .user-positions {
+        background-color: var(--subtle-background);
+        border-radius: 0.5rem;
+        padding: 1rem;
       }
 
       .positions-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: var(--sl-spacing-medium);
+        margin-bottom: 0.5rem;
       }
 
       .position-navigation {
         display: flex;
         align-items: center;
-        gap: var(--sl-spacing-x-small);
+        gap: 0.5rem;
+      }
+
+      .position-navigation sl-icon-button::part(base) {
+        font-size: 1.2rem;
+        color: var(--sl-color-neutral-600);
+      }
+
+      .position-navigation sl-icon-button::part(base):hover {
+        color: var(--accent);
+      }
+
+      .position-navigation span {
+        font-size: 0.9rem;
+        color: var(--sl-color-neutral-600);
+      }
+
+      .position-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
       .position-details p {
-        margin: var(--sl-spacing-x-small) 0;
+        margin: 0;
+      }
+
+      .position-details sl-button {
+        margin-top: 0.5rem;
+        align-self: flex-start;
       }
 
       .status-message {
-        margin-top: var(--sl-spacing-medium);
+        margin-top: 0.5rem;
         padding: var(--sl-spacing-small);
         border-radius: var(--sl-radius-small);
         background-color: var(--sl-color-neutral-100);
@@ -457,29 +465,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  private renderStatusBadge() {
-    if (this.goalFailed) {
-      return html` <sl-badge variant="danger">Goal Failed</sl-badge> `;
-    } else if (this.goalReached) {
-      return html`
-        <sl-badge variant="success">Goal Reached</sl-badge>
-        ${this.solution?.drafter?.id === userAddress.get()
-          ? html`
-              <sl-button
-                variant="text"
-                size="small"
-                href="/edit-solution/${this.solutionId}"
-              >
-                Edit
-              </sl-button>
-            `
-          : html``}
-      `;
-    } else {
-      return html` <sl-badge variant="primary">Active</sl-badge> `;
-    }
-  }
-
   private renderDrafter() {
     const profile = parseProfile(this.solution!.drafter.profile);
     const id = this.solution!.drafter.id;
@@ -494,11 +479,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
   private renderPositions() {
     const position = this.positions[this.positionIndex];
-
+    let positionTitle = 'Your Position';
+    if (this.positions.length > 1) {
+      positionTitle += 's';
+    }
     return html`
       <div class="user-positions">
         <div class="positions-header">
-          <h3>Your Positions</h3>
+          <h3>${positionTitle}</h3>
           ${this.positions.length > 1
             ? html`
                 <div class="position-navigation">
@@ -525,17 +513,16 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             Your contribution:
             <strong>
               ${shortNum(formatUnits(position.contribution, 18))}
-              ${this.fundInput?.tokenSymbol || 'USDC'}
+              ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
           <p>
             Fees earned:
             <strong>
               ${shortNum(formatUnits(position.feesEarned, 18))}
-              ${this.fundInput?.tokenSymbol || 'USDC'}
+              ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-
           ${this.goalFailed
             ? html`
                 <p class="status-message">
@@ -548,20 +535,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               `
             : position.feesEarned > 0n
               ? html`
-                  <p class="status-message">
-                    <strong>Rewards Available:</strong> You can collect your
-                    fees.
-                  </p>
                   <sl-button variant="primary" @click=${this.handleCollectFees}>
                     Collect Fees
                   </sl-button>
                 `
-              : html`
-                  <p class="status-message">
-                    <strong>Position Active:</strong> No action needed at this
-                    time.
-                  </p>
-                `}
+              : html``}
         </div>
       </div>
     `;
@@ -572,7 +550,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     const deadline = formatDate(this.solution!.deadline, 'full');
     const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
     const fundingTokenSymbol = this.fundInput?.tokenSymbol;
-    const stakingTokenSymbol = 'UPD';
 
     return html`
       <div class="stat-row">
@@ -583,7 +560,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             value="${Math.min(progress, 100)}"
           ></sl-progress-bar>
           <span
-            >🚀 <strong>${progress} %</strong> complete
+            >🚀 <strong>${progress}%</strong> complete
             (${shortNum(formatUnits(this.solution!.tokensContributed, 18))} /
             ${shortNum(formatUnits(this.solution!.fundingGoal, 18))}
             ${fundingTokenSymbol})</span
@@ -596,7 +573,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       </div>
       <div class="stat-row">
         <span class="stat-label">Total Staked:</span>
-        <span>💎 ${totalStake} ${stakingTokenSymbol}</span>
+        <span>💎 ${totalStake} UPD</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Funder Reward:</span>
@@ -758,27 +735,64 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   render() {
     if (this.solution) {
       return cache(html`
-        <div class="header-container">
-          <div class="top-row">
-            <div class="title-area">
-              <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
-              <div class="idea-link">
-                Solution for idea:
-                <a
-                  href="/idea/${this.solution.idea?.id}"
-                  title="View linked Idea"
-                  >${this.solution.idea?.name || 'Unknown Idea'}</a
-                >
+        <main>
+          <div class="header-container">
+            <div class="top-row">
+              <div class="title-area">
+                <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
+                <div class="idea-link">
+                  Solution for idea:
+                  <a
+                    href="/idea/${this.solution.idea?.id}"
+                    title="View linked Idea"
+                    >${this.solution.idea?.name || 'Unknown Idea'}</a
+                  >
+                </div>
               </div>
+              ${this.solution?.drafter?.id.toLowerCase() ===
+              userAddress.get()?.toLowerCase()
+                ? html`
+                    <sl-button
+                      class="edit-button"
+                      pill
+                      size="medium"
+                      href="/edit-solution/${this.solutionId}?tokenSymbol=${this
+                        .fundInput?.tokenSymbol || 'tokens'}"
+                      >Edit
+                    </sl-button>
+                  `
+                : html``}
             </div>
-            <div class="status">${this.renderStatusBadge()}</div>
+            <div class="creator-info">${this.renderDrafter()}</div>
           </div>
-          <div class="creator-info">${this.renderDrafter()}</div>
-        </div>
-
-        <div class="solution-stats">${this.renderSolutionStats()}</div>
-
-        <div class="bottom-section">
+          <div class="solution-stats">${this.renderSolutionStats()}</div>
+          ${this.userStakeTask.render({
+            complete: (stake) => {
+              if (stake) {
+                return html`
+                  <div class="user-stake">
+                    <div class="positions-header">
+                      <h3>Your Stake</h3>
+                    </div>
+                    <div class="position-details">
+                      <p>
+                        You have staked
+                        <strong>
+                          ${shortNum(formatUnits(stake, 18))} UPD
+                        </strong>
+                        in this solution.
+                      </p>
+                    </div>
+                  </div>
+                `;
+              }
+              return html``;
+            },
+          })}
+          ${this.userPositionsTask.render({
+            complete: () =>
+              this.positions.length > 0 ? this.renderPositions() : html``,
+          })}
           <div class="action-buttons">
             ${!this.goalFailed && !this.goalReached
               ? html`
@@ -857,62 +871,38 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                 `
               : html``}
           </div>
-        </div>
 
-        ${this.userStakeTask.render({
-          complete: (stake) => {
-            if (stake) {
-              return html`
-                <div class="user-stake">
-                  <h3>Your Stake</h3>
-                  <p>
-                    You have staked
-                    <strong> ${shortNum(formatUnits(stake, 18))} UPD </strong>
-                    in this solution.
-                  </p>
+          ${this.solutionInfo?.description
+            ? html`
+                <div class="solution-description">
+                  <h3>Description</h3>
+                  <p>${this.solutionInfo.description}</p>
                 </div>
-              `;
-            }
-            return html``;
-          },
-          pending: () => html` <sl-spinner></sl-spinner>`,
-          error: (error) => html`<p class="error">${error}</p>`,
-        })}
-        ${this.userPositionsTask.render({
-          complete: () =>
-            this.positions.length > 0 ? this.renderPositions() : html``,
-        })}
-        ${this.solutionInfo?.description
-          ? html`
-              <div class="solution-description">
-                <h3>Description</h3>
-                <p>${this.solutionInfo.description}</p>
-              </div>
-            `
-          : html``}
-        ${this.solutionInfo?.news
-          ? html`
-              <div class="solution-news">
-                <h3>Latest Updates</h3>
-                <p>${this.solutionInfo.news}</p>
-              </div>
-            `
-          : html``}
-        ${this.solutionInfo?.repository
-          ? html`
-              <div class="solution-repository">
-                <h3>Repository</h3>
-                <a
-                  href="${this.solutionInfo.repository}"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  ${this.solutionInfo.repository}
-                </a>
-              </div>
-            `
-          : html``}
-
+              `
+            : html``}
+          ${this.solutionInfo?.news
+            ? html`
+                <div class="solution-news">
+                  <h3>Latest Updates</h3>
+                  <p>${this.solutionInfo.news}</p>
+                </div>
+              `
+            : html``}
+          ${this.solutionInfo?.repository
+            ? html`
+                <div class="solution-repository">
+                  <h3>Repository</h3>
+                  <a
+                    href="${this.solutionInfo.repository}"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    ${this.solutionInfo.repository}
+                  </a>
+                </div>
+              `
+            : html``}
+        </main>
         <!-- Transaction watchers -->
         <upd-dialog></upd-dialog>
         <share-dialog></share-dialog>
@@ -951,7 +941,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Solution Not Found</h2>
             <p>Check the id in the URL.</p>
-            <sl-button href="/discover" variant="primary">
+            <sl-button href="/discover?tab=solutions" variant="primary">
               Browse Solutions
             </sl-button>
           </div>
