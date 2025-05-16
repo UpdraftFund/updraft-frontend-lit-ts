@@ -13,6 +13,10 @@ export class UserAvatar extends LitElement {
     sl-avatar {
       --size: var(--avatar-size);
     }
+
+    .avatar {
+      cursor: inherit;
+    }
   `;
 
   @property() address = '';
