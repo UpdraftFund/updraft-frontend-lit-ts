@@ -266,7 +266,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.stake') stakeTransaction!: TransactionWatcher;
   @query('transaction-watcher.fund') fundTransaction!: TransactionWatcher;
   @query('token-input.stake-input', true) stakeInput!: TokenInput;
-  @query('token-input.fund-input', true) fundInput!: TokenInput;
+  @query('token-input.fund-input', false) fundInput!: TokenInput;
   @query('form.stake-form', true) stakeForm!: HTMLFormElement;
   @query('form.fund-form', true) fundForm!: HTMLFormElement;
 
@@ -457,97 +457,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  private async handleRefund() {
-    try {
-      if (this.positions.length === 0) {
-        console.warn('No valid position to refund');
-        return;
-      }
-      const currentPosition = this.positions[this.positionIndex];
-      const solutionContract = new SolutionContract(this.solutionId);
-
-      this.refundTransaction.hash = await solutionContract.write('refund', [
-        currentPosition.positionIndex,
-      ]);
-    } catch (e) {
-      console.error('Refund error:', e);
-      if (e instanceof Error && e.message.startsWith('connection')) {
-        modal.open({ view: 'Connect' });
-      }
-    }
-  }
-
-  // Handle collect fees transaction
-  private async handleCollectFees() {
-    try {
-      if (this.positions.length === 0) {
-        console.warn('No valid position to collect fees from');
-        return;
-      }
-      const currentPosition = this.positions[this.positionIndex];
-      const solutionContract = new SolutionContract(this.solutionId);
-
-      this.collectTransaction.hash = await solutionContract.write(
-        'collectFees',
-        [currentPosition.positionIndex]
-      );
-    } catch (e) {
-      console.error('Collect fees error:', e);
-      if (e instanceof Error && e.message.startsWith('connection')) {
-        modal.open({ view: 'Connect' });
-      }
-    }
-  }
-
-  private async handleStakeSubmit(e: Event) {
-    e.preventDefault();
-    if (this.stakeForm.checkValidity()) {
-      const stake = parseUnits(this.stakeInput.value, 18);
-      this.stakeTransaction.reset();
-      try {
-        const solutionContract = new SolutionContract(this.solutionId);
-        this.stakeTransaction.hash = await solutionContract.write('addStake', [
-          stake,
-        ]);
-      } catch (err) {
-        this.stakeInput.handleTransactionError(
-          err,
-          () => this.handleStakeSubmit(e), // Retry after approval
-          () => this.updDialog.show() // Show UPD dialog on low balance
-        );
-      }
-    } else {
-      this.stakeForm.reportValidity(); // Show validation messages
-    }
-  }
-
-  private async handleFundSubmit(e: Event) {
-    e.preventDefault();
-    if (this.fundForm.checkValidity()) {
-      const fund = parseUnits(this.fundInput.value, 18);
-      this.fundTransaction.reset();
-      try {
-        const solutionContract = new SolutionContract(this.solutionId);
-        this.fundTransaction.hash = await solutionContract.write('contribute', [
-          fund,
-        ]);
-      } catch (err) {
-        this.fundInput.handleTransactionError(
-          err,
-          () => this.handleFundSubmit(e), // Retry after approval
-          () => this.updDialog.show() // Show UPD dialog on low balance
-        );
-      }
-    } else {
-      this.fundForm.reportValidity(); // Show validation messages
-    }
-  }
-
-  private handleRefundSuccess() {
-    // Refresh positions after successful refund
-    this.userPositionsTask.run();
-  }
-
   private renderStatusBadge() {
     if (this.goalFailed) {
       return html` <sl-badge variant="danger">Goal Failed</sl-badge> `;
@@ -695,6 +604,103 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     `;
   }
 
+  private handleFormSubmit(e: Event) {
+    e.preventDefault();
+  }
+
+  private async handleRefund() {
+    try {
+      if (this.positions.length === 0) {
+        console.warn('No valid position to refund');
+        return;
+      }
+      const currentPosition = this.positions[this.positionIndex];
+      const solutionContract = new SolutionContract(this.solutionId);
+
+      this.refundTransaction.hash = await solutionContract.write('refund', [
+        currentPosition.positionIndex,
+      ]);
+    } catch (e) {
+      console.error('Refund error:', e);
+      if (e instanceof Error && e.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
+      }
+    }
+  }
+
+  // Handle collect fees transaction
+  private async handleCollectFees() {
+    try {
+      if (this.positions.length === 0) {
+        console.warn('No valid position to collect fees from');
+        return;
+      }
+      const currentPosition = this.positions[this.positionIndex];
+      const solutionContract = new SolutionContract(this.solutionId);
+
+      this.collectTransaction.hash = await solutionContract.write(
+        'collectFees',
+        [currentPosition.positionIndex]
+      );
+    } catch (e) {
+      console.error('Collect fees error:', e);
+      if (e instanceof Error && e.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
+      }
+    }
+  }
+
+  private async handleStake() {
+    if (!this.stakeForm.checkValidity()) {
+      this.stakeForm.reportValidity(); // Show validation messages
+      return;
+    }
+    const stake = parseUnits(this.stakeInput.value, 18);
+    this.stakeTransaction.reset();
+    try {
+      const solutionContract = new SolutionContract(this.solutionId);
+      this.stakeTransaction.hash = await solutionContract.write('addStake', [
+        stake,
+      ]);
+    } catch (err) {
+      this.stakeInput.handleTransactionError(
+        err,
+        () => this.handleStake(), // Retry after approval
+        () => this.updDialog.show() // Show UPD dialog on low balance
+      );
+    }
+  }
+
+  private async handleFund() {
+    if (!this.fundForm.checkValidity()) {
+      this.fundForm.reportValidity(); // Show validation messages
+      return;
+    }
+    const fund = parseUnits(this.fundInput.value, 18);
+    this.fundTransaction.reset();
+    try {
+      const solutionContract = new SolutionContract(this.solutionId);
+      this.fundTransaction.hash = await solutionContract.write('contribute', [
+        fund,
+      ]);
+    } catch (err) {
+      let onLowBalance = () => {};
+      if (this.fundInput.tokenSymbol === 'UPD') {
+        onLowBalance = () => this.updDialog.show();
+      }
+      this.fundInput.handleTransactionError(
+        err,
+        () => this.handleFund(), // Retry after approval
+        onLowBalance
+      );
+    }
+  }
+
+  private handleRefundSuccess() {
+    // Refresh positions after successful refund
+    this.userPositionsTask.run();
+  }
+
   private handleCollectSuccess() {
     // Refresh positions after successful fee collection
     this.userPositionsTask.run();
@@ -775,7 +781,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <div class="action-buttons">
             ${!this.goalFailed && !this.goalReached
               ? html`
-                  <form class="stake-form" @submit=${this.handleStakeSubmit}>
+                  <form class="stake-form" @submit=${this.handleFormSubmit}>
                     <token-input
                       class="stake-input"
                       name="stake"
@@ -793,7 +799,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       >
                         Get more UPD
                       </sl-button>
-                      <sl-button slot="valid" variant="primary" type="submit">
+                      <sl-button
+                        slot="valid"
+                        variant="primary"
+                        @click=${this.handleStake}
+                      >
                         Add Stake
                       </sl-button>
                     </token-input>
@@ -802,7 +812,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               : html``}
             ${!this.goalFailed
               ? html`
-                  <form class="fund-form" @submit=${this.handleFundSubmit}>
+                  <form class="fund-form" @submit=${this.handleFormSubmit}>
                     <token-input
                       class="fund-input"
                       name="fund"
@@ -825,8 +835,20 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                               Get more UPD
                             </sl-button>
                           `
-                        : html``}
-                      <sl-button slot="valid" variant="success" type="submit">
+                        : html`
+                            <sl-button
+                              slot="invalid"
+                              variant="success"
+                              disabled
+                            >
+                              Fund this Solution
+                            </sl-button>
+                          `}
+                      <sl-button
+                        slot="valid"
+                        variant="success"
+                        @click=${this.handleFund}
+                      >
                         Fund this Solution
                       </sl-button>
                     </token-input>
