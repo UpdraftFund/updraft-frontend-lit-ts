@@ -43,7 +43,6 @@ import { TokenInput } from '@components/common/token-input';
 
 // Utils
 import {
-  shortenAddress,
   parseProfile,
   shortNum,
   formatDate,
@@ -149,11 +148,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         margin-top: var(--sl-spacing-medium);
       }
 
-      .creator-info {
+      .creator-info a {
         display: flex;
         align-items: center;
         gap: var(--sl-spacing-small);
-        flex-shrink: 0; /* Prevent creator info from shrinking too much */
+        width: fit-content;
       }
 
       .action-buttons {
@@ -441,7 +440,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     () => [this.solutionId, userAddress.get()] as const
   );
 
-  // Handle position navigation
   private previousPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
 
@@ -459,14 +457,12 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  // Handle refund transaction
   private async handleRefund() {
     try {
       if (this.positions.length === 0) {
         console.warn('No valid position to refund');
         return;
       }
-
       const currentPosition = this.positions[this.positionIndex];
       const solutionContract = new SolutionContract(this.solutionId);
 
@@ -488,7 +484,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         console.warn('No valid position to collect fees from');
         return;
       }
-
       const currentPosition = this.positions[this.positionIndex];
       const solutionContract = new SolutionContract(this.solutionId);
 
@@ -504,7 +499,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     }
   }
 
-  // Handle form submission for adding stake
   private async handleStakeSubmit(e: Event) {
     e.preventDefault();
     if (this.stakeForm.checkValidity()) {
@@ -527,7 +521,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     }
   }
 
-  // Handle form submission for funding
   private async handleFundSubmit(e: Event) {
     e.preventDefault();
     if (this.fundForm.checkValidity()) {
@@ -550,13 +543,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     }
   }
 
-  // Handle transaction success
   private handleRefundSuccess() {
     // Refresh positions after successful refund
     this.userPositionsTask.run();
   }
 
-  // Render the status badge based on solution status
   private renderStatusBadge() {
     if (this.goalFailed) {
       return html` <sl-badge variant="danger">Goal Failed</sl-badge> `;
@@ -580,28 +571,19 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     }
   }
 
-  // Render the drafter's avatar
-  private renderDrafterAvatar() {
+  private renderDrafter() {
     const profile = parseProfile(this.solution!.drafter.profile);
+    const id = this.solution!.drafter.id;
+    const displayName = profile.name || profile.team || id;
     return html`
-      <sl-avatar
-        image="${profile.image || '/default-avatar.png'}"
-        label="Creator Avatar"
-        initials="${profile.name
-          ? html``
-          : shortenAddress(this.solution!.drafter.id).substring(0, 6)}"
-      ></sl-avatar>
+      <a href="/profile/${id}">
+        <user-avatar .address=${id} .image=${profile.image}></user-avatar>
+        <span>${displayName}</span>
+      </a>
     `;
   }
 
-  // Render the drafter's name
-  private renderDrafterName() {
-    const profile = parseProfile(this.solution!.drafter.profile);
-    return profile.name || shortenAddress(this.solution!.drafter.id);
-  }
-
-  // Render the user position
-  private renderUserPosition() {
+  private renderPositions() {
     const position = this.positions[this.positionIndex];
 
     return html`
@@ -676,22 +658,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     `;
   }
 
-  // Render the solution stats
   private renderSolutionStats() {
-    // Calculate progress percentage
     const progress = calculateProgress(this.solution);
-
-    // Format deadline
     const deadline = formatDate(this.solution!.deadline, 'full');
-
-    // Format total stake
     const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
-
-    // Get funding token symbol from the fund-input component
-    // We'll use a fallback until the token-input loads
-    const fundingTokenSymbol = this.fundInput?.tokenSymbol || 'USDC';
-
-    // Staking is always done in UPD
+    const fundingTokenSymbol = this.fundInput?.tokenSymbol;
     const stakingTokenSymbol = 'UPD';
 
     return html`
@@ -796,16 +767,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             </div>
             <div class="status">${this.renderStatusBadge()}</div>
           </div>
-
-          <div class="creator-info">
-            <sl-tooltip content="Solution Drafter">
-              ${this.solution.drafter ? this.renderDrafterAvatar() : html``}
-            </sl-tooltip>
-            <!-- <user-link userId=${this.solution.drafter?.id}></user-link> -->
-            <span>
-              ${this.solution?.drafter ? this.renderDrafterName() : html``}
-            </span>
-          </div>
+          <div class="creator-info">${this.renderDrafter()}</div>
         </div>
 
         <div class="solution-stats">${this.renderSolutionStats()}</div>
@@ -896,7 +858,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         })}
         ${this.userPositionsTask.render({
           complete: () =>
-            this.positions.length > 0 ? this.renderUserPosition() : html``,
+            this.positions.length > 0 ? this.renderPositions() : html``,
         })}
         ${this.solutionInfo?.description
           ? html`
