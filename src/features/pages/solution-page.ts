@@ -551,10 +551,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               `
             : position.feesEarned > 0n
               ? html`
-                  <p class="status-message">
-                    <strong>Rewards Available:</strong> You can collect your
-                    fees.
-                  </p>
                   <sl-button variant="primary" @click=${this.handleCollectFees}>
                     Collect Fees
                   </sl-button>
