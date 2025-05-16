@@ -228,23 +228,6 @@ export class TokenInput
   approveTransaction!: ITransactionWatcher;
   @query('sl-dialog') approveDialog!: SlDialog;
 
-  // Computed properties
-
-  // Automatically determine if this is the Updraft contract
-  private get isUpdraftContract(): boolean {
-    if (!this.spendingContract) return false;
-
-    return (
-      this.spendingContract.toLowerCase() ===
-      updraftSettings.get().updraftAddress.toLowerCase()
-    );
-  }
-
-  // Check if the current token is the Updraft token
-  private get isUpdraftToken(): boolean {
-    return this._symbol === 'UPD';
-  }
-
   private fetchTokenSymbol = new Task(
     this,
     async ([tokenAddress]) => {
@@ -266,6 +249,60 @@ export class TokenInput
     },
     () => [this.tokenAddress]
   );
+
+  private refreshBalance = new Task(
+    this,
+    async ([address, tokenAddress]) => {
+      let balance = 0;
+
+      if (address) {
+        if (this.isUpdraftToken) {
+          // For UPD token, use the global balances state
+          await refreshBalances();
+          balance = getBalance('updraft');
+        } else if (tokenAddress) {
+          // For custom token addresses, fetch balance directly from contract
+          const contract = this.getTokenContract();
+          if (contract) {
+            try {
+              const rawBalance = await contract.read('balanceOf', [address]);
+              balance = Number(formatUnits(rawBalance as bigint, 18));
+            } catch (err) {
+              console.error('Error fetching token balance:', err);
+            }
+          }
+        }
+      }
+
+      // Update component state with the new balance
+      this._balance = balance;
+      this.validate();
+      return balance;
+    },
+    // Include all dependencies that should trigger a refresh
+    () => [userAddress.get(), this.tokenAddress]
+  );
+
+  // Computed properties
+
+  // Automatically determine if this is the Updraft contract
+  private get isUpdraftContract(): boolean {
+    if (!this.spendingContract) return false;
+
+    return (
+      this.spendingContract.toLowerCase() ===
+      updraftSettings.get().updraftAddress.toLowerCase()
+    );
+  }
+
+  // Check if the current token is the Updraft token
+  private get isUpdraftToken(): boolean {
+    return this._symbol === 'UPD';
+  }
+
+  private get invalid() {
+    return this._error && this.value !== '';
+  }
 
   // Get the spending contract name for display
   private get spendingContractDisplayName(): string {
@@ -322,6 +359,27 @@ export class TokenInput
     return Math.max(minFee, percentFee);
   }
 
+  private get approvalAmount(): bigint {
+    if (this.effectiveApprovalStrategy === 'unlimited') {
+      return maxUint256;
+    }
+
+    const value = Number(this.value || 0);
+    if (isNaN(value) || value <= 0) return BigInt(0);
+
+    return parseUnits(value.toString(), 18);
+  }
+
+  private get approvalDescription() {
+    let description = `Before you can proceed, you need to sign a transaction to allow "${this.spendingContractDisplayName}" to spend `;
+    if (this.effectiveApprovalStrategy === 'unlimited') {
+      description += `any amount of your ${this._symbol} tokens`;
+    } else {
+      description += `${this.value} ${this._symbol}`;
+    }
+    return description;
+  }
+
   // Get the token contract instance
   private getTokenContract(): IContract | null {
     // If tokenAddress is provided, use it directly
@@ -336,64 +394,6 @@ export class TokenInput
     }
 
     return null;
-  }
-
-  private refreshBalance = new Task(
-    this,
-    async ([address, tokenAddress]) => {
-      let balance = 0;
-
-      if (address) {
-        if (this.isUpdraftToken) {
-          // For UPD token, use the global balances state
-          await refreshBalances();
-          balance = getBalance('updraft');
-        } else if (tokenAddress) {
-          // For custom token addresses, fetch balance directly from contract
-          const contract = this.getTokenContract();
-          if (contract) {
-            try {
-              const rawBalance = await contract.read('balanceOf', [address]);
-              balance = Number(formatUnits(rawBalance as bigint, 18));
-            } catch (err) {
-              console.error('Error fetching token balance:', err);
-            }
-          }
-        }
-      }
-
-      // Update component state with the new balance
-      this._balance = balance;
-      this.validate();
-      return balance;
-    },
-    // Include all dependencies that should trigger a refresh
-    () => [userAddress.get(), this.tokenAddress]
-  );
-
-  private get invalid() {
-    return this._error && this.value !== '';
-  }
-
-  private getApprovalAmount(): bigint {
-    if (this.effectiveApprovalStrategy === 'unlimited') {
-      return maxUint256;
-    }
-
-    const value = Number(this.value || 0);
-    if (isNaN(value) || value <= 0) return BigInt(0);
-
-    return parseUnits(value.toString(), 18);
-  }
-
-  private approvalDescription() {
-    let description = `Before you can proceed, you need to sign a transaction to allow ${this.spendingContractDisplayName} to spend`;
-    if (this.effectiveApprovalStrategy === 'unlimited') {
-      description += `any amount of your ${this._symbol} tokens`;
-    } else {
-      description += `${this.value} ${this._symbol}`;
-    }
-    return description;
   }
 
   private validate() {
@@ -480,11 +480,9 @@ export class TokenInput
     this.approveDialog.show();
 
     try {
-      const approvalAmount = this.getApprovalAmount();
-
       this.approveTransaction.hash = (await contract.write('approve', [
         this.spendingContract,
-        approvalAmount,
+        this.approvalAmount,
       ])) as `0x${string}`;
 
       // Set up success handler if provided
