@@ -19,7 +19,6 @@ import { dialogStyles } from '@styles/dialog-styles';
 
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
-import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
@@ -124,18 +123,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .idea-link a:hover {
         text-decoration: underline;
-      }
-
-      .status sl-badge {
-        padding-top: 0.825rem;
-      }
-
-      .status sl-button::part(base) {
-        color: var(--sl-color-primary-600);
-      }
-
-      .status sl-button::part(base):hover {
-        color: var(--sl-color-primary-700);
       }
 
       .creator-info a {
@@ -478,26 +465,19 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  private renderStatusBadge() {
-    if (this.goalFailed) {
-      return html` <sl-badge variant="danger">Goal Failed</sl-badge> `;
-    } else if (this.goalReached) {
+  private renderEditButton() {
+    if (this.goalReached && this.solution?.drafter?.id === userAddress.get()) {
       return html`
-        <sl-badge variant="success">Goal Reached</sl-badge>
-        ${this.solution?.drafter?.id === userAddress.get()
-          ? html`
-              <sl-button
-                variant="text"
-                size="small"
-                href="/edit-solution/${this.solutionId}"
-              >
-                Edit
-              </sl-button>
-            `
-          : html``}
+        <sl-button
+          class="edit-button"
+          pill
+          size="medium"
+          href="/edit-solution/${this.solutionId}"
+          >Edit
+        </sl-button>
       `;
     } else {
-      return html` <sl-badge variant="primary">Active</sl-badge> `;
+      return html``;
     }
   }
 
@@ -785,7 +765,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   >
                 </div>
               </div>
-              <div class="status">${this.renderStatusBadge()}</div>
+              ${this.renderEditButton()}
             </div>
             <div class="creator-info">${this.renderDrafter()}</div>
           </div>
