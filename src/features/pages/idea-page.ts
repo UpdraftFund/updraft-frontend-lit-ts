@@ -372,6 +372,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   private async handleSubmit(e: Event) {
     e.preventDefault();
+  }
+
+  private async handleSupport() {
     if (this.form.checkValidity()) {
       const support = parseUnits(this.tokenInput.value, 18);
       this.updateAirdropMode();
@@ -388,7 +391,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       } catch (err) {
         this.tokenInput.handleTransactionError(
           err,
-          () => this.handleSubmit(e), // Retry after approval
+          () => this.handleSupport(), // Retry after approval
           () => this.updDialog.show() // Show UPD dialog on low balance
         );
       }
@@ -534,7 +537,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               >
                 Get more UPD
               </sl-button>
-              <sl-button slot="valid" variant="primary" type="submit">
+              <sl-button
+                slot="valid"
+                variant="primary"
+                @click=${this.handleSupport}
+              >
                 ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
               </sl-button>
             </token-input>
