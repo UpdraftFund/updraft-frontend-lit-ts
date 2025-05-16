@@ -75,17 +75,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
-        padding: 0.5rem 1rem;
-        color: var(--main-foreground);
-        background: var(--main-background);
+        gap: 2rem;
+        padding: 2rem;
       }
 
       .header-container {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-medium);
-        padding: var(--sl-spacing-large);
         background-color: var(--main-background);
       }
 
@@ -114,7 +111,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         gap: var(--sl-spacing-medium);
       }
       .title-area h1 {
-        margin: 0 0 var(--sl-spacing-2x-small) 0;
+        margin: 0 0 var(--sl-spacing-x-small) 0;
         font-size: var(--sl-font-size-2x-large);
       }
       .idea-link {
@@ -145,7 +142,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         flex-direction: column;
         flex-wrap: wrap;
         gap: var(--sl-spacing-large);
-        margin-top: var(--sl-spacing-medium);
       }
 
       .creator-info a {
@@ -158,7 +154,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .action-buttons {
         display: flex;
         flex-direction: column;
-        width: 100%;
       }
 
       .action-buttons form {
@@ -494,7 +489,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
   private renderPositions() {
     const position = this.positions[this.positionIndex];
-
     return html`
       <div class="user-positions">
         <div class="positions-header">
@@ -535,7 +529,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-
           ${this.goalFailed
             ? html`
                 <p class="status-message">
@@ -556,12 +549,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     Collect Fees
                   </sl-button>
                 `
-              : html`
-                  <p class="status-message">
-                    <strong>Position Active:</strong> No action needed at this
-                    time.
-                  </p>
-                `}
+              : html``}
         </div>
       </div>
     `;
@@ -582,7 +570,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             value="${Math.min(progress, 100)}"
           ></sl-progress-bar>
           <span
-            >🚀 <strong>${progress} %</strong> complete
+            >🚀 <strong>${progress}%</strong> complete
             (${shortNum(formatUnits(this.solution!.tokensContributed, 18))} /
             ${shortNum(formatUnits(this.solution!.fundingGoal, 18))}
             ${fundingTokenSymbol})</span
@@ -774,9 +762,28 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           </div>
           <div class="creator-info">${this.renderDrafter()}</div>
         </div>
-
         <div class="solution-stats">${this.renderSolutionStats()}</div>
-
+        ${this.userStakeTask.render({
+          complete: (stake) => {
+            if (stake) {
+              return html`
+                <div class="user-stake">
+                  <h3>Your Stake</h3>
+                  <p>
+                    You have staked
+                    <strong> ${shortNum(formatUnits(stake, 18))} UPD </strong>
+                    in this solution.
+                  </p>
+                </div>
+              `;
+            }
+            return html``;
+          },
+        })}
+        ${this.userPositionsTask.render({
+          complete: () =>
+            this.positions.length > 0 ? this.renderPositions() : html``,
+        })}
         <div class="bottom-section">
           <div class="action-buttons">
             ${!this.goalFailed && !this.goalReached
@@ -858,29 +865,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           </div>
         </div>
 
-        ${this.userStakeTask.render({
-          complete: (stake) => {
-            if (stake) {
-              return html`
-                <div class="user-stake">
-                  <h3>Your Stake</h3>
-                  <p>
-                    You have staked
-                    <strong> ${shortNum(formatUnits(stake, 18))} UPD </strong>
-                    in this solution.
-                  </p>
-                </div>
-              `;
-            }
-            return html``;
-          },
-          pending: () => html` <sl-spinner></sl-spinner>`,
-          error: (error) => html`<p class="error">${error}</p>`,
-        })}
-        ${this.userPositionsTask.render({
-          complete: () =>
-            this.positions.length > 0 ? this.renderPositions() : html``,
-        })}
         ${this.solutionInfo?.description
           ? html`
               <div class="solution-description">
