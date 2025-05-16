@@ -10,6 +10,7 @@ dayjs.extend(relativeTime);
 import { GoalReached } from '@pages/home/types';
 import { TrackedChangeCard } from './tracked-change-card';
 import { SolutionInfo } from '@/features/solution/types';
+import { formatAmount } from '@utils/format-utils';
 
 @customElement('goal-reached-card')
 export class GoalReachedCard extends TrackedChangeCard {
@@ -51,7 +52,7 @@ export class GoalReachedCard extends TrackedChangeCard {
         <div class="goal-message">Funding goal has been reached!</div>
 
         <div class="funding-details">
-          ${this.formatAmount(solution?.fundingGoal)} UPD raised
+          ${formatAmount(solution?.fundingGoal)} UPD raised
         </div>
 
         <div slot="footer">${dayjs(this.change.time).fromNow()}</div>

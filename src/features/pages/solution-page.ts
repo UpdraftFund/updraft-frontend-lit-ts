@@ -679,13 +679,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   // Render the solution stats
   private renderSolutionStats() {
     // Calculate progress percentage
-    const progress = calculateProgress(
-      this.solution!.tokensContributed,
-      this.solution!.fundingGoal
-    );
+    const progress = calculateProgress(this.solution);
 
     // Format deadline
-    const deadline = formatDate(Number(this.solution!.deadline));
+    const deadline = formatDate(this.solution!.deadline, 'full');
 
     // Format total stake
     const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
@@ -715,7 +712,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       </div>
       <div class="stat-row">
         <span class="stat-label">Deadline:</span>
-        <span>⏰ ${deadline.full}</span>
+        <span>⏰ ${deadline}</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Total Staked:</span>

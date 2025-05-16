@@ -1,22 +1,25 @@
 import { html, css, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { formatUnits } from 'viem';
 import dayjs from 'dayjs';
 
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 
-import { shortNum } from '@utils/format-utils';
-import { Change } from '@/types';
+import {
+  formatAmount,
+  formatReward,
+  calculateProgress,
+} from '@utils/format-utils';
+import { Change, Solution } from '@/types';
 import { SolutionFieldsFragment, SolutionFieldsDetailedFragment } from '@gql';
-import { updraftSettings } from '@state/common';
 
 export class TrackedChangeCard extends LitElement {
   static styles = [
     css`
       :host {
-        display: block;
-        height: 100%;
-        width: 100%;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
       }
 
       sl-card {
@@ -26,8 +29,7 @@ export class TrackedChangeCard extends LitElement {
         flex-direction: column;
         box-sizing: border-box;
       }
-    `,
-    css`
+
       .change-card-heading,
       .new-solution-heading,
       .solution-body {
@@ -50,13 +52,6 @@ export class TrackedChangeCard extends LitElement {
         font-size: 1rem;
         color: var(--subtle-text);
         margin-top: 0.5rem;
-      }
-
-      .change-details {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-top: 1rem;
       }
 
       .goal {
@@ -136,84 +131,44 @@ export class TrackedChangeCard extends LitElement {
 
   @property({ type: Object }) change!: Change;
 
-  // Reusable utility methods
-  protected formatAmount(
-    amount: string | null | undefined,
-    decimals: number = 18
-  ): string {
-    if (!amount) return '0';
-    return shortNum(formatUnits(BigInt(amount), decimals));
-  }
-
-  protected formatReward(percentage: string | null | undefined): string {
-    if (!percentage) return '0';
-    return (
-      (Number(percentage) * 100) /
-      updraftSettings.get().percentScale
-    ).toString();
-  }
-
-  protected calculateProgress(
-    solution: SolutionFieldsFragment | SolutionFieldsDetailedFragment
-  ): number {
-    if (!solution?.tokensContributed || !solution?.fundingGoal) {
-      return 0;
-    }
-
-    const contributed = Number(
-      formatUnits(BigInt(solution.tokensContributed), 18)
-    );
-    const goal = Number(formatUnits(BigInt(solution.fundingGoal), 18));
-
-    if (isNaN(contributed) || isNaN(goal) || goal === 0) {
-      return 0;
-    }
-
-    return (contributed / goal) * 100;
-  }
-
   protected renderSolutionDetails(
     solution: SolutionFieldsFragment | SolutionFieldsDetailedFragment
   ) {
     if (!solution) return html``;
 
-    const progress = this.calculateProgress(solution);
+    const progress = calculateProgress(solution as Solution);
     const isCompleted = progress >= 100;
     const deadline = dayjs(solution.deadline * 1000);
     const now = dayjs();
 
     return html`
-      <div class="change-details">
-        <div class="goal">
-          <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
-          <div class="goal-text">
-            ${this.formatAmount(solution.tokensContributed)} out of
-            ${this.formatAmount(solution.fundingGoal)} UPD
-          </div>
+      <div class="goal">
+        <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
+        <div class="goal-text">
+          ${formatAmount(solution.tokensContributed)} out of
+          ${formatAmount(solution.fundingGoal)} UPD
         </div>
-        ${isCompleted
-          ? html`
-              <sl-badge variant="success" pill>
-                <span class="emoji">🥳</span> Funded
-              </sl-badge>
-            `
-          : html``}
-        <span class="emoji-badge"
-          ><span class="emoji">⏰</span> ${deadline.isBefore(now)
-            ? 'expired'
-            : deadline.fromNow()}</span
-        >
-        <span class="emoji-badge"
-          ><span class="emoji">💎</span> ${this.formatAmount(
-            solution.stake
-          )}</span
-        >
-        <span class="emoji-badge"
-          ><span class="emoji">🎁</span> ${this.formatReward(
-            solution.funderReward
-          )}%</span
-        >
       </div>
+      ${isCompleted
+        ? html`
+            <sl-badge variant="success" pill>
+              <span class="emoji">🥳</span> Funded
+            </sl-badge>
+          `
+        : html``}
+      <span class="emoji-badge"
+        ><span class="emoji">⏰</span> ${deadline.isBefore(now)
+          ? 'expired'
+          : deadline.fromNow()}</span
+      >
+      <span class="emoji-badge"
+        ><span class="emoji">💎</span> ${formatAmount(solution.stake)}</span
+      >
+      <span class="emoji-badge"
+        ><span class="emoji">🎁</span> ${formatReward(
+          solution.funderReward
+        )}</span
+      >
     `;
   }
 }

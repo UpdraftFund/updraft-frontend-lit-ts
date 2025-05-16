@@ -18,7 +18,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
     const { startTime, funderReward, shares, description, id, name } =
       this.idea;
     const interest = formatAmount(shares);
-    const date = formatDate(startTime);
+    const date = formatDate(startTime, 'fromNow');
 
     return html`
       <a href="/idea/${id}">
@@ -26,7 +26,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
         <h3>${name}</h3>
         ${description ? html` <p>${description}</p>` : html``}
         <ul class="info-row">
-          <li>🌱 ${date.fromNow}</li>
+          <li>🌱 ${date}</li>
           ${this.showReward
             ? html` <li>🎁 ${formatReward(funderReward)}</li>`
             : html``}

@@ -106,10 +106,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   private renderGoalStatus() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
-    const progress = calculateProgress(
-      this.solution.tokensContributed,
-      this.solution.fundingGoal
-    );
+    const progress = calculateProgress(this.solution);
 
     if (progress >= 100) {
       return html`
@@ -139,11 +136,8 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
     const drafterProfile = parseProfile(
       this.solution.drafter.profile as `0x${string}`
     );
-    const deadline = formatDate(this.solution.deadline);
-    const progress = calculateProgress(
-      this.solution.tokensContributed,
-      this.solution.fundingGoal
-    );
+    const deadline = formatDate(this.solution.deadline, 'fromNow');
+    const progress = calculateProgress(this.solution);
     const tokensContributed = formatAmount(this.solution.tokensContributed);
     const fundingGoal = formatAmount(this.solution.fundingGoal);
     const stake = formatAmount(this.solution.stake);
@@ -178,7 +172,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
               ${this.renderGoalStatus()}
             </div>
           </li>
-          <li>⏰ Deadline ${deadline.fromNow}</li>
+          <li>⏰ Deadline ${deadline}</li>
           <li>💎 ${stake} UPD stake</li>
           <li>🎁 ${funderRewardFormatted} funder reward</li>
         </ul>

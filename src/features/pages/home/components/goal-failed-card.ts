@@ -15,9 +15,11 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TrackedChangeCard } from './tracked-change-card';
 import { GoalFailed } from '@pages/home/types';
 import { SolutionContract } from '@contracts/solution';
-import { SolutionInfo } from '@/features/solution/types';
+import { Solution, SolutionInfo } from '@/features/solution/types';
 
 import { userAddress } from '@state/user';
+
+import { formatAmount, calculateProgress } from '@utils/format-utils';
 
 @customElement('goal-failed-card')
 export class GoalFailedCard extends TrackedChangeCard {
@@ -84,7 +86,7 @@ export class GoalFailedCard extends TrackedChangeCard {
       }
     }
 
-    const progress = this.calculateProgress(solution);
+    const progress = calculateProgress(solution as Solution);
 
     return html`
       <sl-card>
@@ -101,8 +103,8 @@ export class GoalFailedCard extends TrackedChangeCard {
         <div class="goal">
           <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
           <div class="goal-text">
-            ${this.formatAmount(solution.tokensContributed)} out of
-            ${this.formatAmount(solution.fundingGoal)} UPD
+            ${formatAmount(solution.tokensContributed)} out of
+            ${formatAmount(solution.fundingGoal)} UPD
           </div>
         </div>
 

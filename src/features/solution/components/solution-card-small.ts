@@ -40,10 +40,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
   private renderGoalProgress() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
-    const progress = calculateProgress(
-      this.solution.tokensContributed,
-      this.solution.fundingGoal
-    );
+    const progress = calculateProgress(this.solution);
 
     if (progress >= 100) {
       return html`✅ Goal Reached!`;
@@ -72,7 +69,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     const { info: infoRaw, deadline, id, stake } = this.solution;
     const info = JSON.parse(fromHex(infoRaw as `0x${string}`, 'string'));
     const name = info.name || 'Untitled Solution';
-    const deadlineDate = formatDate(deadline);
+    const deadlineDate = formatDate(deadline, 'fromNow');
     const description = info.description;
 
     return html`
@@ -81,7 +78,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         <h3>${name}</h3>
         ${description ? html`<p>${description}</p>` : html``}
         <ul class="info-row">
-          <li>⏰ ${deadlineDate.fromNow}</li>
+          <li>⏰ ${deadlineDate}</li>
           ${this.showStake ? html` <li>💎 ${formatAmount(stake)}</li>` : html``}
           <li>${this.renderGoalProgress()}</li>
         </ul>

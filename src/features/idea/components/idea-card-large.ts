@@ -63,7 +63,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
     const funderRewardFormatted = formatReward(funderReward);
     const interest = formatAmount(shares);
     const profile = parseProfile(creator.profile as `0x${string}`);
-    const date = formatDate(startTime);
+    const date = formatDate(startTime, 'full');
 
     return html`
       <div class="card">
@@ -79,7 +79,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
         </div>
 
         <ul class="info-row">
-          <li>🌱 <span class="created">${date.full}</span></li>
+          <li>🌱 <span class="created">${date}</span></li>
           ${funderRewardFormatted
             ? html`
                 <li>

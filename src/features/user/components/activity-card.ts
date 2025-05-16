@@ -248,7 +248,7 @@ export class ActivityCard extends LitElement {
         <div class="details-bar">
           <span class="emoji-badge"
             ><span class="emoji">🌱</span> Created
-            ${formatDate(idea.startTime).fromNow}</span
+            ${formatDate(idea.startTime, 'fromNow')}</span
           >
           <span class="emoji-badge"
             ><span class="emoji">🎁</span>${formatReward(idea.funderReward)}
@@ -267,10 +267,7 @@ export class ActivityCard extends LitElement {
         solution = this.activity;
       }
 
-      const progress = calculateProgress(
-        solution?.tokensContributed,
-        solution?.fundingGoal
-      );
+      const progress = calculateProgress(solution);
       const isCompleted = progress >= 100;
 
       return html`
@@ -296,8 +293,9 @@ export class ActivityCard extends LitElement {
           >
           <span class="emoji-badge"
             ><span class="emoji">🌱</span>${formatDate(
-              this.activity.timestamp / 1000
-            ).fromNow}</span
+              this.activity.timestamp / 1000,
+              'fromNow'
+            )}</span
           >
           <span class="emoji-badge"
             ><span class="emoji">💎</span> ${formatAmount(
@@ -321,14 +319,14 @@ export class ActivityCard extends LitElement {
   }
 
   render() {
-    const date = formatDate(this.activity.timestamp / 1000); // Convert to seconds if needed
+    const time = dayjs(this.activity.timestamp).fromNow();
     return html`
       <sl-card>
         <div class="action-time">
           <div class="action">
             ${this.getActivityIcon()} ${this.getActivityAction()}
           </div>
-          <div class="time">${date.fromNow}</div>
+          <div class="time">${time}</div>
         </div>
 
         <div class="entity">${this.renderEntity()}</div>
