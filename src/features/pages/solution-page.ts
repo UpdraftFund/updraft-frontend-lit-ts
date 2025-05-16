@@ -465,22 +465,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
-  private renderEditButton() {
-    if (this.solution?.drafter?.id === userAddress.get()) {
-      return html`
-        <sl-button
-          class="edit-button"
-          pill
-          size="medium"
-          href="/edit-solution/${this.solutionId}"
-          >Edit
-        </sl-button>
-      `;
-    } else {
-      return html``;
-    }
-  }
-
   private renderDrafter() {
     const profile = parseProfile(this.solution!.drafter.profile);
     const id = this.solution!.drafter.id;
@@ -765,7 +749,19 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   >
                 </div>
               </div>
-              ${this.renderEditButton()}
+              ${this.solution?.drafter?.id.toLowerCase() ===
+              userAddress.get()?.toLowerCase()
+                ? html`
+                    <sl-button
+                      class="edit-button"
+                      pill
+                      size="medium"
+                      href="/edit-solution/${this.solutionId}?tokenSymbol=${this
+                        .fundInput?.tokenSymbol || 'tokens'}"
+                      >Edit
+                    </sl-button>
+                  `
+                : html``}
             </div>
             <div class="creator-info">${this.renderDrafter()}</div>
           </div>
@@ -945,7 +941,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Solution Not Found</h2>
             <p>Check the id in the URL.</p>
-            <sl-button href="/discover" variant="primary">
+            <sl-button href="/discover?tab=solutions" variant="primary">
               Browse Solutions
             </sl-button>
           </div>
