@@ -136,8 +136,6 @@ export class EditSolution extends SignalWatcher(LitElement) {
   @state() private solutionInfo?: SolutionInfo;
   @state() private loaded = false;
   @state() private error: string | null = null;
-  @state() private isUserDrafter = false;
-  @state() private goalReached = false;
 
   // Controller for fetching solution data
   private readonly solutionController = new UrqlQueryController(
@@ -146,16 +144,13 @@ export class EditSolution extends SignalWatcher(LitElement) {
     { solutionId: this.solutionId },
     (result) => {
       this.loaded = true;
-
       if (result.error) {
         console.error('Error fetching solution data:', result.error);
         this.error = `Error loading solution: ${result.error.message}`;
         return;
       }
-
       if (result.data?.solution) {
         this.solution = result.data.solution as Solution;
-
         // Parse solution info from hex
         try {
           if (this.solution.info) {
@@ -163,26 +158,12 @@ export class EditSolution extends SignalWatcher(LitElement) {
               fromHex(this.solution.info as `0x${string}`, 'string')
             );
           }
-
           // Set page heading
           layout.topBarContent.set(html`
             <page-heading
               >Edit "${this.solutionInfo?.name || 'Solution'}"
             </page-heading>
           `);
-
-          // Check if user is the drafter
-          const currentAddress = userAddress.get();
-          this.isUserDrafter =
-            currentAddress?.toLowerCase() ===
-            this.solution.drafter.id.toLowerCase();
-
-          // Check if goal is reached
-          const tokensContributed = BigInt(
-            this.solution.tokensContributed || '0'
-          );
-          const fundingGoal = BigInt(this.solution.fundingGoal || '0');
-          this.goalReached = tokensContributed >= fundingGoal;
         } catch (e) {
           console.error('Error parsing solution info:', e);
           this.error = 'Error parsing solution data';
@@ -197,18 +178,15 @@ export class EditSolution extends SignalWatcher(LitElement) {
     e.preventDefault();
   }
 
-  /**
-   * Extract solution info from the form
-   * @returns SolutionInfo object with form data
-   */
-  private getSolutionInfoFromForm(): SolutionInfo {
+  private getSolutionInfoFromForm() {
     const formData = new FormData(this.form);
-    return {
+    const info = {
       name: formData.get('name') as string,
       description: formData.get('description') as string,
       news: (formData.get('news') as string) || undefined,
       repository: (formData.get('repository') as string) || undefined,
     };
+    return toHex(JSON.stringify(info));
   }
 
   private async updateSolution() {
@@ -216,14 +194,11 @@ export class EditSolution extends SignalWatcher(LitElement) {
       this.form.reportValidity();
       return;
     }
-
     try {
-      const updatedInfo = this.getSolutionInfoFromForm();
-
       const solutionContract = new SolutionContract(this.solutionId);
       this.updateTransaction.hash = await solutionContract.write(
         'updateSolution',
-        [toHex(JSON.stringify(updatedInfo))]
+        [this.getSolutionInfoFromForm()]
       );
     } catch (e) {
       console.error('Update solution error:', e);
@@ -262,11 +237,10 @@ export class EditSolution extends SignalWatcher(LitElement) {
     const deadline = dayjs(this.deadlineInput.value).unix();
     const goal = parseUnits(this.goalInput.value, 18);
     try {
-      const updatedInfo = this.getSolutionInfoFromForm();
       const solutionContract = new SolutionContract(this.solutionId);
       this.combinedTransaction.hash = await solutionContract.write(
         'extendGoal',
-        [goal, BigInt(deadline), toHex(JSON.stringify(updatedInfo))]
+        [goal, BigInt(deadline), this.getSolutionInfoFromForm()]
       );
     } catch (e) {
       console.error('Update and extend error:', e);
@@ -289,6 +263,20 @@ export class EditSolution extends SignalWatcher(LitElement) {
   private handleCombinedSuccess() {
     // Redirect to solution page after successful combined update
     window.location.href = `/solution/${this.solutionId}`;
+  }
+
+  public get isUserDrafter() {
+    return (
+      userAddress.get()?.toLowerCase() ===
+      this.solution?.drafter.id.toLowerCase()
+    );
+  }
+
+  public get isGoalReached() {
+    if (this.solution) {
+      return this.solution.tokensContributed >= this.solution.fundingGoal;
+    }
+    return false;
   }
 
   connectedCallback() {
@@ -317,8 +305,6 @@ export class EditSolution extends SignalWatcher(LitElement) {
       this.error = null;
       this.solution = undefined;
       this.solutionInfo = undefined;
-      this.isUserDrafter = false;
-      this.goalReached = false;
 
       // Update the solution controller with the new ID
       this.solutionController.setVariablesAndSubscribe({
@@ -422,7 +408,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                     </sl-button>
                   </div>
 
-                  ${this.goalReached
+                  ${this.isGoalReached
                     ? html`
                         <div class="goal-extension">
                           <h2>Extend Goal and Deadline</h2>
