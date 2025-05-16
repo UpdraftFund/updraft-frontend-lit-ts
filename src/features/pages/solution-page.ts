@@ -616,14 +616,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             Your contribution:
             <strong>
               ${shortNum(formatUnits(position.contribution, 18))}
-              ${this.fundInput?.tokenSymbol || 'USDC'}
+              ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
           <p>
             Fees earned:
             <strong>
               ${shortNum(formatUnits(position.feesEarned, 18))}
-              ${this.fundInput?.tokenSymbol || 'USDC'}
+              ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
 
