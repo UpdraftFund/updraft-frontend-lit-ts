@@ -466,7 +466,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   }
 
   private renderEditButton() {
-    if (this.goalReached && this.solution?.drafter?.id === userAddress.get()) {
+    if (this.solution?.drafter?.id === userAddress.get()) {
       return html`
         <sl-button
           class="edit-button"
