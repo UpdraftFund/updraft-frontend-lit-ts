@@ -70,7 +70,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
-      :host {
+      main {
         flex: 1;
         box-sizing: border-box;
         display: flex;
@@ -137,12 +137,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .status sl-button::part(base):hover {
         color: var(--sl-color-primary-700);
       }
-      .bottom-section {
-        display: flex;
-        flex-direction: column;
-        flex-wrap: wrap;
-        gap: var(--sl-spacing-large);
-      }
 
       .creator-info a {
         display: flex;
@@ -199,30 +193,62 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       .user-stake h3,
       .user-positions h3 {
-        margin-top: 0;
-        margin-bottom: var(--sl-spacing-small);
-        font-size: var(--sl-font-size-large);
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 500;
+      }
+
+      .user-stake,
+      .user-positions {
+        background-color: var(--subtle-background);
+        border-radius: 0.5rem;
+        padding: 1rem;
       }
 
       .positions-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: var(--sl-spacing-medium);
+        margin-bottom: 0.5rem;
       }
 
       .position-navigation {
         display: flex;
         align-items: center;
-        gap: var(--sl-spacing-x-small);
+        gap: 0.5rem;
+      }
+
+      .position-navigation sl-icon-button::part(base) {
+        font-size: 1.2rem;
+        color: var(--sl-color-neutral-600);
+      }
+
+      .position-navigation sl-icon-button::part(base):hover {
+        color: var(--accent);
+      }
+
+      .position-navigation span {
+        font-size: 0.9rem;
+        color: var(--sl-color-neutral-600);
+      }
+
+      .position-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
       .position-details p {
-        margin: var(--sl-spacing-x-small) 0;
+        margin: 0;
+      }
+
+      .position-details sl-button {
+        margin-top: 0.5rem;
+        align-self: flex-start;
       }
 
       .status-message {
-        margin-top: var(--sl-spacing-medium);
+        margin-top: 0.5rem;
         padding: var(--sl-spacing-small);
         border-radius: var(--sl-radius-small);
         background-color: var(--sl-color-neutral-100);
@@ -745,46 +771,52 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   render() {
     if (this.solution) {
       return cache(html`
-        <div class="header-container">
-          <div class="top-row">
-            <div class="title-area">
-              <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
-              <div class="idea-link">
-                Solution for idea:
-                <a
-                  href="/idea/${this.solution.idea?.id}"
-                  title="View linked Idea"
-                  >${this.solution.idea?.name || 'Unknown Idea'}</a
-                >
-              </div>
-            </div>
-            <div class="status">${this.renderStatusBadge()}</div>
-          </div>
-          <div class="creator-info">${this.renderDrafter()}</div>
-        </div>
-        <div class="solution-stats">${this.renderSolutionStats()}</div>
-        ${this.userStakeTask.render({
-          complete: (stake) => {
-            if (stake) {
-              return html`
-                <div class="user-stake">
-                  <h3>Your Stake</h3>
-                  <p>
-                    You have staked
-                    <strong> ${shortNum(formatUnits(stake, 18))} UPD </strong>
-                    in this solution.
-                  </p>
+        <main>
+          <div class="header-container">
+            <div class="top-row">
+              <div class="title-area">
+                <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
+                <div class="idea-link">
+                  Solution for idea:
+                  <a
+                    href="/idea/${this.solution.idea?.id}"
+                    title="View linked Idea"
+                    >${this.solution.idea?.name || 'Unknown Idea'}</a
+                  >
                 </div>
-              `;
-            }
-            return html``;
-          },
-        })}
-        ${this.userPositionsTask.render({
-          complete: () =>
-            this.positions.length > 0 ? this.renderPositions() : html``,
-        })}
-        <div class="bottom-section">
+              </div>
+              <div class="status">${this.renderStatusBadge()}</div>
+            </div>
+            <div class="creator-info">${this.renderDrafter()}</div>
+          </div>
+          <div class="solution-stats">${this.renderSolutionStats()}</div>
+          ${this.userStakeTask.render({
+            complete: (stake) => {
+              if (stake) {
+                return html`
+                  <div class="user-stake">
+                    <div class="positions-header">
+                      <h3>Your Stake</h3>
+                    </div>
+                    <div class="position-details">
+                      <p>
+                        You have staked
+                        <strong>
+                          ${shortNum(formatUnits(stake, 18))} UPD
+                        </strong>
+                        in this solution.
+                      </p>
+                    </div>
+                  </div>
+                `;
+              }
+              return html``;
+            },
+          })}
+          ${this.userPositionsTask.render({
+            complete: () =>
+              this.positions.length > 0 ? this.renderPositions() : html``,
+          })}
           <div class="action-buttons">
             ${!this.goalFailed && !this.goalReached
               ? html`
@@ -863,39 +895,38 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                 `
               : html``}
           </div>
-        </div>
 
-        ${this.solutionInfo?.description
-          ? html`
-              <div class="solution-description">
-                <h3>Description</h3>
-                <p>${this.solutionInfo.description}</p>
-              </div>
-            `
-          : html``}
-        ${this.solutionInfo?.news
-          ? html`
-              <div class="solution-news">
-                <h3>Latest Updates</h3>
-                <p>${this.solutionInfo.news}</p>
-              </div>
-            `
-          : html``}
-        ${this.solutionInfo?.repository
-          ? html`
-              <div class="solution-repository">
-                <h3>Repository</h3>
-                <a
-                  href="${this.solutionInfo.repository}"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  ${this.solutionInfo.repository}
-                </a>
-              </div>
-            `
-          : html``}
-
+          ${this.solutionInfo?.description
+            ? html`
+                <div class="solution-description">
+                  <h3>Description</h3>
+                  <p>${this.solutionInfo.description}</p>
+                </div>
+              `
+            : html``}
+          ${this.solutionInfo?.news
+            ? html`
+                <div class="solution-news">
+                  <h3>Latest Updates</h3>
+                  <p>${this.solutionInfo.news}</p>
+                </div>
+              `
+            : html``}
+          ${this.solutionInfo?.repository
+            ? html`
+                <div class="solution-repository">
+                  <h3>Repository</h3>
+                  <a
+                    href="${this.solutionInfo.repository}"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    ${this.solutionInfo.repository}
+                  </a>
+                </div>
+              `
+            : html``}
+        </main>
         <!-- Transaction watchers -->
         <upd-dialog></upd-dialog>
         <share-dialog></share-dialog>
