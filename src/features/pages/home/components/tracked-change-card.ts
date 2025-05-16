@@ -16,10 +16,9 @@ export class TrackedChangeCard extends LitElement {
   static styles = [
     css`
       :host {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-top: 1rem;
+        display: block;
+        height: 100%;
+        width: 100%;
       }
 
       sl-card {
@@ -54,16 +53,26 @@ export class TrackedChangeCard extends LitElement {
         margin-top: 0.5rem;
       }
 
+      .change-details {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+
       .goal {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
-        min-width: 150px;
       }
 
       .goal-text {
         font-size: 0.75rem;
         color: var(--sl-color-neutral-600);
+      }
+
+      sl-progress-bar {
+        --height: 8px;
       }
 
       .emoji-badge {
@@ -142,33 +151,35 @@ export class TrackedChangeCard extends LitElement {
     const now = dayjs();
 
     return html`
-      <div class="goal">
-        <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
-        <div class="goal-text">
-          ${formatAmount(solution.tokensContributed)} out of
-          ${formatAmount(solution.fundingGoal)} UPD
+      <div class="change-details">
+        <div class="goal">
+          <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
+          <div class="goal-text">
+            ${formatAmount(solution.tokensContributed)} out of
+            ${formatAmount(solution.fundingGoal)} UPD
+          </div>
         </div>
+        ${isCompleted
+          ? html`
+              <sl-badge variant="success" pill>
+                <span class="emoji">🥳</span> Funded
+              </sl-badge>
+            `
+          : html``}
+        <span class="emoji-badge"
+          ><span class="emoji">⏰</span> ${deadline.isBefore(now)
+            ? 'expired'
+            : deadline.fromNow()}</span
+        >
+        <span class="emoji-badge"
+          ><span class="emoji">💎</span> ${formatAmount(solution.stake)}</span
+        >
+        <span class="emoji-badge"
+          ><span class="emoji">🎁</span> ${formatReward(
+            solution.funderReward
+          )}</span
+        >
       </div>
-      ${isCompleted
-        ? html`
-            <sl-badge variant="success" pill>
-              <span class="emoji">🥳</span> Funded
-            </sl-badge>
-          `
-        : html``}
-      <span class="emoji-badge"
-        ><span class="emoji">⏰</span> ${deadline.isBefore(now)
-          ? 'expired'
-          : deadline.fromNow()}</span
-      >
-      <span class="emoji-badge"
-        ><span class="emoji">💎</span> ${formatAmount(solution.stake)}</span
-      >
-      <span class="emoji-badge"
-        ><span class="emoji">🎁</span> ${formatReward(
-          solution.funderReward
-        )}</span
-      >
     `;
   }
 }
