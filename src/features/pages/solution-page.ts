@@ -495,10 +495,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
   private renderPositions() {
     const position = this.positions[this.positionIndex];
+    let positionTitle = 'Your Position';
+    if (this.positions.length > 1) {
+      positionTitle += 's';
+    }
     return html`
       <div class="user-positions">
         <div class="positions-header">
-          <h3>Your Positions</h3>
+          <h3>${positionTitle}</h3>
           ${this.positions.length > 1
             ? html`
                 <div class="position-navigation">
