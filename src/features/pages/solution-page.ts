@@ -663,7 +663,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     const deadline = formatDate(this.solution!.deadline, 'full');
     const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
     const fundingTokenSymbol = this.fundInput?.tokenSymbol;
-    const stakingTokenSymbol = 'UPD';
 
     return html`
       <div class="stat-row">
@@ -687,7 +686,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       </div>
       <div class="stat-row">
         <span class="stat-label">Total Staked:</span>
-        <span>💎 ${totalStake} ${stakingTokenSymbol}</span>
+        <span>💎 ${totalStake} UPD</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Funder Reward:</span>
