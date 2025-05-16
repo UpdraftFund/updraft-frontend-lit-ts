@@ -803,7 +803,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       <sl-button
                         slot="valid"
                         variant="primary"
-                        type="submit"
                         @click=${this.handleStake}
                       >
                         Add Stake
@@ -849,7 +848,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       <sl-button
                         slot="valid"
                         variant="success"
-                        type="submit"
                         @click=${this.handleFund}
                       >
                         Fund this Solution
