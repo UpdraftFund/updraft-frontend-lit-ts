@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing } from 'lit';
+import { LitElement, html, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
@@ -67,31 +67,11 @@ export class EditSolution extends SignalWatcher(LitElement) {
       margin-top: 1rem;
     }
 
-    .goal-extension {
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--sl-color-neutral-200);
-    }
-
     .input-with-info {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
       margin-bottom: 1rem;
-    }
-
-    .current-value {
-      font-size: 0.9rem;
-      color: var(--sl-color-neutral-700);
-      margin: 0;
-      padding: 0;
-    }
-
-    .hint-text {
-      font-size: 0.85rem;
-      color: var(--sl-color-neutral-600);
-      font-style: italic;
-      margin-top: 0.5rem;
     }
 
     .error-container {
@@ -250,18 +230,8 @@ export class EditSolution extends SignalWatcher(LitElement) {
     }
   }
 
-  private handleUpdateSuccess() {
+  private handleSuccess() {
     // Redirect to solution page after successful update
-    window.location.href = `/solution/${this.solutionId}`;
-  }
-
-  private handleExtendSuccess() {
-    // Redirect to solution page after successful extension
-    window.location.href = `/solution/${this.solutionId}`;
-  }
-
-  private handleCombinedSuccess() {
-    // Redirect to solution page after successful combined update
     window.location.href = `/solution/${this.solutionId}`;
   }
 
@@ -346,6 +316,64 @@ export class EditSolution extends SignalWatcher(LitElement) {
               `
             : html`
                 <form name="edit-solution" @submit=${this.handleFormSubmit}>
+                  ${this.isGoalReached
+                    ? html`
+                        <h2>Extend Goal and Deadline</h2>
+                        <p>
+                          Your solution reached its goal! You can extend the
+                          goal and deadline to receive more funding.
+                        </p>
+
+                        <div class="input-with-info">
+                          <p class="current-value"></p>
+                          <sl-input
+                            name="goal"
+                            type="number"
+                            min="${this.solution
+                              ? Number(
+                                  formatUnits(
+                                    this.solution.fundingGoal + 1n,
+                                    18
+                                  )
+                                )
+                              : 0}"
+                            required
+                          >
+                            <label-with-hint
+                              slot="label"
+                              label="New Funding Goal*"
+                              hint="Must be higher than the previous goal of ${formatUnits(
+                                this.solution?.fundingGoal,
+                                18
+                              )} ${this.tokenSymbol}"
+                            ></label-with-hint>
+                          </sl-input>
+                        </div>
+
+                        <div class="input-with-info">
+                          <sl-input
+                            name="deadline"
+                            type="date"
+                            required
+                            min="${dayjs().add(1, 'day').format('YYYY-MM-DD')}"
+                          >
+                            <label-with-hint
+                              slot="label"
+                              label="New Deadline*"
+                            ></label-with-hint>
+                          </sl-input>
+                        </div>
+
+                        <div class="button-group">
+                          <sl-button
+                            variant="primary"
+                            @click=${this.extendGoal}
+                          >
+                            Extend Goal Only
+                          </sl-button>
+                        </div>
+                      `
+                    : html``}
                   <sl-input
                     name="name"
                     required
@@ -379,131 +407,43 @@ export class EditSolution extends SignalWatcher(LitElement) {
                   >
                     <label-with-hint
                       slot="label"
-                      label="Latest Updates"
+                      label="News"
                       hint="Share the latest progress on your solution"
                     ></label-with-hint>
                   </sl-textarea>
 
-                  <sl-input
-                    name="repository"
-                    autocomplete="off"
-                    value=${this.solutionInfo?.repository || ''}
-                  >
-                    <label-with-hint
-                      slot="label"
-                      label="Repository"
-                      hint="Link to your solution's code repository"
-                    ></label-with-hint>
-                  </sl-input>
-
                   <div class="button-group">
-                    <sl-button
-                      href="/solution/${this.solutionId}"
-                      variant="neutral"
-                    >
-                      Cancel
-                    </sl-button>
-                    <sl-button variant="primary" @click=${this.updateSolution}>
-                      Update Solution
-                    </sl-button>
+                    ${this.isGoalReached
+                      ? html`
+                          <sl-button
+                            variant="primary"
+                            @click=${this.updateSolutionAndExtendGoal}
+                          >
+                            Update Solution and Extend Goal
+                          </sl-button>
+                        `
+                      : html`
+                          <sl-button
+                            variant="primary"
+                            @click=${this.updateSolution}
+                          >
+                            Update Solution
+                          </sl-button>
+                        `}
                   </div>
-
-                  ${this.isGoalReached
-                    ? html`
-                        <div class="goal-extension">
-                          <h2>Extend Goal and Deadline</h2>
-                          <p>
-                            Your solution has reached its goal! You can extend
-                            the goal and deadline to continue funding.
-                          </p>
-
-                          <div class="input-with-info">
-                            <p class="current-value">
-                              Current goal:
-                              ${formatUnits(this.solution?.fundingGoal, 18)}
-                              ${this.tokenSymbol}
-                            </p>
-                            <sl-input
-                              name="goal"
-                              type="number"
-                              min="${this.solution
-                                ? Number(
-                                    formatUnits(
-                                      this.solution.fundingGoal + 1n,
-                                      18
-                                    )
-                                  )
-                                : 0}"
-                              required
-                            >
-                              <label-with-hint
-                                slot="label"
-                                label="New Funding Goal*"
-                                hint="Must be higher than the current goal"
-                              ></label-with-hint>
-                            </sl-input>
-                          </div>
-
-                          <div class="input-with-info">
-                            <p class="current-value">
-                              Current deadline:
-                              ${this.solution
-                                ? dayjs
-                                    .unix(Number(this.solution.deadline))
-                                    .format('YYYY-MM-DD')
-                                : 'N/A'}
-                            </p>
-                            <sl-input
-                              name="deadline"
-                              type="date"
-                              required
-                              min="${dayjs()
-                                .add(1, 'day')
-                                .format('YYYY-MM-DD')}"
-                            >
-                              <label-with-hint
-                                slot="label"
-                                label="New Deadline*"
-                                hint="Must be at least one day in the future"
-                              ></label-with-hint>
-                            </sl-input>
-                          </div>
-
-                          <div class="button-group">
-                            <sl-button
-                              variant="primary"
-                              @click=${this.extendGoal}
-                            >
-                              Extend Goal Only
-                            </sl-button>
-                            <sl-button
-                              variant="primary"
-                              @click=${this.updateSolutionAndExtendGoal}
-                            >
-                              Update Solution and Extend Goal
-                            </sl-button>
-                          </div>
-                          <p class="hint-text">
-                            Tip: Using "Update Solution and Extend Goal" saves
-                            time and gas by combining both actions into a single
-                            transaction.
-                          </p>
-                        </div>
-                      `
-                    : nothing}
                 </form>
 
                 <transaction-watcher
                   class="update"
-                  @transaction-success=${this.handleUpdateSuccess}
+                  @transaction-success=${this.handleSuccess}
                 ></transaction-watcher>
                 <transaction-watcher
                   class="extend"
-                  @transaction-success=${this.handleExtendSuccess}
+                  @transaction-success=${this.handleSuccess}
                 ></transaction-watcher>
                 <transaction-watcher
                   class="combined"
-                  @transaction-success=${this.handleCombinedSuccess}
+                  @transaction-success=${this.handleSuccess}
                 ></transaction-watcher>
               `}
     `);
