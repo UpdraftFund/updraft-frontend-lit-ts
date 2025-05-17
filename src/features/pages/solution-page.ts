@@ -798,7 +798,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     </div>
                     <div class="position-details">
                       <p>
-                        You have staked
+                        You staked
                         <strong>
                           ${shortNum(formatUnits(stake, 18))} UPD
                         </strong>
