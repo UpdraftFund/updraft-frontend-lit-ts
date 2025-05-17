@@ -84,6 +84,7 @@ export class TrackedChangeCard extends LitElement {
 
       .emoji {
         font-size: 1rem;
+        padding: 0.125rem;
       }
 
       .additional-count {
@@ -93,6 +94,9 @@ export class TrackedChangeCard extends LitElement {
       }
 
       .solution-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
         margin-top: 0.5rem;
       }
 
@@ -162,20 +166,20 @@ export class TrackedChangeCard extends LitElement {
         ${isCompleted
           ? html`
               <sl-badge variant="success" pill>
-                <span class="emoji">🥳</span> Funded
+                <span class="emoji">🥳</span>Funded
               </sl-badge>
             `
           : html``}
         <span class="emoji-badge"
-          ><span class="emoji">⏰</span> ${deadline.isBefore(now)
+          ><span class="emoji">⏰</span>${deadline.isBefore(now)
             ? 'expired'
             : deadline.fromNow()}</span
         >
         <span class="emoji-badge"
-          ><span class="emoji">💎</span> ${formatAmount(solution.stake)}</span
+          ><span class="emoji">💎</span>${formatAmount(solution.stake)}</span
         >
         <span class="emoji-badge"
-          ><span class="emoji">🎁</span> ${formatReward(
+          ><span class="emoji">🎁</span>${formatReward(
             solution.funderReward
           )}</span
         >
