@@ -1,6 +1,7 @@
 fragment SolutionFields on Solution {
     id
     startTime
+    modifiedTime
     deadline
     tokensContributed
     fundingGoal
