@@ -14,6 +14,7 @@ dayjs.extend(utc);
 
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
+import plusLgIcon from '@icons/navigation/plus-lg.svg';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
@@ -572,8 +573,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
         <div class="solutions-header">
           <h2>Solutions</h2>
-          <sl-button href="/create-solution/${this.ideaId}" variant="primary"
-            >Add Solution
+          <sl-button href="/create-solution/${this.ideaId}">
+            <sl-icon slot="prefix" src=${plusLgIcon}></sl-icon>
+            Add Solution
           </sl-button>
         </div>
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
