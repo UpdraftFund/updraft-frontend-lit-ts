@@ -132,6 +132,7 @@ export class ActivityCard extends LitElement {
 
     .emoji {
       font-size: 1rem;
+      padding: 0.125rem;
     }
   `;
 
@@ -281,7 +282,7 @@ export class ActivityCard extends LitElement {
           </div>
           ${isCompleted
             ? html` <sl-badge variant="success" pill
-                ><span class="emoji">🥳</span> Funded
+                ><span class="emoji">🥳</span>Funded
               </sl-badge>`
             : ''}
           <span class="emoji-badge"
