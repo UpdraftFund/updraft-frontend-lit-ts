@@ -234,13 +234,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         align-self: flex-start;
       }
 
-      .status-message {
-        margin-top: 0.5rem;
-        padding: var(--sl-spacing-small);
-        border-radius: var(--sl-radius-small);
-        background-color: var(--sl-color-neutral-100);
-      }
-
       .error {
         color: var(--sl-color-danger-600);
       }
@@ -273,6 +266,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.collect') collectTransaction!: TransactionWatcher;
   @query('transaction-watcher.stake') stakeTransaction!: TransactionWatcher;
   @query('transaction-watcher.fund') fundTransaction!: TransactionWatcher;
+  @query('transaction-watcher.remove-stake')
+  removeStakeTransaction!: TransactionWatcher;
   @query('token-input.stake-input', true) stakeInput!: TokenInput;
   @query('token-input.fund-input', false) fundInput!: TokenInput;
   @query('form.stake-form', true) stakeForm!: HTMLFormElement;
@@ -689,6 +684,35 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.userStakeTask.run();
   }
 
+  private async handleRemoveStake() {
+    try {
+      const stake = this.userStakeTask.value;
+      if (!stake) {
+        console.warn('No stake to remove');
+        return;
+      }
+
+      const solutionContract = new SolutionContract(this.solutionId);
+      this.removeStakeTransaction.reset();
+      this.removeStakeTransaction.hash = await solutionContract.write(
+        'removeStake',
+        [
+          stake, // Remove the entire stake
+        ]
+      );
+    } catch (err) {
+      console.error('Remove stake error:', err);
+      if (err instanceof Error && err.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
+      }
+    }
+  }
+
+  private handleRemoveStakeSuccess() {
+    // Refresh user stake after successful stake removal
+    this.userStakeTask.run();
+  }
+
   private handleFundSuccess() {
     // Refresh user positions after successful funding
     this.userPositionsTask.run();
@@ -782,6 +806,20 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                         </strong>
                         in this solution.
                       </p>
+                      ${this.goalReached
+                        ? html`
+                            <p class="status-message">
+                              <strong>Goal Reached:</strong> You can now remove
+                              your stake.
+                            </p>
+                            <sl-button
+                              variant="primary"
+                              @click=${this.handleRemoveStake}
+                            >
+                              Remove Stake
+                            </sl-button>
+                          `
+                        : html``}
                     </div>
                   </div>
                 `;
@@ -921,6 +959,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         <transaction-watcher
           class="fund"
           @transaction-success=${this.handleFundSuccess}
+        ></transaction-watcher>
+        <transaction-watcher
+          class="remove-stake"
+          @transaction-success=${this.handleRemoveStakeSuccess}
         ></transaction-watcher>
       `);
     } else {
