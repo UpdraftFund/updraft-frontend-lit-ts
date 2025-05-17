@@ -15,17 +15,9 @@ import { Activity } from '@/features/user/types';
 export class ActivityFeed extends LitElement {
   static styles = css`
     :host {
-      display: block;
-      width: 100%;
-    }
-
-    .activity-feed {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      width: 100%;
-      max-width: 782px;
-      margin: 0 auto;
       padding: 0 1rem;
     }
 
@@ -119,45 +111,43 @@ export class ActivityFeed extends LitElement {
 
   render() {
     return html`
-      <div class="activity-feed">
-        <h2 class="activity-heading">Activity</h2>
+      <h2 class="activity-heading">Activity</h2>
 
-        ${this.isLoading
+      ${this.isLoading
+        ? html`
+            <div class="loading-container">
+              <sl-spinner style="font-size: 2rem;"></sl-spinner>
+              <div>Loading activities...</div>
+            </div>
+          `
+        : this.error
           ? html`
-              <div class="loading-container">
-                <sl-spinner style="font-size: 2rem;"></sl-spinner>
-                <div>Loading activities...</div>
-              </div>
+              <sl-alert variant="danger" open>
+                <strong>Error loading activities:</strong>
+                ${this.error.message || 'Unknown error'}
+              </sl-alert>
             `
-          : this.error
+          : this.activities.length === 0
             ? html`
-                <sl-alert variant="danger" open>
-                  <strong>Error loading activities:</strong>
-                  ${this.error.message || 'Unknown error'}
-                </sl-alert>
+                <div class="empty-state">
+                  No activities found for this user.
+                </div>
               `
-            : this.activities.length === 0
-              ? html`
-                  <div class="empty-state">
-                    No activities found for this user.
-                  </div>
-                `
-              : html`
-                  <div class="activity-list">
-                    ${cache(
-                      this.activities.map(
-                        (activity) => html`
-                          <activity-card
-                            .activity=${activity}
-                            .userId=${this.userId}
-                            .userName=${this.userName}
-                          ></activity-card>
-                        `
-                      )
-                    )}
-                  </div>
-                `}
-      </div>
+            : html`
+                <div class="activity-list">
+                  ${cache(
+                    this.activities.map(
+                      (activity) => html`
+                        <activity-card
+                          .activity=${activity}
+                          .userId=${this.userId}
+                          .userName=${this.userName}
+                 ,       ></activity-c,ard>
+                      `
+                    )
+                  )}
+                </div>
+              `}
     `;
   }
 }
