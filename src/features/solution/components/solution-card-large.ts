@@ -179,7 +179,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         ${solutionInfo.news
           ? html`
               <div class="news">
-                <h4>News</h4>
+                <h4>Latest Updates</h4>
                 <p>${solutionInfo.news}</p>
               </div>
             `

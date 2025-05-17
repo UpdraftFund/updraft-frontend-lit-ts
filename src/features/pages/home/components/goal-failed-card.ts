@@ -94,12 +94,9 @@ export class GoalFailedCard extends TrackedChangeCard {
           <a class="change-card-heading" href="/solution/${solution.id}"
             >${solutionInfo?.name || 'Solution'}
           </a>
-          <div class="change-card-subheading">Goal Failed</div>
+          <div class="change-card-subheading">Goal Failed 😔</div>
         </div>
-
-        <div class="emoji-large">😔</div>
         <p class="goal-message">Funding goal was not met by the deadline</p>
-
         <div class="goal">
           <sl-progress-bar value="${progress}"></sl-progress-bar>
           <div class="goal-text">

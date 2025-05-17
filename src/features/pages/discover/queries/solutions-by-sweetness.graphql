@@ -2,6 +2,7 @@
 
 query SolutionsBySweetness($first: Int = 4, $skip: Int = 0, $now: BigInt!) {
     solutions(
+        where : { deadline_gt: $now },
         first: $first,
         skip: $skip,
         orderBy: sweetness,
