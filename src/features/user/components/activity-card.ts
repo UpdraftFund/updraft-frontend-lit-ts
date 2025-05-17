@@ -23,11 +23,6 @@ import {
 @customElement('activity-card')
 export class ActivityCard extends LitElement {
   static styles = css`
-    :host {
-      display: block;
-      width: 100%;
-    }
-
     sl-card {
       --padding: 1rem;
       width: 100%;
@@ -111,7 +106,10 @@ export class ActivityCard extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
-      min-width: 150px;
+    }
+
+    .goal sl-progress-bar {
+      --height: 8px;
     }
 
     .goal-text {
@@ -288,12 +286,6 @@ export class ActivityCard extends LitElement {
           <span class="emoji-badge"
             ><span class="emoji">⏰</span> ${this.formatDeadline(
               solution?.deadline
-            )}</span
-          >
-          <span class="emoji-badge"
-            ><span class="emoji">🌱</span>${formatDate(
-              this.activity.timestamp / 1000,
-              'fromNow'
             )}</span
           >
           <span class="emoji-badge"
