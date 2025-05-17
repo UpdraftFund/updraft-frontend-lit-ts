@@ -10,7 +10,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
-import { shortNum } from '@utils/format-utils';
+import { shortenAddress, shortNum } from '@utils/format-utils';
 import { parseProfile } from '@utils/format-utils';
 
 import { TypedDocumentNode } from '@urql/core';
@@ -290,13 +290,13 @@ export abstract class TopContributorsBase<
    * @returns The parsed name and avatar
    */
   private parseContributorProfile(funder: Pick<User, 'id' | 'profile'>) {
-    let name = funder.id;
+    let name = shortenAddress(funder.id);
     let avatar;
 
     if (funder.profile) {
       try {
         const profile = parseProfile(funder.profile);
-        name = profile.name || profile.team || funder.id;
+        name = profile.name || profile.team || name;
         avatar = profile.image;
       } catch (e) {
         console.error('Error parsing profile', e);
