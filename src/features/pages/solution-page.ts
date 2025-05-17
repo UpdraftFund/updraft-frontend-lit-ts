@@ -520,7 +520,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           </p>
           ${this.goalFailed
             ? html`
-                <p class="status-message">
+                <p>
                   <strong>Goal Failed:</strong> You can refund your
                   contribution.
                 </p>
@@ -808,7 +808,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       </p>
                       ${this.goalReached
                         ? html`
-                            <p class="status-message">
+                            <p>
                               <strong>Goal Reached:</strong> You can now remove
                               your stake.
                             </p>
