@@ -106,9 +106,8 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   private renderGoalStatus() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
-    const progress = calculateProgress(this.solution);
 
-    if (progress >= 100) {
+    if (calculateProgress(this.solution) >= 100) {
       return html`
         <div class="status status-success">
           <span>✅</span>
@@ -167,7 +166,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
             <div class="progress-status-row">
               <sl-progress-bar
                 class="progress-bar"
-                value="${Math.min(progress, 100)}"
+                value="${progress}"
               ></sl-progress-bar>
               ${this.renderGoalStatus()}
             </div>

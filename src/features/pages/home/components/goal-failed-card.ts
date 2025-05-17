@@ -101,7 +101,7 @@ export class GoalFailedCard extends TrackedChangeCard {
         <p class="goal-message">Funding goal was not met by the deadline</p>
 
         <div class="goal">
-          <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
+          <sl-progress-bar value="${progress}"></sl-progress-bar>
           <div class="goal-text">
             ${formatAmount(solution.tokensContributed)} out of
             ${formatAmount(solution.fundingGoal)} UPD

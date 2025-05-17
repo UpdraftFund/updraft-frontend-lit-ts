@@ -87,7 +87,10 @@ export function formatDate(timestamp: number, format: string) {
  */
 export function calculateProgress(solution?: Solution): number {
   if (solution && solution.tokensContributed && solution.fundingGoal) {
-    return Number(solution.tokensContributed / solution.fundingGoal) * 100;
+    return Math.min(
+      Number(solution.tokensContributed / solution.fundingGoal) * 100,
+      100
+    );
   } else {
     return 0;
   }

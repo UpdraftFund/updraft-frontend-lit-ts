@@ -153,7 +153,7 @@ export class TrackedChangeCard extends LitElement {
     return html`
       <div class="change-details">
         <div class="goal">
-          <sl-progress-bar value="${Math.min(progress, 100)}"></sl-progress-bar>
+          <sl-progress-bar value="${progress}"></sl-progress-bar>
           <div class="goal-text">
             ${formatAmount(solution.tokensContributed)} out of
             ${formatAmount(solution.fundingGoal)} UPD

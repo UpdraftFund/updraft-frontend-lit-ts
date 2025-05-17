@@ -557,10 +557,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         <div class="progress-container">
           <sl-progress-bar
             class="progress-bar"
-            value="${Math.min(progress, 100)}"
+            value="${progress}"
           ></sl-progress-bar>
           <span
-            >🚀 <strong>${progress}%</strong> complete
+            >🚀 <strong>${progress.toFixed(0)}%</strong> complete
             (${shortNum(formatUnits(this.solution!.tokensContributed, 18))} /
             ${shortNum(formatUnits(this.solution!.fundingGoal, 18))}
             ${fundingTokenSymbol})</span
