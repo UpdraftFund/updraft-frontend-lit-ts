@@ -8,11 +8,8 @@ import { rightSidebarContent, leftSidebarCollapsed } from '@state/layout';
 export class RightSideBar extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
-      display: block;
-      background-color: var(--main-background);
       border-left: 1px solid var(--border-default);
-      padding: 1rem;
-      overflow-y: auto;
+      padding: 1rem 0;
     }
 
     .content {
@@ -67,10 +64,7 @@ export class RightSideBar extends SignalWatcher(LitElement) {
   hiddenByLeftSidebar = false;
 
   render() {
-    this.hiddenByLeftSidebar =
-      !leftSidebarCollapsed.get() &&
-      window.innerWidth <= 1024 &&
-      window.innerWidth > 768;
+    this.hiddenByLeftSidebar = !leftSidebarCollapsed.get();
     return html` <div class="content">${rightSidebarContent.get()}</div>`;
   }
 }
