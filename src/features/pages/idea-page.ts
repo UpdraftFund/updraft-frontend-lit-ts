@@ -516,6 +516,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                       Withdraw Support
                     </sl-button>
                   </div>
+                  <transaction-watcher
+                    class="withdraw"
+                    @transaction-success=${this.handleWithdrawSuccess}
+                  >
+                  </transaction-watcher>
                 </div>
                 <h3>Add More Support</h3>
               `;
@@ -549,6 +554,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
               </sl-button>
             </token-input>
+            <transaction-watcher
+              class="submit"
+              @transaction-success=${this.handleSupportSucces}
+            >
+            </transaction-watcher>
             <div class="airdrop-option">
               <sl-checkbox name="airdrop" @sl-change=${this.updateAirdropMode}
                 >Airdrop to past contributors
@@ -641,16 +651,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           @transaction-success=${this.handleSubmit}
         ></transaction-watcher>
       </sl-dialog>
-      <transaction-watcher
-        class="submit"
-        @transaction-success=${this.handleSupportSucces}
-      >
-      </transaction-watcher>
-      <transaction-watcher
-        class="withdraw"
-        @transaction-success=${this.handleWithdrawSuccess}
-      >
-      </transaction-watcher>
     `;
   }
 }

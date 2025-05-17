@@ -525,12 +525,20 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                 <sl-button variant="primary" @click=${this.handleRefund}>
                   Refund Position
                 </sl-button>
+                <transaction-watcher
+                  class="refund"
+                  @transaction-success=${this.handleRefundSuccess}
+                ></transaction-watcher>
               `
             : position.feesEarned > 0n
               ? html`
                   <sl-button variant="primary" @click=${this.handleCollectFees}>
                     Collect Fees
                   </sl-button>
+                  <transaction-watcher
+                    class="collect"
+                    @transaction-success=${this.handleCollectSuccess}
+                  ></transaction-watcher>
                 `
               : html``}
         </div>
@@ -816,6 +824,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                             >
                               Remove Stake
                             </sl-button>
+                            <transaction-watcher
+                              class="remove-stake"
+                              @transaction-success=${this
+                                .handleRemoveStakeSuccess}
+                            ></transaction-watcher>
                           `
                         : html``}
                     </div>
@@ -858,6 +871,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                         Add Stake
                       </sl-button>
                     </token-input>
+                    <transaction-watcher
+                      class="stake"
+                      @transaction-success=${this.handleStakeSuccess}
+                    ></transaction-watcher>
                   </form>
                 `
               : html``}
@@ -903,6 +920,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                         Fund this Solution
                       </sl-button>
                     </token-input>
+                    <transaction-watcher
+                      class="fund"
+                      @transaction-success=${this.handleFundSuccess}
+                    ></transaction-watcher>
                   </form>
                 `
               : html``}
@@ -939,29 +960,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               `
             : html``}
         </main>
-        <!-- Transaction watchers -->
         <upd-dialog></upd-dialog>
         <share-dialog></share-dialog>
-        <transaction-watcher
-          class="refund"
-          @transaction-success=${this.handleRefundSuccess}
-        ></transaction-watcher>
-        <transaction-watcher
-          class="collect"
-          @transaction-success=${this.handleCollectSuccess}
-        ></transaction-watcher>
-        <transaction-watcher
-          class="stake"
-          @transaction-success=${this.handleStakeSuccess}
-        ></transaction-watcher>
-        <transaction-watcher
-          class="fund"
-          @transaction-success=${this.handleFundSuccess}
-        ></transaction-watcher>
-        <transaction-watcher
-          class="remove-stake"
-          @transaction-success=${this.handleRemoveStakeSuccess}
-        ></transaction-watcher>
       `);
     } else {
       if (this.error) {
