@@ -40,7 +40,7 @@ import { ShareDialog } from '@components/common/share-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
-import { shortNum } from '@utils/format-utils';
+import { formatDate, shortNum } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -434,16 +434,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const profile = JSON.parse(
         fromHex(creator.profile as `0x${string}`, 'string')
       );
-      const date = dayjs(startTime * 1000);
       const interest = shortNum(formatUnits(shares, 18));
 
       return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
         <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
-        <span class="created">
-          Created ${date.format('MMM D, YYYY [at] h:mm A UTC')}
-          (${date.fromNow()})
-        </span>
+        <span class="created"> Created ${formatDate(startTime, 'full')} </span>
         <div class="reward-fire">
           ${pctFunderReward
             ? html`

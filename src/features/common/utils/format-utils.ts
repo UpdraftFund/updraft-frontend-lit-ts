@@ -71,10 +71,10 @@ export function formatDate(timestamp: number, format: string) {
   switch (format) {
     case 'fromNow':
       return date.fromNow();
-    case 'formatted':
-      return date.format('MMM D, YYYY [at] h:mm A UTC');
+    case 'withTime':
+      return date.format('MMM D, YYYY [at] h:mm A');
     case 'full':
-      return `${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})`;
+      return `${date.format('MMM D, YYYY [at] h:mm A')} (${date.fromNow()})`;
     default:
       return date.format('MMM D, YYYY');
   }
