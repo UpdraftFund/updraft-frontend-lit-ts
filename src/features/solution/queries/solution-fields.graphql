@@ -1,6 +1,7 @@
 fragment SolutionFields on Solution {
     id
     startTime
+    modifiedTime
     deadline
     tokensContributed
     fundingGoal
@@ -8,5 +9,5 @@ fragment SolutionFields on Solution {
     stake
     info
     funderReward
-    progress
+    sweetness
 }

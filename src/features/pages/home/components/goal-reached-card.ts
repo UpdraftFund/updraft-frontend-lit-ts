@@ -10,6 +10,7 @@ dayjs.extend(relativeTime);
 import { GoalReached } from '@pages/home/types';
 import { TrackedChangeCard } from './tracked-change-card';
 import { SolutionInfo } from '@/features/solution/types';
+import { formatAmount } from '@utils/format-utils';
 
 @customElement('goal-reached-card')
 export class GoalReachedCard extends TrackedChangeCard {
@@ -25,7 +26,6 @@ export class GoalReachedCard extends TrackedChangeCard {
 
   render() {
     const solution = this.change.solution;
-
     let solutionInfo: SolutionInfo | null = null;
     if (solution?.info) {
       try {
@@ -36,24 +36,18 @@ export class GoalReachedCard extends TrackedChangeCard {
         console.error('Error parsing solution info', e);
       }
     }
-
     return html`
       <sl-card>
         <div slot="header">
           <a class="change-card-heading" href="/solution/${solution.id}">
             ${solutionInfo?.name || 'Solution'}
           </a>
-          <div class="change-card-subheading">Goal Reached!</div>
+          <div class="change-card-subheading">Goal Reached! 🎉</div>
         </div>
-
-        <div class="emoji-large">🎉</div>
-
         <div class="goal-message">Funding goal has been reached!</div>
-
         <div class="funding-details">
-          ${this.formatAmount(solution?.fundingGoal)} UPD raised
+          ${formatAmount(solution?.fundingGoal)} UPD raised
         </div>
-
         <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
       </sl-card>
     `;

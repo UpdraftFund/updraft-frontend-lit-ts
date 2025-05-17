@@ -117,6 +117,16 @@ export class MyApp extends LitElement {
       render: ({ solutionId }) =>
         html` <solution-page .solutionId=${solutionId}></solution-page>`,
     },
+    {
+      path: '/edit-solution/:solutionId',
+      enter: async () => {
+        await import('@pages/edit-solution');
+        nav.set('edit-solution');
+        return true;
+      },
+      render: ({ solutionId }) =>
+        html` <edit-solution .solutionId=${solutionId}></edit-solution>`,
+    },
   ]);
 
   connectedCallback(): void {

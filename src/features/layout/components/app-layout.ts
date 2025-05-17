@@ -44,14 +44,13 @@ export class AppLayout extends SignalWatcher(LitElement) {
 
     right-side-bar {
       flex: 0 0 300px;
-      overflow: hidden;
       height: 100%;
     }
 
     /* The edit-profile and view-profile pages need a wider right sidebar */
     :host([page='edit-profile']) right-side-bar,
     :host([page='view-profile']) right-side-bar {
-      flex: 0 0 50%;
+      flex: 0 1 600px;
     }
 
     /* Responsive layout */

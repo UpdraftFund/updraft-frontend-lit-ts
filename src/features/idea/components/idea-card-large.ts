@@ -9,7 +9,7 @@ import { Idea } from '@/features/idea/types';
 import { largeCardStyles } from '@styles/large-card-styles';
 import {
   formatReward,
-  formatTokenAmount,
+  formatAmount,
   parseProfile,
   formatDate,
 } from '@utils/format-utils';
@@ -61,9 +61,9 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
     } = this.idea;
 
     const funderRewardFormatted = formatReward(funderReward);
-    const interest = formatTokenAmount(shares);
+    const interest = formatAmount(shares);
     const profile = parseProfile(creator.profile as `0x${string}`);
-    const date = formatDate(startTime);
+    const date = formatDate(startTime, 'full');
 
     return html`
       <div class="card">
@@ -79,7 +79,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
         </div>
 
         <ul class="info-row">
-          <li>🌱 <span class="created">${date.full}</span></li>
+          <li>🌱 <span class="created">${date}</span></li>
           ${funderRewardFormatted
             ? html`
                 <li>

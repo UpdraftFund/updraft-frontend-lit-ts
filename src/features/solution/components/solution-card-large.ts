@@ -16,7 +16,7 @@ import { largeCardStyles } from '@styles/large-card-styles';
 
 import {
   formatReward,
-  formatTokenAmount,
+  formatAmount,
   parseProfile,
   formatDate,
   calculateProgress,
@@ -27,22 +27,21 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   static styles = [
     largeCardStyles,
     css`
-      .info-row .progress-container {
+      .info-row {
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .progress-container {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
-        align-items: flex-start;
-      }
-
-      .progress-status-row {
-        display: flex;
         align-items: center;
-        gap: 0.5rem;
       }
 
       .progress-bar {
         width: 150px;
-        flex-shrink: 0;
+        --height: 8px;
       }
 
       .goal-text {
@@ -106,26 +105,22 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   private renderGoalStatus() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
-    const progress = calculateProgress(
-      this.solution.tokensContributed,
-      this.solution.fundingGoal
-    );
 
-    if (progress >= 100) {
+    if (calculateProgress(this.solution) >= 100) {
       return html`
-        <div class="status status-success">
+        <li class="status status-success">
           <span>✅</span>
           <span>Goal Reached!</span>
-        </div>
+        </li>
       `;
     }
 
     if (now.isAfter(deadlineDate)) {
       return html`
-        <div class="status status-danger">
+        <li class="status status-danger">
           <span>❌</span>
           <span>Goal Failed</span>
-        </div>
+        </li>
       `;
     }
 
@@ -139,17 +134,11 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
     const drafterProfile = parseProfile(
       this.solution.drafter.profile as `0x${string}`
     );
-    const start = formatDate(this.solution.startTime);
-    const deadline = formatDate(this.solution.deadline);
-    const progress = calculateProgress(
-      this.solution.tokensContributed,
-      this.solution.fundingGoal
-    );
-    const tokensContributed = formatTokenAmount(
-      this.solution.tokensContributed
-    );
-    const fundingGoal = formatTokenAmount(this.solution.fundingGoal);
-    const stake = formatTokenAmount(this.solution.stake);
+    const deadline = formatDate(this.solution.deadline, 'fromNow');
+    const progress = calculateProgress(this.solution);
+    const tokensContributed = formatAmount(this.solution.tokensContributed);
+    const fundingGoal = formatAmount(this.solution.fundingGoal);
+    const stake = formatAmount(this.solution.stake);
     const funderRewardFormatted = formatReward(this.solution.funderReward);
 
     return html`
@@ -170,29 +159,18 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
 
         <ul class="info-row">
           <li class="progress-container">
+            <sl-progress-bar
+              class="progress-bar"
+              value="${progress}"
+            ></sl-progress-bar>
             <div class="goal-text">
-              ${tokensContributed} of ${fundingGoal} UPD raised
-            </div>
-            <div class="progress-status-row">
-              <sl-progress-bar
-                class="progress-bar"
-                value="${Math.min(progress, 100)}"
-              ></sl-progress-bar>
-              ${this.renderGoalStatus()}
+              ${tokensContributed} out of ${fundingGoal} UPD
             </div>
           </li>
-          <li>
-            <span>⏰ Deadline ${deadline.fromNow}</span>
-          </li>
-          <li>
-            <span class="created"> 🌱 Created ${start.fromNow} </span>
-          </li>
-          <li>
-            <span>🎁 ${funderRewardFormatted} funder reward</span>
-          </li>
-          <li>
-            <span>💎 ${stake} UPD stake</span>
-          </li>
+          ${this.renderGoalStatus()}
+          <li>⏰ Deadline ${deadline}</li>
+          <li>💎 ${stake} UPD stake</li>
+          <li>🎁 ${funderRewardFormatted} funder reward</li>
         </ul>
 
         ${solutionInfo.description
@@ -201,7 +179,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         ${solutionInfo.news
           ? html`
               <div class="news">
-                <h4>News</h4>
+                <h4>Latest Updates</h4>
                 <p>${solutionInfo.news}</p>
               </div>
             `

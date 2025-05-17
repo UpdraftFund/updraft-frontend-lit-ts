@@ -220,37 +220,40 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         });
 
         // Process updates to solutions you created or funded
-        result.data.solutionUpdated.forEach((item) => {
-          const now = dayjs();
-          const deadlineDate = dayjs(Number(item.deadline) * 1000);
-          const progressBigInt = BigInt(item.tokensContributed || '0');
-          const goalBigInt = BigInt(item.fundingGoal || '0');
+        result.data.solutionUpdated
+          // Filter out updates triggered by solution creation
+          .filter((item) => item.startTime !== item.modifiedTime)
+          .forEach((item) => {
+            const now = dayjs();
+            const deadlineDate = dayjs(Number(item.deadline) * 1000);
+            const progressBigInt = BigInt(item.tokensContributed || '0');
+            const goalBigInt = BigInt(item.fundingGoal || '0');
 
-          // Check if the goal was reached
-          if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
-            this.changesManager.addChange({
-              type: 'goalReached',
-              time: Number(item.startTime) * 1000,
-              solution: item,
-            });
-          }
-          // Check if the deadline has passed and goal wasn't reached
-          else if (now.isAfter(deadlineDate) && progressBigInt < goalBigInt) {
-            this.changesManager.addChange({
-              type: 'goalFailed',
-              time: Number(item.startTime) * 1000,
-              solution: item,
-            });
-          }
-          // Otherwise it's just a regular update
-          else {
-            this.changesManager.addChange({
-              type: 'solutionUpdated',
-              time: Number(item.startTime) * 1000,
-              solution: item,
-            });
-          }
-        });
+            // Check if the goal was reached
+            if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
+              this.changesManager.addChange({
+                type: 'goalReached',
+                time: Number(item.modifiedTime) * 1000,
+                solution: item,
+              });
+            }
+            // Check if the deadline has passed and goal wasn't reached
+            else if (now.isAfter(deadlineDate) && progressBigInt < goalBigInt) {
+              this.changesManager.addChange({
+                type: 'goalFailed',
+                time: Number(item.modifiedTime) * 1000,
+                solution: item,
+              });
+            }
+            // Otherwise it's just a regular update
+            else {
+              this.changesManager.addChange({
+                type: 'solutionUpdated',
+                time: Number(item.modifiedTime) * 1000,
+                solution: item,
+              });
+            }
+          });
 
         // Process new funders for solutions you created or funded
         result.data.newFunders.forEach((item) => {

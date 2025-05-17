@@ -18,9 +18,13 @@ import xCircle from '@icons/common/x-circle.svg';
 @customElement('watched-tags')
 export class WatchedTags extends SignalWatcher(LitElement) {
   static styles = css`
+    :host {
+      padding: 0 1rem;
+    }
+
     h2 {
       font-size: 1.2rem;
-      margin: 0 0 1rem 0;
+      margin: 0;
       color: var(--section-heading);
     }
 

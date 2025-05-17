@@ -12,23 +12,17 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
-import { Activity, Profile, SolutionInfo } from '@/types';
+import { Activity, SolutionInfo } from '@/types';
 import {
   formatReward,
   calculateProgress,
-  parseProfile,
-  formatTokenAmount,
+  formatAmount,
   formatDate,
 } from '@utils/format-utils';
 
 @customElement('activity-card')
 export class ActivityCard extends LitElement {
   static styles = css`
-    :host {
-      display: block;
-      width: 100%;
-    }
-
     sl-card {
       --padding: 1rem;
       width: 100%;
@@ -112,7 +106,10 @@ export class ActivityCard extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
-      min-width: 150px;
+    }
+
+    .goal sl-progress-bar {
+      --height: 8px;
     }
 
     .goal-text {
@@ -133,6 +130,7 @@ export class ActivityCard extends LitElement {
 
     .emoji {
       font-size: 1rem;
+      padding: 0.125rem;
     }
   `;
 
@@ -140,23 +138,7 @@ export class ActivityCard extends LitElement {
   @property() userId!: `0x${string}`;
   @property() userName!: string;
 
-  private _creatorProfile: Profile | undefined;
   private _solutionInfo: SolutionInfo | undefined;
-
-  get creatorProfile(): Profile | undefined {
-    if (!this._creatorProfile) {
-      let profileHex: `0x${string}` | undefined;
-      if (this.activity.type === 'ideaFunded') {
-        profileHex = this.activity.idea.creator.profile as `0x${string}`;
-      } else if (this.activity.type === 'solutionFunded') {
-        profileHex = this.activity.solution.drafter.profile as `0x${string}`;
-      }
-      if (profileHex) {
-        this._creatorProfile = parseProfile(profileHex);
-      }
-    }
-    return this._creatorProfile;
-  }
 
   get solutionInfo(): SolutionInfo | undefined {
     if (!this._solutionInfo) {
@@ -189,9 +171,9 @@ export class ActivityCard extends LitElement {
   private getActivityAction() {
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${this.userName} supported an Idea with ${formatTokenAmount(this.activity.contribution)} UPD`;
+        return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a solution with ${formatTokenAmount(this.activity.contribution)} UPD`;
+        return `${this.userName} funded a solution with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionDrafted':
         return `${this.userName} drafted a solution`;
       default:
@@ -265,16 +247,14 @@ export class ActivityCard extends LitElement {
         <div class="details-bar">
           <span class="emoji-badge"
             ><span class="emoji">🌱</span> Created
-            ${formatDate(idea.startTime).fromNow}</span
+            ${formatDate(idea.startTime, 'fromNow')}</span
           >
           <span class="emoji-badge"
             ><span class="emoji">🎁</span>${formatReward(idea.funderReward)}
             Funder Reward</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🔥</span>${formatTokenAmount(
-              idea.shares
-            )}</span
+            ><span class="emoji">🔥</span>${formatAmount(idea.shares)}</span
           >
         </div>
       `;
@@ -286,26 +266,21 @@ export class ActivityCard extends LitElement {
         solution = this.activity;
       }
 
-      const progress = calculateProgress(
-        solution?.tokensContributed,
-        solution?.fundingGoal
-      );
+      const progress = calculateProgress(solution);
       const isCompleted = progress >= 100;
 
       return html`
         <div class="details-bar">
           <div class="goal">
-            <sl-progress-bar
-              value="${Math.min(progress, 100)}"
-            ></sl-progress-bar>
+            <sl-progress-bar value="${progress}"></sl-progress-bar>
             <div class="goal-text">
-              ${formatTokenAmount(solution?.tokensContributed)} out of
-              ${formatTokenAmount(solution?.fundingGoal)} UPD
+              ${formatAmount(solution?.tokensContributed)} out of
+              ${formatAmount(solution?.fundingGoal)} UPD
             </div>
           </div>
           ${isCompleted
             ? html` <sl-badge variant="success" pill
-                ><span class="emoji">🥳</span> Funded
+                ><span class="emoji">🥳</span>Funded
               </sl-badge>`
             : ''}
           <span class="emoji-badge"
@@ -314,12 +289,7 @@ export class ActivityCard extends LitElement {
             )}</span
           >
           <span class="emoji-badge"
-            ><span class="emoji">🌱</span>${formatDate(
-              this.activity.timestamp / 1000
-            ).fromNow}</span
-          >
-          <span class="emoji-badge"
-            ><span class="emoji">💎</span> ${formatTokenAmount(
+            ><span class="emoji">💎</span> ${formatAmount(
               solution?.stake
             )}</span
           >
@@ -335,20 +305,19 @@ export class ActivityCard extends LitElement {
 
   updated(changedProperties: Map<string | number | symbol, unknown>) {
     if (changedProperties.has('activity')) {
-      this._creatorProfile = undefined;
       this._solutionInfo = undefined;
     }
   }
 
   render() {
-    const date = formatDate(this.activity.timestamp / 1000); // Convert to seconds if needed
+    const time = dayjs(this.activity.timestamp).fromNow();
     return html`
       <sl-card>
         <div class="action-time">
           <div class="action">
             ${this.getActivityIcon()} ${this.getActivityAction()}
           </div>
-          <div class="time">${date.fromNow}</div>
+          <div class="time">${time}</div>
         </div>
 
         <div class="entity">${this.renderEntity()}</div>

@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { initialState, Task, TaskStatus } from '@lit/task';
+import { initialState, Task } from '@lit/task';
 import { waitForTransactionReceipt } from '@wagmi/core';
 import { TransactionReceipt } from 'viem';
 
@@ -96,7 +96,7 @@ export class TransactionWatcher
   );
 
   /**
-   * Resets the task to its `INITIAL` state and clears the hash.
+   * Reset the task to its `INITIAL` state and clear the hash.
    */
   reset() {
     this.hash = undefined;
@@ -104,9 +104,6 @@ export class TransactionWatcher
   }
 
   render() {
-    if (this.transactionTask.status !== TaskStatus.INITIAL) {
-      this.scrollIntoView(false);
-    }
     return html`
       ${this.transactionTask.render({
         pending: () => html`

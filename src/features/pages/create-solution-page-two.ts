@@ -155,7 +155,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       /* Keep the calendar control close to the date */
       sl-input[name='deadline']::part(form-control-input) {
         box-sizing: content-box;
-        width: calc(14ch + var(--sl-input-spacing-medium) * 2);
+        max-width: calc(16ch + var(--sl-input-spacing-medium) * 2);
       }
 
       .hidden {
@@ -467,7 +467,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       </form>
       <upd-dialog></upd-dialog>
       <share-dialog></share-dialog>
-      <transaction-watcher class="approve"></transaction-watcher>
       <sl-dialog label="Set Allowance">
         <p>
           Before you can create your solution, you need to sign a transaction to

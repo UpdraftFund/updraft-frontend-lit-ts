@@ -19,7 +19,7 @@ import { smallCardStyles } from '@styles/small-card-styles';
 import {
   formatDate,
   calculateProgress,
-  formatTokenAmount,
+  formatAmount,
 } from '@utils/format-utils';
 
 @customElement('solution-card-small')
@@ -35,14 +35,12 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
   ];
 
   @property() solution!: Solution;
+  @property() showStake = true;
 
   private renderGoalProgress() {
     const now = dayjs();
     const deadlineDate = dayjs(this.solution.deadline * 1000);
-    const progress = calculateProgress(
-      this.solution.tokensContributed,
-      this.solution.fundingGoal
-    );
+    const progress = calculateProgress(this.solution);
 
     if (progress >= 100) {
       return html`✅ Goal Reached!`;
@@ -60,20 +58,18 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     }
 
     // Format the progress text
-    const formattedContributed = formatTokenAmount(
-      this.solution.tokensContributed
-    );
-    const formattedGoal = formatTokenAmount(this.solution.fundingGoal);
+    const formattedContributed = formatAmount(this.solution.tokensContributed);
+    const formattedGoal = formatAmount(this.solution.fundingGoal);
     const progressText = `${formattedContributed} / ${formattedGoal}`;
 
     return html` <sl-icon src=${gaugeIcon}></sl-icon>${progressText}`;
   }
 
   render() {
-    const { info: infoRaw, deadline, id } = this.solution;
+    const { info: infoRaw, deadline, id, stake } = this.solution;
     const info = JSON.parse(fromHex(infoRaw as `0x${string}`, 'string'));
     const name = info.name || 'Untitled Solution';
-    const deadlineDate = formatDate(deadline);
+    const deadlineDate = formatDate(deadline, 'fromNow');
     const description = info.description;
 
     return html`
@@ -82,7 +78,8 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
         <h3>${name}</h3>
         ${description ? html`<p>${description}</p>` : html``}
         <ul class="info-row">
-          <li>⏰ ${deadlineDate.fromNow}</li>
+          <li>⏰ ${deadlineDate}</li>
+          ${this.showStake ? html` <li>💎 ${formatAmount(stake)}</li>` : html``}
           <li>${this.renderGoalProgress()}</li>
         </ul>
       </a>

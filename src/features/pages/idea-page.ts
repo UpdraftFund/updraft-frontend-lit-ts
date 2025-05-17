@@ -7,13 +7,12 @@ import { Task } from '@lit/task';
 import { fromHex, formatUnits, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(relativeTime);
-dayjs.extend(utc);
 
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
+import plusLgIcon from '@icons/navigation/plus-lg.svg';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
@@ -39,7 +38,7 @@ import { ShareDialog } from '@components/common/share-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
-import { shortNum } from '@utils/format-utils';
+import { formatDate, shortNum } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -90,18 +89,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         font-size: 0.9rem;
         margin-top: 0.4rem;
       }
-      .reward-fire {
+      .idea-info {
         display: flex;
         align-items: center;
         gap: 1rem;
-        margin: 1rem 0;
-      }
-      .reward {
-        display: flex;
-        gap: 0.3rem;
-      }
-      .fire {
-        align-items: center;
+        margin: 1rem 0 0;
       }
       .tags {
         display: flex;
@@ -141,11 +133,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       sl-dialog::part(body) {
         padding-top: 0;
       }
-      .user-support {
+      .your-support {
         background-color: var(--subtle-background);
         border-radius: 0.5rem;
         padding: 1rem;
         margin: 1rem 0;
+        max-width: 500px;
       }
       .support-header {
         display: flex;
@@ -153,10 +146,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         align-items: center;
         margin-bottom: 0.5rem;
       }
-      .user-support h3 {
+      .your-support h3 {
         margin: 0;
         font-size: 1.2rem;
-        font-weight: 500;
+        font-weight: 600;
       }
       .position-navigation {
         display: flex;
@@ -194,8 +187,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       }
       .solutions-header h2 {
         margin: 0;
-        font-size: 1.875rem;
-        font-weight: 500;
+        font-size: 2rem;
+        font-weight: 700;
+      }
+      .solutions-header sl-button {
+        padding-top: 0.2rem;
       }
     `,
   ];
@@ -372,6 +368,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   private async handleSubmit(e: Event) {
     e.preventDefault();
+  }
+
+  private async handleSupport() {
     if (this.form.checkValidity()) {
       const support = parseUnits(this.tokenInput.value, 18);
       this.updateAirdropMode();
@@ -388,7 +387,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       } catch (err) {
         this.tokenInput.handleTransactionError(
           err,
-          () => this.handleSubmit(e), // Retry after approval
+          () => this.handleSupport(), // Retry after approval
           () => this.updDialog.show() // Show UPD dialog on low balance
         );
       }
@@ -430,25 +429,34 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const profile = JSON.parse(
         fromHex(creator.profile as `0x${string}`, 'string')
       );
-      const date = dayjs(startTime * 1000);
       const interest = shortNum(formatUnits(shares, 18));
 
       return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
         <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
-        <span class="created">
-          Created ${date.format('MMM D, YYYY [at] h:mm A UTC')}
-          (${date.fromNow()})
-        </span>
-        <div class="reward-fire">
+        <span class="created"> Created ${formatDate(startTime, 'full')} </span>
+        <div class="idea-info">
           ${pctFunderReward
             ? html`
-                <span class="reward">
-                  🎁 ${pctFunderReward.toFixed(0)}% funder reward
-                </span>
+                <span> 🎁 ${pctFunderReward.toFixed(0)}% funder reward </span>
               `
             : html``}
-          <span class="fire">🔥${interest}</span>
+          <span>🔥 ${interest}</span>
+        </div>
+        <div class="description-tags">
+          <h3>Description</h3>
+          <p>${description}</p>
+          ${tags
+            ? html`
+                <div class="tags">
+                  ${tags.map(
+                    (tag) => html`
+                      <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
+                    `
+                  )}
+                </div>
+              `
+            : html``}
         </div>
         ${this.userSupportTask.render({
           complete: () => {
@@ -457,7 +465,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               const position = this.positions[this.positionIndex];
 
               return html`
-                <div class="user-support">
+                <div class="your-support">
                   <div class="support-header">
                     <h3>Your Support</h3>
                     ${this.positions.length > 1
@@ -508,8 +516,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                       Withdraw Support
                     </sl-button>
                   </div>
+                  <transaction-watcher
+                    class="withdraw"
+                    @transaction-success=${this.handleWithdrawSuccess}
+                  >
+                  </transaction-watcher>
                 </div>
-
                 <h3>Add More Support</h3>
               `;
             } else {
@@ -534,10 +546,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               >
                 Get more UPD
               </sl-button>
-              <sl-button slot="valid" variant="primary" type="submit">
+              <sl-button
+                slot="valid"
+                variant="primary"
+                @click=${this.handleSupport}
+              >
                 ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
               </sl-button>
             </token-input>
+            <transaction-watcher
+              class="submit"
+              @transaction-success=${this.handleSupportSucces}
+            >
+            </transaction-watcher>
             <div class="airdrop-option">
               <sl-checkbox name="airdrop" @sl-change=${this.updateAirdropMode}
                 >Airdrop to past contributors
@@ -550,23 +571,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             </div>
           </div>
         </form>
-        <p>${description}</p>
-        ${tags
-          ? html`
-              <div class="tags">
-                ${tags.map(
-                  (tag) => html`
-                    <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                  `
-                )}
-              </div>
-            `
-          : html``}
-
         <div class="solutions-header">
           <h2>Solutions</h2>
-          <sl-button href="/create-solution/${this.ideaId}" variant="primary"
-            >Add Solution
+          <sl-button href="/create-solution/${this.ideaId}">
+            <sl-icon slot="prefix" src=${plusLgIcon}></sl-icon>
+            Add Solution
           </sl-button>
         </div>
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
@@ -642,16 +651,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           @transaction-success=${this.handleSubmit}
         ></transaction-watcher>
       </sl-dialog>
-      <transaction-watcher
-        class="submit"
-        @transaction-success=${this.handleSupportSucces}
-      >
-      </transaction-watcher>
-      <transaction-watcher
-        class="withdraw"
-        @transaction-success=${this.handleWithdrawSuccess}
-      >
-      </transaction-watcher>
     `;
   }
 }

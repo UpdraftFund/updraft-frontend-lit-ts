@@ -110,6 +110,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
                 (solution) => html`
                   <solution-card-small
                     .solution=${solution}
+                    .showStake=${false}
                   ></solution-card-small>
                 `
               )

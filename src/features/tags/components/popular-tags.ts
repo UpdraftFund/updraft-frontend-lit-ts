@@ -11,12 +11,12 @@ import { tagBlacklist } from '../config/blacklist';
 export class PopularTags extends LitElement {
   static styles = css`
     :host {
-      display: block;
+      padding: 0 1rem;
     }
 
     h2 {
       font-size: 1.2rem;
-      margin: 0 0 1rem 0;
+      margin: 0;
       color: var(--section-heading);
     }
 
@@ -92,19 +92,17 @@ export class PopularTags extends LitElement {
     return html`
       ${this.topTags
         ? html`
-            <div class="section">
-              <h2>Popular Tags</h2>
-              <div class="tags-container">
-                ${cache(
-                  this.topTags.map(
-                    (tag) => html`
-                      <a class="tag" href="/discover?search=[${tag.id}]">
-                        ${tag.id}
-                      </a>
-                    `
-                  )
-                )}
-              </div>
+            <h2>Popular Tags</h2>
+            <div class="tags-container">
+              ${cache(
+                this.topTags.map(
+                  (tag) => html`
+                    <a class="tag" href="/discover?search=[${tag.id}]">
+                      ${tag.id}
+                    </a>
+                  `
+                )
+              )}
             </div>
           `
         : html``}

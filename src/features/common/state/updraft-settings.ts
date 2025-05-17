@@ -4,7 +4,7 @@ import { UpdraftSettings } from '@/types';
 import { updraft } from '@contracts/updraft';
 import { formatUnits } from 'viem';
 
-export const defaultFunderRewardPct = 25;
+export const defaultFunderRewardPct = 5;
 
 export const updraftSettings = signal<UpdraftSettings>({
   percentScale: 1000000,

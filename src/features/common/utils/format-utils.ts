@@ -1,7 +1,11 @@
 import { formatUnits, fromHex } from 'viem';
 import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
+
 import { updraftSettings } from '@state/common';
-import { Profile } from '@/features/user/types';
+import { Profile, Solution } from '@/types';
 
 /**
  * Regular expression pattern for validating Ethereum addresses
@@ -32,10 +36,11 @@ export function formatReward(funderReward: number): string {
 
 /**
  * Formats a token amount for display
- * @param amount The token amount as a bigint or string
+ * @param amount The token amount as a bigint
  * @returns Formatted token amount string
  */
-export function formatTokenAmount(amount: bigint): string {
+export function formatAmount(amount: bigint): string {
+  if (!amount) return '0';
   return shortNum(formatUnits(amount, 18));
 }
 
@@ -45,50 +50,47 @@ export function formatTokenAmount(amount: bigint): string {
  * @returns Parsed profile object or default profile if parsing fails
  */
 export function parseProfile(profileHex: `0x${string}` | undefined): Profile {
-  if (!profileHex) {
-    return { name: '', team: '' };
+  if (profileHex) {
+    try {
+      return JSON.parse(fromHex(profileHex, 'string'));
+    } catch (e) {
+      console.error('Error parsing profile', e);
+    }
   }
-
-  try {
-    return JSON.parse(fromHex(profileHex, 'string'));
-  } catch (e) {
-    console.error('Error parsing profile', e);
-    return { name: '', team: '' };
-  }
+  return {};
 }
 
 /**
  * Formats a date for display in a consistent way
  * @param timestamp Unix timestamp in seconds
- * @returns Object with different formatted date strings
+ * @param format The format to use (fromNow, formatted, full)
+ * @returns formatted date string
  */
-export function formatDate(timestamp: number) {
+export function formatDate(timestamp: number, format: string) {
   const date = dayjs(timestamp * 1000);
-
-  return {
-    fromNow: date.fromNow(),
-    formatted: date.format('MMM D, YYYY [at] h:mm A UTC'),
-    full: `${date.format('MMM D, YYYY [at] h:mm A UTC')} (${date.fromNow()})`,
-  };
+  switch (format) {
+    case 'fromNow':
+      return date.fromNow();
+    case 'withTime':
+      return date.format('MMM D, YYYY [at] h:mm A');
+    case 'full':
+      return `${date.format('MMM D, YYYY [at] h:mm A')} (${date.fromNow()})`;
+    default:
+      return date.format('MMM D, YYYY');
+  }
 }
 
 /**
- * Calculates progress percentage
- * @param current Current value
- * @param goal Goal value
+ * Calculates progress percentage from a solution object
+ * @param solution Solution object with tokensContributed and fundingGoal properties
  * @returns Progress percentage (0-100)
  */
-export function calculateProgress(
-  current: bigint | string | undefined,
-  goal: bigint | string | undefined
-): number {
-  if (current && goal) {
-    const currentBigInt =
-      typeof current === 'string' ? BigInt(current) : current;
-    const goalBigInt = typeof goal === 'string' ? BigInt(goal) : goal;
-
-    if (goalBigInt === 0n) return 0;
-    return Number((currentBigInt * 100n) / goalBigInt);
+export function calculateProgress(solution?: Solution): number {
+  if (solution && solution.tokensContributed && solution.fundingGoal) {
+    return Math.min(
+      Number(solution.tokensContributed / solution.fundingGoal) * 100,
+      100
+    );
   } else {
     return 0;
   }
