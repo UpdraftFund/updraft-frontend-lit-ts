@@ -96,7 +96,7 @@ export class TransactionWatcher
   );
 
   /**
-   * Resets the task to its `INITIAL` state and clears the hash.
+   * Reset the task to its `INITIAL` state and clear the hash.
    */
   reset() {
     this.hash = undefined;
