@@ -140,11 +140,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       sl-dialog::part(body) {
         padding-top: 0;
       }
-      .user-support {
+      .your-support {
         background-color: var(--subtle-background);
         border-radius: 0.5rem;
         padding: 1rem;
         margin: 1rem 0;
+        max-width: 500px;
       }
       .support-header {
         display: flex;
@@ -152,10 +153,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         align-items: center;
         margin-bottom: 0.5rem;
       }
-      .user-support h3 {
+      .your-support h3 {
         margin: 0;
         font-size: 1.2rem;
-        font-weight: 500;
+        font-weight: 600;
       }
       .position-navigation {
         display: flex;
@@ -455,7 +456,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               const position = this.positions[this.positionIndex];
 
               return html`
-                <div class="user-support">
+                <div class="your-support">
                   <div class="support-header">
                     <h3>Your Support</h3>
                     ${this.positions.length > 1
