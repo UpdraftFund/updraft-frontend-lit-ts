@@ -27,22 +27,21 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   static styles = [
     largeCardStyles,
     css`
-      .info-row .progress-container {
+      .info-row {
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .progress-container {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
-        align-items: flex-start;
-      }
-
-      .progress-status-row {
-        display: flex;
         align-items: center;
-        gap: 0.5rem;
       }
 
       .progress-bar {
         width: 150px;
-        flex-shrink: 0;
+        --height: 8px;
       }
 
       .goal-text {
@@ -109,19 +108,19 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
 
     if (calculateProgress(this.solution) >= 100) {
       return html`
-        <div class="status status-success">
+        <li class="status status-success">
           <span>✅</span>
           <span>Goal Reached!</span>
-        </div>
+        </li>
       `;
     }
 
     if (now.isAfter(deadlineDate)) {
       return html`
-        <div class="status status-danger">
+        <li class="status status-danger">
           <span>❌</span>
           <span>Goal Failed</span>
-        </div>
+        </li>
       `;
     }
 
@@ -160,17 +159,15 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
 
         <ul class="info-row">
           <li class="progress-container">
+            <sl-progress-bar
+              class="progress-bar"
+              value="${progress}"
+            ></sl-progress-bar>
             <div class="goal-text">
-              ${tokensContributed} of ${fundingGoal} UPD raised
-            </div>
-            <div class="progress-status-row">
-              <sl-progress-bar
-                class="progress-bar"
-                value="${progress}"
-              ></sl-progress-bar>
-              ${this.renderGoalStatus()}
+              ${tokensContributed} out of ${fundingGoal} UPD
             </div>
           </li>
+          ${this.renderGoalStatus()}
           <li>⏰ Deadline ${deadline}</li>
           <li>💎 ${stake} UPD stake</li>
           <li>🎁 ${funderRewardFormatted} funder reward</li>
