@@ -255,7 +255,6 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
           </form>
           <upd-dialog></upd-dialog>
           <share-dialog></share-dialog>
-          <transaction-watcher class="approve"></transaction-watcher>
           <sl-dialog label="Set Allowance">
             <p>
               Before you can create your idea, you need to sign a transaction to
