@@ -89,18 +89,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         font-size: 0.9rem;
         margin-top: 0.4rem;
       }
-      .reward-fire {
+      .idea-info {
         display: flex;
         align-items: center;
         gap: 1rem;
-        margin: 1rem 0;
-      }
-      .reward {
-        display: flex;
-        gap: 0.3rem;
-      }
-      .fire {
-        align-items: center;
+        margin: 1rem 0 0;
       }
       .tags {
         display: flex;
@@ -194,8 +187,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       }
       .solutions-header h2 {
         margin: 0;
-        font-size: 1.875rem;
-        font-weight: 500;
+        font-size: 2rem;
+        font-weight: 700;
+      }
+      .solutions-header sl-button {
+        padding-top: 0.2rem;
       }
     `,
   ];
@@ -439,15 +435,28 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         <h1 class="heading">Idea: ${name}</h1>
         <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
         <span class="created"> Created ${formatDate(startTime, 'full')} </span>
-        <div class="reward-fire">
+        <div class="idea-info">
           ${pctFunderReward
             ? html`
-                <span class="reward">
-                  🎁 ${pctFunderReward.toFixed(0)}% funder reward
-                </span>
+                <span> 🎁 ${pctFunderReward.toFixed(0)}% funder reward </span>
               `
             : html``}
-          <span class="fire">🔥${interest}</span>
+          <span>🔥 ${interest}</span>
+        </div>
+        <div class="description-tags">
+          <h3>Description</h3>
+          <p>${description}</p>
+          ${tags
+            ? html`
+                <div class="tags">
+                  ${tags.map(
+                    (tag) => html`
+                      <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
+                    `
+                  )}
+                </div>
+              `
+            : html``}
         </div>
         ${this.userSupportTask.render({
           complete: () => {
@@ -508,7 +517,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                     </sl-button>
                   </div>
                 </div>
-
                 <h3>Add More Support</h3>
               `;
             } else {
@@ -553,19 +561,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             </div>
           </div>
         </form>
-        <p>${description}</p>
-        ${tags
-          ? html`
-              <div class="tags">
-                ${tags.map(
-                  (tag) => html`
-                    <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                  `
-                )}
-              </div>
-            `
-          : html``}
-
         <div class="solutions-header">
           <h2>Solutions</h2>
           <sl-button href="/create-solution/${this.ideaId}">
