@@ -5,6 +5,7 @@ import { Subscription } from 'wonka';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
@@ -18,36 +19,44 @@ import type {
   SlRange,
   SlSelect,
 } from '@shoelace-style/shoelace';
+
+// Components
+import '@layout/page-heading';
+import '@components/common/token-input';
+import '@components/common/transaction-watcher';
+import '@components/common/upd-dialog';
+import '@components/common/share-dialog';
+import '@components/common/label-with-hint';
 import {
   SaveableForm,
   formToJson,
   loadForm,
 } from '@components/common/saveable-form';
-
-import { dialogStyles } from '@styles/dialog-styles';
-import '@/features/common/components/token-input';
-import { ITokenInput } from '@components/common/token-input';
-
-import { updraftSettings } from '@state/common';
-import { modal } from '@utils/web3';
-import layout from '@state/layout';
-
 import {
   TransactionWatcher,
   TransactionSuccess,
 } from '@components/common/transaction-watcher';
 import { ShareDialog } from '@components/common/share-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
-import '@layout/page-heading';
-import '@components/common/transaction-watcher';
-import '@components/common/upd-dialog';
-import '@components/common/share-dialog';
-import '@components/common/label-with-hint';
+import { ITokenInput } from '@components/common/token-input';
 
+// Styles
+import { dialogStyles } from '@styles/dialog-styles';
+
+// Utils
 import { createSolutionHeading } from '@utils/create-solution/create-solution-heading';
+import { modal } from '@utils/web3';
 import { ethAddressPattern } from '@utils/format-utils';
+
+// State
+import { updraftSettings } from '@state/common';
+import layout from '@state/layout';
 import { hasProfile } from '@state/user';
+
+// Contracts
 import { updraft } from '@contracts/updraft';
+
+// Schemas
 import solutionSchema from '@schemas/solution-schema.json';
 
 @customElement('create-solution-page-two')
