@@ -4,7 +4,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
 import { Task } from '@lit/task';
 
-import { fromHex, formatUnits, parseUnits } from 'viem';
+import { fromHex, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -43,7 +43,7 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
-import { formatDate, shortNum } from '@utils/format-utils';
+import { formatAmount, formatDate } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -439,7 +439,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const profile = JSON.parse(
         fromHex(creator.profile as `0x${string}`, 'string')
       );
-      const interest = shortNum(formatUnits(shares, 18));
 
       return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
@@ -451,7 +450,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 <span> 🎁 ${pctFunderReward.toFixed(0)}% funder reward </span>
               `
             : html``}
-          <span>🔥 ${interest}</span>
+          <span>🔥 ${formatAmount(shares)}</span>
         </div>
         <div class="description-tags">
           <h3>Description</h3>
@@ -503,23 +502,17 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                     <p>
                       Your original contribution:
                       <strong>
-                        ${shortNum(
-                          formatUnits(position.originalContribution, 18)
-                        )}
-                        UPD
+                        ${formatAmount(position.originalContribution)} UPD
                       </strong>
                     </p>
                     <p>
                       Your earnings so far:
-                      <strong>
-                        ${shortNum(formatUnits(position.earnings, 18))} UPD
-                      </strong>
+                      <strong> ${formatAmount(position.earnings)} UPD </strong>
                     </p>
                     <p>
                       Withdrawable amount:
                       <strong>
-                        ${shortNum(formatUnits(position.currentPosition, 18))}
-                        UPD
+                        ${formatAmount(position.currentPosition)} UPD
                       </strong>
                     </p>
                     <sl-button variant="primary" @click=${this.handleWithdraw}>
