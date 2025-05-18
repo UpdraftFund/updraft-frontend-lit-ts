@@ -21,6 +21,7 @@ import { markComplete } from '@state/user/beginner-tasks';
 
 import { ProfileDocument } from '@gql';
 import { Profile } from '@/features/user/types/profile';
+import { shortenAddress } from '@utils/format-utils';
 
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
@@ -221,6 +222,12 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     `);
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(true);
+    layout.rightSidebarContent.set(
+      html` <activity-feed
+        .userId=${this.address}
+        .userName=${shortenAddress(this.address)}
+      ></activity-feed>`
+    );
 
     // Initialize the profile controller with the current address
     if (this.address) {

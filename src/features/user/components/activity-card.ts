@@ -31,21 +31,19 @@ export class ActivityCard extends LitElement {
     .action-time {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       width: 100%;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .action {
       font-weight: 500;
-      font-size: 1.125rem;
-      line-height: 1.44em;
+      font-size: 1rem;
       color: var(--sl-color-neutral-900);
     }
 
     .time {
       font-size: 0.875rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
     }
 
     .entity {
