@@ -177,11 +177,18 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
 
       .withdraw-funds-container {
-        margin-top: var(--sl-spacing-small);
         padding: var(--sl-spacing-small);
         background-color: var(--sl-color-success-100);
         border-radius: var(--sl-border-radius-medium);
         border-left: 3px solid var(--sl-color-success-600);
+      }
+
+      .goal-failed {
+        padding: 0 var(--sl-spacing-medium);
+        background-color: var(--sl-color-danger-100);
+        border-radius: var(--sl-border-radius-medium);
+        border-left: 3px solid var(--sl-color-danger-600);
+        width: fit-content;
       }
 
       .withdraw-funds-container p {
@@ -920,6 +927,15 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       @transaction-success=${this.handleWithdrawFundsSuccess}
                     ></transaction-watcher>
                   </div>
+                </div>
+              `
+            : html``}
+          ${this.goalFailed
+            ? html`
+                <div class="goal-failed">
+                  <p>
+                    <strong>❌ Goal Failed!</strong>
+                  </p>
                 </div>
               `
             : html``}
