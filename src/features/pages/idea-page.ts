@@ -194,7 +194,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         display: flex;
         gap: 1rem;
         align-items: center;
-        margin: 1rem 0 0;
+        margin: 1rem 0;
       }
       .solutions-header h2 {
         margin: 0;
