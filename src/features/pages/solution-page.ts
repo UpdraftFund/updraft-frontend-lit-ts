@@ -4,7 +4,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
 import { Task } from '@lit/task';
 
-import { formatUnits, fromHex, parseUnits } from 'viem';
+import { fromHex, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -41,7 +41,6 @@ import { TokenInput } from '@components/common/token-input';
 // Utils
 import {
   parseProfile,
-  shortNum,
   formatDate,
   calculateProgress,
   formatReward,
@@ -532,14 +531,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <p>
             Your contribution:
             <strong>
-              ${shortNum(formatUnits(position.contribution, 18))}
+              ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
           <p>
             Fees earned:
             <strong>
-              ${shortNum(formatUnits(position.feesEarned, 18))}
+              ${formatAmount(position.feesEarned)}
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
@@ -576,7 +575,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   private renderSolutionStats() {
     const progress = calculateProgress(this.solution);
     const deadline = formatDate(this.solution!.deadline, 'full');
-    const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
+    const totalStake = formatAmount(this.solution!.stake);
     const fundingTokenSymbol = this.fundInput?.tokenSymbol;
 
     return html`
@@ -589,8 +588,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           ></sl-progress-bar>
           <span
             >🚀 <strong>${progress.toFixed(0)}%</strong> complete
-            (${shortNum(formatUnits(this.solution!.tokensContributed, 18))} /
-            ${shortNum(formatUnits(this.solution!.fundingGoal, 18))}
+            (${formatAmount(this.solution!.tokensContributed)} /
+            ${formatAmount(this.solution!.fundingGoal)}
             ${fundingTokenSymbol})</span
           >
         </div>
@@ -933,9 +932,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     <div class="position-details">
                       <p>
                         You staked
-                        <strong>
-                          ${shortNum(formatUnits(stake, 18))} UPD
-                        </strong>
+                        <strong> ${formatAmount(stake)} UPD </strong>
                         in this solution.
                       </p>
                       ${this.goalReached
