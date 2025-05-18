@@ -745,7 +745,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       const solutionContract = new SolutionContract(this.solutionId);
       this.withdrawFundsTransaction.reset();
 
-      // Get the user's address
       const userAddr = userAddress.get();
       if (!userAddr) {
         console.warn('No user address available');
