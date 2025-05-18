@@ -45,6 +45,7 @@ import {
   formatDate,
   calculateProgress,
   formatReward,
+  formatAmount,
 } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
@@ -188,6 +189,17 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         margin: 0 0 var(--sl-spacing-small) 0;
       }
 
+      .withdraw-funds-row {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-medium);
+      }
+
+      .withdrawal-status {
+        font-size: var(--sl-font-size-small);
+        color: var(--sl-color-neutral-700);
+      }
+
       .user-stake h3,
       .user-positions h3 {
         margin: 0;
@@ -299,6 +311,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   // State for loading and error handling
   @state() private loaded = false;
   @state() private error: string | null = null;
+  @state() private tokensWithdrawn: bigint = 0n;
 
   // Array to store user positions
   private positions: SolutionPosition[] = [];
@@ -604,6 +617,16 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     );
   }
 
+  private get withdrawalStatus() {
+    if (!this.solution) return '';
+
+    const contributed = this.solution.tokensContributed;
+    const withdrawn = this.tokensWithdrawn;
+    const tokenSymbol = this.fundInput?.tokenSymbol || '';
+
+    return `${formatAmount(withdrawn)} of ${formatAmount(contributed)} ${tokenSymbol} withdrawn`;
+  }
+
   private handleFormSubmit(e: Event) {
     e.preventDefault();
   }
@@ -772,7 +795,30 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   private handleWithdrawFundsSuccess() {
     // Refresh solution data after successful withdrawal
     this.solutionController.refresh();
+    // Also refresh the tokens withdrawn amount
+    this.withdrawnTokensTask.run();
   }
+
+  private readonly withdrawnTokensTask = new Task(
+    this,
+    async ([solutionId, isDrafter]) => {
+      if (solutionId && isDrafter) {
+        try {
+          const solutionContract = new SolutionContract(solutionId);
+          // Get tokens withdrawn from the contract
+          const withdrawn = (await solutionContract.read(
+            'tokensWithdrawn'
+          )) as bigint;
+          this.tokensWithdrawn = withdrawn;
+          return withdrawn;
+        } catch (error) {
+          console.warn('Error fetching tokens withdrawn:', error);
+        }
+      }
+      return 0n;
+    },
+    () => [this.solutionId, this.isDrafter] as const
+  );
 
   private handleFundSuccess() {
     // Refresh user positions after successful funding
@@ -811,6 +857,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       this.loaded = false;
       this.error = null; // Clear previous errors
       this.positions = []; // Clear previous positions
+      this.tokensWithdrawn = 0n; // Reset tokens withdrawn
       this.solutionController.setVariablesAndSubscribe({
         solutionId: this.solutionId,
       });
@@ -856,16 +903,21 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     <strong>Goal Reached!</strong> As the drafter, you can now
                     withdraw the funds.
                   </p>
-                  <sl-button
-                    variant="success"
-                    @click=${this.handleWithdrawFunds}
-                  >
-                    Withdraw Funds
-                  </sl-button>
-                  <transaction-watcher
-                    class="withdraw-funds"
-                    @transaction-success=${this.handleWithdrawFundsSuccess}
-                  ></transaction-watcher>
+                  <div class="withdraw-funds-row">
+                    <sl-button
+                      variant="success"
+                      @click=${this.handleWithdrawFunds}
+                    >
+                      Withdraw Funds
+                    </sl-button>
+                    <span class="withdrawal-status"
+                      >${this.withdrawalStatus}</span
+                    >
+                    <transaction-watcher
+                      class="withdraw-funds"
+                      @transaction-success=${this.handleWithdrawFundsSuccess}
+                    ></transaction-watcher>
+                  </div>
                 </div>
               `
             : html``}
