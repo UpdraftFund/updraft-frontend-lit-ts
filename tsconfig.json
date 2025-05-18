@@ -61,6 +61,7 @@
       "@utils/idea/*": ["src/features/idea/utils/*"],
       "@utils/solution/*": ["src/features/solution/utils/*"],
       "@utils/user/*": ["src/features/user/utils/*"],
+      "@icons/*": ["src/features/common/assets/icons/*"],
       "@images/*": ["src/features/common/assets/images/*"],
       "@pages/*": ["src/features/pages/*"],
       "@layout/*": ["src/features/layout/components/*"],

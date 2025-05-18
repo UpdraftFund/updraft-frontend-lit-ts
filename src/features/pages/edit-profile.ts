@@ -6,8 +6,7 @@ import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
 // Icons
-import pencilSquare from '@icons/user/pencil-square.svg';
-import personCircle from '@icons/user/person-circle.svg';
+import pencilSquare from '@icons/common/pencil-square.svg';
 
 // Styles
 import { dialogStyles } from '@styles/dialog-styles';
@@ -84,6 +83,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         color: var(--main-foreground);
       }
 
+      user-avatar {
+        --avatar-size: 64px;
+      }
+
       .avatar {
         position: relative;
         background: var(--main-background);
@@ -98,18 +101,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
       .avatar:hover {
         background: var(--control-background);
-      }
-
-      .avatar img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-      }
-
-      .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        color: var(--sl-color-neutral-600);
       }
 
       .avatar .edit-icon {
@@ -411,15 +402,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         @input=${this.handleInput}
       >
         <label class="avatar">
-          ${avatar
-            ? html` <img src=${avatar} alt="User avatar" /> `
-            : html`
-                <sl-icon
-                  class="avatar-placeholder"
-                  src=${personCircle}
-                  label="Avatar placeholder"
-                ></sl-icon>
-              `}
+          <user-avatar
+            .address=${userAddress.get()}
+            .image=${avatar}
+          ></user-avatar>
           <input
             type="file"
             accept="image/*"
