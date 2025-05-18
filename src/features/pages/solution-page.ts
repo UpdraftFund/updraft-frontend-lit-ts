@@ -4,7 +4,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
 import { Task } from '@lit/task';
 
-import { formatUnits, fromHex, parseUnits } from 'viem';
+import { fromHex, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -41,10 +41,10 @@ import { TokenInput } from '@components/common/token-input';
 // Utils
 import {
   parseProfile,
-  shortNum,
   formatDate,
   calculateProgress,
   formatReward,
+  formatAmount,
 } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
@@ -176,6 +176,29 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         --track-color: var(--sl-color-neutral-300);
       }
 
+      .withdraw-funds-container {
+        margin-top: var(--sl-spacing-small);
+        padding: var(--sl-spacing-small);
+        background-color: var(--sl-color-success-100);
+        border-radius: var(--sl-border-radius-medium);
+        border-left: 3px solid var(--sl-color-success-600);
+      }
+
+      .withdraw-funds-container p {
+        margin: 0 0 var(--sl-spacing-small) 0;
+      }
+
+      .withdraw-funds-row {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-medium);
+      }
+
+      .withdrawal-status {
+        font-size: var(--sl-font-size-small);
+        color: var(--sl-color-neutral-700);
+      }
+
       .user-stake h3,
       .user-positions h3 {
         margin: 0;
@@ -266,6 +289,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.fund') fundTransaction!: TransactionWatcher;
   @query('transaction-watcher.remove-stake')
   removeStakeTransaction!: TransactionWatcher;
+  @query('transaction-watcher.withdraw-funds')
+  withdrawFundsTransaction!: TransactionWatcher;
   @query('token-input.stake-input', true) stakeInput!: TokenInput;
   @query('token-input.fund-input', false) fundInput!: TokenInput;
   @query('form.stake-form', true) stakeForm!: HTMLFormElement;
@@ -285,6 +310,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   // State for loading and error handling
   @state() private loaded = false;
   @state() private error: string | null = null;
+  @state() private tokensWithdrawn: bigint = 0n;
 
   // Array to store user positions
   private positions: SolutionPosition[] = [];
@@ -505,14 +531,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <p>
             Your contribution:
             <strong>
-              ${shortNum(formatUnits(position.contribution, 18))}
+              ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
           <p>
             Fees earned:
             <strong>
-              ${shortNum(formatUnits(position.feesEarned, 18))}
+              ${formatAmount(position.feesEarned)}
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
@@ -549,7 +575,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   private renderSolutionStats() {
     const progress = calculateProgress(this.solution);
     const deadline = formatDate(this.solution!.deadline, 'full');
-    const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
+    const totalStake = formatAmount(this.solution!.stake);
     const fundingTokenSymbol = this.fundInput?.tokenSymbol;
 
     return html`
@@ -562,8 +588,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           ></sl-progress-bar>
           <span
             >🚀 <strong>${progress.toFixed(0)}%</strong> complete
-            (${shortNum(formatUnits(this.solution!.tokensContributed, 18))} /
-            ${shortNum(formatUnits(this.solution!.fundingGoal, 18))}
+            (${formatAmount(this.solution!.tokensContributed)} /
+            ${formatAmount(this.solution!.fundingGoal)}
             ${fundingTokenSymbol})</span
           >
         </div>
@@ -581,6 +607,23 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         <span>🎁 ${formatReward(this.solution!.funderReward)}</span>
       </div>
     `;
+  }
+
+  private get isDrafter() {
+    return (
+      userAddress.get()?.toLowerCase() ===
+      this.solution?.drafter.id.toLowerCase()
+    );
+  }
+
+  private get withdrawalStatus() {
+    if (!this.solution) return '';
+
+    const contributed = this.solution.tokensContributed;
+    const withdrawn = this.tokensWithdrawn;
+    const tokenSymbol = this.fundInput?.tokenSymbol || '';
+
+    return `${formatAmount(withdrawn)} of ${formatAmount(contributed)} ${tokenSymbol} withdrawn`;
   }
 
   private handleFormSubmit(e: Event) {
@@ -719,6 +762,66 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.userStakeTask.run();
   }
 
+  private async handleWithdrawFunds() {
+    try {
+      const solutionContract = new SolutionContract(this.solutionId);
+      this.withdrawFundsTransaction.reset();
+
+      const userAddr = userAddress.get();
+      if (!userAddr) {
+        console.warn('No user address available');
+        modal.open({ view: 'Connect' });
+        return;
+      }
+
+      // Ensure both values are bigint for proper subtraction
+      const tokensContributed = BigInt(this.solution!.tokensContributed || '0');
+      const remainingAmount = tokensContributed - this.tokensWithdrawn;
+
+      // Call withdrawFunds with the user's address and the remaining amount
+      this.withdrawFundsTransaction.hash = await solutionContract.write(
+        'withdrawFunds',
+        [
+          userAddr, // Send funds to the drafter's address
+          remainingAmount,
+        ]
+      );
+    } catch (err) {
+      console.error('Withdraw funds error:', err);
+      if (err instanceof Error && err.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
+      }
+    }
+  }
+
+  private handleWithdrawFundsSuccess() {
+    // Refresh solution data after successful withdrawal
+    this.solutionController.refresh();
+    // Also refresh the tokens withdrawn amount
+    this.withdrawnTokensTask.run();
+  }
+
+  private readonly withdrawnTokensTask = new Task(
+    this,
+    async ([solutionId, isDrafter]) => {
+      if (solutionId && isDrafter) {
+        try {
+          const solutionContract = new SolutionContract(solutionId);
+          // Get tokens withdrawn from the contract
+          const withdrawn = (await solutionContract.read(
+            'tokensWithdrawn'
+          )) as bigint;
+          this.tokensWithdrawn = withdrawn;
+          return withdrawn;
+        } catch (error) {
+          console.warn('Error fetching tokens withdrawn:', error);
+        }
+      }
+      return 0n;
+    },
+    () => [this.solutionId, this.isDrafter] as const
+  );
+
   private handleFundSuccess() {
     // Refresh user positions after successful funding
     this.userPositionsTask.run();
@@ -756,6 +859,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       this.loaded = false;
       this.error = null; // Clear previous errors
       this.positions = []; // Clear previous positions
+      this.tokensWithdrawn = 0n; // Reset tokens withdrawn
       this.solutionController.setVariablesAndSubscribe({
         solutionId: this.solutionId,
       });
@@ -779,8 +883,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   >
                 </div>
               </div>
-              ${this.solution?.drafter?.id.toLowerCase() ===
-              userAddress.get()?.toLowerCase()
+              ${this.isDrafter
                 ? html`
                     <sl-button
                       class="edit-button"
@@ -795,6 +898,31 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             </div>
             <div class="creator-info">${this.renderDrafter()}</div>
           </div>
+          ${this.goalReached && this.isDrafter
+            ? html`
+                <div class="withdraw-funds-container">
+                  <p>
+                    <strong>Goal Reached!</strong> As the drafter, you can now
+                    withdraw the funds.
+                  </p>
+                  <div class="withdraw-funds-row">
+                    <sl-button
+                      variant="success"
+                      @click=${this.handleWithdrawFunds}
+                    >
+                      Withdraw Funds
+                    </sl-button>
+                    <span class="withdrawal-status"
+                      >${this.withdrawalStatus}</span
+                    >
+                    <transaction-watcher
+                      class="withdraw-funds"
+                      @transaction-success=${this.handleWithdrawFundsSuccess}
+                    ></transaction-watcher>
+                  </div>
+                </div>
+              `
+            : html``}
           <div class="solution-stats">${this.renderSolutionStats()}</div>
           ${this.userStakeTask.render({
             complete: (stake) => {
@@ -807,9 +935,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     <div class="position-details">
                       <p>
                         You staked
-                        <strong>
-                          ${shortNum(formatUnits(stake, 18))} UPD
-                        </strong>
+                        <strong> ${formatAmount(stake)} UPD </strong>
                         in this solution.
                       </p>
                       ${this.goalReached
