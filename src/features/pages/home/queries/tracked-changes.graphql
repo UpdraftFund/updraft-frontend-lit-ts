@@ -2,8 +2,9 @@ query TrackedChanges(
   $ideaIds: [String!]
   $solutionIds: [Bytes!]
   $since: BigInt!
+    $now: BigInt!
 ) {
-  # Get new supporters for the ideas
+    # New supporters for the ideas
   newSupporters: ideaContributions(
     where: { idea_in: $ideaIds, createdTime_gt: $since }
     orderBy: createdTime
@@ -20,7 +21,7 @@ query TrackedChanges(
     createdTime
   }
 
-  # Get new solutions for the ideas
+    # New solutions for the ideas
   newSolutions: solutions(
     where: { idea_in: $ideaIds, startTime_gt: $since }
     orderBy: startTime
@@ -29,7 +30,7 @@ query TrackedChanges(
       ...SolutionFieldsDetailed
   }
 
-  # Get updated solutions
+    # Updated solutions
   solutionUpdated: solutions(
     where: { id_in: $solutionIds, modifiedTime_gt: $since }
     orderBy: modifiedTime
@@ -38,7 +39,16 @@ query TrackedChanges(
     ...SolutionFields
   }
 
-  # Get new funders for solutions
+    # Solutions that passed their deadline
+    deadlinePassed: solutions(
+        where: { id_in: $solutionIds, deadline_lt: $now, deadline_gt: $since }
+        orderBy: deadline
+        orderDirection: desc
+    ) {
+        ...SolutionFields
+    }
+
+    # New funders for solutions
   newFunders: solutionContributions(
     where: { solution_: { id_in: $solutionIds }, createdTime_gt: $since }
     orderBy: createdTime
