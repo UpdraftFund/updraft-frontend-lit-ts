@@ -23,6 +23,7 @@ import '@components/common/token-input';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 
 // Utilities
+import { formatAmount } from '@utils/format-utils';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { modal } from '@utils/web3';
 
@@ -46,7 +47,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
     }
 
     h2 {
-      margin: 0rem 0;
+      margin: 0;
     }
 
     form {
@@ -328,9 +329,8 @@ export class EditSolution extends SignalWatcher(LitElement) {
                           <label-with-hint
                             slot="label"
                             label="New Funding Goal*"
-                            hint="Must be higher than the previous goal of ${formatUnits(
-                              this.solution?.fundingGoal,
-                              18
+                            hint="Must be higher than the previous goal of ${formatAmount(
+                              this.solution?.fundingGoal
                             )} ${this.tokenSymbol}"
                           ></label-with-hint>
                         </sl-input>
