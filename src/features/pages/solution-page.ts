@@ -176,6 +176,18 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         --track-color: var(--sl-color-neutral-300);
       }
 
+      .withdraw-funds-container {
+        margin-top: var(--sl-spacing-small);
+        padding: var(--sl-spacing-small);
+        background-color: var(--sl-color-success-100);
+        border-radius: var(--sl-border-radius-medium);
+        border-left: 3px solid var(--sl-color-success-600);
+      }
+
+      .withdraw-funds-container p {
+        margin: 0 0 var(--sl-spacing-small) 0;
+      }
+
       .user-stake h3,
       .user-positions h3 {
         margin: 0;
@@ -266,6 +278,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.fund') fundTransaction!: TransactionWatcher;
   @query('transaction-watcher.remove-stake')
   removeStakeTransaction!: TransactionWatcher;
+  @query('transaction-watcher.withdraw-funds')
+  withdrawFundsTransaction!: TransactionWatcher;
   @query('token-input.stake-input', true) stakeInput!: TokenInput;
   @query('token-input.fund-input', false) fundInput!: TokenInput;
   @query('form.stake-form', true) stakeForm!: HTMLFormElement;
@@ -583,6 +597,13 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     `;
   }
 
+  private get isDrafter() {
+    return (
+      userAddress.get()?.toLowerCase() ===
+      this.solution?.drafter.id.toLowerCase()
+    );
+  }
+
   private handleFormSubmit(e: Event) {
     e.preventDefault();
   }
@@ -719,6 +740,41 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.userStakeTask.run();
   }
 
+  private async handleWithdrawFunds() {
+    try {
+      const solutionContract = new SolutionContract(this.solutionId);
+      this.withdrawFundsTransaction.reset();
+
+      // Get the user's address
+      const userAddr = userAddress.get();
+      if (!userAddr) {
+        console.warn('No user address available');
+        modal.open({ view: 'Connect' });
+        return;
+      }
+
+      // Call withdrawFunds with the user's address and the full amount
+      // We're withdrawing all funds to the drafter's address
+      this.withdrawFundsTransaction.hash = await solutionContract.write(
+        'withdrawFunds',
+        [
+          userAddr, // Send funds to the drafter's address
+          this.solution!.tokensContributed, // Withdraw the full amount
+        ]
+      );
+    } catch (err) {
+      console.error('Withdraw funds error:', err);
+      if (err instanceof Error && err.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
+      }
+    }
+  }
+
+  private handleWithdrawFundsSuccess() {
+    // Refresh solution data after successful withdrawal
+    this.solutionController.refresh();
+  }
+
   private handleFundSuccess() {
     // Refresh user positions after successful funding
     this.userPositionsTask.run();
@@ -779,8 +835,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   >
                 </div>
               </div>
-              ${this.solution?.drafter?.id.toLowerCase() ===
-              userAddress.get()?.toLowerCase()
+              ${this.isDrafter
                 ? html`
                     <sl-button
                       class="edit-button"
@@ -795,6 +850,26 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             </div>
             <div class="creator-info">${this.renderDrafter()}</div>
           </div>
+          ${this.goalReached && this.isDrafter
+            ? html`
+                <div class="withdraw-funds-container">
+                  <p>
+                    <strong>Goal Reached!</strong> As the drafter, you can now
+                    withdraw the funds.
+                  </p>
+                  <sl-button
+                    variant="success"
+                    @click=${this.handleWithdrawFunds}
+                  >
+                    Withdraw Funds
+                  </sl-button>
+                  <transaction-watcher
+                    class="withdraw-funds"
+                    @transaction-success=${this.handleWithdrawFundsSuccess}
+                  ></transaction-watcher>
+                </div>
+              `
+            : html``}
           <div class="solution-stats">${this.renderSolutionStats()}</div>
           ${this.userStakeTask.render({
             complete: (stake) => {
