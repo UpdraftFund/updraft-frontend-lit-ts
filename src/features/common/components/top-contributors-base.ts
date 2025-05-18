@@ -246,7 +246,8 @@ export abstract class TopContributorsBase<
         // Update existing contributor's contribution amount
         const existingContributor = contributorMap.get(funderId)!;
         const newContribution =
-          existingContributor.contribution + contribution.contribution;
+          BigInt(existingContributor.contribution) +
+          BigInt(contribution.contribution);
 
         contributorMap.set(funderId, {
           ...existingContributor,
