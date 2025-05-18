@@ -322,6 +322,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                                 formatUnits(this.solution.fundingGoal + 1n, 18)
                               )
                             : 0}"
+                          step="any"
                           required
                         >
                           <label-with-hint
