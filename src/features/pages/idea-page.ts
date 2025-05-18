@@ -10,12 +10,15 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
+// Icons
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 import plusLgIcon from '@icons/navigation/plus-lg.svg';
 
+// Styles
 import { dialogStyles } from '@styles/dialog-styles';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
@@ -24,6 +27,7 @@ import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import { SlDialog, SlCheckbox } from '@shoelace-style/shoelace';
 
+// Components
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
 import '@components/idea/top-supporters';
@@ -38,18 +42,25 @@ import { ShareDialog } from '@components/common/share-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
+// Utils
 import { formatDate, shortNum } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
+// GraphQL
 import { Idea, IdeaDocument } from '@gql';
-import { IdeaContract } from '@contracts/idea';
+
+// Types
 import type { IdeaPosition } from '@/features/idea/types';
 
+// State
 import { updraftSettings } from '@state/common';
 import layout from '@state/layout';
 import { markComplete } from '@state/user/beginner-tasks';
 import { userAddress } from '@state/user';
+
+// Contracts
+import { IdeaContract } from '@contracts/idea';
 
 @customElement('idea-page')
 export class IdeaPage extends SignalWatcher(LitElement) {
