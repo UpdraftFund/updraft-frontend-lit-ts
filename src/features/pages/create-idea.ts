@@ -3,18 +3,21 @@ import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import type { SlInput, SlDialog } from '@shoelace-style/shoelace';
 
+// Components
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
 import '@components/common/token-input';
+import { ITokenInput } from '@components/common/token-input';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
 import {
@@ -23,12 +26,19 @@ import {
 } from '@components/common/transaction-watcher';
 import { SaveableForm, formToJson } from '@components/common/saveable-form';
 
+// Styles
+import { dialogStyles } from '@styles/dialog-styles';
+
+// State
 import layout from '@state/layout';
 import { hasProfile } from '@state/user';
 import { defaultFunderReward } from '@state/common';
+
+// Contracts
 import { updraft } from '@contracts/updraft';
+
+// Schemas
 import ideaSchema from '@schemas/idea-schema.json';
-import { ITokenInput } from '@components/common/token-input';
 
 @customElement('create-idea')
 export class CreateIdea extends SignalWatcher(SaveableForm) {
@@ -41,65 +51,68 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('token-input', true) tokenInput!: ITokenInput;
 
-  static styles = css`
-    .container {
-      display: flex;
-      flex: auto; /* The container takes the remaining available space */
-      overflow: hidden;
-    }
-
-    main {
-      flex: 1;
-      box-sizing: border-box;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-      margin: 1.5rem 3rem;
-    }
-
-    .deposit-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 0.25rem;
-    }
-
-    .deposit-row > sl-button {
-      flex-shrink: 0; /* Prevents the button from shrinking */
-    }
-
-    sl-input[name='deposit'] {
-      flex: none;
-      width: calc(10ch + var(--sl-input-spacing-medium) * 2);
-      box-sizing: content-box;
-    }
-
-    sl-input[name='deposit']::part(input) {
-      text-align: right;
-    }
-
-    sl-input[name='deposit'].invalid {
-      --sl-input-focus-ring-color: red;
-    }
-
-    .submit {
-      width: fit-content;
-    }
-
-    /* Responsive behavior for smaller screens */
-    @media (max-width: 768px) {
+  static styles = [
+    dialogStyles,
+    css`
       .container {
-        flex-direction: column;
+        display: flex;
+        flex: auto; /* The container takes the remaining available space */
+        overflow: hidden;
+      }
+
+      main {
+        flex: 1;
+        box-sizing: border-box;
       }
 
       form {
-        margin: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        margin: 1.5rem 3rem;
       }
-    }
-  `;
+
+      .deposit-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 0.25rem;
+      }
+
+      .deposit-row > sl-button {
+        flex-shrink: 0; /* Prevents the button from shrinking */
+      }
+
+      sl-input[name='deposit'] {
+        flex: none;
+        width: calc(10ch + var(--sl-input-spacing-medium) * 2);
+        box-sizing: content-box;
+      }
+
+      sl-input[name='deposit']::part(input) {
+        text-align: right;
+      }
+
+      sl-input[name='deposit'].invalid {
+        --sl-input-focus-ring-color: red;
+      }
+
+      .submit {
+        width: fit-content;
+      }
+
+      /* Responsive behavior for smaller screens */
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+
+        form {
+          margin: 1rem;
+        }
+      }
+    `,
+  ];
 
   private handleTagsInput(e: Event) {
     const input = e.target as SlInput;
