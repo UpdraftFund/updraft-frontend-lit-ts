@@ -774,13 +774,16 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         return;
       }
 
-      // Call withdrawFunds with the user's address and the full amount
-      // We're withdrawing all funds to the drafter's address
+      // Ensure both values are bigint for proper subtraction
+      const tokensContributed = BigInt(this.solution!.tokensContributed || '0');
+      const remainingAmount = tokensContributed - this.tokensWithdrawn;
+
+      // Call withdrawFunds with the user's address and the remaining amount
       this.withdrawFundsTransaction.hash = await solutionContract.write(
         'withdrawFunds',
         [
           userAddr, // Send funds to the drafter's address
-          this.solution!.tokensContributed, // Withdraw the full amount
+          remainingAmount,
         ]
       );
     } catch (err) {
