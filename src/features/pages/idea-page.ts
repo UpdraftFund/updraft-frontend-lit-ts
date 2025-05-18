@@ -220,7 +220,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @query('token-input', true) tokenInput!: TokenInput;
   @query('sl-checkbox', true) airdropCheckbox!: SlCheckbox;
 
-  // supportValue is now handled by UpdTransactionMixin as updValue
   @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
