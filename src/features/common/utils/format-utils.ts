@@ -1,11 +1,10 @@
-import { formatUnits, fromHex } from 'viem';
+import { formatUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
 import { updraftSettings } from '@state/common';
-import { Profile, Solution } from '@/types';
 
 /**
  * Regular expression pattern for validating Ethereum addresses
@@ -45,22 +44,6 @@ export function formatAmount(amount: bigint): string {
 }
 
 /**
- * Parses a profile from a hex-encoded JSON string
- * @param profileHex The hex-encoded profile string
- * @returns Parsed profile object or default profile if parsing fails
- */
-export function parseProfile(profileHex: `0x${string}` | undefined): Profile {
-  if (profileHex) {
-    try {
-      return JSON.parse(fromHex(profileHex, 'string'));
-    } catch (e) {
-      console.error('Error parsing profile', e);
-    }
-  }
-  return {};
-}
-
-/**
  * Formats a date for display in a consistent way
  * @param timestamp Unix timestamp in seconds
  * @param format The format to use (fromNow, formatted, full)
@@ -77,22 +60,6 @@ export function formatDate(timestamp: number, format: string) {
       return `${date.format('MMM D, YYYY [at] h:mm A')} (${date.fromNow()})`;
     default:
       return date.format('MMM D, YYYY');
-  }
-}
-
-/**
- * Calculates progress percentage from a solution object
- * @param solution Solution object with tokensContributed and fundingGoal properties
- * @returns Progress percentage (0-100)
- */
-export function calculateProgress(solution?: Solution): number {
-  if (solution && solution.tokensContributed && solution.fundingGoal) {
-    return Math.min(
-      Number(solution.tokensContributed / solution.fundingGoal) * 100,
-      100
-    );
-  } else {
-    return 0;
   }
 }
 

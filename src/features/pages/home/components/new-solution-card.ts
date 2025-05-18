@@ -1,5 +1,5 @@
-import { customElement } from 'lit/decorators.js';
-import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { html, css, LitElement } from 'lit';
 import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
@@ -7,14 +7,19 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-import { TrackedChangeCard } from './tracked-change-card';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
+
+import '@components/solution/solution-details-bar';
+
 import { NewSolution } from '@pages/home/types';
 import { SolutionInfo, Profile } from '@/types';
 
+import { changeCardStyles } from '@styles/change-card-styles';
+
 @customElement('new-solution-card')
-export class NewSolutionCard extends TrackedChangeCard {
+export class NewSolutionCard extends LitElement {
   static styles = [
-    ...TrackedChangeCard.styles,
+    changeCardStyles,
     css`
       h4 {
         font-size: 1rem;
@@ -26,8 +31,7 @@ export class NewSolutionCard extends TrackedChangeCard {
     `,
   ];
 
-  // Type checking for the change property
-  declare change: NewSolution;
+  @property({ type: Object }) change!: NewSolution;
 
   render() {
     const solution = this.change.solution;
@@ -62,7 +66,9 @@ export class NewSolutionCard extends TrackedChangeCard {
             </div>
             <a class="solution-body" href="/solution/${solution.id}">
               <p>${solutionInfo.description}</p>
-              ${solution ? this.renderSolutionDetails(solution) : ''}
+              <solution-details-bar
+                .solution=${solution}
+              ></solution-details-bar>
             </a>
           </div>
 

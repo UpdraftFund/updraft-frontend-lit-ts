@@ -1,17 +1,17 @@
 import { customElement } from 'lit/decorators.js';
-import { html, css } from 'lit';
+import { html, css, LitElement } from 'lit';
 import { NewSupporters } from '@pages/home/types';
-import { TrackedChangeCard } from './tracked-change-card';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { changeCardStyles } from '@styles/change-card-styles';
 
 dayjs.extend(relativeTime);
 
 @customElement('new-supporters-card')
-export class NewSupportersCard extends TrackedChangeCard {
+export class NewSupportersCard extends LitElement {
   static styles = [
-    ...TrackedChangeCard.styles,
+    changeCardStyles,
     css`
       .supporters {
         font-size: 0.85rem;

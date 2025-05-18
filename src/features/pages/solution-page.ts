@@ -39,13 +39,13 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
+import { formatDate, formatReward, formatAmount } from '@utils/format-utils';
 import {
-  parseProfile,
-  formatDate,
   calculateProgress,
-  formatReward,
-  formatAmount,
-} from '@utils/format-utils';
+  goalFailed,
+  goalReached,
+} from '@utils/solution/solution-utils';
+import { parseProfile } from '@utils/user/user-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -311,8 +311,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @state() private solution?: Solution;
   @state() private solutionInfo?: SolutionInfo;
   @state() private positionIndex = 0;
-  @state() private goalFailed = false;
-  @state() private goalReached = false;
 
   // State for loading and error handling
   @state() private loaded = false;
@@ -350,20 +348,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         } catch (e) {
           console.error('Error parsing solution info:', e);
         }
-
-        // Check solution status
-        const now = dayjs().unix();
-        const deadline = Number(this.solution.deadline || 0);
-        const fundingGoal = BigInt(this.solution.fundingGoal || '0');
-        const tokensContributed = BigInt(
-          this.solution.tokensContributed || '0'
-        );
-
-        // Goal is reached if tokens contributed >= funding goal
-        this.goalReached = tokensContributed >= fundingGoal;
-
-        // Goal has failed if deadline has passed and goal not reached
-        this.goalFailed = now > deadline && tokensContributed < fundingGoal;
 
         layout.rightSidebarContent.set(html`
           <top-funders
@@ -549,7 +533,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-          ${this.goalFailed
+          ${goalFailed(this.solution)
             ? html`
                 <p>
                   <strong>Goal Failed:</strong> You can refund your
@@ -905,7 +889,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             </div>
             <div class="creator-info">${this.renderDrafter()}</div>
           </div>
-          ${this.goalReached && this.isDrafter
+          ${goalReached(this.solution) && this.isDrafter
             ? html`
                 <div class="withdraw-funds-container">
                   <p>
@@ -930,7 +914,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                 </div>
               `
             : html``}
-          ${this.goalFailed
+          ${goalFailed(this.solution)
             ? html`
                 <div class="goal-failed">
                   <p>
@@ -954,7 +938,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                         <strong> ${formatAmount(stake)} UPD </strong>
                         in this solution.
                       </p>
-                      ${this.goalReached
+                      ${goalReached(this.solution)
                         ? html`
                             <p>
                               <strong>Goal Reached:</strong> You can now remove
@@ -985,7 +969,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               this.positions.length > 0 ? this.renderPositions() : html``,
           })}
           <div class="action-buttons">
-            ${!this.goalFailed && !this.goalReached
+            ${!goalFailed(this.solution) && !goalReached(this.solution)
               ? html`
                   <form class="stake-form" @submit=${this.handleFormSubmit}>
                     <token-input
@@ -1020,7 +1004,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   </form>
                 `
               : html``}
-            ${!this.goalFailed
+            ${!goalFailed(this.solution)
               ? html`
                   <form class="fund-form" @submit=${this.handleFormSubmit}>
                     <token-input

@@ -1,5 +1,5 @@
-import { customElement } from 'lit/decorators.js';
-import { html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { html, css, LitElement } from 'lit';
 import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
@@ -7,21 +7,25 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
+import '@shoelace-style/shoelace/dist/components/card/card.js';
+
+import '@components/solution/solution-details-bar';
+
 import { SolutionUpdated } from '@pages/home/types';
-import { TrackedChangeCard } from './tracked-change-card';
 import { SolutionInfo } from '@/features/solution/types';
 
+import { changeCardStyles } from '@styles/change-card-styles';
+
 @customElement('solution-updated-card')
-export class SolutionUpdatedCard extends TrackedChangeCard {
+export class SolutionUpdatedCard extends LitElement {
   static styles = [
-    ...TrackedChangeCard.styles,
+    changeCardStyles,
     css`
       /* Additional styles specific to this card */
     `,
   ];
 
-  // Type checking for the change property
-  declare change: SolutionUpdated;
+  @property({ type: Object }) change!: SolutionUpdated;
 
   render() {
     const solution = this.change.solution;
@@ -41,7 +45,7 @@ export class SolutionUpdatedCard extends TrackedChangeCard {
             ${solutionInfo.news
               ? html`<p class="solution-news">${solutionInfo.news}</p>`
               : html``}
-            ${solution ? this.renderSolutionDetails(solution) : ''}
+            <solution-details-bar .solution=${solution}></solution-details-bar>
           </a>
           <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
         </sl-card>

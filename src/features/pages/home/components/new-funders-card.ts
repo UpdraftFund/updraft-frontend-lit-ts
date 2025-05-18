@@ -1,5 +1,5 @@
 import { customElement } from 'lit/decorators.js';
-import { html, css } from 'lit';
+import { html, css, LitElement } from 'lit';
 import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
@@ -8,13 +8,13 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import { NewFunders } from '@pages/home/types';
-import { TrackedChangeCard } from './tracked-change-card';
 import { SolutionInfo } from '@/features/solution/types';
+import { changeCardStyles } from '@styles/change-card-styles';
 
 @customElement('new-funders-card')
-export class NewFundersCard extends TrackedChangeCard {
+export class NewFundersCard extends LitElement {
   static styles = [
-    ...TrackedChangeCard.styles,
+    changeCardStyles,
     css`
       .funders {
         font-size: 0.85rem;

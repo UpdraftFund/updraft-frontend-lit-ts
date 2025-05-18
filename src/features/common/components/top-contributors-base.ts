@@ -9,7 +9,7 @@ import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { formatAmount, shortenAddress } from '@utils/format-utils';
-import { parseProfile } from '@utils/format-utils';
+import { parseProfile } from '@utils/user/user-utils';
 
 import { TypedDocumentNode } from '@urql/core';
 import {

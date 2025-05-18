@@ -63,6 +63,8 @@ export default defineConfig(({ mode }) => ({
       ),
       '@utils/home': resolve(__dirname, 'src/features/pages/home/utils'),
       '@utils/idea': resolve(__dirname, 'src/features/idea/utils'),
+      '@utils/solution': resolve(__dirname, 'src/features/solution/utils'),
+      '@utils/user': resolve(__dirname, 'src/features/user/utils'),
       '@images': resolve(__dirname, 'src/features/common/assets/images'),
       '@pages': resolve(__dirname, 'src/features/pages'),
       '@layout': resolve(__dirname, 'src/features/layout/components'),

@@ -16,11 +16,8 @@ import gaugeHighIcon from '@icons/solution/gauge-high.svg';
 import { Solution } from '@/features/solution/types';
 
 import { smallCardStyles } from '@styles/small-card-styles';
-import {
-  formatDate,
-  calculateProgress,
-  formatAmount,
-} from '@utils/format-utils';
+import { formatDate, formatAmount } from '@utils/format-utils';
+import { calculateProgress } from '@utils/solution/solution-utils';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends SignalWatcher(LitElement) {
@@ -43,7 +40,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
     const progress = calculateProgress(this.solution);
 
     if (progress >= 100) {
-      return html`✅ Goal Reached!`;
+      return html`✅ Goal Reached`;
     }
     if (now.isAfter(deadlineDate)) {
       return html`❌ Goal Failed`;

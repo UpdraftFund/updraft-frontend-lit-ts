@@ -14,13 +14,13 @@ import { Solution, SolutionInfo } from '@/features/solution/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
 
+import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
 import {
-  formatReward,
-  formatAmount,
-  parseProfile,
-  formatDate,
   calculateProgress,
-} from '@utils/format-utils';
+  goalFailed,
+  goalReached,
+} from '@utils/solution/solution-utils';
+import { parseProfile } from '@utils/user/user-utils';
 
 @customElement('solution-card-large')
 export class SolutionCardLarge extends SignalWatcher(LitElement) {
@@ -102,14 +102,8 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
 
   @property() solution!: Solution;
 
-  private get goalFailed() {
-    const now = dayjs();
-    const deadlineDate = dayjs(this.solution.deadline * 1000);
-    return now.isAfter(deadlineDate) && calculateProgress(this.solution) < 100;
-  }
-
   private renderGoalStatus() {
-    if (calculateProgress(this.solution) >= 100) {
+    if (goalReached(this.solution)) {
       return html`
         <li class="status status-success">
           <span>✅</span>
@@ -117,7 +111,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         </li>
       `;
     }
-    if (this.goalFailed) {
+    if (goalFailed(this.solution)) {
       return html`
         <li class="status status-danger">
           <span>❌</span>
@@ -185,7 +179,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
               </div>
             `
           : html``}
-        ${!this.goalFailed
+        ${!goalFailed(this.solution)
           ? html`
               <sl-button variant="primary" href="/solution/${this.solution.id}">
                 Fund this Solution

@@ -7,12 +7,8 @@ import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import { Idea } from '@/features/idea/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
-import {
-  formatReward,
-  formatAmount,
-  parseProfile,
-  formatDate,
-} from '@utils/format-utils';
+import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
+import { parseProfile } from '@utils/user/user-utils';
 
 @customElement('idea-card-large')
 export class IdeaCardLarge extends SignalWatcher(LitElement) {

@@ -59,6 +59,8 @@
       "@utils/create-solution/*": ["src/features/pages/create-solution/utils/*"],
       "@utils/home/*": ["src/features/pages/home/utils/*"],
       "@utils/idea/*": ["src/features/idea/utils/*"],
+      "@utils/solution/*": ["src/features/solution/utils/*"],
+      "@utils/user/*": ["src/features/user/utils/*"],
       "@images/*": ["src/features/common/assets/images/*"],
       "@pages/*": ["src/features/pages/*"],
       "@layout/*": ["src/features/layout/components/*"],

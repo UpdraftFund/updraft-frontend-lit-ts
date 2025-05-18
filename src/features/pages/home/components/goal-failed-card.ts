@@ -1,5 +1,5 @@
-import { customElement, query } from 'lit/decorators.js';
-import { html, css } from 'lit';
+import { customElement, query, property } from 'lit/decorators.js';
+import { html, css, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { fromHex } from 'viem';
 
@@ -10,21 +10,24 @@ dayjs.extend(relativeTime);
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 import { TransactionWatcher } from '@components/common/transaction-watcher';
-import { TrackedChangeCard } from './tracked-change-card';
 import { GoalFailed } from '@pages/home/types';
 import { SolutionContract } from '@contracts/solution';
 import { Solution, SolutionInfo } from '@/features/solution/types';
 
 import { userAddress } from '@state/user';
 
-import { formatAmount, calculateProgress } from '@utils/format-utils';
+import { formatAmount } from '@utils/format-utils';
+import { calculateProgress } from '@utils/solution/solution-utils';
+
+import { changeCardStyles } from '@styles/change-card-styles';
 
 @customElement('goal-failed-card')
-export class GoalFailedCard extends TrackedChangeCard {
+export class GoalFailedCard extends LitElement {
   static styles = [
-    ...TrackedChangeCard.styles,
+    changeCardStyles,
     css`
       /* Additional styles specific to this card */
       .refund-button {
@@ -37,8 +40,7 @@ export class GoalFailedCard extends TrackedChangeCard {
     `,
   ];
 
-  // Type checking for the change property
-  declare change: GoalFailed;
+  @property({ type: Object }) change!: GoalFailed;
 
   @query('transaction-watcher') refundTransaction!: TransactionWatcher;
 
