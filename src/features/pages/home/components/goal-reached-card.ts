@@ -48,7 +48,7 @@ export class GoalReachedCard extends LitElement {
         </div>
         <div class="goal-message">Funding goal has been reached!</div>
         <div class="funding-details">
-          ${formatAmount(solution?.fundingGoal)} UPD raised
+          ${formatAmount(solution.tokensContributed)} raised
         </div>
         <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
       </sl-card>
