@@ -21,18 +21,18 @@ export function calculateProgress(solution?: Solution): number {
   }
 }
 
-export function goalFailed(solution?: Solution) {
+export function goalReached(solution?: Solution) {
   if (solution) {
-    const now = dayjs();
-    const deadline = dayjs(solution.deadline * 1000);
-    return now.isAfter(deadline) && calculateProgress(solution) < 100;
+    return BigInt(solution.tokensContributed) >= BigInt(solution.fundingGoal);
   }
   return false;
 }
 
-export function goalReached(solution?: Solution) {
+export function goalFailed(solution?: Solution) {
   if (solution) {
-    return solution.tokensContributed >= solution.fundingGoal;
+    const now = dayjs();
+    const deadline = dayjs(solution.deadline * 1000);
+    return now.isAfter(deadline) && !goalReached(solution);
   }
   return false;
 }
