@@ -169,7 +169,7 @@ export class ActivityCard extends LitElement {
       case 'ideaFunded':
         return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a solution with ${formatAmount(this.activity.contribution)} UPD`;
+        return `${this.userName} funded a solution with ${formatAmount(this.activity.contribution)}`;
       case 'solutionDrafted':
         return `${this.userName} drafted a solution`;
       default:

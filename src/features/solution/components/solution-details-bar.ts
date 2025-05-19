@@ -63,7 +63,7 @@ export class SolutionDetailsBar extends LitElement {
         ></sl-progress-bar>
         <div class="goal-text">
           ${formatAmount(this.solution.tokensContributed)} out of
-          ${formatAmount(this.solution.fundingGoal)} UPD
+          ${formatAmount(this.solution.fundingGoal)}
         </div>
       </div>
       ${goalReached(this.solution)

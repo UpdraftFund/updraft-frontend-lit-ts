@@ -99,7 +99,7 @@ export abstract class TopContributorsBase<
   `;
 
   @property({ type: String }) entityId = '';
-  @property({ type: String }) tokenSymbol? = 'UPD';
+  @property({ type: String }) tokenSymbol: string | null = null;
   @property({ type: Number }) maxContributors = 5;
 
   @state() protected contributors?: Contributor[];
