@@ -40,7 +40,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       }
 
       .progress-bar {
-        width: 150px;
+        width: 100%;
         --height: 8px;
       }
 
@@ -158,12 +158,10 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
               class="progress-bar"
               value="${progress}"
             ></sl-progress-bar>
-            <div class="goal-text">
-              ${tokensContributed} out of ${fundingGoal}
-            </div>
+            <div class="goal-text">${tokensContributed} of ${fundingGoal}</div>
           </li>
           ${this.renderGoalStatus()}
-          <li>⏰ Deadline ${deadline}</li>
+          <li>⏰ Due ${deadline}</li>
           <li>💎 ${stake} UPD stake</li>
           <li>🎁 ${funderRewardFormatted} funder reward</li>
         </ul>
