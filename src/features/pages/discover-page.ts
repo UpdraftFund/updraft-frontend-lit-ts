@@ -180,8 +180,14 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       case 'solutions':
         return (data as SolutionsBySweetnessQuery).solutions as Solution[];
       case 'followed':
-        return (data as IdeasByFundersQuery)
+        // Dedupe Ideas from IdeaContributions
+        const ideaContributions = (data as IdeasByFundersQuery)
           .ideaContributions as IdeaContribution[];
+        const uniqueIdeasMap = new Map<string, Idea>();
+        ideaContributions.forEach((contribution) => {
+          uniqueIdeasMap.set(contribution.idea.id, contribution.idea);
+        });
+        return Array.from(uniqueIdeasMap.values());
       case 'search':
         return (data as IdeasFullTextQuery).ideaSearch as Idea[];
       case 'tags':
@@ -264,7 +270,8 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       this.tab === 'hot-ideas' ||
       this.tab === 'new-ideas' ||
       this.tab === 'search' ||
-      this.tab === 'tags'
+      this.tab === 'tags' ||
+      this.tab === 'followed'
     ) {
       // Ideas result type
       return cache(
@@ -284,18 +291,6 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
             html` <solution-card-large
               .solution=${solution}
             ></solution-card-large>`
-        )}`
-      );
-    } else if (this.tab === 'followed') {
-      // IdeaContribution result type
-      return cache(
-        html`${repeat(
-          this.results as IdeaContribution[],
-          (contribution) => contribution.id,
-          (contribution) =>
-            html` <idea-card-large
-              .idea=${contribution.idea}
-            ></idea-card-large>`
         )}`
       );
     }
