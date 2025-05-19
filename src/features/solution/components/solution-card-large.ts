@@ -159,7 +159,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
               value="${progress}"
             ></sl-progress-bar>
             <div class="goal-text">
-              ${tokensContributed} out of ${fundingGoal} UPD
+              ${tokensContributed} out of ${fundingGoal}
             </div>
           </li>
           ${this.renderGoalStatus()}

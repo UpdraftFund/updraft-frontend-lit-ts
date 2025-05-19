@@ -922,7 +922,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                 <div class="goal-failed">
                   <p>
                     <strong>❌ Goal Failed!</strong>
-                    Funders can get refunded and receive part of the stake.
+                    Funders can get a refund and part of the stake.
                   </p>
                 </div>
               `
