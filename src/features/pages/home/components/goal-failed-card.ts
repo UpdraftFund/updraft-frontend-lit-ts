@@ -51,11 +51,14 @@ export class GoalFailedCard extends LitElement {
 
       try {
         const solution = new SolutionContract(solutionAddress as `0x${string}`);
-        // Check if the user has any positions in this solution
-        const numPositions = await solution.read('numPositions', [userAddr]);
-        return Number(numPositions) > 0;
+        // Check if the user has a single, unrefunded position greater than zero
+        const [contribution, , , refunded] = (await solution.read(
+          'positionsByAddress',
+          [userAddr, 0]
+        )) as bigint[];
+        return contribution > 0n && !refunded;
       } catch (error) {
-        console.error('Error checking if user funded solution:', error);
+        console.warn('Error checking if user funded solution:', error);
         return false;
       }
     },
@@ -67,10 +70,12 @@ export class GoalFailedCard extends LitElement {
       const solution = new SolutionContract(
         this.change.solution.id as `0x${string}`
       );
-      // Call the refund function without parameters to refund all positions
+      // This works if there's only one position.
       this.refundTransaction.hash = await solution.write('refund', []);
     } catch (error) {
-      console.error('Error refunding solution:', error);
+      console.warn('Error refunding solution:', error);
+      // Navigate to the solution page instead. This might allow the user to refund multiple positions one-by-one.
+      window.location.href = `/solution/${this.change.solution.id}`;
     }
   }
 
