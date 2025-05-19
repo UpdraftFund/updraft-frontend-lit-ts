@@ -18,7 +18,6 @@ import { dialogStyles } from '@styles/dialog-styles';
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
@@ -33,6 +32,7 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
@@ -123,7 +123,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         text-decoration: underline;
       }
 
-      .creator-info a {
+      .drafter {
         display: flex;
         align-items: center;
         gap: var(--sl-spacing-small);
@@ -483,7 +483,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     const id = this.solution!.drafter.id;
     const displayName = profile.name || profile.team || id;
     return html`
-      <a href="/profile/${id}">
+      <a class="drafter" href="/profile/${id}">
         <user-avatar .address=${id} .image=${profile.image}></user-avatar>
         <span>${displayName}</span>
       </a>
@@ -890,7 +890,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   `
                 : html``}
             </div>
-            <div class="creator-info">${this.renderDrafter()}</div>
+            ${this.renderDrafter()}
           </div>
           ${goalReached(this.solution) && this.isDrafter
             ? html`

@@ -37,6 +37,7 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
@@ -95,6 +96,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       .heading {
         font-size: 2rem;
         margin-bottom: 0;
+      }
+      .creator {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-small);
+        width: fit-content;
       }
       .created {
         font-size: 0.9rem;
@@ -440,9 +447,17 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         fromHex(creator.profile as `0x${string}`, 'string')
       );
 
+      const displayName = profile.name || profile.team || creator.id;
+
       return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
-        <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
+        <a class="creator" href="/profile/${creator.id}">
+          <user-avatar
+            .address=${creator.id}
+            .image=${profile.image}
+          ></user-avatar>
+          <span>${displayName}</span>
+        </a>
         <span class="created"> Created ${formatDate(startTime, 'full')} </span>
         <div class="idea-info">
           ${pctFunderReward
