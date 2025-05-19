@@ -3,14 +3,15 @@ import { css, html, LitElement } from 'lit';
 import { SignalWatcher } from '@lit-labs/signals';
 import { repeat } from 'lit/directives/repeat.js';
 import { cache } from 'lit/directives/cache.js';
-
 import dayjs from 'dayjs';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/tab-group/tab-group.js';
 import '@shoelace-style/shoelace/dist/components/tab/tab.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
+// Components
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
 import '@components/navigation/discover-tabs';
@@ -19,15 +20,16 @@ import '@components/tags/watched-tags';
 import '@components/idea/idea-card-large';
 import '@components/solution/solution-card-large';
 
-import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
-
+// State
 import layout from '@state/layout';
-
 import { watchTag, isWatched } from '@state/user/watched-tags';
 import { followedUsers } from '@state/user/follow';
 
+// Utils
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { sortIdeasByNewest } from '@utils/idea/sort-ideas';
+
+// GraphQL
 import {
   IdeasBySharesDocument,
   IdeasByFundersDocument,
@@ -49,6 +51,7 @@ import {
   IdeasByTagsQueryVariables,
 } from '@gql';
 import { TypedDocumentNode } from '@urql/core';
+import { Idea, Solution, IdeaContribution, DiscoverQueryType } from '@/types';
 
 type AnyResult =
   | IdeasBySharesQuery
