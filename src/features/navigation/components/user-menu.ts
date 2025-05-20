@@ -44,6 +44,9 @@ export class UserMenu extends SignalWatcher(LitElement) {
     .trigger-content {
       cursor: pointer;
     }
+    .trigger-content user-avatar {
+      --avatar-size: 46px;
+    }
     .name {
       display: inline-block;
       max-width: 180px;
@@ -52,13 +55,12 @@ export class UserMenu extends SignalWatcher(LitElement) {
       text-overflow: ellipsis;
       font-weight: 500;
     }
-    .menu-avatar {
-      width: 32px;
-      height: 32px;
-    }
     sl-icon {
       font-size: 2rem;
       color: var(--main-foreground);
+    }
+    .menu-avatar {
+      --avatar-size: 42px;
     }
     p {
       margin: 0;
@@ -136,11 +138,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
             @sl-show=${refreshBalances}
           >
             <span slot="trigger" class="trigger-content" title="Profile menu">
-              <user-avatar
-                .address=${address}
-                .image=${avatar}
-                size="42px"
-              ></user-avatar>
+              <user-avatar .address=${address} .image=${avatar}></user-avatar>
               <span class="name">${displayName}</span>
             </span>
             <sl-menu class="menu">
@@ -176,7 +174,6 @@ export class UserMenu extends SignalWatcher(LitElement) {
                     class="menu-avatar"
                     .address=${address}
                     .image=${avatar}
-                    size="32px"
                   ></user-avatar>
                   <div>
                     <p>My Profile</p>

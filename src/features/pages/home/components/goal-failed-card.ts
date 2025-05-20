@@ -1,5 +1,5 @@
-import { customElement, query } from 'lit/decorators.js';
-import { html, css } from 'lit';
+import { customElement, query, property } from 'lit/decorators.js';
+import { html, css, LitElement } from 'lit';
 import { Task } from '@lit/task';
 import { fromHex } from 'viem';
 
@@ -10,21 +10,24 @@ dayjs.extend(relativeTime);
 
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 import { TransactionWatcher } from '@components/common/transaction-watcher';
-import { TrackedChangeCard } from './tracked-change-card';
 import { GoalFailed } from '@pages/home/types';
 import { SolutionContract } from '@contracts/solution';
 import { Solution, SolutionInfo } from '@/features/solution/types';
 
 import { userAddress } from '@state/user';
 
-import { formatAmount, calculateProgress } from '@utils/format-utils';
+import { formatAmount } from '@utils/format-utils';
+import { calculateProgress } from '@utils/solution/solution-utils';
+
+import { changeCardStyles } from '@styles/change-card-styles';
 
 @customElement('goal-failed-card')
-export class GoalFailedCard extends TrackedChangeCard {
+export class GoalFailedCard extends LitElement {
   static styles = [
-    ...TrackedChangeCard.styles,
+    changeCardStyles,
     css`
       /* Additional styles specific to this card */
       .refund-button {
@@ -37,8 +40,7 @@ export class GoalFailedCard extends TrackedChangeCard {
     `,
   ];
 
-  // Type checking for the change property
-  declare change: GoalFailed;
+  @property({ type: Object }) change!: GoalFailed;
 
   @query('transaction-watcher') refundTransaction!: TransactionWatcher;
 
@@ -49,11 +51,14 @@ export class GoalFailedCard extends TrackedChangeCard {
 
       try {
         const solution = new SolutionContract(solutionAddress as `0x${string}`);
-        // Check if the user has any positions in this solution
-        const numPositions = await solution.read('numPositions', [userAddr]);
-        return Number(numPositions) > 0;
+        // Check if the user has a single, unrefunded position greater than zero
+        const [contribution, , , refunded] = (await solution.read(
+          'positionsByAddress',
+          [userAddr, 0]
+        )) as bigint[];
+        return contribution > 0n && !refunded;
       } catch (error) {
-        console.error('Error checking if user funded solution:', error);
+        console.warn('Error checking if user funded solution:', error);
         return false;
       }
     },
@@ -65,10 +70,12 @@ export class GoalFailedCard extends TrackedChangeCard {
       const solution = new SolutionContract(
         this.change.solution.id as `0x${string}`
       );
-      // Call the refund function without parameters to refund all positions
+      // This works if there's only one position.
       this.refundTransaction.hash = await solution.write('refund', []);
     } catch (error) {
-      console.error('Error refunding solution:', error);
+      console.warn('Error refunding solution:', error);
+      // Navigate to the solution page instead. This might allow the user to refund multiple positions one-by-one.
+      window.location.href = `/solution/${this.change.solution.id}`;
     }
   }
 
@@ -101,7 +108,7 @@ export class GoalFailedCard extends TrackedChangeCard {
           <sl-progress-bar value="${progress}"></sl-progress-bar>
           <div class="goal-text">
             ${formatAmount(solution.tokensContributed)} out of
-            ${formatAmount(solution.fundingGoal)} UPD
+            ${formatAmount(solution.fundingGoal)} raised
           </div>
         </div>
 

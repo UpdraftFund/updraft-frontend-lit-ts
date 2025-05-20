@@ -4,8 +4,10 @@ import { cache } from 'lit/directives/cache.js';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import dayjs from 'dayjs';
 
-import refreshIcon from '@icons/common/arrow-clockwise.svg';
+// Icons
+import refreshIcon from '@icons/arrow-clockwise.svg';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
@@ -14,6 +16,7 @@ import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 
+// Components
 import './new-supporters-card';
 import './new-solution-card';
 import './new-funders-card';
@@ -21,10 +24,19 @@ import './solution-updated-card';
 import './goal-reached-card';
 import './goal-failed-card';
 
-import { TrackedChangesDocument, UserIdeasSolutionsDocument } from '@gql';
+// GraphQL
+import {
+  Solution,
+  TrackedChangesDocument,
+  UserIdeasSolutionsDocument,
+} from '@gql';
+
+// Utils
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { TrackedChangesManager } from '@utils/home/tracked-changes-manager';
+import { goalFailed, goalReached } from '@utils/solution/solution-utils';
 
+// State
 import { since } from '@state/user/tracked-changes';
 import { userAddress } from '@state/user';
 
@@ -181,6 +193,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
       ideaIds: [] as `0x${string}`[],
       solutionIds: [] as `0x${string}`[],
       since: since.get(),
+      now: dayjs().unix(),
     },
     (result) => {
       this.loading = false;
@@ -222,38 +235,41 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         // Process updates to solutions you created or funded
         result.data.solutionUpdated
           // Filter out updates triggered by solution creation
-          .filter((item) => item.startTime !== item.modifiedTime)
-          .forEach((item) => {
-            const now = dayjs();
-            const deadlineDate = dayjs(Number(item.deadline) * 1000);
-            const progressBigInt = BigInt(item.tokensContributed || '0');
-            const goalBigInt = BigInt(item.fundingGoal || '0');
-
-            // Check if the goal was reached
-            if (goalBigInt > 0n && progressBigInt >= goalBigInt) {
+          .filter((solution) => solution.startTime !== solution.modifiedTime)
+          .forEach((solution) => {
+            if (goalReached(solution as Solution)) {
               this.changesManager.addChange({
                 type: 'goalReached',
-                time: Number(item.modifiedTime) * 1000,
-                solution: item,
+                time: Number(solution.modifiedTime) * 1000,
+                solution,
               });
-            }
-            // Check if the deadline has passed and goal wasn't reached
-            else if (now.isAfter(deadlineDate) && progressBigInt < goalBigInt) {
+            } else if (goalFailed(solution as Solution)) {
               this.changesManager.addChange({
                 type: 'goalFailed',
-                time: Number(item.modifiedTime) * 1000,
-                solution: item,
+                time: Number(solution.modifiedTime) * 1000,
+                solution: solution,
               });
             }
             // Otherwise it's just a regular update
             else {
               this.changesManager.addChange({
                 type: 'solutionUpdated',
-                time: Number(item.modifiedTime) * 1000,
-                solution: item,
+                time: Number(solution.modifiedTime) * 1000,
+                solution: solution,
               });
             }
           });
+
+        // Process solutions that passed their deadline
+        result.data.deadlinePassed.forEach((solution) => {
+          if (goalFailed(solution as Solution)) {
+            this.changesManager.addChange({
+              type: 'goalFailed',
+              time: Number(solution.deadline) * 1000,
+              solution: solution,
+            });
+          }
+        });
 
         // Process new funders for solutions you created or funded
         result.data.newFunders.forEach((item) => {
@@ -283,6 +299,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         ideaIds: this.ideaIds,
         solutionIds: this.solutionIds,
         since: since.get(),
+        now: dayjs().unix(),
       });
     } else {
       this.loading = false;

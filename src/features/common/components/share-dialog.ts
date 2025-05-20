@@ -3,7 +3,7 @@ import { css, html, LitElement } from 'lit';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
-import linkIcon from '@icons/user/link-45deg.svg';
+import linkIcon from '@icons/link-45deg.svg';
 import xIcon from '@icons/common/twitter-x.svg';
 import warpcastIcon from '@icons/common/farcaster.svg';
 import share from '@icons/common/share.svg';

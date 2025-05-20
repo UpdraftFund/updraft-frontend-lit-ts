@@ -2,16 +2,14 @@ import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { cache } from 'lit/directives/cache.js';
 
-import { formatUnits } from 'viem';
-
 import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
-import { shortenAddress, shortNum } from '@utils/format-utils';
-import { parseProfile } from '@utils/format-utils';
+import { formatAmount, shortenAddress } from '@utils/format-utils';
+import { parseProfile } from '@utils/user/user-utils';
 
 import { TypedDocumentNode } from '@urql/core';
 import {
@@ -30,7 +28,7 @@ export interface Contributor {
   profile?: string;
   name?: string;
   avatar?: string;
-  contribution: string;
+  contribution: bigint;
 }
 
 /**
@@ -101,7 +99,7 @@ export abstract class TopContributorsBase<
   `;
 
   @property({ type: String }) entityId = '';
-  @property({ type: String }) tokenSymbol? = 'UPD';
+  @property({ type: String }) tokenSymbol: string | null = null;
   @property({ type: Number }) maxContributors = 5;
 
   @state() protected contributors?: Contributor[];
@@ -235,7 +233,7 @@ export abstract class TopContributorsBase<
   private processContributions(
     contributions: Array<{
       funder: { id: string; profile?: string };
-      contribution: string;
+      contribution: bigint;
     }>
   ): Contributor[] {
     // Use a Map to combine contributions from the same contributor
@@ -253,7 +251,7 @@ export abstract class TopContributorsBase<
 
         contributorMap.set(funderId, {
           ...existingContributor,
-          contribution: newContribution.toString(),
+          contribution: newContribution,
         });
       } else {
         // Create a new contributor entry
@@ -272,8 +270,8 @@ export abstract class TopContributorsBase<
 
     // Convert map to array and sort by contribution amount (descending)
     return Array.from(contributorMap.values()).sort((a, b) => {
-      const aContrib = BigInt(a.contribution);
-      const bContrib = BigInt(b.contribution);
+      const aContrib = a.contribution;
+      const bContrib = b.contribution;
 
       // Sort by contribution amount (descending)
       if (aContrib > bContrib) return -1;
@@ -311,8 +309,8 @@ export abstract class TopContributorsBase<
    * @param contribution The contribution amount as a string
    * @returns Formatted contribution amount with token symbol
    */
-  private formatContribution(contribution: string): string {
-    return `${shortNum(formatUnits(BigInt(contribution), 18))} ${this.tokenSymbol || ''}`;
+  private formatContribution(contribution: bigint): string {
+    return `${formatAmount(contribution)} ${this.tokenSymbol || ''}`;
   }
 
   render() {

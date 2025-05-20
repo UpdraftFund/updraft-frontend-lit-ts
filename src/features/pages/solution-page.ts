@@ -4,7 +4,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
 import { Task } from '@lit/task';
 
-import { formatUnits, fromHex, parseUnits } from 'viem';
+import { fromHex, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -18,7 +18,6 @@ import { dialogStyles } from '@styles/dialog-styles';
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/tag/tag.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
-import '@shoelace-style/shoelace/dist/components/avatar/avatar.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
@@ -33,19 +32,20 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
+import { formatDate, formatReward, formatAmount } from '@utils/format-utils';
 import {
-  parseProfile,
-  shortNum,
-  formatDate,
   calculateProgress,
-  formatReward,
-} from '@utils/format-utils';
+  goalFailed,
+  goalReached,
+} from '@utils/solution/solution-utils';
+import { parseProfile } from '@utils/user/user-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -123,7 +123,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         text-decoration: underline;
       }
 
-      .creator-info a {
+      .drafter {
         display: flex;
         align-items: center;
         gap: var(--sl-spacing-small);
@@ -174,6 +174,39 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         --height: 8px;
         --indicator-color: var(--sl-color-primary-600);
         --track-color: var(--sl-color-neutral-300);
+      }
+
+      .goal-reached,
+      .goal-failed {
+        border-radius: var(--sl-border-radius-medium);
+        padding: var(--sl-spacing-medium);
+        width: fit-content;
+      }
+
+      .goal-reached p,
+      .goal-failed p {
+        margin-top: 0;
+      }
+
+      .goal-reached {
+        background-color: var(--sl-color-success-100);
+        border-left: 3px solid var(--sl-color-success-600);
+      }
+
+      .goal-failed {
+        background-color: var(--sl-color-danger-100);
+        border-left: 3px solid var(--sl-color-danger-600);
+      }
+
+      .withdraw-funds-row {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-medium);
+      }
+
+      .withdrawal-status {
+        font-size: var(--sl-font-size-small);
+        color: var(--sl-color-neutral-700);
       }
 
       .user-stake h3,
@@ -266,6 +299,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.fund') fundTransaction!: TransactionWatcher;
   @query('transaction-watcher.remove-stake')
   removeStakeTransaction!: TransactionWatcher;
+  @query('transaction-watcher.withdraw-funds')
+  withdrawFundsTransaction!: TransactionWatcher;
   @query('token-input.stake-input', true) stakeInput!: TokenInput;
   @query('token-input.fund-input', false) fundInput!: TokenInput;
   @query('form.stake-form', true) stakeForm!: HTMLFormElement;
@@ -279,12 +314,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @state() private solution?: Solution;
   @state() private solutionInfo?: SolutionInfo;
   @state() private positionIndex = 0;
-  @state() private goalFailed = false;
-  @state() private goalReached = false;
 
   // State for loading and error handling
   @state() private loaded = false;
   @state() private error: string | null = null;
+  @state() private tokensWithdrawn: bigint = 0n;
 
   // Array to store user positions
   private positions: SolutionPosition[] = [];
@@ -317,20 +351,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         } catch (e) {
           console.error('Error parsing solution info:', e);
         }
-
-        // Check solution status
-        const now = dayjs().unix();
-        const deadline = Number(this.solution.deadline || 0);
-        const fundingGoal = BigInt(this.solution.fundingGoal || '0');
-        const tokensContributed = BigInt(
-          this.solution.tokensContributed || '0'
-        );
-
-        // Goal is reached if tokens contributed >= funding goal
-        this.goalReached = tokensContributed >= fundingGoal;
-
-        // Goal has failed if deadline has passed and goal not reached
-        this.goalFailed = now > deadline && tokensContributed < fundingGoal;
 
         layout.rightSidebarContent.set(html`
           <top-funders
@@ -463,7 +483,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     const id = this.solution!.drafter.id;
     const displayName = profile.name || profile.team || id;
     return html`
-      <a href="/profile/${id}">
+      <a class="drafter" href="/profile/${id}">
         <user-avatar .address=${id} .image=${profile.image}></user-avatar>
         <span>${displayName}</span>
       </a>
@@ -505,18 +525,18 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <p>
             Your contribution:
             <strong>
-              ${shortNum(formatUnits(position.contribution, 18))}
+              ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
           <p>
             Fees earned:
             <strong>
-              ${shortNum(formatUnits(position.feesEarned, 18))}
+              ${formatAmount(position.feesEarned)}
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-          ${this.goalFailed
+          ${goalFailed(this.solution)
             ? html`
                 <p>
                   <strong>Goal Failed:</strong> You can refund your
@@ -549,7 +569,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   private renderSolutionStats() {
     const progress = calculateProgress(this.solution);
     const deadline = formatDate(this.solution!.deadline, 'full');
-    const totalStake = shortNum(formatUnits(this.solution!.stake, 18));
+    const totalStake = formatAmount(this.solution!.stake);
     const fundingTokenSymbol = this.fundInput?.tokenSymbol;
 
     return html`
@@ -562,8 +582,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           ></sl-progress-bar>
           <span
             >🚀 <strong>${progress.toFixed(0)}%</strong> complete
-            (${shortNum(formatUnits(this.solution!.tokensContributed, 18))} /
-            ${shortNum(formatUnits(this.solution!.fundingGoal, 18))}
+            (${formatAmount(this.solution!.tokensContributed)} /
+            ${formatAmount(this.solution!.fundingGoal)}
             ${fundingTokenSymbol})</span
           >
         </div>
@@ -581,6 +601,23 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         <span>🎁 ${formatReward(this.solution!.funderReward)}</span>
       </div>
     `;
+  }
+
+  private get isDrafter() {
+    return (
+      userAddress.get()?.toLowerCase() ===
+      this.solution?.drafter.id.toLowerCase()
+    );
+  }
+
+  private get withdrawalStatus() {
+    if (!this.solution) return '';
+
+    const contributed = this.solution.tokensContributed;
+    const withdrawn = this.tokensWithdrawn;
+    const tokenSymbol = this.fundInput?.tokenSymbol || '';
+
+    return `${formatAmount(withdrawn)} of ${formatAmount(contributed)} ${tokenSymbol} withdrawn`;
   }
 
   private handleFormSubmit(e: Event) {
@@ -719,6 +756,66 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.userStakeTask.run();
   }
 
+  private async handleWithdrawFunds() {
+    try {
+      const solutionContract = new SolutionContract(this.solutionId);
+      this.withdrawFundsTransaction.reset();
+
+      const userAddr = userAddress.get();
+      if (!userAddr) {
+        console.warn('No user address available');
+        modal.open({ view: 'Connect' });
+        return;
+      }
+
+      // Ensure both values are bigint for proper subtraction
+      const tokensContributed = BigInt(this.solution!.tokensContributed || '0');
+      const remainingAmount = tokensContributed - this.tokensWithdrawn;
+
+      // Call withdrawFunds with the user's address and the remaining amount
+      this.withdrawFundsTransaction.hash = await solutionContract.write(
+        'withdrawFunds',
+        [
+          userAddr, // Send funds to the drafter's address
+          remainingAmount,
+        ]
+      );
+    } catch (err) {
+      console.error('Withdraw funds error:', err);
+      if (err instanceof Error && err.message.startsWith('connection')) {
+        modal.open({ view: 'Connect' });
+      }
+    }
+  }
+
+  private handleWithdrawFundsSuccess() {
+    // Refresh solution data after successful withdrawal
+    this.solutionController.refresh();
+    // Also refresh the tokens withdrawn amount
+    this.withdrawnTokensTask.run();
+  }
+
+  private readonly withdrawnTokensTask = new Task(
+    this,
+    async ([solutionId, isDrafter]) => {
+      if (solutionId && isDrafter) {
+        try {
+          const solutionContract = new SolutionContract(solutionId);
+          // Get tokens withdrawn from the contract
+          const withdrawn = (await solutionContract.read(
+            'tokensWithdrawn'
+          )) as bigint;
+          this.tokensWithdrawn = withdrawn;
+          return withdrawn;
+        } catch (error) {
+          console.warn('Error fetching tokens withdrawn:', error);
+        }
+      }
+      return 0n;
+    },
+    () => [this.solutionId, this.isDrafter] as const
+  );
+
   private handleFundSuccess() {
     // Refresh user positions after successful funding
     this.userPositionsTask.run();
@@ -756,6 +853,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       this.loaded = false;
       this.error = null; // Clear previous errors
       this.positions = []; // Clear previous positions
+      this.tokensWithdrawn = 0n; // Reset tokens withdrawn
       this.solutionController.setVariablesAndSubscribe({
         solutionId: this.solutionId,
       });
@@ -779,8 +877,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   >
                 </div>
               </div>
-              ${this.solution?.drafter?.id.toLowerCase() ===
-              userAddress.get()?.toLowerCase()
+              ${this.isDrafter
                 ? html`
                     <sl-button
                       class="edit-button"
@@ -793,8 +890,43 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   `
                 : html``}
             </div>
-            <div class="creator-info">${this.renderDrafter()}</div>
+            ${this.renderDrafter()}
           </div>
+          ${goalReached(this.solution) && this.isDrafter
+            ? html`
+                <div class="goal-reached">
+                  <p>
+                    <strong>Goal Reached!</strong>
+                    As the drafter, you can now withdraw the funds.
+                  </p>
+                  <div class="withdraw-funds-row">
+                    <sl-button
+                      variant="success"
+                      @click=${this.handleWithdrawFunds}
+                    >
+                      Withdraw Funds
+                    </sl-button>
+                    <span class="withdrawal-status"
+                      >${this.withdrawalStatus}</span
+                    >
+                    <transaction-watcher
+                      class="withdraw-funds"
+                      @transaction-success=${this.handleWithdrawFundsSuccess}
+                    ></transaction-watcher>
+                  </div>
+                </div>
+              `
+            : html``}
+          ${goalFailed(this.solution)
+            ? html`
+                <div class="goal-failed">
+                  <p>
+                    <strong>❌ Goal Failed!</strong>
+                    Funders can get a refund and part of the stake.
+                  </p>
+                </div>
+              `
+            : html``}
           <div class="solution-stats">${this.renderSolutionStats()}</div>
           ${this.userStakeTask.render({
             complete: (stake) => {
@@ -807,12 +939,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     <div class="position-details">
                       <p>
                         You staked
-                        <strong>
-                          ${shortNum(formatUnits(stake, 18))} UPD
-                        </strong>
+                        <strong> ${formatAmount(stake)} UPD </strong>
                         in this solution.
                       </p>
-                      ${this.goalReached
+                      ${goalReached(this.solution)
                         ? html`
                             <p>
                               <strong>Goal Reached:</strong> You can now remove
@@ -843,7 +973,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               this.positions.length > 0 ? this.renderPositions() : html``,
           })}
           <div class="action-buttons">
-            ${!this.goalFailed && !this.goalReached
+            ${!goalFailed(this.solution) && !goalReached(this.solution)
               ? html`
                   <form class="stake-form" @submit=${this.handleFormSubmit}>
                     <token-input
@@ -878,7 +1008,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   </form>
                 `
               : html``}
-            ${!this.goalFailed
+            ${!goalFailed(this.solution)
               ? html`
                   <form class="fund-form" @submit=${this.handleFormSubmit}>
                     <token-input

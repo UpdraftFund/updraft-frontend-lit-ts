@@ -12,6 +12,9 @@ import type { SlInput } from '@shoelace-style/shoelace';
 import type { SlDialog } from '@shoelace-style/shoelace';
 
 import type { UpdDialog } from '@components/common/upd-dialog';
+import { ITransactionWatcher } from '@components/common/transaction-watcher';
+
+import { dialogStyles } from '@styles/dialog-styles';
 
 import { updraftSettings } from '@state/common';
 import { getBalance, refreshBalances } from '@state/user/balances';
@@ -23,7 +26,6 @@ import { shortenAddress, shortNum } from '@utils/format-utils';
 import { Upd } from '@contracts/upd';
 import { ERC20 } from '@contracts/erc20';
 import { IContract } from '@contracts/contract';
-import { ITransactionWatcher } from '@components/common/transaction-watcher';
 
 /**
  * Interface for the token-input component.
@@ -134,62 +136,65 @@ export class TokenInput
 
   // ElementInternals for form association
   private internals_: ElementInternals;
-  static styles = css`
-    .input-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+  static styles = [
+    dialogStyles,
+    css`
+      .input-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
 
-    .input-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 1rem;
-    }
+      .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+      }
 
-    .input-row sl-input {
-      flex: none;
-      width: calc(10ch + var(--sl-input-spacing-medium) * 2);
-      box-sizing: content-box;
-    }
+      .input-row sl-input {
+        flex: none;
+        width: calc(10ch + var(--sl-input-spacing-medium) * 2);
+        box-sizing: content-box;
+      }
 
-    .input-row sl-input::part(input) {
-      text-align: right;
-    }
+      .input-row sl-input::part(input) {
+        text-align: right;
+      }
 
-    .input-container .input-row sl-input.invalid::part(base) {
-      border-color: var(--sl-color-danger-500);
-    }
+      .input-container .input-row sl-input.invalid::part(base) {
+        border-color: var(--sl-color-danger-500);
+      }
 
-    .input-container .input-row sl-input.invalid:focus-within::part(base) {
-      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-500);
-    }
+      .input-container .input-row sl-input.invalid:focus-within::part(base) {
+        box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-500);
+      }
 
-    .fee-info {
-      font-size: 0.875rem;
-      color: var(--sl-color-neutral-900);
-      white-space: nowrap;
-      margin-left: 0.5rem;
-    }
+      .fee-info {
+        font-size: 0.875rem;
+        color: var(--sl-color-neutral-900);
+        white-space: nowrap;
+        margin-left: 0.5rem;
+      }
 
-    .error {
-      color: red;
-      font-size: 0.8rem;
-      min-height: 1.2rem; /* Reserve space for error message */
-    }
+      .error {
+        color: red;
+        font-size: 0.8rem;
+        min-height: 1.2rem; /* Reserve space for error message */
+      }
 
-    .error-placeholder {
-      min-height: 1.2rem; /* Same height as error message */
-      visibility: hidden;
-    }
+      .error-placeholder {
+        min-height: 1.2rem; /* Same height as error message */
+        visibility: hidden;
+      }
 
-    .slot-container {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-  `;
+      .slot-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+    `,
+  ];
 
   // Token configuration
   @property() tokenAddress?: `0x${string}`; // Optional direct contract address
@@ -244,7 +249,7 @@ export class TokenInput
           }
         }
       } else {
-        this._symbol = 'UPD';
+        this._symbol = null;
       }
     },
     () => [this.tokenAddress]

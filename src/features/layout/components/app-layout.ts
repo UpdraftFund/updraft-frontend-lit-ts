@@ -50,7 +50,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
     /* The edit-profile and view-profile pages need a wider right sidebar */
     :host([page='edit-profile']) right-side-bar,
     :host([page='view-profile']) right-side-bar {
-      flex: 0 1 600px;
+      flex: 0 1 540px;
     }
 
     /* Responsive layout */

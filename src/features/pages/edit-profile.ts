@@ -5,16 +5,19 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
 import dayjs from 'dayjs';
 
-import pencilSquare from '@icons/user/pencil-square.svg';
-import personCircle from '@icons/user/person-circle.svg';
+// Icons
+import pencilSquare from '@icons/common/pencil-square.svg';
 
+// Styles
 import { dialogStyles } from '@styles/dialog-styles';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import { SlDialog } from '@shoelace-style/shoelace';
 
+// Components
 import '@layout/page-heading';
 import '@components/user/activity-feed';
 import '@components/common/transaction-watcher';
@@ -34,6 +37,7 @@ import {
   formToJson,
 } from '@components/common/saveable-form';
 
+// State
 import layout from '@state/layout';
 import { defaultFunderReward } from '@state/common';
 import {
@@ -46,13 +50,17 @@ import {
 } from '@state/user';
 import { updraftSettings } from '@state/common';
 import { markComplete } from '@state/user/beginner-tasks';
+
+// Utilities
 import { capitalize } from '@utils/format-utils';
 
+// Schemas
 import ideaSchema from '@schemas/idea-schema.json';
 import solutionSchema from '@schemas/solution-schema.json';
 import profileSchema from '@schemas/profile-schema.json';
 import { Profile } from '@/types/user/profile';
 
+// Contracts
 import { updraft } from '@contracts/updraft';
 
 @customElement('edit-profile')
@@ -75,6 +83,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         color: var(--main-foreground);
       }
 
+      user-avatar {
+        --avatar-size: 64px;
+      }
+
       .avatar {
         position: relative;
         background: var(--main-background);
@@ -89,18 +101,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
 
       .avatar:hover {
         background: var(--control-background);
-      }
-
-      .avatar img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-      }
-
-      .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        color: var(--sl-color-neutral-600);
       }
 
       .avatar .edit-icon {
@@ -402,15 +402,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         @input=${this.handleInput}
       >
         <label class="avatar">
-          ${avatar
-            ? html` <img src=${avatar} alt="User avatar" /> `
-            : html`
-                <sl-icon
-                  class="avatar-placeholder"
-                  src=${personCircle}
-                  label="Avatar placeholder"
-                ></sl-icon>
-              `}
+          <user-avatar
+            .address=${userAddress.get()}
+            .image=${avatar}
+          ></user-avatar>
           <input
             type="file"
             accept="image/*"

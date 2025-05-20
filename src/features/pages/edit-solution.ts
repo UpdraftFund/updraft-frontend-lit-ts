@@ -23,8 +23,10 @@ import '@components/common/token-input';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 
 // Utilities
+import { formatAmount } from '@utils/format-utils';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { modal } from '@utils/web3';
+import { goalReached } from '@utils/solution/solution-utils';
 
 // GraphQL
 import { SolutionDocument } from '@gql';
@@ -46,7 +48,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
     }
 
     h2 {
-      margin: 0rem 0;
+      margin: 0;
     }
 
     form {
@@ -237,13 +239,6 @@ export class EditSolution extends SignalWatcher(LitElement) {
     );
   }
 
-  public get isGoalReached() {
-    if (this.solution) {
-      return this.solution.tokensContributed >= this.solution.fundingGoal;
-    }
-    return false;
-  }
-
   connectedCallback() {
     super.connectedCallback();
     layout.showLeftSidebar.set(true);
@@ -311,7 +306,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
               `
             : html`
                 <form name="edit-solution" @submit=${this.handleFormSubmit}>
-                  ${this.isGoalReached
+                  ${goalReached(this.solution)
                     ? html`
                         <h2>Extend Goal and Deadline</h2>
                         <sl-input
@@ -322,14 +317,14 @@ export class EditSolution extends SignalWatcher(LitElement) {
                                 formatUnits(this.solution.fundingGoal + 1n, 18)
                               )
                             : 0}"
+                          step="any"
                           required
                         >
                           <label-with-hint
                             slot="label"
                             label="New Funding Goal*"
-                            hint="Must be higher than the previous goal of ${formatUnits(
-                              this.solution?.fundingGoal,
-                              18
+                            hint="Must be higher than the previous goal of ${formatAmount(
+                              this.solution?.fundingGoal
                             )} ${this.tokenSymbol}"
                           ></label-with-hint>
                         </sl-input>
@@ -389,7 +384,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                     ></label-with-hint>
                   </sl-textarea>
 
-                  ${this.isGoalReached
+                  ${goalReached(this.solution)
                     ? html`
                         <sl-button
                           variant="primary"

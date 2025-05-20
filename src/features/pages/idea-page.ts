@@ -4,18 +4,21 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
 import { Task } from '@lit/task';
 
-import { fromHex, formatUnits, parseUnits } from 'viem';
+import { fromHex, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
+// Icons
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 import plusLgIcon from '@icons/navigation/plus-lg.svg';
 
+// Styles
 import { dialogStyles } from '@styles/dialog-styles';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
@@ -24,6 +27,7 @@ import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
 import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import { SlDialog, SlCheckbox } from '@shoelace-style/shoelace';
 
+// Components
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
 import '@components/idea/top-supporters';
@@ -33,23 +37,31 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
-import { formatDate, shortNum } from '@utils/format-utils';
+// Utils
+import { formatAmount, formatDate } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
+// GraphQL
 import { Idea, IdeaDocument } from '@gql';
-import { IdeaContract } from '@contracts/idea';
+
+// Types
 import type { IdeaPosition } from '@/features/idea/types';
 
+// State
 import { updraftSettings } from '@state/common';
 import layout from '@state/layout';
 import { markComplete } from '@state/user/beginner-tasks';
 import { userAddress } from '@state/user';
+
+// Contracts
+import { IdeaContract } from '@contracts/idea';
 
 @customElement('idea-page')
 export class IdeaPage extends SignalWatcher(LitElement) {
@@ -84,6 +96,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       .heading {
         font-size: 2rem;
         margin-bottom: 0;
+      }
+      .creator {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-small);
+        width: fit-content;
       }
       .created {
         font-size: 0.9rem;
@@ -183,7 +201,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         display: flex;
         gap: 1rem;
         align-items: center;
-        margin: 1rem 0 0;
+        margin: 1rem 0;
       }
       .solutions-header h2 {
         margin: 0;
@@ -209,7 +227,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   @query('token-input', true) tokenInput!: TokenInput;
   @query('sl-checkbox', true) airdropCheckbox!: SlCheckbox;
 
-  // supportValue is now handled by UpdTransactionMixin as updValue
   @state() private idea?: Idea;
   @state() private error: string | null = null;
   @state() private loaded: boolean = false;
@@ -429,11 +446,18 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const profile = JSON.parse(
         fromHex(creator.profile as `0x${string}`, 'string')
       );
-      const interest = shortNum(formatUnits(shares, 18));
+
+      const displayName = profile.name || profile.team || creator.id;
 
       return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
-        <a href="/profile/${creator.id}">by ${profile.name || creator.id}</a>
+        <a class="creator" href="/profile/${creator.id}">
+          <user-avatar
+            .address=${creator.id}
+            .image=${profile.image}
+          ></user-avatar>
+          <span>${displayName}</span>
+        </a>
         <span class="created"> Created ${formatDate(startTime, 'full')} </span>
         <div class="idea-info">
           ${pctFunderReward
@@ -441,7 +465,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 <span> 🎁 ${pctFunderReward.toFixed(0)}% funder reward </span>
               `
             : html``}
-          <span>🔥 ${interest}</span>
+          <span>🔥 ${formatAmount(shares)}</span>
         </div>
         <div class="description-tags">
           <h3>Description</h3>
@@ -493,23 +517,17 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                     <p>
                       Your original contribution:
                       <strong>
-                        ${shortNum(
-                          formatUnits(position.originalContribution, 18)
-                        )}
-                        UPD
+                        ${formatAmount(position.originalContribution)} UPD
                       </strong>
                     </p>
                     <p>
                       Your earnings so far:
-                      <strong>
-                        ${shortNum(formatUnits(position.earnings, 18))} UPD
-                      </strong>
+                      <strong> ${formatAmount(position.earnings)} UPD </strong>
                     </p>
                     <p>
                       Withdrawable amount:
                       <strong>
-                        ${shortNum(formatUnits(position.currentPosition, 18))}
-                        UPD
+                        ${formatAmount(position.currentPosition)} UPD
                       </strong>
                     </p>
                     <sl-button variant="primary" @click=${this.handleWithdraw}>

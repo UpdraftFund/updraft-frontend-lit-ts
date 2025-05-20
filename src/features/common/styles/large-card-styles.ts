@@ -1,15 +1,9 @@
 import { css } from 'lit';
 
 export const largeCardStyles = css`
-  :host {
-    display: block;
-    color: var(--main-foreground);
-  }
-
   .card {
-    background-color: var(--sl-color-neutral-0);
     overflow: hidden;
-    padding: 1.5rem 0;
+    padding: 1rem 0 0.5rem;
     width: 100%;
     border-bottom: 1px solid var(--border-default);
   }

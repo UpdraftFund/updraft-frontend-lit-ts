@@ -12,13 +12,12 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
+import '@components/solution/solution-details-bar';
+
+import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
+import { goalFailed } from '@utils/solution/solution-utils';
+
 import { Activity, SolutionInfo } from '@/types';
-import {
-  formatReward,
-  calculateProgress,
-  formatAmount,
-  formatDate,
-} from '@utils/format-utils';
 
 @customElement('activity-card')
 export class ActivityCard extends LitElement {
@@ -31,21 +30,19 @@ export class ActivityCard extends LitElement {
     .action-time {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       width: 100%;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .action {
       font-weight: 500;
-      font-size: 1.125rem;
-      line-height: 1.44em;
+      font-size: 1rem;
       color: var(--sl-color-neutral-900);
     }
 
     .time {
       font-size: 0.875rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
     }
 
     .entity {
@@ -98,7 +95,6 @@ export class ActivityCard extends LitElement {
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      gap: 0.75rem;
       margin-top: 1rem;
     }
 
@@ -173,7 +169,7 @@ export class ActivityCard extends LitElement {
       case 'ideaFunded':
         return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a solution with ${formatAmount(this.activity.contribution)} UPD`;
+        return `${this.userName} funded a solution with ${formatAmount(this.activity.contribution)}`;
       case 'solutionDrafted':
         return `${this.userName} drafted a solution`;
       default:
@@ -187,17 +183,6 @@ export class ActivityCard extends LitElement {
     } else {
       return this.solutionInfo?.description;
     }
-  }
-
-  private formatDeadline(timestamp: number) {
-    const now = dayjs();
-    const deadline = dayjs(timestamp * 1000);
-
-    let deadlineString = deadline.fromNow();
-    if (deadline.isBefore(now)) {
-      deadlineString = `❌ ${deadlineString}`;
-    }
-    return deadlineString;
   }
 
   private renderEntity() {
@@ -218,13 +203,19 @@ export class ActivityCard extends LitElement {
   }
 
   private renderFundButton() {
-    let href, text;
+    let href, text, solution;
     if (this.activity.type === 'ideaFunded') {
       href = `/idea/${this.activity.idea.id}`;
     } else if (this.activity.type === 'solutionFunded') {
-      href = `/solution/${this.activity.solution.id}`;
+      solution = this.activity.solution;
+      href = `/solution/${solution.id}`;
     } else if (this.activity.type === 'solutionDrafted') {
-      href = `/solution/${this.activity.id}`;
+      solution = this.activity;
+      href = `/solution/${solution.id}`;
+    }
+
+    if (solution && goalFailed(solution)) {
+      return html``;
     }
 
     if (this.activity.type === 'ideaFunded') {
@@ -262,44 +253,14 @@ export class ActivityCard extends LitElement {
       let solution;
       if (this.activity.type === 'solutionFunded') {
         solution = this.activity.solution;
-      } else if (this.activity.type == 'solutionDrafted') {
+      } else {
+        // this.activity.type == 'solutionDrafted'
         solution = this.activity;
       }
 
-      const progress = calculateProgress(solution);
-      const isCompleted = progress >= 100;
-
-      return html`
-        <div class="details-bar">
-          <div class="goal">
-            <sl-progress-bar value="${progress}"></sl-progress-bar>
-            <div class="goal-text">
-              ${formatAmount(solution?.tokensContributed)} out of
-              ${formatAmount(solution?.fundingGoal)} UPD
-            </div>
-          </div>
-          ${isCompleted
-            ? html` <sl-badge variant="success" pill
-                ><span class="emoji">🥳</span>Funded
-              </sl-badge>`
-            : ''}
-          <span class="emoji-badge"
-            ><span class="emoji">⏰</span> ${this.formatDeadline(
-              solution?.deadline
-            )}</span
-          >
-          <span class="emoji-badge"
-            ><span class="emoji">💎</span> ${formatAmount(
-              solution?.stake
-            )}</span
-          >
-          <span class="emoji-badge"
-            ><span class="emoji">🎁</span> ${formatReward(
-              solution?.funderReward
-            )}</span
-          >
-        </div>
-      `;
+      return html` <solution-details-bar
+        .solution=${solution}
+      ></solution-details-bar>`;
     }
   }
 
