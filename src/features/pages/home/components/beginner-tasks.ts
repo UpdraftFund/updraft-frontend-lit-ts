@@ -2,13 +2,19 @@ import { customElement, query } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/button/button';
 
+// Components
 import '@components/common/upd-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
 
+// State
 import { allTasksComplete, isComplete } from '@state/user/beginner-tasks.ts';
+
+// Utils
+import { modal } from '@utils/web3.ts';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
@@ -42,6 +48,19 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
     sl-card::part(body) {
       height: 100%;
     }
+
+    /* Task card with image styles */
+    sl-card img {
+      float: right;
+      width: 125px;
+      height: auto;
+      margin: 0 0 8px 16px;
+    }
+
+    /* Clear float before footer */
+    .clear-float {
+      clear: both;
+    }
   `;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
@@ -57,63 +76,113 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             ? html``
             : html`
                 <sl-card>
+                  <img
+                    src="/src/features/pages/home/assets/images/follow-user.png"
+                    alt="Follow user illustration"
+                  />
                   <h3>Follow Someone</h3>
                   <p>
                     A great way to learn is by watching another user. You can
-                    see a user's activity on their profile page. Go to Adam's
-                    profile and follow him from there.
+                    see a user's activity on their profile page.
+                  <p> Go to
+                    <a
+                      href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+                    >Adam's profile</a
+                    >
+                    and follow him.
                   </p>
-                  <sl-button slot="footer" variant="primary"
-                    >Adam's profile</sl-button
-                  >
+                  </p>
+                  <div class="clear-float"></div>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+                  >Adam's profile
+                  </sl-button>
                 </sl-card>
               `}
           ${isComplete('watch-tag')
             ? html``
             : html`
-                <sl-card>
-                  <h3>Watch a Tag</h3>
-                  <p>
-                    Stay up to date on the latest activity from a project, DAO,
-                    investor, builder, or topic. Search for the [updraft] tag
-                    and watch it.
+              <sl-card>
+                <img
+                  src="/src/features/pages/home/assets/images/watch-tag.png"
+                  alt="Watch tag illustration"
+                />
+                <h3>Watch a Tag</h3>
+                <p>
+                  Stay up to date on the latest activity from a project, DAO,
+                  investor, builder, or topic.
+                <p>
+                    <a href="/discover?search=[updraft]"
+                    >Search for the updraft tag</a> and watch it.
                   </p>
-                  <sl-button slot="footer" variant="primary"
-                    >Search for [updraft]</sl-button
-                  >
-                </sl-card>
-              `}
+                </p>
+                <div class="clear-float"></div>
+                <sl-button
+                  slot="footer"
+                  variant="primary"
+                  href="/discover?search=[updraft]"
+                >Search for [updraft]
+                </sl-button
+                >
+              </sl-card>
+            `}
           ${isComplete('connect-wallet')
             ? html``
             : html`
                 <sl-card>
+                  <img
+                    src="/src/features/pages/home/assets/images/connect-wallet.png"
+                    alt="Connect wallet illustration"
+                  />
                   <h3>Connect a Wallet</h3>
                   <p>
-                    Funding happens through an Ethereum wallet. Choose a wallet
-                    provider, install it, then click "Connect Wallet"
+                    Funding happens through a wallet. Choose a wallet provider,
+                    install it, then click "Connect Wallet"
                   </p>
-                  <p>⬩Enkrypt ⬩Frame ⬩Metamask ⬩MEW ⬩Rabby</p>
-                  <sl-button slot="footer" variant="primary"
-                    >Connect Wallet</sl-button
-                  >
+                  <p>
+                    ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a>
+                    ⬩<a href="https://frame.sh" target="_blank">Frame</a> ⬩<a
+                      href="https://metamask.io/download"
+                      target="_blank"
+                      >Metamask</a
+                    >
+                    ⬩<a href="https://rabby.io/" target="_blank">Rabby</a>
+                  </p>
+                  <div class="clear-float"></div>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    @click=${() => {
+                      modal.open({ view: 'Connect' });
+                    }}
+                    >Connect Wallet
+                  </sl-button>
                 </sl-card>
               `}
           ${isComplete('get-upd')
             ? html``
             : html`
                 <sl-card>
+                  <img
+                    src="/src/features/pages/home/assets/images/get-upd.png"
+                    alt="Get UPD illustration"
+                  />
                   <h3>Get UPD🪁</h3>
                   <p>
                     UPD is the Updraft token, and it's used in a lot of places.
-                    You'll need at least 5 UPD to complete the rest of the
-                    tasks. Swap some ETH for UPD.
+                  <p>
+                    You'll need at least 5 UPD to complete the rest of the tasks.
                   </p>
+                  </p>
+                  <div class="clear-float"></div>
                   <sl-button
                     slot="footer"
                     variant="primary"
                     @click=${() => this.updDialog.show()}
-                    >Get UPD</sl-button
-                  >
+                  >Get UPD
+                  </sl-button>
                   <upd-dialog></upd-dialog>
                 </sl-card>
               `}
@@ -121,48 +190,69 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             ? html``
             : html`
                 <sl-card>
+                  <img
+                    src="/src/features/pages/home/assets/images/support-idea.png"
+                    alt="Support idea illustration"
+                  />
                   <h3>Support an Idea</h3>
                   <p>
                     You can earn UPD by supporting a popular idea. The more you
                     deposit, the more you stand to earn. Find an Idea and
                     support it with UPD.
                   </p>
-                  <sl-button slot="footer" variant="primary"
-                    >Go to "Example" Idea</sl-button
-                  >
+                  <div class="clear-float"></div>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/idea/0xaff2df5502bf27b4338403c37415b643048d1c68"
+                    >Go to "Build Updraft" Idea
+                  </sl-button>
                 </sl-card>
               `}
           ${isComplete('fund-solution')
             ? html``
             : html`
                 <sl-card>
+                  <img
+                    src="/src/features/pages/home/assets/images/fund-solution.png"
+                    alt="Fund solution illustration"
+                  />
                   <h3>Fund a Solution</h3>
                   <p>
                     Every Idea needs a Solution. A great team and execution can
                     change the world. Fund a Solution you love and earn a reward
                     if others feel the same way.
                   </p>
-                  <sl-button slot="footer" variant="primary"
-                    >Go to "Example" Solution</sl-button
-                  >
+                  <div class="clear-float"></div>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/solution/0xdb07e23c068b672079eb3977f1e5dc4c1ae214d8"
+                    >Go to "Build Updraft" Solution
+                  </sl-button>
                 </sl-card>
               `}
           ${isComplete('create-profile')
             ? html``
             : html`
                 <sl-card>
+                  <img
+                    src="/src/features/pages/home/assets/images/create-profile.png"
+                    alt="Create profile illustration"
+                  />
                   <h3>Create a Profile</h3>
                   <p>
                     You're nearing the end of your beginner's journey. Soon
                     others will follow and learn from you. Create a profile so
                     they can see what you're up to and follow your lead.
                   </p>
+                  <div class="clear-float"></div>
                   <sl-button
                     slot="footer"
                     variant="primary"
                     href="/edit-profile"
-                    >Go to Your Profile</sl-button
-                  >
+                    >Go to Your Profile
+                  </sl-button>
                 </sl-card>
               `}
         </section>
