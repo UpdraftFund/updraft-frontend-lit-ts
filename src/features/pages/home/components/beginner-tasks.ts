@@ -2,6 +2,15 @@ import { customElement, query } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
+// Images
+import followUser from '@images/home/follow-user.png';
+import watchTag from '@images/home/watch-tag.png';
+import connectWallet from '@images/home/connect-wallet.png';
+import getUpd from '@images/home/get-upd.png';
+import supportIdea from '@images/home/support-idea.png';
+import fundSolution from '@images/home/fund-solution.png';
+import createProfile from '@images/home/create-profile.png';
+
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/button/button';
@@ -77,7 +86,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             : html`
                 <sl-card>
                   <img
-                    src="/src/features/pages/home/assets/images/follow-user.png"
+                    src=${followUser}
                     alt="Follow user illustration"
                   />
                   <h3>Follow Someone</h3>
@@ -106,7 +115,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             : html`
               <sl-card>
                 <img
-                  src="/src/features/pages/home/assets/images/watch-tag.png"
+                  src=${watchTag}
                   alt="Watch tag illustration"
                 />
                 <h3>Watch a Tag</h3>
@@ -132,10 +141,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             ? html``
             : html`
                 <sl-card>
-                  <img
-                    src="/src/features/pages/home/assets/images/connect-wallet.png"
-                    alt="Connect wallet illustration"
-                  />
+                  <img src=${connectWallet} alt="Connect wallet illustration" />
                   <h3>Connect a Wallet</h3>
                   <p>
                     Funding happens through a wallet. Choose a wallet provider,
@@ -166,7 +172,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             : html`
                 <sl-card>
                   <img
-                    src="/src/features/pages/home/assets/images/get-upd.png"
+                    src=${getUpd}
                     alt="Get UPD illustration"
                   />
                   <h3>Get UPD🪁</h3>
@@ -190,10 +196,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             ? html``
             : html`
                 <sl-card>
-                  <img
-                    src="/src/features/pages/home/assets/images/support-idea.png"
-                    alt="Support idea illustration"
-                  />
+                  <img src=${supportIdea} alt="Support idea illustration" />
                   <h3>Support an Idea</h3>
                   <p>
                     You can earn UPD by supporting a popular idea. The more you
@@ -213,10 +216,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             ? html``
             : html`
                 <sl-card>
-                  <img
-                    src="/src/features/pages/home/assets/images/fund-solution.png"
-                    alt="Fund solution illustration"
-                  />
+                  <img src=${fundSolution} alt="Fund solution illustration" />
                   <h3>Fund a Solution</h3>
                   <p>
                     Every Idea needs a Solution. A great team and execution can
@@ -236,10 +236,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             ? html``
             : html`
                 <sl-card>
-                  <img
-                    src="/src/features/pages/home/assets/images/create-profile.png"
-                    alt="Create profile illustration"
-                  />
+                  <img src=${createProfile} alt="Create profile illustration" />
                   <h3>Create a Profile</h3>
                   <p>
                     You're nearing the end of your beginner's journey. Soon
