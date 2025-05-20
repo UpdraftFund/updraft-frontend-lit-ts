@@ -249,7 +249,7 @@ export class TokenInput
           }
         }
       } else {
-        this._symbol = null;
+        this._symbol = 'UPD';
       }
     },
     () => [this.tokenAddress]
