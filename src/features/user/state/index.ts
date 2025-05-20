@@ -232,16 +232,16 @@ watchAccount(config, {
         setUserAddress(newAddress);
         // Profile fetch is now handled within setUserAddress
       }
+      // Mark the 'connect-wallet' beginner task as complete
+      markComplete('connect-wallet');
+
+      refreshBalances();
     }
     // Do NOT clear address/profile if newAddress is null (wallet locked)
     // Only clear on explicit disconnect (handled in disconnectWallet)
 
     // Update connection status flags
     setIsConnecting(account.isConnecting);
-    refreshBalances();
-
-    // Mark the 'connect-wallet' beginner task as complete
-    markComplete('connect-wallet');
   },
 });
 
