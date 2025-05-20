@@ -40,7 +40,6 @@ export const isComplete = (taskId: BeginnerTask) => {
 
 export const reset = (): void => {
   completedTasks.set(new Set());
-
   try {
     localStorage.removeItem('completedTasks');
   } catch (error) {
