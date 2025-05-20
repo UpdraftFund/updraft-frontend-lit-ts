@@ -208,7 +208,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     slot="footer"
                     variant="primary"
                     href="/idea/0xaff2df5502bf27b4338403c37415b643048d1c68"
-                    >Go to "Build Updraft" Idea
+                    >"Build Updraft" Idea
                   </sl-button>
                 </sl-card>
               `}
@@ -228,7 +228,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     slot="footer"
                     variant="primary"
                     href="/solution/0xdb07e23c068b672079eb3977f1e5dc4c1ae214d8"
-                    >Go to "Build Updraft" Solution
+                    >"Build Updraft" Solution
                   </sl-button>
                 </sl-card>
               `}
