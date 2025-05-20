@@ -3,12 +3,14 @@ import { css, html, LitElement } from 'lit';
 
 import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
+// Icons
 import linkIcon from '@icons/link-45deg.svg';
 import xIcon from '@icons/common/twitter-x.svg';
 import warpcastIcon from '@icons/common/farcaster.svg';
 import share from '@icons/common/share.svg';
 import shareThisImage from '@images/share-this-140.png';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
