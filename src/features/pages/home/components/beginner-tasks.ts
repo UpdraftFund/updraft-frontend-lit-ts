@@ -2,13 +2,19 @@ import { customElement, query } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
+// Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/button/button';
 
+// Components
 import '@components/common/upd-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
 
+// State
 import { allTasksComplete, isComplete } from '@state/user/beginner-tasks.ts';
+
+// Utils
+import { modal } from '@utils/web3.ts';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
@@ -60,10 +66,17 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <h3>Follow Someone</h3>
                   <p>
                     A great way to learn is by watching another user. You can
-                    see a user's activity on their profile page. Go to Adam's
-                    profile and follow him from there.
+                    see a user's activity on their profile page. Go to
+                    <a
+                      href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+                      >Adam's profile</a
+                    >
+                    and follow him from there.
                   </p>
-                  <sl-button slot="footer" variant="primary"
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
                     >Adam's profile</sl-button
                   >
                 </sl-card>
@@ -75,10 +88,16 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <h3>Watch a Tag</h3>
                   <p>
                     Stay up to date on the latest activity from a project, DAO,
-                    investor, builder, or topic. Search for the [updraft] tag
+                    investor, builder, or topic.
+                    <a href="/discover?search=[updraft]"
+                      >Search for the updraft tag</a
+                    >
                     and watch it.
                   </p>
-                  <sl-button slot="footer" variant="primary"
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/discover?search=[updraft]"
                     >Search for [updraft]</sl-button
                   >
                 </sl-card>
@@ -92,8 +111,21 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     Funding happens through an Ethereum wallet. Choose a wallet
                     provider, install it, then click "Connect Wallet"
                   </p>
-                  <p>⬩Enkrypt ⬩Frame ⬩Metamask ⬩MEW ⬩Rabby</p>
-                  <sl-button slot="footer" variant="primary"
+                  <p>
+                    ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a>
+                    ⬩<a href="https://frame.sh" target="_blank">Frame</a> ⬩<a
+                      href="https://metamask.io/download"
+                      target="_blank"
+                      >Metamask</a
+                    >
+                    ⬩<a href="https://rabby.io/" target="_blank">Rabby</a>
+                  </p>
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    @click=${() => {
+                      modal.open({ view: 'Connect' });
+                    }}
                     >Connect Wallet</sl-button
                   >
                 </sl-card>
@@ -106,7 +138,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <p>
                     UPD is the Updraft token, and it's used in a lot of places.
                     You'll need at least 5 UPD to complete the rest of the
-                    tasks. Swap some ETH for UPD.
+                    tasks.
                   </p>
                   <sl-button
                     slot="footer"
@@ -127,9 +159,12 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     deposit, the more you stand to earn. Find an Idea and
                     support it with UPD.
                   </p>
-                  <sl-button slot="footer" variant="primary"
-                    >Go to "Example" Idea</sl-button
-                  >
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/idea/0xaff2df5502bf27b4338403c37415b643048d1c68"
+                    >Go to "Build Updraft" Idea
+                  </sl-button>
                 </sl-card>
               `}
           ${isComplete('fund-solution')
@@ -142,9 +177,12 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     change the world. Fund a Solution you love and earn a reward
                     if others feel the same way.
                   </p>
-                  <sl-button slot="footer" variant="primary"
-                    >Go to "Example" Solution</sl-button
-                  >
+                  <sl-button
+                    slot="footer"
+                    variant="primary"
+                    href="/solution/0xdb07e23c068b672079eb3977f1e5dc4c1ae214d8"
+                    >Go to "Build Updraft" Solution
+                  </sl-button>
                 </sl-card>
               `}
           ${isComplete('create-profile')
