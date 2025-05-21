@@ -53,10 +53,6 @@ export class LeftNav extends SignalWatcher(LitElement) {
     }
 
     @media (max-width: 1024px) and (min-width: 769px) {
-      .location {
-        display: none;
-      }
-
       a {
         justify-content: center;
       }

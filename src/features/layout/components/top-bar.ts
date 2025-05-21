@@ -29,37 +29,61 @@ export class TopBar extends SignalWatcher(LitElement) {
     a {
       line-height: 0;
     }
-    img {
+    .logo-button img {
       border-radius: 50%;
     }
     .menu-button {
       display: none;
-    }
-    @media (max-width: 768px) {
-      .menu-button {
-        display: block;
-        margin-right: 8px;
-      }
     }
     sl-icon-button {
       color: var(--main-foreground);
       font-size: 1.5rem;
     }
     .content {
-      flex: 1;
       display: flex;
+      flex: 1;
       align-items: center;
       justify-content: center;
       gap: 2rem;
       overflow: clip;
-      min-width: 0;
     }
     .content div {
       display: flex;
+      flex: 1;
       align-items: center;
+    }
+    /* allow tabs and search combo div to be centered by providing a max width */
+    .tabs-and-search {
+      max-width: calc(412px + 450px);
     }
     page-heading a {
       font-size: 1rem;
+    }
+    @media (max-width: 860px) {
+      :host {
+        padding: 0 1rem;
+        gap: 1rem;
+      }
+      .content {
+        justify-content: flex-start;
+        gap: 1rem;
+      }
+    }
+    @media (max-width: 768px) {
+      .menu-button {
+        display: block;
+      }
+      .logo-button {
+        display: none;
+      }
+      :host {
+        padding: 0 0.5rem;
+        gap: 0.5rem;
+      }
+      .content {
+        justify-content: flex-start;
+        gap: 0.5rem;
+      }
     }
   `;
 
@@ -71,7 +95,7 @@ export class TopBar extends SignalWatcher(LitElement) {
         label="Menu"
         @click=${toggleLeftSidebar}
       ></sl-icon-button>
-      <a href="/" title="Updraft Home">
+      <a href="/" title="Updraft Home" class="logo-button">
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
       <div class="content">${topBarContent.get()}</div>
