@@ -20,8 +20,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     :host {
       display: flex;
       flex-direction: column;
-      background: var(--main-background);
-      border-radius: 0;
       border-right: 1px solid var(--border-default);
       overflow: hidden;
       padding: 0 1rem;
@@ -37,37 +35,55 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       width: 64px;
       padding: 0;
       flex-basis: 64px !important;
-      box-sizing: border-box;
     }
 
-    .toggle-button {
-      position: absolute;
-      top: 1rem;
-      right: -12px;
-      z-index: 10;
-      background: var(--main-background);
-      border: 1px solid var(--subtle-background);
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
+    /* Toggle container for collapsed state */
+    .collapsed-toggle {
+      display: none;
       justify-content: center;
-      cursor: pointer;
-      transition: transform 0.3s ease;
+      padding: 1rem 0 0;
     }
 
-    .toggle-button:hover {
-      transform: scale(1.1);
+    :host([collapsed]) .collapsed-toggle {
+      display: flex;
     }
 
-    :host([collapsed]) .toggle-button {
-      right: -12px;
+    /* For the inline toggle when expanded */
+    .inline-toggle {
+      display: none;
+      position: absolute;
+      top: 0.75rem;
+      right: 0.5rem;
+      z-index: 2;
+    }
+
+    :host(:not([collapsed])) .inline-toggle {
+      display: block;
+    }
+
+    sl-icon-button {
+      font-size: 1rem;
+      border: 1px solid var(--main-foreground);
+      border-radius: 50%;
+      background: var(--subtle-background);
+      color: var(--main-foreground);
+    }
+
+    sl-icon-button::part(base) {
+      padding: 0.25rem;
+    }
+
+    sl-icon-button:hover {
+      transform: scale(1.2);
     }
 
     :host([collapsed]) my-ideas,
     :host([collapsed]) my-solutions {
       display: none;
+    }
+
+    left-nav {
+      position: relative;
     }
 
     /* Tablet breakpoint - auto-collapse sidebar but allow manual expansion */
@@ -128,8 +144,8 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
         display: block;
       }
 
-      .toggle-button {
-        display: none; /* Hide the toggle button on mobile, we'll use the top bar button instead */
+      :host([collapsed]) .collapsed-toggle {
+        display: none; /* Hide in mobile collapsed mode as we use the top bar button */
       }
     }
 
@@ -189,12 +205,24 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     this.expanded = !this.collapsed;
     const address = userAddress.get();
     return html`
-      <div class="toggle-button" @click=${this.handleToggle}>
-        <sl-icon
-          src=${this.collapsed ? chevronRight : chevronLeft}
-          label="Toggle sidebar"
-        ></sl-icon>
+      <!-- Toggle button that shows when collapsed (centered at top) -->
+      <div class="collapsed-toggle">
+        <sl-icon-button
+          src=${chevronRight}
+          label="Expand sidebar"
+          @click=${this.handleToggle}
+        ></sl-icon-button>
       </div>
+
+      <!-- Toggle button that shows inline with first nav item when expanded -->
+      <div class="inline-toggle">
+        <sl-icon-button
+          src=${chevronLeft}
+          label="Collapse sidebar"
+          @click=${this.handleToggle}
+        ></sl-icon-button>
+      </div>
+
       <left-nav></left-nav>
       <my-ideas .address=${address}></my-ideas>
       <my-solutions .address=${address}></my-solutions>
