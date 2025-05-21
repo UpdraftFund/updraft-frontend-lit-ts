@@ -35,15 +35,6 @@ export class TopBar extends SignalWatcher(LitElement) {
     .menu-button {
       display: none;
     }
-    @media (max-width: 768px) {
-      .menu-button {
-        display: block;
-        margin-right: 8px;
-      }
-      .logo-button {
-        display: none;
-      }
-    }
     sl-icon-button {
       color: var(--main-foreground);
       font-size: 1.5rem;
@@ -63,6 +54,22 @@ export class TopBar extends SignalWatcher(LitElement) {
     }
     page-heading a {
       font-size: 1rem;
+    }
+    @media (max-width: 768px) {
+      .menu-button {
+        display: block;
+      }
+      .logo-button {
+        display: none;
+      }
+      :host {
+        padding: 0 0.5rem;
+        gap: 0.5rem;
+      }
+      .content {
+        justify-content: flex-start;
+        gap: 0.5rem;
+      }
     }
   `;
 
