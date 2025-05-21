@@ -327,7 +327,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     this.setTabFromUrl();
     layout.topBarContent.set(html`
       <create-idea-button></create-idea-button>
-      <div>
+      <div style="max-width: calc(412px + 450px)">
         <discover-tabs .tab=${this.tab}></discover-tabs>
         <search-bar .search=${this.search}></search-bar>
       </div>
