@@ -52,7 +52,7 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     .inline-toggle {
       display: none;
       position: absolute;
-      top: 0.75rem;
+      top: 0.5rem;
       right: 0.5rem;
       z-index: 2;
     }
