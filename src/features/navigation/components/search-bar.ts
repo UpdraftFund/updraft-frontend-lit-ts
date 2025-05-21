@@ -16,7 +16,18 @@ export class SearchBar extends LitElement {
     }
 
     form {
-      flex: 1;
+      flex: 1 0 90px;
+      width: 90px;
+    }
+
+    @media (max-width: 470px) {
+      sl-icon {
+        display: none;
+      }
+      sl-input::part(input) {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
     }
   `;
 
