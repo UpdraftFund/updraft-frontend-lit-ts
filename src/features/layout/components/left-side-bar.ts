@@ -22,7 +22,7 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       flex-direction: column;
       background: var(--main-background);
       border-radius: 0;
-      border-right: 1px solid var(--subtle-background);
+      border-right: 1px solid var(--border-default);
       overflow: hidden;
       padding: 0 1rem;
       transition:
