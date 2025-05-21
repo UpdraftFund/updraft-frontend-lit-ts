@@ -29,7 +29,7 @@ export class TopBar extends SignalWatcher(LitElement) {
     a {
       line-height: 0;
     }
-    img {
+    .logo-button img {
       border-radius: 50%;
     }
     .menu-button {
@@ -39,6 +39,9 @@ export class TopBar extends SignalWatcher(LitElement) {
       .menu-button {
         display: block;
         margin-right: 8px;
+      }
+      .logo-button {
+        display: none;
       }
     }
     sl-icon-button {
@@ -71,7 +74,7 @@ export class TopBar extends SignalWatcher(LitElement) {
         label="Menu"
         @click=${toggleLeftSidebar}
       ></sl-icon-button>
-      <a href="/" title="Updraft Home">
+      <a href="/" title="Updraft Home" class="logo-button">
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>
       <div class="content">${topBarContent.get()}</div>
