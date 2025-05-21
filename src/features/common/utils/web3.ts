@@ -34,7 +34,6 @@ export const modal = createAppKit({
   networks,
   metadata,
   projectId,
-  themeMode: 'light',
   themeVariables: {
     '--w3m-accent': 'var(--accent);',
     '--w3m-font-family': 'var(--sl-font-sans);',
