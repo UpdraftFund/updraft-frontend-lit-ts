@@ -40,20 +40,30 @@ export class TopBar extends SignalWatcher(LitElement) {
       font-size: 1.5rem;
     }
     .content {
-      flex: 1;
       display: flex;
+      flex: 1;
       align-items: center;
       justify-content: center;
       gap: 2rem;
       overflow: clip;
-      min-width: 0;
     }
     .content div {
       display: flex;
+      flex: 1;
       align-items: center;
     }
     page-heading a {
       font-size: 1rem;
+    }
+    @media (max-width: 860px) {
+      :host {
+        padding: 0 1rem;
+        gap: 1rem;
+      }
+      .content {
+        justify-content: flex-start;
+        gap: 1rem;
+      }
     }
     @media (max-width: 768px) {
       .menu-button {
