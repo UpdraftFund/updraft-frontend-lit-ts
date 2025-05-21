@@ -13,6 +13,12 @@ export class DiscoverTabs extends LitElement {
       display: flex;
       justify-content: center;
       flex: 1;
+      max-width: fit-content;
+    }
+    @media (max-width: 940px) {
+      sl-tab::part(base) {
+        padding-left: 0;
+      }
     }
   `;
 
