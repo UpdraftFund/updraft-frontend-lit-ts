@@ -52,6 +52,10 @@ export class TopBar extends SignalWatcher(LitElement) {
       flex: 1;
       align-items: center;
     }
+    /* allow tabs and search combo div to be centered by providing a max width */
+    .tabs-and-search {
+      max-width: calc(412px + 450px);
+    }
     page-heading a {
       font-size: 1rem;
     }
