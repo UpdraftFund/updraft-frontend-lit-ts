@@ -219,9 +219,9 @@ export class ActivityCard extends LitElement {
     }
 
     if (this.activity.type === 'ideaFunded') {
-      text = 'Support this Idea';
+      text = 'Support';
     } else {
-      text = 'Fund this Solution';
+      text = 'Fund';
     }
 
     return html`
