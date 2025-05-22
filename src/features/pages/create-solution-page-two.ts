@@ -171,6 +171,12 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         display: none;
       }
 
+      .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
       /* Responsive behavior for smaller screens */
       @media (max-width: 768px) {
         form {
@@ -454,7 +460,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
             <span class="right-label">More for funders</span>
           </div>
         </div>
-        <span>
+        <span class="button-container">
           <sl-button href="/create-solution/${this.ideaId}" variant="primary"
             >Previous
           </sl-button>
