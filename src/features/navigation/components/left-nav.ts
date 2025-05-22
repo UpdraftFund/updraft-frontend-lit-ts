@@ -35,7 +35,8 @@ export class LeftNav extends SignalWatcher(LitElement) {
 
     nav.collapsed a {
       justify-content: center;
-      padding: 0.75rem 0;
+      padding: 0.3rem 0;
+      margin: 0.7rem 0;
     }
 
     nav.collapsed .location {
