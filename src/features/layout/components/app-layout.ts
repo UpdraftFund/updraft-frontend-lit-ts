@@ -42,7 +42,6 @@ export class AppLayout extends SignalWatcher(LitElement) {
     main {
       display: flex;
       flex-direction: column;
-      flex: 1;
     }
     right-side-bar {
       flex: 0 0 19rem;
@@ -54,6 +53,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
     @media (min-width: 769px) and (max-width: 1040px) {
       .main-extended.right-sidebar-below {
         flex-direction: column;
+        justify-content: normal;
       }
     }
 
@@ -64,6 +64,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
       }
       .main-extended {
         flex-direction: column;
+        justify-content: normal;
         z-index: 1;
       }
     }
