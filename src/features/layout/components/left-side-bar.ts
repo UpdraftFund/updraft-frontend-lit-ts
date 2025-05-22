@@ -60,7 +60,7 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       font-size: 1rem;
       border: 1px solid var(--main-foreground);
       border-radius: 50%;
-      background: var(--subtle-background);
+      background: var(--main-background);
       color: var(--main-foreground);
     }
 
