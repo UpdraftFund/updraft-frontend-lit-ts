@@ -85,12 +85,6 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       :host([collapsed]) {
         display: none;
       }
-      :host {
-        width: 85%; /* Use percentage for better mobile experience */
-      }
-    }
-
-    @media (max-width: 480px) {
     }
   `;
 
