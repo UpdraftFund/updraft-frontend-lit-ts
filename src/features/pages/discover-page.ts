@@ -73,14 +73,12 @@ type AnyVariables =
 export class DiscoverPage extends SignalWatcher(LitElement) {
   static styles = css`
     main {
-      flex: 1;
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      flex: 1;
       gap: 0.2rem;
       padding: 0.5rem 0 0.5rem 2rem;
-      color: var(--main-foreground);
-      background: var(--main-background);
+      box-sizing: border-box;
     }
 
     .tag-list {
@@ -105,13 +103,20 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       color: var(--no-results);
       font-style: italic;
     }
+
+    @media (max-width: 768px) {
+      main {
+        padding: 0.5rem 0 0.5rem 0.5rem;
+      }
+    }
   `;
 
   @state() private search: string | null = null;
   @state() private tab: DiscoverQueryType = 'hot-ideas';
   @state() private tags: string[] = [];
   @state() private results?: Idea[] | Solution[] | IdeaContribution[];
-  @state() private isLoading: boolean = false;
+  @state() private isLoading = false;
+  @state() private dropTabBar = false;
 
   private readonly queries = {
     'hot-ideas': IdeasBySharesDocument,
@@ -296,6 +301,27 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     }
   }
 
+  private narrowScreenMediaQuery = window.matchMedia('(max-width: 768px)');
+
+  private handleMediaQueryChange() {
+    if (this.narrowScreenMediaQuery.matches) {
+      layout.topBarContent.set(html`
+        <create-idea-button></create-idea-button>
+        <search-bar .search=${this.search}></search-bar>
+      `);
+      this.dropTabBar = true;
+    } else {
+      layout.topBarContent.set(html`
+        <create-idea-button></create-idea-button>
+        <div class="tabs-and-search">
+          <discover-tabs .tab=${this.tab}></discover-tabs>
+          <search-bar .search=${this.search}></search-bar>
+        </div>
+      `);
+      this.dropTabBar = false;
+    }
+  }
+
   private _lastUrl = window.location.href;
   private _urlChangeInterval?: number;
 
@@ -324,36 +350,45 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
+
     this.setTabFromUrl();
-    layout.topBarContent.set(html`
-      <create-idea-button></create-idea-button>
-      <div>
-        <discover-tabs .tab=${this.tab}></discover-tabs>
-        <search-bar .search=${this.search}></search-bar>
-      </div>
-    `);
+
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(true);
     layout.rightSidebarContent.set(html`
       <popular-tags></popular-tags>
       <watched-tags></watched-tags>
     `);
+
     window.addEventListener('popstate', this.setTabFromUrl);
     // Listen for URL changes that aren't caught by popstate
     // This is needed for when users click on tags in idea cards
     this._handleUrlChange = this._handleUrlChange.bind(this);
     this._setupUrlChangeListener();
+
+    this.handleMediaQueryChange();
+    this.narrowScreenMediaQuery.addEventListener(
+      'change',
+      this.handleMediaQueryChange.bind(this)
+    );
   }
 
   disconnectedCallback() {
     window.removeEventListener('popstate', this.setTabFromUrl);
     this._teardownUrlChangeListener();
+    this.narrowScreenMediaQuery.removeEventListener(
+      'change',
+      this.handleMediaQueryChange.bind(this)
+    );
     super.disconnectedCallback();
   }
 
   render() {
     return html`
       <main>
+        ${this.dropTabBar
+          ? html` <discover-tabs .tab=${this.tab}></discover-tabs>`
+          : html``}
         ${this.tab === 'tags' ? this.renderTagList() : html``}
         ${this.renderQueryResults()}
       </main>

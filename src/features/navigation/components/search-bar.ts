@@ -10,13 +10,19 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 export class SearchBar extends LitElement {
   static styles = css`
     :host {
-      display: flex;
-      flex: 1;
+      width: 100%;
       max-width: 450px;
+      container-type: inline-size;
     }
 
-    form {
-      flex: 1;
+    @container (max-width: 160px) {
+      sl-icon {
+        display: none;
+      }
+      sl-input::part(input) {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
     }
   `;
 

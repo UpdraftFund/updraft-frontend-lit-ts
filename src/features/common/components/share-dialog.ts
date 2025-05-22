@@ -77,7 +77,7 @@ export class ShareDialog extends LitElement {
   }
 
   private get messageHtml() {
-    return html` <b>You ${this.action}:</b> ${this.topic}`;
+    return html` <b>You ${this.action}:</b><br /> ${this.topic}`;
   }
 
   private get shareMessage() {
