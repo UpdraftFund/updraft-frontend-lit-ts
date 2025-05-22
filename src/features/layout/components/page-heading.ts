@@ -16,7 +16,7 @@ export class PageHeading extends LitElement {
     }
 
     /* Responsive adjustments for smaller screens */
-    @media (max-width: 1024px) {
+    @media (max-width: 1040px) {
       :host {
         font-size: 1.75rem;
       }

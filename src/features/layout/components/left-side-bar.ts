@@ -22,18 +22,13 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       flex-direction: column;
       border-right: 1px solid var(--border-default);
       overflow: hidden;
-      padding: 0 1rem;
-      transition:
-        width 0.3s ease,
-        padding 0.3s ease,
-        flex-basis 0.3s ease;
       position: relative;
+      padding: 0 1rem;
+      transition: all 0.3s ease;
       box-sizing: border-box;
     }
 
     :host([collapsed]) {
-      width: 64px;
-      padding: 0;
       flex-basis: 64px !important;
     }
 
@@ -82,77 +77,20 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       display: none;
     }
 
-    left-nav {
-      position: relative;
-    }
-
-    /* Tablet breakpoint - auto-collapse sidebar but allow manual expansion */
-    @media (max-width: 1024px) and (min-width: 769px) {
-      :host {
-        width: 64px;
-        padding: 0;
-        flex-basis: 64px !important;
-      }
-
-      :host my-ideas,
-      :host my-solutions {
-        display: none;
-      }
-
-      /* When expanded, show full sidebar */
-      :host([expanded]) {
-        width: 250px;
-        padding: 0 1rem;
-        flex-basis: 250px !important;
-      }
-
-      :host([expanded]) my-ideas,
-      :host([expanded]) my-solutions {
-        display: block;
-      }
-    }
-
     /* Mobile breakpoint - switch to drawer mode */
     @media (max-width: 768px) {
       :host {
-        position: fixed;
-        top: 64px; /* Height of top-bar */
-        left: 0;
-        bottom: 0;
-        z-index: 100;
-        width: 250px;
-        transform: translateX(-100%);
-        transition:
-          transform 0.3s ease,
-          box-shadow 0.3s ease;
-        box-shadow: none;
-        border-radius: 0;
         border-right: none;
-        background: var(--main-background);
-        overflow-y: auto;
-        padding: 0 1rem;
       }
-
-      :host([expanded]) {
-        transform: translateX(0);
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      :host([collapsed]) {
+        display: none;
       }
-
-      /* Show all content in drawer mode */
-      :host my-ideas,
-      :host my-solutions {
-        display: block;
-      }
-
-      :host([collapsed]) .collapsed-toggle {
-        display: none; /* Hide in mobile collapsed mode as we use the top bar button */
+      :host {
+        width: 85%; /* Use percentage for better mobile experience */
       }
     }
 
     @media (max-width: 480px) {
-      :host {
-        width: 85%; /* Use percentage for better mobile experience */
-      }
     }
   `;
 
