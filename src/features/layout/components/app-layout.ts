@@ -1,4 +1,4 @@
-import { customElement, property } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { css, LitElement } from 'lit';
 import { SignalWatcher, html } from '@lit-labs/signals';
 
@@ -23,6 +23,18 @@ export class AppLayout extends SignalWatcher(LitElement) {
     .app-layout {
       display: flex;
       justify-content: space-between;
+      position: relative;
+    }
+    /* Backdrop overlay for mobile sidebar */
+    .sidebar-backdrop {
+      position: absolute;
+      width: 100%;
+      height: 1000%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 99; /* Just below the sidebar */
+      opacity: 1;
+      transition: opacity 0.3s ease-in-out;
+      pointer-events: none;
     }
     left-side-bar {
       flex: 0 0 17rem;
@@ -41,54 +53,72 @@ export class AppLayout extends SignalWatcher(LitElement) {
     right-side-bar {
       flex: 0 0 19rem;
     }
-    /* The edit-profile and view-profile pages need a wider right sidebar */
-    :host([page='edit-profile']) right-side-bar,
-    :host([page='view-profile']) right-side-bar {
+    right-side-bar.wider {
       flex: 0 1 34rem;
     }
 
     @media (min-width: 769px) and (max-width: 1040px) {
-      :host([hide-right-sidebar]) .main-extended {
+      .main-extended.right-sidebar-below {
         flex-direction: column;
       }
     }
 
     @media (max-width: 768px) {
       left-side-bar {
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 100;
       }
       .main-extended {
         flex-direction: column;
         position: absolute;
         z-index: -1;
       }
+      /* Show backdrop when sidebar is open */
+      .sidebar-backdrop {
+        display: block;
+      }
+      .sidebar-backdrop.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
     }
   `;
 
-  @property({ reflect: true }) page = nav.get();
-  @property({
-    type: Boolean,
-    reflect: true,
-    attribute: 'hide-right-sidebar',
-  })
-  hideRightSidebar = false;
+  private handleBackdropClick = () => {
+    leftSidebarCollapsed.set(true);
+  };
 
   render() {
-    this.page = nav.get();
-    // Move the right sidebar content to the bottom if the left sidebar is shown on medium-width screens
-    this.hideRightSidebar = !leftSidebarCollapsed.get();
+    const leftSidebarVisible =
+      showLeftSidebar.get() && !leftSidebarCollapsed.get();
+
     return html`
       <top-bar></top-bar>
       <div class="app-layout">
+        <!-- Backdrop overlay for mobile -->
+        <div
+          class="sidebar-backdrop ${leftSidebarVisible ? 'active' : ''}"
+          @click=${this.handleBackdropClick}
+        ></div>
+
         ${showLeftSidebar.get()
           ? html` <left-side-bar></left-side-bar>`
           : html``}
-        <div class="main-extended">
+        <div
+          class="main-extended ${leftSidebarVisible
+            ? 'right-sidebar-below'
+            : ''}"
+        >
           <main>
             <slot></slot>
           </main>
           ${showRightSidebar.get()
-            ? html` <right-side-bar></right-side-bar>`
+            ? html` <right-side-bar
+                class="${nav.get() === 'edit-profile' ||
+                nav.get() === 'view-profile'
+                  ? 'wider'
+                  : ''}"
+              ></right-side-bar>`
             : html``}
         </div>
       </div>
