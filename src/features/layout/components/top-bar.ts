@@ -45,7 +45,7 @@ export class TopBar extends SignalWatcher(LitElement) {
       align-items: center;
       justify-content: center;
       gap: 2rem;
-      overflow: clip;
+      overflow: hidden;
     }
     .content div {
       display: flex;
