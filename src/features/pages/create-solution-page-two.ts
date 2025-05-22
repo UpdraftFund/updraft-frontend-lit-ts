@@ -153,6 +153,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         font-size: 0.875rem;
         font-weight: bold;
         transform: translateX(0.25rem);
+        z-index: 0;
       }
 
       .reward-container sl-range::part(tooltip)::after {
