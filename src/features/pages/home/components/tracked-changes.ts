@@ -344,14 +344,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
   private renderTrackedChanges() {
     if (this.error) {
-      return html`
-        <div class="full-width">
-          <sl-alert variant="danger" open>
-            <strong>Error loading changes:</strong>
-            ${this.error.message}
-          </sl-alert>
-        </div>
-      `;
+      console.warn('TrackedChanges error: ', this.error);
     }
 
     if (!this.hasChanges) {
