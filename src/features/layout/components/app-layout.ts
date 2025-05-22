@@ -5,6 +5,7 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
+import '@components/common/full-overlay';
 
 import {
   leftSidebarCollapsed,
@@ -19,35 +20,28 @@ export class AppLayout extends SignalWatcher(LitElement) {
     :host {
       display: flex;
       flex-direction: column;
+      min-height: 100vh;
     }
     .app-layout {
       display: flex;
-      justify-content: space-between;
+      flex: 1;
+      justify-content: flex-start;
       position: relative;
     }
-    /* Backdrop overlay for mobile sidebar */
-    .sidebar-backdrop {
-      position: absolute;
-      width: 100%;
-      height: 1000%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 99; /* Just below the sidebar */
-      opacity: 1;
-      transition: opacity 0.3s ease-in-out;
-      pointer-events: none;
-    }
+
     left-side-bar {
-      flex: 0 0 17rem;
+      max-width: 17rem;
       background-color: var(--main-background);
     }
     .main-extended {
       display: flex;
+      flex: 1;
       justify-content: space-between;
       width: 100%;
-      overflow: clip;
     }
     main {
       display: flex;
+      flex-direction: column;
       flex: 1;
     }
     right-side-bar {
@@ -65,21 +59,12 @@ export class AppLayout extends SignalWatcher(LitElement) {
 
     @media (max-width: 768px) {
       left-side-bar {
-        position: relative;
+        position: absolute;
         z-index: 100;
       }
       .main-extended {
         flex-direction: column;
-        position: absolute;
-        z-index: -1;
-      }
-      /* Show backdrop when sidebar is open */
-      .sidebar-backdrop {
-        display: block;
-      }
-      .sidebar-backdrop.active {
-        opacity: 1;
-        pointer-events: auto;
+        z-index: 1;
       }
     }
   `;
@@ -95,11 +80,15 @@ export class AppLayout extends SignalWatcher(LitElement) {
     return html`
       <top-bar></top-bar>
       <div class="app-layout">
-        <!-- Backdrop overlay for mobile -->
-        <div
-          class="sidebar-backdrop ${leftSidebarVisible ? 'active' : ''}"
-          @click=${this.handleBackdropClick}
-        ></div>
+        <!-- Backdrop overlay for mobile only - positioned within app-layout (below top bar) -->
+        <full-overlay
+          ?active=${leftSidebarVisible}
+          ?mobileOnly=${true}
+          position="absolute"
+          z-index="99"
+          opacity="0.7"
+          @overlay-click=${this.handleBackdropClick}
+        ></full-overlay>
 
         ${showLeftSidebar.get()
           ? html` <left-side-bar></left-side-bar>`
