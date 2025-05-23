@@ -29,7 +29,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
 
     .empty-message {
       padding: 1rem;
-      color: var(--sl-color-neutral-500);
+      color: var(--no-results);
       font-size: var(--sl-font-size-small);
       text-align: center;
       font-style: italic;
