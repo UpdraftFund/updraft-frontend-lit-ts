@@ -20,21 +20,12 @@ export class CreateSolution extends SaveableForm {
   private unsubHeading?: Subscription;
 
   static styles = css`
-    :host {
-      width: 100%;
-      overflow: hidden;
-    }
-
     form {
       display: flex;
       flex-direction: column;
       gap: 1.2rem;
+      max-width: 70rem;
       margin: 1.5rem 3rem;
-    }
-
-    sl-input,
-    sl-textarea {
-      width: 100%;
     }
 
     sl-button {

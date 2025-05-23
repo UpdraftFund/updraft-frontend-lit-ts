@@ -869,7 +869,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               <div class="title-area">
                 <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
                 <div class="idea-link">
-                  Solution for idea:
+                  Solution for Idea:
                   <a
                     href="/idea/${this.solution.idea?.id}"
                     title="View linked Idea"

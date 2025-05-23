@@ -85,11 +85,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   static styles = [
     dialogStyles,
     css`
-      :host {
-        width: 100%;
-        overflow: hidden;
-      }
-
       h2 {
         margin: 0 0 0.5rem;
       }
@@ -99,6 +94,11 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         flex-direction: column;
         gap: 1.2rem;
         margin: 1.5rem 3rem;
+      }
+
+      sl-select,
+      sl-input {
+        max-width: 22rem;
       }
 
       .deposit-row {

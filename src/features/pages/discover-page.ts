@@ -77,7 +77,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       flex-direction: column;
       flex: 1;
       gap: 0.2rem;
-      padding: 0.5rem 0 0.5rem 2rem;
+      padding: 0.5rem 0.5rem 0.5rem 2rem;
       box-sizing: border-box;
     }
 

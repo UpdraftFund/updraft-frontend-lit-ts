@@ -92,7 +92,7 @@ export class PopularTags extends LitElement {
     return html`
       ${this.topTags
         ? html`
-            <h2>Popular Tags</h2>
+            <h2>🌎 Popular Tags</h2>
             <div class="tags-container">
               ${cache(
                 this.topTags.map(

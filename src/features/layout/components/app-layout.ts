@@ -30,30 +30,34 @@ export class AppLayout extends SignalWatcher(LitElement) {
     }
 
     left-side-bar {
-      max-width: 17rem;
+      width: 16rem;
+      max-width: 16rem;
       background-color: var(--main-background);
     }
     .main-extended {
       display: flex;
       flex: 1;
       justify-content: space-between;
-      width: 100%;
     }
     main {
       display: flex;
+      flex: 1 1 47rem;
       flex-direction: column;
     }
     right-side-bar {
-      flex: 0 0 19rem;
+      flex: 0 0 18rem;
     }
     right-side-bar.wider {
       flex: 0 1 34rem;
     }
 
-    @media (min-width: 769px) and (max-width: 1040px) {
+    @media (min-width: 769px) and (max-width: 1024px) {
       .main-extended.right-sidebar-below {
         flex-direction: column;
         justify-content: normal;
+      }
+      .right-sidebar-below main {
+        flex: 1;
       }
     }
 

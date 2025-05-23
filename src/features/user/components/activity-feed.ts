@@ -111,7 +111,7 @@ export class ActivityFeed extends LitElement {
 
   render() {
     return html`
-      <h2 class="activity-heading">Activity</h2>
+      <h2 class="activity-heading">📈 Activity</h2>
 
       ${this.isLoading
         ? html`

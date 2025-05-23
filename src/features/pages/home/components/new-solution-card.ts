@@ -49,7 +49,7 @@ export class NewSolutionCard extends LitElement {
             <a class="change-card-heading" href="/idea/${solution.idea.id}">
               ${this.change.solution.idea.name}
             </a>
-            <div class="change-card-subheading">has a new solution</div>
+            <div class="change-card-subheading">has a new Solution</div>
           </div>
 
           <div class="solution-info">

@@ -30,6 +30,7 @@ export class ActivityCard extends LitElement {
     .action-time {
       display: flex;
       justify-content: space-between;
+      gap: 0.5rem;
       width: 100%;
       margin-bottom: 0.75rem;
     }
@@ -169,9 +170,9 @@ export class ActivityCard extends LitElement {
       case 'ideaFunded':
         return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a solution with ${formatAmount(this.activity.contribution)}`;
+        return `${this.userName} funded a Solution with ${formatAmount(this.activity.contribution)}`;
       case 'solutionDrafted':
-        return `${this.userName} drafted a solution`;
+        return `${this.userName} drafted a Solution`;
       default:
         return 'Unknown Activity';
     }

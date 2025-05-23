@@ -133,7 +133,7 @@ export class WatchedTags extends SignalWatcher(LitElement) {
     const tags = watchedTags.get();
     return html`
       <h2>
-        Watched Tags
+        🕵️ Watched Tags
         ${tags.size > 0
           ? html` <sl-icon-button
               class="edit-button"
