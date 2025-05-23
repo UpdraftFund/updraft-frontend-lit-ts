@@ -62,6 +62,7 @@ import { userAddress } from '@state/user';
 
 // Contracts
 import { IdeaContract } from '@contracts/idea';
+import { updraft } from '@contracts/updraft';
 
 @customElement('idea-page')
 export class IdeaPage extends SignalWatcher(LitElement) {
@@ -274,7 +275,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       try {
         const idea = new IdeaContract(ideaId);
 
-        // First, get the total number of positions
         const numPositions = (await idea.read('numPositions', [
           address,
         ])) as bigint;
@@ -284,6 +284,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           this.positions = [];
           return null;
         }
+
+        const minFee = (await updraft.read('minFee')) as bigint;
+        const percentFee = (await updraft.read('percentFee')) as bigint;
+        const percentScale = (await updraft.read('percentScale')) as bigint;
+        const [firstCycle] = (await idea.read('cycles', [0n])) as bigint[];
 
         // Collect all viable positions
         const viablePositions: IdeaPosition[] = [];
@@ -295,7 +300,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           positionIndex++
         ) {
           try {
-            // Get current position (includes original contribution + earnings)
+            // Get current position (includes earnings)
             const [currentPosition] = (await idea.read('checkPosition', [
               address,
               positionIndex,
@@ -305,16 +310,40 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             if (currentPosition <= 0n) continue;
 
             // Get original contribution from positionsByAddress mapping
-            const [, originalContribution] = (await idea.read(
+            const [contributionCycle, contributionAfterFees] = (await idea.read(
               'positionsByAddress',
               [address, positionIndex]
             )) as bigint[];
 
             // Skip positions with zero value (already withdrawn)
-            if (originalContribution <= 0n) continue;
+            if (contributionAfterFees <= 0n) continue;
+
+            let originalContribution = contributionAfterFees;
+
+            // No contributor fees are paid in the first cycle
+            if (contributionCycle > firstCycle) {
+              const funderReward = this.idea?.funderReward;
+              if (funderReward && percentScale > funderReward) {
+                originalContribution =
+                  (contributionAfterFees * percentScale) /
+                  (percentScale - BigInt(funderReward));
+              }
+            }
+
+            const contributionBeforeAntiSpamFee =
+              (originalContribution * percentScale) /
+              (percentScale - percentFee);
+
+            // Use the greater of the minFee and percentFee, like the smart contract
+            if (contributionBeforeAntiSpamFee > originalContribution + minFee) {
+              originalContribution = contributionBeforeAntiSpamFee;
+            } else {
+              originalContribution += minFee;
+            }
 
             viablePositions.push({
               originalContribution,
+              feesPaid: originalContribution - contributionAfterFees,
               currentPosition,
               earnings: currentPosition - originalContribution,
               positionIndex,
@@ -515,10 +544,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                   </div>
                   <div class="support-details">
                     <p>
-                      Your original contribution:
+                      Your contribution:
                       <strong>
                         ${formatAmount(position.originalContribution)} UPD
                       </strong>
+                      <small
+                        >including ${formatAmount(position.feesPaid)} UPD in
+                        fees</small
+                      >
                     </p>
                     <p>
                       Your earnings so far:
