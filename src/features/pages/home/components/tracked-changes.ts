@@ -104,8 +104,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     /* Card components styling */
     .cards-container > * {
       flex: 1 0 280px;
-      max-width: 100%;
-      /* Ensure cards don't disappear on narrow screens */
+      max-width: 37rem;
       min-width: 0;
     }
 
