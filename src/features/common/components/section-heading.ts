@@ -7,7 +7,7 @@ export class SectionHeading extends LitElement {
     :host {
       font-size: 1rem;
       font-weight: 500;
-      color: var(--section-heading);
+      color: var(--main-foreground);
     }
 
     hr {
