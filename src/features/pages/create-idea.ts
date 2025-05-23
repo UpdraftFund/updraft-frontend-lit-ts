@@ -54,21 +54,11 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   static styles = [
     dialogStyles,
     css`
-      .container {
-        display: flex;
-        flex: auto; /* The container takes the remaining available space */
-        overflow: hidden;
-      }
-
-      main {
-        flex: 1;
-        box-sizing: border-box;
-      }
-
       form {
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
+        max-width: 64rem;
         margin: 1.5rem 3rem;
       }
 
@@ -190,99 +180,95 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
 
   render() {
     return html`
-      <div class="container">
-        <main>
-          <form name="create-idea" @submit=${this.handleFormSubmit}>
-            <sl-input name="name" required autocomplete="off">
-              <label-with-hint
-                slot="label"
-                label="Name*"
-                hint="A short name for your idea"
-              ></label-with-hint>
-            </sl-input>
-            <sl-textarea name="description" resize="auto">
-              <label-with-hint
-                slot="label"
-                label="Description"
-                hint="How do you want to make your community, your project or the world better?"
-              >
-              </label-with-hint>
-            </sl-textarea>
-            <sl-input name="tags" @sl-input=${this.handleTagsInput}>
-              <label-with-hint
-                slot="label"
-                label="Tags"
-                hint="Enter up to five tags separated by spaces to help people find your idea.
+      <form name="create-idea" @submit=${this.handleFormSubmit}>
+        <sl-input name="name" required autocomplete="off">
+          <label-with-hint
+            slot="label"
+            label="Name*"
+            hint="A short name for your idea"
+          ></label-with-hint>
+        </sl-input>
+        <sl-textarea name="description" resize="auto">
+          <label-with-hint
+            slot="label"
+            label="Description"
+            hint="How do you want to make your community, your project or the world better?"
+          >
+          </label-with-hint>
+        </sl-textarea>
+        <sl-input name="tags" @sl-input=${this.handleTagsInput}>
+          <label-with-hint
+            slot="label"
+            label="Tags"
+            hint="Enter up to five tags separated by spaces to help people find your idea.
                 Use hyphens for multi-word-tags."
-              >
-              </label-with-hint>
-            </sl-input>
-            <div class="deposit-container">
-              <label-with-hint
-                label="Deposit*"
-                hint="The initial UPD tokens you will deposit. The more you deposit, the more you stand
+          >
+          </label-with-hint>
+        </sl-input>
+        <div class="deposit-container">
+          <label-with-hint
+            label="Deposit*"
+            hint="The initial UPD tokens you will deposit. The more you deposit, the more you stand
                 to earn from supporters of your idea. As a creator, you can always withdraw your full
                 initial deposit minus the anti-spam fee of 1 UPD or 1% (whichever is greater)."
+          >
+          </label-with-hint>
+          <div class="deposit-row">
+            <token-input
+              name="deposit"
+              required
+              spendingContract=${updraft.address}
+              spendingContractName="Updraft"
+              antiSpamFeeMode="variable"
+              showDialogs="false"
+            >
+              <sl-button
+                slot="invalid"
+                variant="primary"
+                @click=${() => this.updDialog.show()}
               >
-              </label-with-hint>
-              <div class="deposit-row">
-                <token-input
-                  name="deposit"
-                  required
-                  spendingContract=${updraft.address}
-                  spendingContractName="Updraft"
-                  antiSpamFeeMode="variable"
-                  showDialogs="false"
-                >
-                  <sl-button
-                    slot="invalid"
-                    variant="primary"
-                    @click=${() => this.updDialog.show()}
-                  >
-                    Get more UPD
-                  </sl-button>
-                </token-input>
-              </div>
-            </div>
-            <input type="hidden" name="reward" value="50" />
-            ${hasProfile.get()
-              ? html` <sl-button
-                  class="submit"
-                  variant="primary"
-                  @click=${this.createIdea}
-                  >Create Idea
-                </sl-button>`
-              : html`<a
-                  class="submit"
-                  href="/submit-profile-and-create-idea"
-                  rel="next"
-                >
-                  <sl-button variant="primary" @click=${this.nextButtonClick}
-                    >Next: Create your Profile
-                  </sl-button>
-                </a>`}
-            <transaction-watcher
+                Get more UPD
+              </sl-button>
+            </token-input>
+          </div>
+        </div>
+        <input type="hidden" name="reward" value="50" />
+        ${hasProfile.get()
+          ? html` <sl-button
               class="submit"
-              @transaction-success=${this.handleTransactionSuccess}
-            ></transaction-watcher>
-          </form>
-          <upd-dialog></upd-dialog>
-          <share-dialog></share-dialog>
-          <sl-dialog label="Set Allowance">
-            <p>
-              Before you can create your idea, you need to sign a transaction to
-              allow Updraft to spend your UPD tokens.
-            </p>
-            <transaction-watcher
-              class="approve"
-              @transaction-success=${() => {
-                this.approveDialog.hide();
-                this.createIdea();
-              }}
-            ></transaction-watcher>
-          </sl-dialog>
-        </main>
-      </div>
+              variant="primary"
+              @click=${this.createIdea}
+              >Create Idea
+            </sl-button>`
+          : html`<a
+              class="submit"
+              href="/submit-profile-and-create-idea"
+              rel="next"
+            >
+              <sl-button variant="primary" @click=${this.nextButtonClick}
+                >Next: Create your Profile
+              </sl-button>
+            </a>`}
+        <transaction-watcher
+          class="submit"
+          @transaction-success=${this.handleTransactionSuccess}
+        ></transaction-watcher>
+      </form>
+      <upd-dialog></upd-dialog>
+      <share-dialog></share-dialog>
+      <sl-dialog label="Set Allowance">
+        <p>
+          Before you can create your idea, you need to sign a transaction to
+          allow Updraft to spend your UPD tokens.
+        </p>
+        <transaction-watcher
+          class="approve"
+          @transaction-success=${() => {
+            this.approveDialog.hide();
+            this.createIdea();
+          }}
+        ></transaction-watcher>
+      </sl-dialog>
     `;
   }
 }
