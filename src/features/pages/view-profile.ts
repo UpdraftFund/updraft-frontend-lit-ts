@@ -184,6 +184,10 @@ export class ViewProfile extends SignalWatcher(LitElement) {
   }
 
   private createLink(link: string) {
+    if (!link.trim()) {
+      return;
+    }
+
     let url;
     try {
       url = new URL(link);
@@ -287,11 +291,11 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                       </div>
                     `
                   : html``}
-                ${this.profileData?.links?.length
+                ${this.profileData?.links?.some((link) => link.trim() !== '')
                   ? html`
                       <div class="links section">
                         <h2>Links</h2>
-                        ${this.profileData.links.map((link: string) =>
+                        ${this.profileData!.links.map((link: string) =>
                           this.createLink(link)
                         )}
                       </div>
