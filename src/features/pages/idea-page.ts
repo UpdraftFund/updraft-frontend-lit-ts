@@ -89,7 +89,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         gap: 0.5rem;
         margin-left: 0.25rem;
       }
-      .airdrop-option .info-icon {
+      .info-icon {
         font-size: 0.75rem;
         cursor: help;
       }
