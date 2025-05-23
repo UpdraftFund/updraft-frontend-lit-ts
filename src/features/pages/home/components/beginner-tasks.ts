@@ -199,7 +199,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <img src=${supportIdea} alt="Support idea illustration" />
                   <h3>Support an Idea</h3>
                   <p>
-                    You can earn UPD by supporting a popular idea. The more you
+                    You can earn UPD by supporting a popular Idea. The more you
                     deposit, the more you stand to earn. Find an Idea and
                     support it with UPD.
                   </p>
