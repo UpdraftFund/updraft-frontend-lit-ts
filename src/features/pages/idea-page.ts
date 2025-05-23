@@ -74,7 +74,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
-        padding: 0.5rem 1rem;
+        padding: 1rem;
         color: var(--main-foreground);
         background: var(--main-background);
       }
@@ -102,10 +102,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         align-items: center;
         gap: var(--sl-spacing-small);
         width: fit-content;
+        padding-top: 0.75rem;
       }
       .created {
         font-size: 0.9rem;
         margin-top: 0.4rem;
+        margin-bottom: 0.4rem;
       }
       .idea-info {
         display: flex;
