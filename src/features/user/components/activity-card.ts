@@ -30,6 +30,7 @@ export class ActivityCard extends LitElement {
     .action-time {
       display: flex;
       justify-content: space-between;
+      gap: 0.5rem;
       width: 100%;
       margin-bottom: 0.75rem;
     }
