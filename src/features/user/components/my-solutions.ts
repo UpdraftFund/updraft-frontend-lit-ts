@@ -109,24 +109,24 @@ export class MySolutions extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <section-heading>My Solutions</section-heading>
+      <section-heading>🧩 My Solutions</section-heading>
       <div class="content">
         ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : this.solutions.length === 0
-          ? html`<div class="empty-message">
-              You haven't funded or drafted any solutions yet.
-            </div>`
-          : cache(
-              this.solutions.map(
-                (solution) => html`
-                  <solution-card-small
-                    .solution=${solution}
-                    .showStake=${false}
-                  ></solution-card-small>
-                `
-              )
-            )}
+            ? html`<div class="empty-message">
+                You haven't funded or drafted any solutions yet.
+              </div>`
+            : cache(
+                this.solutions.map(
+                  (solution) => html`
+                    <solution-card-small
+                      .solution=${solution}
+                      .showStake=${false}
+                    ></solution-card-small>
+                  `
+                )
+              )}
       </div>
     `;
   }

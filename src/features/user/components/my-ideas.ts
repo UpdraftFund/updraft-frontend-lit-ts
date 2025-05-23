@@ -105,24 +105,24 @@ export class MyIdeas extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <section-heading>My Ideas</section-heading>
+      <section-heading>💡 My Ideas</section-heading>
       <div class="content">
         ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : this.ideas.length === 0
-          ? html`<div class="empty-message">
-              You haven't supported or created any ideas yet.
-            </div>`
-          : cache(
-              this.ideas.map(
-                (idea) => html`
-                  <idea-card-small
-                    .idea=${idea}
-                    .showReward=${false}
-                  ></idea-card-small>
-                `
-              )
-            )}
+            ? html`<div class="empty-message">
+                You haven't supported or created any ideas yet.
+              </div>`
+            : cache(
+                this.ideas.map(
+                  (idea) => html`
+                    <idea-card-small
+                      .idea=${idea}
+                      .showReward=${false}
+                    ></idea-card-small>
+                  `
+                )
+              )}
       </div>
     `;
   }
