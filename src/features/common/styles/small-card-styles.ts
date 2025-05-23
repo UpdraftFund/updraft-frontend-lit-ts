@@ -4,6 +4,7 @@ export const smallCardStyles = css`
   :host {
     display: inline-block;
     color: var(--main-foreground);
+    container-type: inline-size;
   }
 
   a {
@@ -47,5 +48,12 @@ export const smallCardStyles = css`
     display: flex;
     align-items: center;
     gap: 0.25rem;
+  }
+
+  @container (width > 20rem) {
+    .info-row {
+      justify-content: flex-start;
+      gap: 2rem;
+    }
   }
 `;
