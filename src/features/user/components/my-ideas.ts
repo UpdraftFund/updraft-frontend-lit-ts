@@ -25,6 +25,13 @@ export class MyIdeas extends SignalWatcher(LitElement) {
     idea-card-small {
       width: 100%;
     }
+
+    .empty-message {
+      padding: 1rem;
+      color: var(--sl-color-neutral-500);
+      font-size: var(--sl-font-size-small);
+      text-align: center;
+    }
   `;
 
   @property({ type: String }) address: string | null = null;
@@ -101,6 +108,10 @@ export class MyIdeas extends SignalWatcher(LitElement) {
       <div class="content">
         ${this.loading
           ? html` <sl-spinner></sl-spinner>`
+          : this.ideas.length === 0
+          ? html`<div class="empty-message">
+              You haven't supported or created any ideas yet.
+            </div>`
           : cache(
               this.ideas.map(
                 (idea) => html`
