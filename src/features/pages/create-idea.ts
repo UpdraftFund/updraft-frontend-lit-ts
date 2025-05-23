@@ -58,7 +58,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
         display: flex;
         flex-direction: column;
         gap: 1.2rem;
-        max-width: 64rem;
+        max-width: 70rem;
         margin: 1.5rem 3rem;
       }
 
