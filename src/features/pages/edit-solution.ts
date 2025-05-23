@@ -42,25 +42,16 @@ import { userAddress } from '@state/user';
 @customElement('edit-solution')
 export class EditSolution extends SignalWatcher(LitElement) {
   static styles = css`
-    :host {
-      width: 100%;
-      overflow: hidden;
-    }
-
-    h2 {
-      margin: 0;
-    }
-
     form {
       display: flex;
       flex-direction: column;
       gap: 1.2rem;
+      max-width: 70rem;
       margin: 1.5rem 3rem;
     }
 
-    sl-input,
-    sl-textarea {
-      width: 100%;
+    h2 {
+      margin: 0;
     }
 
     sl-input[name='deadline'] {
