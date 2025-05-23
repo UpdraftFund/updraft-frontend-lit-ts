@@ -34,11 +34,14 @@ export const modal = createAppKit({
   networks,
   metadata,
   projectId,
+  themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light',
   themeVariables: {
     '--w3m-accent': 'var(--accent);',
     '--w3m-font-family': 'var(--sl-font-sans);',
-    '--w3m-color-mix': 'var(--accent);',
-    '--w3m-color-mix-strength': 12,
+    '--w3m-color-mix': 'var(--sl-color-primary-100);',
+    '--w3m-color-mix-strength': 25,
   },
   features: {
     analytics: true,
