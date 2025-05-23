@@ -125,7 +125,7 @@ export class GoalFailedCard extends LitElement {
               ? html`
                   <div class="refund-section">
                     <p>
-                      You funded this solution. You can get a refund since the
+                      You funded this Solution. You can get a refund since the
                       goal was not met.
                     </p>
                     <sl-button
