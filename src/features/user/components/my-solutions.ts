@@ -32,6 +32,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
       color: var(--sl-color-neutral-500);
       font-size: var(--sl-font-size-small);
       text-align: center;
+      font-style: italic;
     }
   `;
 
@@ -114,7 +115,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
           ? html` <sl-spinner></sl-spinner>`
           : this.solutions.length === 0
           ? html`<div class="empty-message">
-              You haven't supported or created any solutions yet.
+              You haven't funded or drafted any solutions yet.
             </div>`
           : cache(
               this.solutions.map(

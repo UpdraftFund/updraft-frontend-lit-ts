@@ -31,6 +31,7 @@ export class MyIdeas extends SignalWatcher(LitElement) {
       color: var(--sl-color-neutral-500);
       font-size: var(--sl-font-size-small);
       text-align: center;
+      font-style: italic;
     }
   `;
 
