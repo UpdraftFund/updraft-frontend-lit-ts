@@ -973,41 +973,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               this.positions.length > 0 ? this.renderPositions() : html``,
           })}
           <div class="action-buttons">
-            ${!goalFailed(this.solution) && !goalReached(this.solution)
-              ? html`
-                  <form class="stake-form" @submit=${this.handleFormSubmit}>
-                    <token-input
-                      class="stake-input"
-                      name="stake"
-                      required
-                      spendingContract=${this.solutionId}
-                      spendingContractName="${this.solutionInfo?.name ||
-                      'Solution'}"
-                      antiSpamFeeMode="none"
-                      showDialogs="false"
-                    >
-                      <sl-button
-                        slot="invalid"
-                        variant="primary"
-                        @click=${() => this.updDialog.show()}
-                      >
-                        Get more UPD
-                      </sl-button>
-                      <sl-button
-                        slot="valid"
-                        variant="primary"
-                        @click=${this.handleStake}
-                      >
-                        Add Stake
-                      </sl-button>
-                    </token-input>
-                    <transaction-watcher
-                      class="stake"
-                      @transaction-success=${this.handleStakeSuccess}
-                    ></transaction-watcher>
-                  </form>
-                `
-              : html``}
             ${!goalFailed(this.solution)
               ? html`
                   <form class="fund-form" @submit=${this.handleFormSubmit}>
@@ -1053,6 +1018,41 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     <transaction-watcher
                       class="fund"
                       @transaction-success=${this.handleFundSuccess}
+                    ></transaction-watcher>
+                  </form>
+                `
+              : html``}
+            ${!goalFailed(this.solution) && !goalReached(this.solution)
+              ? html`
+                  <form class="stake-form" @submit=${this.handleFormSubmit}>
+                    <token-input
+                      class="stake-input"
+                      name="stake"
+                      required
+                      spendingContract=${this.solutionId}
+                      spendingContractName="${this.solutionInfo?.name ||
+                      'Solution'}"
+                      antiSpamFeeMode="none"
+                      showDialogs="false"
+                    >
+                      <sl-button
+                        slot="invalid"
+                        variant="primary"
+                        @click=${() => this.updDialog.show()}
+                      >
+                        Get more UPD
+                      </sl-button>
+                      <sl-button
+                        slot="valid"
+                        variant="primary"
+                        @click=${this.handleStake}
+                      >
+                        Add Stake
+                      </sl-button>
+                    </token-input>
+                    <transaction-watcher
+                      class="stake"
+                      @transaction-success=${this.handleStakeSuccess}
                     ></transaction-watcher>
                   </form>
                 `
