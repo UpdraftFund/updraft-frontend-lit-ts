@@ -49,7 +49,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
     }
     .name {
       display: inline-block;
-      max-width: 180px;
+      max-width: 120px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -182,8 +182,8 @@ export class UserMenu extends SignalWatcher(LitElement) {
                 </sl-menu-item>
               </a>
             </sl-menu>
+            <upd-dialog></upd-dialog>
           </sl-dropdown>
-          <upd-dialog></upd-dialog>
         `
       : html`
           <sl-button

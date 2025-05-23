@@ -20,10 +20,10 @@ export class TopBar extends SignalWatcher(LitElement) {
       color: var(--main-foreground);
       display: flex;
       height: 64px;
-      padding: 0 24px;
+      padding: 0 2rem;
       justify-content: space-between;
       align-items: center;
-      gap: 24px;
+      gap: 2rem;
       overflow: clip;
     }
     a {
@@ -45,7 +45,7 @@ export class TopBar extends SignalWatcher(LitElement) {
       align-items: center;
       justify-content: center;
       gap: 2rem;
-      overflow: clip;
+      overflow: hidden;
     }
     .content div {
       display: flex;

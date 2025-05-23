@@ -153,6 +153,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
         font-size: 0.875rem;
         font-weight: bold;
         transform: translateX(0.25rem);
+        z-index: 0;
       }
 
       .reward-container sl-range::part(tooltip)::after {
@@ -169,6 +170,12 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
       .hidden {
         display: none;
+      }
+
+      .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
 
       /* Responsive behavior for smaller screens */
@@ -454,7 +461,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
             <span class="right-label">More for funders</span>
           </div>
         </div>
-        <span>
+        <span class="button-container">
           <sl-button href="/create-solution/${this.ideaId}" variant="primary"
             >Previous
           </sl-button>

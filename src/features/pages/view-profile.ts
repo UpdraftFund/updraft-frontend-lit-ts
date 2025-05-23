@@ -27,11 +27,11 @@ import { shortenAddress } from '@utils/format-utils';
 export class ViewProfile extends SignalWatcher(LitElement) {
   static styles = css`
     main {
-      flex: 1;
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
+      flex: 1;
       gap: 1rem;
+      box-sizing: border-box;
       padding: 1rem 2rem;
       color: var(--main-foreground);
       max-width: 554px;

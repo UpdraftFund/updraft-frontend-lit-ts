@@ -69,10 +69,10 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     dialogStyles,
     css`
       :host {
-        flex: 1;
-        box-sizing: border-box;
         display: flex;
         flex-direction: column;
+        flex: 1;
+        box-sizing: border-box;
       }
 
       form {
@@ -80,7 +80,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
         flex-direction: column;
         gap: 1.2rem;
         margin: 1rem 3rem;
-        color: var(--main-foreground);
       }
 
       user-avatar {
