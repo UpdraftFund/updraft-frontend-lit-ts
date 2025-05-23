@@ -74,9 +74,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
-        padding: 1rem;
-        color: var(--main-foreground);
-        background: var(--main-background);
+        padding: 1rem 1rem 1rem 2rem;
       }
       .support {
         display: flex;
@@ -94,7 +92,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         cursor: help;
       }
       .heading {
-        font-size: 2rem;
+        font-size: var(--sl-font-size-2x-large);
         margin-bottom: 0;
       }
       .creator {
