@@ -4,11 +4,11 @@ import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-
 dayjs.extend(relativeTime);
 
 import { NewFunders } from '@pages/home/types';
 import { SolutionInfo } from '@/features/solution/types';
+import { shortenAddress } from '@utils/format-utils';
 import { changeCardStyles } from '@styles/change-card-styles';
 
 @customElement('new-funders-card')
@@ -18,9 +18,8 @@ export class NewFundersCard extends LitElement {
     css`
       .funders {
         font-size: 0.85rem;
-      }
-      .funders .id {
-        font-size: 0.75rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
     `,
   ];
@@ -58,8 +57,8 @@ export class NewFundersCard extends LitElement {
             (funder, index) => html`
               ${funder.name
                 ? html`<a href="/profile/${funder.id}">${funder.name}</a>`
-                : html`<span class="id" href="/profile/${funder.id}"
-                    >${funder.id}</span
+                : html`<a class="id" href="/profile/${funder.id}"
+                    >${shortenAddress(funder.id)}</a
                   >`}${index < funders.length - 1 ? html`, ` : html``}
             `
           )}

@@ -1,12 +1,13 @@
 import { customElement } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
-import { NewSupporters } from '@pages/home/types';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { changeCardStyles } from '@styles/change-card-styles';
-
 dayjs.extend(relativeTime);
+
+import { NewSupporters } from '@pages/home/types';
+import { shortenAddress } from '@utils/format-utils';
+import { changeCardStyles } from '@styles/change-card-styles';
 
 @customElement('new-supporters-card')
 export class NewSupportersCard extends LitElement {
@@ -15,9 +16,8 @@ export class NewSupportersCard extends LitElement {
     css`
       .supporters {
         font-size: 0.85rem;
-      }
-      .supporters .id {
-        font-size: 0.75rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
     `,
   ];
@@ -26,9 +26,9 @@ export class NewSupportersCard extends LitElement {
   declare change: NewSupporters;
 
   render() {
+    const idea = this.change.idea;
     const supporters = this.change.supporters;
     const additionalCount = this.change.additionalCount || 0;
-    const idea = this.change.idea;
 
     return html`
       <sl-card>
@@ -43,8 +43,8 @@ export class NewSupportersCard extends LitElement {
             (supporter, index) => html`
               ${supporter.name
                 ? html`<a href="/profile/${supporter.id}">${supporter.name}</a>`
-                : html`<span class="id" href="/profile/${supporter.id}"
-                    >${supporter.id}</span
+                : html`<a href="/profile/${supporter.id}"
+                    >${shortenAddress(supporter.id)}</a
                   >`}${index < supporters.length - 1 ? html`, ` : html``}
             `
           )}
