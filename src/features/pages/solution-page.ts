@@ -409,6 +409,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           return null;
         }
 
+        const percentScale = BigInt(updraftSettings.get().percentScale);
+
         // Collect all positions
         const positions: SolutionPosition[] = [];
 
@@ -420,26 +422,37 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         ) {
           try {
             // Get position details from positionsByAddress mapping
-            const [contribution, , , refunded] = (await solutionContract.read(
-              'positionsByAddress',
-              [address, positionIndex]
-            )) as [bigint, bigint, bigint, boolean];
+            const [contributionAfterFees, , , refunded] =
+              (await solutionContract.read('positionsByAddress', [
+                address,
+                positionIndex,
+              ])) as [bigint, bigint, bigint, boolean];
 
-            // Get fees earned and shares from checkPosition
+            // Get fees earned from checkPosition
             const [feesEarned] = (await solutionContract.read('checkPosition', [
               address,
               positionIndex,
             ])) as bigint[];
 
+            // Skip positions that have been refunded and have no fees left
+            if (refunded && feesEarned === 0n) continue;
+
+            let contribution = contributionAfterFees;
+
+            const funderReward = BigInt(this.solution?.funderReward);
+            if (funderReward && percentScale > funderReward) {
+              contribution =
+                (contributionAfterFees * percentScale) /
+                (percentScale - funderReward);
+            }
+
             const position: SolutionPosition = {
               contribution,
-              refunded,
+              feesPaid: contribution - contributionAfterFees,
               feesEarned,
+              refunded,
               positionIndex,
             };
-
-            // Skip positions that have been refunded and have no fees left
-            if (position.refunded && feesEarned === 0n) continue;
 
             positions.push(position);
           } catch (error) {
@@ -528,6 +541,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
+            <small>including ${formatAmount(position.feesPaid)} in fees</small>
           </p>
           <p>
             Fees earned:
