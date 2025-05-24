@@ -14,7 +14,7 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import '@components/solution/solution-details-bar';
 
-import { formatReward, formatAmount, formatDate, shortenAddress } from '@utils/format-utils';
+import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
 import { goalFailed } from '@utils/solution/solution-utils';
 
 import { Activity, SolutionInfo } from '@/types';
@@ -166,16 +166,13 @@ export class ActivityCard extends LitElement {
   }
 
   private getActivityAction() {
-    // Use shortened address for the user name in activity cards
-    const displayName = shortenAddress(this.userName);
-    
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${displayName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
+        return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${displayName} funded a Solution with ${formatAmount(this.activity.contribution)}`;
+        return `${this.userName} funded a Solution with ${formatAmount(this.activity.contribution)}`;
       case 'solutionDrafted':
-        return `${displayName} drafted a Solution`;
+        return `${this.userName} drafted a Solution`;
       default:
         return 'Unknown Activity';
     }
