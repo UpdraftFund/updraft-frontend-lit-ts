@@ -8,6 +8,7 @@ export interface SolutionInfo {
 export interface SolutionPosition {
   contribution: bigint;
   refunded: boolean;
+  feesPaid: bigint;
   feesEarned: bigint;
   positionIndex: bigint;
 }
