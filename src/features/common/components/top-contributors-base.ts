@@ -263,7 +263,7 @@ export abstract class TopContributorsBase<
           id: funderId,
           name,
           avatar,
-          contribution: contribution.contribution,
+          contribution: BigInt(contribution.contribution),
         });
       }
     });
