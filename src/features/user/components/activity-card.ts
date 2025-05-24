@@ -159,9 +159,9 @@ export class ActivityCard extends LitElement {
       case 'solutionFunded':
         return '💸';
       case 'solutionDrafted':
-        return '📜';
+        return '📃';
       default:
-        return '📝';
+        return '✨';
     }
   }
 
