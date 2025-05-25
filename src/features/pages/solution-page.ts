@@ -261,7 +261,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         margin: 0;
       }
 
-      .position-details sl-button {
+      .button-row {
+        display: flex;
+        gap: 0.5rem;
         margin-top: 0.5rem;
         align-self: flex-start;
       }
@@ -449,7 +451,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
             const position: SolutionPosition = {
               contribution,
-              feesPaid: contribution - contributionAfterFees,
+              contributionAfterFees,
               feesEarned,
               refunded,
               positionIndex,
@@ -542,7 +544,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
-            <small>including ${formatAmount(position.feesPaid)} in fees</small>
+            (${formatAmount(position.contributionAfterFees)} after fees)
           </p>
           <p>
             Fees earned:
@@ -551,31 +553,35 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-          ${goalFailed(this.solution)
-            ? html`
-                <p>
-                  <strong>Goal Failed:</strong> You can refund your
-                  contribution.
-                </p>
-                <sl-button variant="primary" @click=${this.handleRefund}>
-                  Refund Position
-                </sl-button>
-                <transaction-watcher
-                  class="refund"
-                  @transaction-success=${this.handleRefundSuccess}
-                ></transaction-watcher>
-              `
-            : position.feesEarned > 0n
+          ${goalFailed(this.solution) && position.refunded
+            ? html` <p>
+                <strong>Goal Failed:</strong> You can refund your contribution.
+              </p>`
+            : html``}
+          <div class="button-row">
+            ${goalFailed(this.solution) && position.refunded
+              ? html`
+                  <sl-button variant="primary" @click=${this.handleRefund}>
+                    Refund Position
+                  </sl-button>
+                `
+              : html``}
+            ${position.feesEarned > 0n
               ? html`
                   <sl-button variant="primary" @click=${this.handleCollectFees}>
                     Collect Fees
                   </sl-button>
-                  <transaction-watcher
-                    class="collect"
-                    @transaction-success=${this.handleCollectSuccess}
-                  ></transaction-watcher>
                 `
               : html``}
+            <transaction-watcher
+              class="refund"
+              @transaction-success=${this.handleRefundSuccess}
+            ></transaction-watcher>
+            <transaction-watcher
+              class="collect"
+              @transaction-success=${this.handleCollectSuccess}
+            ></transaction-watcher>
+          </div>
         </div>
       </div>
     `;
