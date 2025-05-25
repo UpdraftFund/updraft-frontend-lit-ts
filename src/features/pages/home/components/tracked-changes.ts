@@ -121,7 +121,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
   @state() private ideaIds: `0x${string}`[] = [];
   @state() private solutionIds: `0x${string}`[] = [];
   @state() private isRefreshing = false;
-  @state() private target: number = 9;
+  @state() private target: number = 8;
 
   @query('.refresh-button', true) private refreshButton!: HTMLElement;
 
