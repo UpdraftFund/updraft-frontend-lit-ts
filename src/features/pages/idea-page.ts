@@ -626,7 +626,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <h2>Solutions</h2>
           <sl-button href="/create-solution/${this.ideaId}">
             <sl-icon slot="prefix" src=${plusLgIcon}></sl-icon>
-            Add Solution
+            Draft Solution
           </sl-button>
         </div>
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
