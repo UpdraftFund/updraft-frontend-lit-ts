@@ -221,6 +221,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         background-color: var(--subtle-background);
         border-radius: 0.5rem;
         padding: 1rem;
+        max-width: 500px;
       }
 
       .positions-header {
