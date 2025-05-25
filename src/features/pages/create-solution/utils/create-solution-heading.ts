@@ -18,7 +18,7 @@ export function createSolutionHeading(ideaId: string) {
       if (ideaData) {
         layout.topBarContent.set(html`
           <page-heading>
-            Create a new Solution
+            Draft a new Solution
             <a href="/idea/${ideaId}">for ${ideaData.name}</a>
           </page-heading>
         `);
