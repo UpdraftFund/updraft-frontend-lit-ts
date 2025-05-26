@@ -28,15 +28,16 @@ import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import { SlDialog, SlCheckbox } from '@shoelace-style/shoelace';
 
 // Components
+import '@components/idea/top-supporters';
+import '@components/idea/idea-solutions';
+import '@components/idea/related-ideas';
 import '@components/navigation/create-idea-button';
 import '@components/navigation/search-bar';
-import '@components/idea/top-supporters';
-import '@components/idea/related-ideas';
-import '@components/idea/idea-solutions';
 import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/common/cycle-info';
 import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
@@ -44,7 +45,7 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
-import { formatAmount, formatDate } from '@utils/format-utils';
+import { formatAmount, formatDate, formatReward } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -69,148 +70,170 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   static styles = [
     dialogStyles,
     css`
-      :host {
+      main {
         flex: 1;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
-        gap: 0.2rem;
-        padding: 1rem 1rem 1rem 2rem;
+        gap: 2rem;
+        padding: 2rem;
       }
-      .support {
+
+      .header-container {
         display: flex;
         flex-direction: column;
-        margin-bottom: 1rem;
+        gap: var(--sl-spacing-medium);
+        background-color: var(--main-background);
       }
-      .airdrop-option {
-        display: flex;
-        align-items: flex-end;
-        gap: 0.5rem;
-        margin-left: 0.25rem;
-      }
-      .info-icon {
-        font-size: 0.75rem;
-        cursor: help;
-      }
-      .heading {
-        font-size: var(--sl-font-size-2x-large);
-        margin-bottom: 0;
-      }
-      .creator {
-        display: flex;
-        align-items: center;
-        gap: var(--sl-spacing-small);
-        width: fit-content;
-        padding-top: 0.75rem;
-      }
-      .created {
-        font-size: 0.9rem;
-        margin-top: 0.4rem;
-        margin-bottom: 0.4rem;
-      }
-      .idea-info {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin: 1rem 0 0;
-      }
-      .tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-      }
-      .tag {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background-color: var(--subtle-background);
-        border-radius: 1rem;
-        font-size: 0.875rem;
-        text-decoration: none;
-        color: var(--main-foreground);
-      }
-      .tag:hover {
-        background-color: var(--accent);
-        color: var(--sl-color-neutral-0);
-      }
+
       .error-container {
         display: flex;
         flex-direction: column;
         padding: 2rem;
         gap: 1rem;
       }
+
       .error-container h2 {
         color: var(--sl-color-danger-600);
         margin: 0;
       }
+
       .error-container p {
         max-width: 500px;
       }
+
       sl-button {
         max-width: fit-content;
       }
-      sl-dialog::part(body) {
-        padding-top: 0;
+
+      .top-row {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--sl-spacing-medium);
       }
-      .your-support {
+
+      .title-area h1 {
+        margin: 0 0 var(--sl-spacing-x-small) 0;
+        font-size: var(--sl-font-size-2x-large);
+      }
+
+      .creator {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-small);
+        width: fit-content;
+      }
+
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .action-buttons form {
+        margin: 0;
+      }
+
+      .action-buttons token-input {
+        min-width: 250px;
+      }
+
+      .idea-stats {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sl-spacing-small);
+        padding: 1rem;
+        background-color: var(--sl-color-neutral-100);
+        border-radius: 10px;
+        width: fit-content;
+        margin-top: 1rem;
+      }
+
+      .idea-stats .stat-row {
+        display: flex;
+        align-items: center;
+        gap: var(--sl-spacing-medium);
+        margin-bottom: var(--sl-spacing-x-small);
+      }
+
+      .idea-stats .stat-label {
+        min-width: 120px;
+      }
+
+      .error {
+        color: var(--sl-color-danger-600);
+      }
+
+      .idea-description h3,
+      .idea-repository h3 {
+        margin-top: 0;
+        margin-bottom: var(--sl-spacing-small);
+        font-size: var(--sl-font-size-large);
+      }
+
+      .idea-repository a {
+        color: var(--sl-color-primary-600);
+        text-decoration: none;
+        word-break: break-all;
+      }
+
+      .idea-repository a:hover {
+        text-decoration: underline;
+      }
+
+      .user-positions {
         background-color: var(--subtle-background);
         border-radius: 0.5rem;
         padding: 1rem;
         margin: 1rem 0;
         max-width: 500px;
       }
-      .support-header {
+
+      .positions-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.5rem;
       }
-      .your-support h3 {
+
+      .user-positions h3 {
         margin: 0;
         font-size: 1.2rem;
         font-weight: 600;
       }
+
       .position-navigation {
         display: flex;
         align-items: center;
         gap: 0.5rem;
       }
+
       .position-navigation sl-icon-button::part(base) {
         font-size: 1.2rem;
         color: var(--sl-color-neutral-600);
       }
+
       .position-navigation sl-icon-button::part(base):hover {
         color: var(--accent);
       }
+
       .position-navigation span {
         font-size: 0.9rem;
         color: var(--sl-color-neutral-600);
       }
-      .support-details {
+
+      .position-details {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
       }
-      .support-details p {
+
+      .position-details p {
         margin: 0;
       }
-      .support-details sl-button {
+
+      .position-details sl-button {
         margin-top: 0.5rem;
         align-self: flex-start;
-      }
-      .solutions-header {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        margin: 1rem 0;
-      }
-      .solutions-header h2 {
-        margin: 0;
-        font-size: 2rem;
-        font-weight: 700;
-      }
-      .solutions-header sl-button {
-        padding-top: 0.2rem;
       }
     `,
   ];
@@ -265,6 +288,113 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       }
     }
   );
+
+  // Tasks for loading user data
+  private readonly userPositionsTask = new Task(this, {
+    task: async () => {
+      if (!this.idea || !userAddress.get()) return null;
+
+      try {
+        const address = userAddress.get() as `0x${string}`;
+        const idea = new IdeaContract(this.ideaId);
+
+        // Get number of positions for this user
+        const numPositions = (await idea.read('numPositionsByAddress', [
+          address,
+        ])) as bigint;
+
+        // If user has no positions, return null
+        if (numPositions === 0n) {
+          this.positions = [];
+          return null;
+        }
+
+        const minFee = (await updraft.read('minFee')) as bigint;
+        const percentFee = (await updraft.read('percentFee')) as bigint;
+        const percentScale = (await updraft.read('percentScale')) as bigint;
+        const [firstCycle] = (await idea.read('cycles', [0n])) as bigint[];
+
+        // Collect all viable positions
+        const viablePositions: IdeaPosition[] = [];
+
+        // Check each position
+        for (
+          let positionIndex = 0n;
+          positionIndex < numPositions;
+          positionIndex++
+        ) {
+          try {
+            const [contributionCycle, contributionAfterFees] = (await idea.read(
+              'positionsByAddress',
+              [address, positionIndex]
+            )) as bigint[];
+
+            // Skip positions with zero value (already withdrawn)
+            if (contributionAfterFees <= 0n) continue;
+
+            let originalContribution = contributionAfterFees;
+
+            // No contributor fees are paid in the first cycle
+            if (contributionCycle > firstCycle) {
+              const funderReward = this.idea?.funderReward;
+              if (funderReward && percentScale > funderReward) {
+                originalContribution =
+                  (contributionAfterFees * percentScale) /
+                  (percentScale - BigInt(funderReward));
+              }
+            }
+
+            const contributionBeforeAntiSpamFee =
+              originalContribution > minFee
+                ? originalContribution
+                : originalContribution + minFee;
+
+            viablePositions.push({
+              positionIndex,
+              contribution: contributionBeforeAntiSpamFee,
+              contributionCycle,
+              refunded: false,
+            });
+          } catch (error) {
+            console.error(
+              `Error fetching position ${positionIndex} for ${address}:`,
+              error
+            );
+          }
+        }
+
+        // Store positions and return the count
+        this.positions = viablePositions;
+        return viablePositions.length > 0 ? viablePositions.length : null;
+      } catch (error) {
+        console.error('Error fetching user positions:', error);
+        return null;
+      }
+    },
+    args: () => [this.idea, userAddress.get()],
+  });
+
+  // Task to fetch cycle information
+  private readonly cycleInfoTask = new Task(this, {
+    task: async () => {
+      if (!this.idea) return null;
+
+      try {
+        const idea = new IdeaContract(this.ideaId);
+        const cycleLength = await idea.read('cycleLength') as bigint;
+        const startTime = await idea.read('startTime') as bigint;
+        
+        return {
+          cycleLength,
+          startTime
+        };
+      } catch (error) {
+        console.error('Error fetching cycle information:', error);
+        return null;
+      }
+    },
+    args: () => [this.idea],
+  });
 
   // Task to fetch user's support for this idea
   private readonly userSupportTask = new Task(
@@ -391,18 +521,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   private previousPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
-
-    // Decrement position index, wrapping around to the end if needed
     this.positionIndex =
-      this.positionIndex === 0
-        ? this.positions.length - 1
-        : this.positionIndex - 1;
+      (this.positionIndex - 1 + this.positions.length) % this.positions.length;
   }
 
   private nextPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
-
-    // Increment position index, wrapping around to the beginning if needed
     this.positionIndex = (this.positionIndex + 1) % this.positions.length;
   }
 
@@ -459,185 +583,97 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   private renderIdea() {
     if (this.idea) {
-      const {
-        startTime,
-        funderReward,
-        shares,
-        creator,
-        tags,
-        description,
-        name,
-      } = this.idea;
+      const { name, description, creator, createdAt, repository } = this.idea;
 
-      const pctFunderReward =
-        (funderReward * 100) / updraftSettings.get().percentScale;
-
-      const profile = JSON.parse(
-        fromHex(creator.profile as `0x${string}`, 'string')
-      );
-
-      const displayName = profile.name || profile.team || creator.id;
-
-      return cache(html`
-        <h1 class="heading">Idea: ${name}</h1>
-        <a class="creator" href="/profile/${creator.id}">
-          <user-avatar
-            .address=${creator.id}
-            .image=${profile.image}
-          ></user-avatar>
-          <span>${displayName}</span>
-        </a>
-        <span class="created"> Created ${formatDate(startTime, 'full')} </span>
-        <div class="idea-info">
-          ${pctFunderReward
-            ? html`
-                <span> 🎁 ${pctFunderReward.toFixed(0)}% funder reward </span>
-              `
-            : html``}
-          <span>🔥 ${formatAmount(shares)}</span>
-        </div>
-        <div class="description-tags">
-          <h3>Description</h3>
-          <p>${description}</p>
-          ${tags
-            ? html`
-                <div class="tags">
-                  ${tags.map(
-                    (tag) => html`
-                      <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                    `
-                  )}
-                </div>
-              `
-            : html``}
-        </div>
-        ${this.userSupportTask.render({
-          complete: () => {
-            // Check if we have any positions
-            if (this.positions.length > 0) {
-              const position = this.positions[this.positionIndex];
-
-              return html`
-                <div class="your-support">
-                  <div class="support-header">
-                    <h3>Your Support</h3>
-                    ${this.positions.length > 1
-                      ? html`
-                          <div class="position-navigation">
-                            <sl-icon-button
-                              src=${chevronLeft}
-                              label="Previous position"
-                              @click=${this.previousPosition}
-                            ></sl-icon-button>
-                            <span
-                              >Position ${this.positionIndex + 1} of
-                              ${this.positions.length}</span
-                            >
-                            <sl-icon-button
-                              src=${chevronRight}
-                              label="Next position"
-                              @click=${this.nextPosition}
-                            ></sl-icon-button>
-                          </div>
-                        `
-                      : html``}
-                  </div>
-                  <div class="support-details">
-                    <p>
-                      Your contribution:
-                      <strong>
-                        ${formatAmount(position.originalContribution)} UPD
-                      </strong>
-                      <small
-                        >including ${formatAmount(position.feesPaid)} UPD in
-                        fees</small
-                      >
-                    </p>
-                    <p>
-                      Your earnings so far:
-                      <strong> ${formatAmount(position.earnings)} UPD </strong>
-                    </p>
-                    <p>
-                      Withdrawable amount:
-                      <strong>
-                        ${formatAmount(position.currentPosition)} UPD
-                      </strong>
-                    </p>
-                    <sl-button variant="primary" @click=${this.handleWithdraw}>
-                      Withdraw Support
+      return html`
+        <main>
+          <div class="header-container">
+            <div class="top-row">
+              <div class="title-area">
+                <h1>${name}</h1>
+              </div>
+              ${this.isCreator
+                ? html`
+                    <sl-button
+                      class="edit-button"
+                      pill
+                      size="medium"
+                      href="/edit-idea/${this.ideaId}"
+                      >Edit
                     </sl-button>
-                  </div>
-                  <transaction-watcher
-                    class="withdraw"
-                    @transaction-success=${this.handleWithdrawSuccess}
-                  >
-                  </transaction-watcher>
-                </div>
-                <h3>Add More Support</h3>
-              `;
-            } else {
-              return html`<h3>Support this Idea</h3>`;
-            }
-          },
-        })}
-        <form @submit=${this.handleSubmit}>
-          <div class="support">
-            <token-input
-              name="support"
-              required
-              spendingContract=${this.ideaId}
-              spendingContractName=${this.idea.name}
-              antiSpamFeeMode="variable"
-              showDialogs="false"
-            >
-              <sl-button
-                slot="invalid"
-                variant="primary"
-                @click=${() => this.updDialog.show()}
-              >
-                Get more UPD
-              </sl-button>
-              <sl-button
-                slot="valid"
-                variant="primary"
-                @click=${this.handleSupport}
-              >
-                ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
-              </sl-button>
-            </token-input>
-            <transaction-watcher
-              class="submit"
-              @transaction-success=${this.handleSupportSucces}
-            >
-            </transaction-watcher>
-            <div class="airdrop-option">
-              <sl-checkbox name="airdrop" @sl-change=${this.updateAirdropMode}
-                >Airdrop to past contributors
-              </sl-checkbox>
-              <sl-tooltip
-                content="An airdrop uses 100% of its funds to reward past contributors and increase 🔥."
-              >
-                <span class="info-icon">ℹ️</span>
-              </sl-tooltip>
+                  `
+                : html``}
             </div>
+            ${this.renderCreator()}
           </div>
-        </form>
-        <div class="solutions-header">
-          <h2>Solutions</h2>
-          <sl-button href="/create-solution/${this.ideaId}">
-            <sl-icon slot="prefix" src=${plusLgIcon}></sl-icon>
-            Add Solution
-          </sl-button>
-        </div>
-        <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
-        <share-dialog
-          action=${this.isAirdropMode
-            ? 'airdropped to an Idea'
-            : 'supported an Idea'}
-          .topic=${name}
-        ></share-dialog>
-      `);
+          <div class="idea-stats">
+            ${this.renderIdeaStats()}
+          </div>
+
+          <div class="action-buttons">
+            <form @submit=${this.handleFormSubmit}>
+              <token-input
+                name="support"
+                required
+                spendingContract=${this.ideaId}
+                spendingContractName="${name}"
+                antiSpamFeeMode="none"
+                showDialogs="false"
+              >
+                <sl-button
+                  slot="invalid"
+                  variant="primary"
+                  @click=${() => this.updDialog.show()}
+                >
+                  Get more UPD
+                </sl-button>
+                <sl-button
+                  slot="valid"
+                  variant="primary"
+                  @click=${this.handleSupport}
+                >
+                  Support this Idea
+                </sl-button>
+              </token-input>
+              <transaction-watcher
+                @transaction-success=${this.handleSupportSuccess}
+              ></transaction-watcher>
+            </form>
+          </div>
+
+          ${this.userPositionsTask.render({
+            complete: () =>
+              this.positions.length > 0 ? this.renderPositions() : html``,
+          })}
+
+          ${description
+            ? html`
+                <div class="idea-description">
+                  <h3>Description</h3>
+                  <p>${description}</p>
+                </div>
+              `
+            : html``}
+          ${repository
+            ? html`
+                <div class="idea-repository">
+                  <h3>Repository</h3>
+                  <a
+                    href="${repository}"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    ${repository}
+                  </a>
+                </div>
+              `
+            : html``}
+
+          <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
+          <related-ideas .ideaId=${this.ideaId}></related-ideas>
+        </main>
+      `;
     } else {
       if (this.error) {
         return html`
@@ -656,8 +692,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Idea Not Found</h2>
             <p>Check the id in the URL.</p>
-            <sl-button href="/discover" variant="primary"
-              >Browse Ideas
+            <sl-button href="/discover?tab=ideas" variant="primary">
+              Browse Ideas
             </sl-button>
           </div>
         `;
@@ -665,6 +701,126 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         return html` <sl-spinner></sl-spinner>`;
       }
     }
+  }
+
+  private renderIdeaStats() {
+    if (!this.idea) return html``;
+
+    const {
+      tokensContributed,
+      creator,
+      createdAt,
+      funderReward,
+    } = this.idea;
+
+    return html`
+      <div class="stat-row">
+        <span class="stat-label">Created</span>
+        <span>${formatDate(createdAt)}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Total Support</span>
+        <span>${formatAmount(tokensContributed)} UPD</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Funder Reward</span>
+        <span>${formatReward(funderReward)}</span>
+      </div>
+      ${this.cycleInfoTask.render({
+        pending: () => html`<div class="stat-row">
+          <span class="stat-label">Cycle</span>
+          <span>Loading cycle information...</span>
+        </div>`,
+        complete: (cycleInfo) => {
+          if (!cycleInfo) return html``;
+          return html`
+            <div class="stat-row">
+              <cycle-info
+                .cycleLength=${cycleInfo.cycleLength}
+                .startTime=${cycleInfo.startTime}
+              ></cycle-info>
+            </div>
+          `;
+        },
+        error: (error) => html`<div class="stat-row">
+          <span class="stat-label">Cycle</span>
+          <span class="error">Error loading cycle info</span>
+        </div>`
+      })}
+    `;
+  }
+
+  private renderCreator() {
+    if (!this.idea || !this.idea.creator) return html``;
+
+    try {
+      const { creator } = this.idea;
+      const profile = parseProfile(creator.profile as `0x${string}`);
+      const displayName = profile.name || profile.team || creator.id;
+
+      return html`
+        <div class="creator">
+          <user-avatar
+            .address=${creator.id}
+            .image=${profile.image}
+          ></user-avatar>
+          <a href="/profile/${creator.id}" title="View creator profile">
+            ${displayName}
+          </a>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error rendering creator:', error);
+      return html``;
+    }
+  }
+
+  private renderPositions() {
+    if (this.positions.length === 0) return html``;
+
+    const position = this.positions[this.positionIndex];
+
+    return html`
+      <div class="user-positions">
+        <div class="positions-header">
+          <h3>Your Support</h3>
+          ${this.positions.length > 1
+            ? html`
+                <div class="position-navigation">
+                  <sl-icon-button
+                    src=${chevronLeft}
+                    label="Previous position"
+                    @click=${this.previousPosition}
+                  ></sl-icon-button>
+                  <span
+                    >Position ${this.positionIndex + 1} of
+                    ${this.positions.length}</span
+                  >
+                  <sl-icon-button
+                    src=${chevronRight}
+                    label="Next position"
+                    @click=${this.nextPosition}
+                  ></sl-icon-button>
+                </div>
+              `
+            : html``}
+        </div>
+        <div class="position-details">
+          <p>
+            You contributed
+            <strong>${formatAmount(position.contribution)} UPD</strong>
+            in cycle ${position.contributionCycle.toString()}
+          </p>
+          <sl-button variant="primary" @click=${this.handleWithdraw}>
+            Withdraw Support
+          </sl-button>
+          <transaction-watcher
+            class="withdraw"
+            @transaction-success=${this.handleWithdrawSuccess}
+          ></transaction-watcher>
+        </div>
+      </div>
+    `;
   }
 
   connectedCallback() {
@@ -692,16 +848,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     return html`
       ${this.renderIdea()}
       <upd-dialog></upd-dialog>
-      <sl-dialog label="Set Allowance">
-        <p>
-          Before you can support this Idea, you need to sign a transaction to
-          allow the Idea contract to spend your UPD tokens.
-        </p>
-        <transaction-watcher
-          class="approve"
-          @transaction-success=${this.handleSubmit}
-        ></transaction-watcher>
-      </sl-dialog>
+      <share-dialog></share-dialog>
     `;
   }
 }

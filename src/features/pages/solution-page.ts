@@ -32,6 +32,7 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/common/cycle-info';
 import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
@@ -323,6 +324,47 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   // Array to store user positions
   private positions: SolutionPosition[] = [];
 
+  // Tasks for loading user data
+  private readonly userStakeTask = new Task(this, {
+    task: async () => {
+      if (!this.solution || !userAddress.get()) return null;
+
+      try {
+        const solution = new SolutionContract(this.solutionId);
+        const stake = await solution.read('stakesByAddress', [
+          userAddress.get(),
+        ]);
+        return stake as bigint;
+      } catch (error) {
+        console.error('Error fetching user stake:', error);
+        return null;
+      }
+    },
+    args: () => [this.solution, userAddress.get()],
+  });
+
+  // Task to fetch cycle information
+  private readonly cycleInfoTask = new Task(this, {
+    task: async () => {
+      if (!this.solution) return null;
+
+      try {
+        const solution = new SolutionContract(this.solutionId);
+        const cycleLength = await solution.read('cycleLength') as bigint;
+        const startTime = await solution.read('startTime') as bigint;
+        
+        return {
+          cycleLength,
+          startTime
+        };
+      } catch (error) {
+        console.error('Error fetching cycle information:', error);
+        return null;
+      }
+    },
+    args: () => [this.solution],
+  });
+
   // Controller for fetching solution data
   private readonly solutionController = new UrqlQueryController(
     this,
@@ -368,31 +410,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     }
   );
 
-  private readonly userStakeTask = new Task(
-    this,
-    async ([solutionId, address]) => {
-      if (!solutionId || !address) return null;
-
-      try {
-        const solutionContract = new SolutionContract(solutionId);
-
-        // Get user's stake
-        const stake = (await solutionContract.read('stakes', [
-          address,
-        ])) as bigint;
-
-        return stake > 0n ? stake : null;
-      } catch (error) {
-        console.warn('Error fetching user stake:', error);
-        return null;
-      }
-    },
-    () => [this.solutionId, userAddress.get()] as const
-  );
-
-  private readonly userPositionsTask = new Task(
-    this,
-    async ([solutionId, address]) => {
+  private readonly userPositionsTask = new Task(this, {
+    task: async ([solutionId, address]) => {
       if (!solutionId || !address) return null;
 
       try {
@@ -458,8 +477,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         return null;
       }
     },
-    () => [this.solutionId, userAddress.get()] as const
-  );
+    args: () => [this.solutionId, userAddress.get()],
+  });
 
   private previousPosition() {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
@@ -567,39 +586,68 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   }
 
   private renderSolutionStats() {
-    const progress = calculateProgress(this.solution);
-    const deadline = formatDate(this.solution!.deadline, 'full');
-    const totalStake = formatAmount(this.solution!.stake);
-    const fundingTokenSymbol = this.fundInput?.tokenSymbol;
+    if (!this.solution) return html``;
+
+    const {
+      fundingToken,
+      fundingGoal,
+      totalFunding,
+      totalStake,
+      drafter,
+      createdAt,
+    } = this.solution;
+
+    const progress = calculateProgress(totalFunding, fundingGoal);
+    const tokenSymbol = this.fundInput?.tokenSymbol || 'tokens';
 
     return html`
       <div class="stat-row">
-        <span class="stat-label">Progress:</span>
+        <span class="stat-label">Created</span>
+        <span>${formatDate(createdAt)}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Funding Goal</span>
+        <span>${formatAmount(fundingGoal)} ${tokenSymbol}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Total Funding</span>
+        <span>${formatAmount(totalFunding)} ${tokenSymbol}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Total Stake</span>
+        <span>${formatAmount(totalStake)} UPD</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Progress</span>
         <div class="progress-container">
           <sl-progress-bar
             class="progress-bar"
-            value="${progress}"
+            value=${progress}
           ></sl-progress-bar>
-          <span
-            >🚀 <strong>${progress.toFixed(0)}%</strong> complete
-            (${formatAmount(this.solution!.tokensContributed)} /
-            ${formatAmount(this.solution!.fundingGoal)}
-            ${fundingTokenSymbol})</span
-          >
+          <span>${progress}%</span>
         </div>
       </div>
-      <div class="stat-row">
-        <span class="stat-label">Deadline:</span>
-        <span>⏰ ${deadline}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Total Staked:</span>
-        <span>💎 ${totalStake} UPD</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Funder Reward:</span>
-        <span>🎁 ${formatReward(this.solution!.funderReward)}</span>
-      </div>
+      ${this.cycleInfoTask.render({
+        pending: () => html`<div class="stat-row">
+          <span class="stat-label">Cycle</span>
+          <span>Loading cycle information...</span>
+        </div>`,
+        complete: (cycleInfo) => {
+          if (!cycleInfo) return html``;
+          return html`
+            <div class="stat-row">
+              <cycle-info
+                .cycleLength=${cycleInfo.cycleLength}
+                .startTime=${cycleInfo.startTime}
+              ></cycle-info>
+            </div>
+          `;
+        },
+        error: (error) => html`<div class="stat-row">
+          <span class="stat-label">Cycle</span>
+          <span class="error">Error loading cycle info</span>
+        </div>`
+      })}
     `;
   }
 
