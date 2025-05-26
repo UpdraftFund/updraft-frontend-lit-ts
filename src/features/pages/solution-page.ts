@@ -399,10 +399,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       if (!solutionId || !address) return null;
 
       try {
-        const solutionContract = new SolutionContract(solutionId);
+        const solution = new SolutionContract(solutionId);
 
         // First, get the total number of positions
-        const numPositions = (await solutionContract.read('numPositions', [
+        const numPositions = (await solution.read('numPositions', [
           address,
         ])) as bigint;
 
@@ -413,6 +413,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         }
 
         const percentScale = BigInt(updraftSettings.get().percentScale);
+        const [firstCycle] = (await solution.read('cycles', [0n])) as bigint[];
 
         // Collect all positions
         const positions: SolutionPosition[] = [];
@@ -425,14 +426,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         ) {
           try {
             // Get position details from positionsByAddress mapping
-            const [contributionAfterFees, , , refunded] =
-              (await solutionContract.read('positionsByAddress', [
+            const [contributionAfterFees, contributionCycle, , refunded] =
+              (await solution.read('positionsByAddress', [
                 address,
                 positionIndex,
               ])) as [bigint, bigint, bigint, boolean];
 
             // Get fees earned from checkPosition
-            const [feesEarned] = (await solutionContract.read('checkPosition', [
+            const [feesEarned] = (await solution.read('checkPosition', [
               address,
               positionIndex,
             ])) as bigint[];
@@ -442,11 +443,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
             let contribution = contributionAfterFees;
 
-            const funderReward = BigInt(this.solution?.funderReward);
-            if (funderReward && percentScale > funderReward) {
-              contribution =
-                (contributionAfterFees * percentScale) /
-                (percentScale - funderReward);
+            // No contributor fees are paid in the first cycle
+            if (contributionCycle > firstCycle) {
+              const funderReward = BigInt(this.solution?.funderReward);
+              if (funderReward && percentScale > funderReward) {
+                contribution =
+                  (contributionAfterFees * percentScale) /
+                  (percentScale - funderReward);
+              }
             }
 
             const position: SolutionPosition = {
