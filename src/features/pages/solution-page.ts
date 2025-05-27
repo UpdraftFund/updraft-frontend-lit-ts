@@ -1029,7 +1029,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                               variant="success"
                               disabled
                             >
-                              Fund this Solution
+                              Fund Solution
                             </sl-button>
                           `}
                       <sl-button
@@ -1037,7 +1037,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                         variant="success"
                         @click=${this.handleFund}
                       >
-                        Fund this Solution
+                        Fund Solution
                       </sl-button>
                     </token-input>
                     <transaction-watcher

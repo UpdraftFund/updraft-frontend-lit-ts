@@ -180,7 +180,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         ${!goalFailed(this.solution)
           ? html`
               <sl-button variant="primary" href="/solution/${this.solution.id}">
-                Fund this Solution
+                Fund Solution
               </sl-button>
             `
           : html``}
