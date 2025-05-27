@@ -438,9 +438,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               positionIndex,
             ])) as bigint[];
 
-            // Skip positions that have been refunded and have no fees left
-            if (refunded && feesEarned === 0n) continue;
-
             let contribution = contributionAfterFees;
 
             // No contributor fees are paid in the first cycle
@@ -461,7 +458,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               positionIndex,
             };
 
-            positions.push(position);
+            // Only include positions that can be refunded or have fees to collect
+            if (this.isRefundable(position) || feesEarned > 0n) {
+              positions.push(position);
+            }
           } catch (error) {
             // If position doesn't exist, skip it
             console.warn(`Position ${positionIndex} not available:`, error);
@@ -557,13 +557,13 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-          ${goalFailed(this.solution) && position.refunded
+          ${this.isRefundable(position)
             ? html` <p>
                 <strong>Goal Failed:</strong> You can refund your contribution.
               </p>`
             : html``}
           <div class="button-row">
-            ${goalFailed(this.solution) && position.refunded
+            ${this.isRefundable(position)
               ? html`
                   <sl-button variant="primary" @click=${this.handleRefund}>
                     Refund Position
@@ -633,6 +633,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       userAddress.get()?.toLowerCase() ===
       this.solution?.drafter.id.toLowerCase()
     );
+  }
+
+  private isRefundable(position: SolutionPosition) {
+    return goalFailed(this.solution) && !position.refunded;
   }
 
   private get withdrawalStatus() {
