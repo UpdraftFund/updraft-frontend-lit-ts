@@ -133,7 +133,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
             layout.rightSidebarContent.set(
               html` <activity-feed
                 .userId=${this.address}
-                .userName=${name || team}
+                .userName=${name || team || shortenAddress(this.address)}
               ></activity-feed>`
             );
           }

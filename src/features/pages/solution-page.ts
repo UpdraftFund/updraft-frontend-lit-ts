@@ -221,6 +221,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         background-color: var(--subtle-background);
         border-radius: 0.5rem;
         padding: 1rem;
+        max-width: 500px;
       }
 
       .positions-header {
@@ -260,7 +261,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         margin: 0;
       }
 
-      .position-details sl-button {
+      .button-row {
+        display: flex;
+        gap: 0.5rem;
         margin-top: 0.5rem;
         align-self: flex-start;
       }
@@ -396,10 +399,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       if (!solutionId || !address) return null;
 
       try {
-        const solutionContract = new SolutionContract(solutionId);
+        const solution = new SolutionContract(solutionId);
 
         // First, get the total number of positions
-        const numPositions = (await solutionContract.read('numPositions', [
+        const numPositions = (await solution.read('numPositions', [
           address,
         ])) as bigint;
 
@@ -408,6 +411,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           this.positions = [];
           return null;
         }
+
+        const percentScale = BigInt(updraftSettings.get().percentScale);
+        const [firstCycle] = (await solution.read('cycles', [0n])) as bigint[];
 
         // Collect all positions
         const positions: SolutionPosition[] = [];
@@ -420,26 +426,40 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         ) {
           try {
             // Get position details from positionsByAddress mapping
-            const [contribution, , , refunded] = (await solutionContract.read(
-              'positionsByAddress',
-              [address, positionIndex]
-            )) as [bigint, bigint, bigint, boolean];
+            const [contributionAfterFees, contributionCycle, , refunded] =
+              (await solution.read('positionsByAddress', [
+                address,
+                positionIndex,
+              ])) as [bigint, bigint, bigint, boolean];
 
-            // Get fees earned and shares from checkPosition
-            const [feesEarned] = (await solutionContract.read('checkPosition', [
+            // Get fees earned from checkPosition
+            const [feesEarned] = (await solution.read('checkPosition', [
               address,
               positionIndex,
             ])) as bigint[];
 
+            // Skip positions that have been refunded and have no fees left
+            if (refunded && feesEarned === 0n) continue;
+
+            let contribution = contributionAfterFees;
+
+            // No contributor fees are paid in the first cycle
+            if (contributionCycle > firstCycle) {
+              const funderReward = BigInt(this.solution?.funderReward);
+              if (funderReward && percentScale > funderReward) {
+                contribution =
+                  (contributionAfterFees * percentScale) /
+                  (percentScale - funderReward);
+              }
+            }
+
             const position: SolutionPosition = {
               contribution,
-              refunded,
+              contributionAfterFees,
               feesEarned,
+              refunded,
               positionIndex,
             };
-
-            // Skip positions that have been refunded and have no fees left
-            if (position.refunded && feesEarned === 0n) continue;
 
             positions.push(position);
           } catch (error) {
@@ -528,6 +548,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
+            (${formatAmount(position.contributionAfterFees)} after fees)
           </p>
           <p>
             Fees earned:
@@ -536,31 +557,35 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-          ${goalFailed(this.solution)
-            ? html`
-                <p>
-                  <strong>Goal Failed:</strong> You can refund your
-                  contribution.
-                </p>
-                <sl-button variant="primary" @click=${this.handleRefund}>
-                  Refund Position
-                </sl-button>
-                <transaction-watcher
-                  class="refund"
-                  @transaction-success=${this.handleRefundSuccess}
-                ></transaction-watcher>
-              `
-            : position.feesEarned > 0n
+          ${goalFailed(this.solution) && position.refunded
+            ? html` <p>
+                <strong>Goal Failed:</strong> You can refund your contribution.
+              </p>`
+            : html``}
+          <div class="button-row">
+            ${goalFailed(this.solution) && position.refunded
+              ? html`
+                  <sl-button variant="primary" @click=${this.handleRefund}>
+                    Refund Position
+                  </sl-button>
+                `
+              : html``}
+            ${position.feesEarned > 0n
               ? html`
                   <sl-button variant="primary" @click=${this.handleCollectFees}>
                     Collect Fees
                   </sl-button>
-                  <transaction-watcher
-                    class="collect"
-                    @transaction-success=${this.handleCollectSuccess}
-                  ></transaction-watcher>
                 `
               : html``}
+            <transaction-watcher
+              class="refund"
+              @transaction-success=${this.handleRefundSuccess}
+            ></transaction-watcher>
+            <transaction-watcher
+              class="collect"
+              @transaction-success=${this.handleCollectSuccess}
+            ></transaction-watcher>
+          </div>
         </div>
       </div>
     `;

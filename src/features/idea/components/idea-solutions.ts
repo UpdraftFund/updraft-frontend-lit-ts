@@ -78,7 +78,7 @@ export class IdeaSolutions extends LitElement {
             `)
           : html`
               <div class="no-solutions">
-                No solutions yet. Be the first to add one!
+                No solutions yet. Be the first to draft one!
               </div>
             `}
     `;

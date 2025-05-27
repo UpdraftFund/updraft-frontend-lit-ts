@@ -28,10 +28,9 @@ export class MySolutions extends SignalWatcher(LitElement) {
     }
 
     .empty-message {
-      padding: 1rem;
+      padding: 0 1rem 1rem;
       color: var(--no-results);
       font-size: var(--sl-font-size-small);
-      text-align: center;
       font-style: italic;
     }
   `;

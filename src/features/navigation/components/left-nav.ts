@@ -4,6 +4,8 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 
 import compass from '@icons/navigation/compass.svg';
 import house from '@icons/navigation/house.svg';
+import discord from '@icons/navigation/discord.svg';
+import guide from '@icons/navigation/guide-link.svg';
 
 import { nav } from '@state/navigation';
 import { leftSidebarCollapsed } from '@state/layout';
@@ -88,6 +90,18 @@ export class LeftNav extends SignalWatcher(LitElement) {
             >
               <sl-icon src=${compass}></sl-icon>
               <span class="location">Discover</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://guide.updraft.fund/" target="_blank" }>
+              <sl-icon src=${guide}></sl-icon>
+              <span class="location">Guide</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://discord.gg/mQJ58MY6Nz" target="_blank">
+              <sl-icon src=${discord}></sl-icon>
+              <span class="location">Chat</span>
             </a>
           </li>
         </ul>

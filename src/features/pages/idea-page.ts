@@ -322,11 +322,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
             // No contributor fees are paid in the first cycle
             if (contributionCycle > firstCycle) {
-              const funderReward = this.idea?.funderReward;
+              const funderReward = BigInt(this.idea?.funderReward);
               if (funderReward && percentScale > funderReward) {
                 originalContribution =
                   (contributionAfterFees * percentScale) /
-                  (percentScale - BigInt(funderReward));
+                  (percentScale - funderReward);
               }
             }
 
@@ -549,7 +549,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                         ${formatAmount(position.originalContribution)} UPD
                       </strong>
                       <small
-                        >including ${formatAmount(position.feesPaid)} UPD in
+                        >including ${formatAmount(position.feesPaid)} in
                         fees</small
                       >
                     </p>
@@ -626,7 +626,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <h2>Solutions</h2>
           <sl-button href="/create-solution/${this.ideaId}">
             <sl-icon slot="prefix" src=${plusLgIcon}></sl-icon>
-            Add Solution
+            Draft Solution
           </sl-button>
         </div>
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>

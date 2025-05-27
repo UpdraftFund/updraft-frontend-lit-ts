@@ -303,11 +303,10 @@ export class EditSolution extends SignalWatcher(LitElement) {
                         <sl-input
                           name="goal"
                           type="number"
-                          min="${this.solution
-                            ? Number(
-                                formatUnits(this.solution.fundingGoal + 1n, 18)
-                              )
-                            : 0}"
+                          min="${formatUnits(
+                            BigInt(this.solution!.fundingGoal) + 100000n,
+                            18
+                          )}"
                           step="any"
                           required
                         >
@@ -315,7 +314,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                             slot="label"
                             label="New Funding Goal*"
                             hint="Must be higher than the previous goal of ${formatAmount(
-                              this.solution?.fundingGoal
+                              this.solution!.fundingGoal
                             )} ${this.tokenSymbol}"
                           ></label-with-hint>
                         </sl-input>
