@@ -75,30 +75,25 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         gap: 2rem;
         padding: 2rem;
       }
-
       .header-container {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-medium);
         background-color: var(--main-background);
       }
-
       .error-container {
         display: flex;
         flex-direction: column;
         padding: 2rem;
         gap: 1rem;
       }
-
       .error-container h2 {
         color: var(--sl-color-danger-600);
         margin: 0;
       }
-
       .error-container p {
         max-width: 500px;
       }
-
       sl-button {
         max-width: fit-content;
       }
@@ -122,27 +117,22 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .idea-link a:hover {
         text-decoration: underline;
       }
-
       .drafter {
         display: flex;
         align-items: center;
         gap: var(--sl-spacing-small);
         width: fit-content;
       }
-
       .action-buttons {
         display: flex;
         flex-direction: column;
       }
-
       .action-buttons form {
         margin: 0;
       }
-
       .action-buttons token-input {
         min-width: 250px;
       }
-
       .solution-stats {
         display: flex;
         flex-direction: column;
@@ -152,70 +142,58 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         border-radius: 10px;
         width: fit-content;
       }
-
       .solution-stats .stat-row {
         display: flex;
         align-items: center;
         gap: var(--sl-spacing-medium);
         margin-bottom: var(--sl-spacing-x-small);
       }
-
       .solution-stats .stat-label {
         min-width: 120px;
       }
-
       .solution-stats .progress-container {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-x-small);
       }
-
       .solution-stats .progress-bar {
         --height: 8px;
         --indicator-color: var(--sl-color-primary-600);
         --track-color: var(--sl-color-neutral-300);
       }
-
       .goal-reached,
       .goal-failed {
         border-radius: var(--sl-border-radius-medium);
         padding: var(--sl-spacing-medium);
         width: fit-content;
       }
-
       .goal-reached p,
       .goal-failed p {
         margin-top: 0;
       }
-
       .goal-reached {
         background-color: var(--sl-color-success-100);
         border-left: 3px solid var(--sl-color-success-600);
       }
-
       .goal-failed {
         background-color: var(--sl-color-danger-100);
         border-left: 3px solid var(--sl-color-danger-600);
       }
-
       .withdraw-funds-row {
         display: flex;
         align-items: center;
         gap: var(--sl-spacing-medium);
       }
-
       .withdrawal-status {
         font-size: var(--sl-font-size-small);
         color: var(--sl-color-neutral-700);
       }
-
       .user-stake h3,
       .user-positions h3 {
         margin: 0;
         font-size: 1.2rem;
         font-weight: 500;
       }
-
       .user-stake,
       .user-positions {
         background-color: var(--subtle-background);
@@ -223,55 +201,54 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         padding: 1rem;
         max-width: 500px;
       }
-
       .positions-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.5rem;
       }
-
       .position-navigation {
         display: flex;
         align-items: center;
         gap: 0.5rem;
       }
-
       .position-navigation sl-icon-button::part(base) {
         font-size: 1.2rem;
         color: var(--sl-color-neutral-600);
       }
-
       .position-navigation sl-icon-button::part(base):hover {
         color: var(--accent);
       }
-
       .position-navigation span {
         font-size: 0.9rem;
         color: var(--sl-color-neutral-600);
       }
-
       .position-details {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
       }
-
       .position-details p {
         margin: 0;
       }
-
       .button-row {
         display: flex;
         gap: 0.5rem;
         margin-top: 0.5rem;
         align-self: flex-start;
       }
-
       .error {
         color: var(--sl-color-danger-600);
       }
-
+      .button-with-tooltip {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .info-icon {
+        font-size: 0.75rem;
+        cursor: help;
+      }
       .solution-description h3,
       .solution-news h3,
       .solution-repository h3 {
@@ -279,13 +256,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         margin-bottom: var(--sl-spacing-small);
         font-size: var(--sl-font-size-large);
       }
-
       .solution-repository a {
         color: var(--sl-color-primary-600);
         text-decoration: none;
         word-break: break-all;
       }
-
       .solution-repository a:hover {
         text-decoration: underline;
       }
@@ -1032,13 +1007,16 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                               Fund Solution
                             </sl-button>
                           `}
-                      <sl-button
-                        slot="valid"
-                        variant="success"
-                        @click=${this.handleFund}
-                      >
-                        Fund Solution
-                      </sl-button>
+                      <div class="button-with-tooltip" slot="valid">
+                        <sl-button variant="success" @click=${this.handleFund}>
+                          Fund Solution
+                        </sl-button>
+                        <sl-tooltip
+                          content="Part of your funding goes to the Solution fund to help this Solution reach its goal and part goes to 🎁 funder rewards for past funders. The percentage was set by the Solution drafter."
+                        >
+                          <span class="info-icon">ℹ️</span>
+                        </sl-tooltip>
+                      </div>
                     </token-input>
                     <transaction-watcher
                       class="fund"
@@ -1067,13 +1045,16 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       >
                         Get more UPD
                       </sl-button>
-                      <sl-button
-                        slot="valid"
-                        variant="primary"
-                        @click=${this.handleStake}
-                      >
-                        Add Stake
-                      </sl-button>
+                      <div class="button-with-tooltip" slot="valid">
+                        <sl-button variant="primary" @click=${this.handleStake}>
+                          Add Stake
+                        </sl-button>
+                        <sl-tooltip
+                          content="Adding a 💎 stake adds an incentive for funders because they earn part of the stake if the funding goal fails. If the funding goal succeeds, you  get your stake back; otherwise, your stake is divided among funders."
+                        >
+                          <span class="info-icon">ℹ️</span>
+                        </sl-tooltip>
+                      </div>
                     </token-input>
                     <transaction-watcher
                       class="stake"

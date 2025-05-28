@@ -88,10 +88,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         gap: 0.5rem;
         margin-left: 0.25rem;
       }
-      .info-icon {
-        font-size: 0.75rem;
-        cursor: help;
-      }
       .heading {
         font-size: var(--sl-font-size-2x-large);
         margin-bottom: 0;
@@ -164,6 +160,15 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.5rem;
+      }
+      .text-with-tooltip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .info-icon {
+        font-size: 0.75rem;
+        cursor: help;
       }
       .your-support h3 {
         margin: 0;
@@ -576,7 +581,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 <h3>Add More Support</h3>
               `;
             } else {
-              return html`<h3>Support this Idea</h3>`;
+              return html` <div class="text-with-tooltip">
+                <h3>Support this Idea</h3>
+                <sl-tooltip
+                  content="Supporting an Idea signals that you would like someone to create a Solution for it. You also have a chance to earn 🎁 funder rewards. Your support can be withdrawn at any time, minus anti-spam and funder reward fees."
+                >
+                  <span class="info-icon">ℹ️</span>
+                </sl-tooltip>
+              </div>`;
             }
           },
         })}
@@ -602,7 +614,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 variant="primary"
                 @click=${this.handleSupport}
               >
-                ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
+                ${this.isAirdropMode ? 'Airdrop' : 'Support Idea'}
               </sl-button>
             </token-input>
             <transaction-watcher
