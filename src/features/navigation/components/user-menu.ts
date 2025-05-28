@@ -100,6 +100,15 @@ export class UserMenu extends SignalWatcher(LitElement) {
       padding-top: 12px;
       box-shadow: -1px 4px 5px 3px rgba(0, 0, 0, 7%);
     }
+    .button-with-tooltip {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .info-icon {
+      font-size: 0.75rem;
+      cursor: help;
+    }
   `;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
@@ -186,12 +195,19 @@ export class UserMenu extends SignalWatcher(LitElement) {
           </sl-dropdown>
         `
       : html`
-          <sl-button
-            variant="primary"
-            @click=${() => connectWallet()}
-            ?loading=${connectingValue}
-            >Connect Wallet
-          </sl-button>
+          <div class="button-with-tooltip">
+            <sl-button
+              variant="primary"
+              @click=${() => connectWallet()}
+              ?loading=${connectingValue}
+              >Connect Wallet
+            </sl-button>
+            <sl-tooltip
+              content="A wallet identifies you to others, stores your funds, and allows you to take actions in Updraft. You can get a wallet using this button."
+            >
+              <span class="info-icon">ℹ️</span>
+            </sl-tooltip>
+          </div>
         `;
   }
 }

@@ -31,41 +31,33 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
     h2 {
       margin: 1.5rem 0 1rem;
     }
-
     section {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 1.25rem;
     }
-
     sl-card {
       --padding: 1.25rem;
     }
-
     sl-card h3 {
       font-size: 1.25rem;
       font-weight: 600;
       margin: 0 0 1rem 0;
     }
-
     sl-card p {
       font-size: 0.875rem;
       line-height: 1.5;
     }
-
     sl-card::part(base),
     sl-card::part(body) {
       height: 100%;
     }
-
-    /* Task card with image styles */
     sl-card img {
       float: right;
       width: 125px;
       height: auto;
       margin: 0 0 8px 16px;
     }
-
     /* Clear float before footer */
     .clear-float {
       clear: both;
@@ -144,8 +136,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <img src=${connectWallet} alt="Connect wallet illustration" />
                   <h3>Connect a Wallet</h3>
                   <p>
-                    Funding happens through a wallet. Choose a wallet provider,
-                    install it, then click "Connect Wallet"
+                    A wallet identifies you to others, stores your funds, and
+                    allows you to take actions in Updraft. You can install a
+                    wallet from these links.
                   </p>
                   <p>
                     ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a>

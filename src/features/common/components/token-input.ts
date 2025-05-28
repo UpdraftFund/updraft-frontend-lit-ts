@@ -144,50 +144,45 @@ export class TokenInput
         flex-direction: column;
         gap: 0.5rem;
       }
-
       .input-row {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 1rem;
       }
-
       .input-row sl-input {
         flex: none;
         width: calc(10ch + var(--sl-input-spacing-medium) * 2);
         box-sizing: content-box;
       }
-
       .input-row sl-input::part(input) {
         text-align: right;
       }
-
       .input-container .input-row sl-input.invalid::part(base) {
         border-color: var(--sl-color-danger-500);
       }
-
       .input-container .input-row sl-input.invalid:focus-within::part(base) {
         box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-color-danger-500);
       }
-
       .fee-info {
         font-size: 0.875rem;
         color: var(--sl-color-neutral-900);
         white-space: nowrap;
         margin-left: 0.5rem;
       }
-
+      .info-icon {
+        font-size: 0.75rem;
+        cursor: help;
+      }
       .error {
         color: red;
         font-size: 0.8rem;
         min-height: 1.2rem; /* Reserve space for error message */
       }
-
       .error-placeholder {
         min-height: 1.2rem; /* Same height as error message */
         visibility: hidden;
       }
-
       .slot-container {
         display: flex;
         align-items: center;
@@ -656,6 +651,11 @@ export class TokenInput
                         >Anti-Spam Fee: ${shortNum(this.antiSpamFee)}
                         ${this._symbol}</span
                       >
+                      <sl-tooltip
+                        content="This fee keeps spam out of Updraft. All anti-spam fees go to a faucet for new users, which you can collect from the Updraft Discord"
+                      >
+                        <span class="info-icon">ℹ️</span>
+                      </sl-tooltip>
                     </div>`
                   : html``}
               </div>

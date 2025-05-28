@@ -46,9 +46,4 @@ export const modal = createAppKit({
   features: {
     analytics: true,
   },
-  featuredWalletIds: [
-    'fb6ed96272ec885008e896c6146002048d8dc88c0b7e0e6fa42bcadf052a1569', //enkrypt
-    'a9751f17a3292f2d1493927f0555603d69e9a3fcbcdf5626f01b49afa21ced91', //frame
-    '18388be9ac2d02726dbac9777c96efaac06d744b2f6d580fccdd4127a6d01fd1', //rabby
-  ],
 });
