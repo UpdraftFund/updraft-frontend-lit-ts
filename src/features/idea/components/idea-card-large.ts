@@ -80,10 +80,22 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
             ? html`
                 <li>
                   <span>🎁 ${funderRewardFormatted} funder reward</span>
+                  <sl-tooltip
+                    content="The 🎁 funder reward is the percentage of each contribution that is paid to previous contributors."
+                  >
+                    <span class="info-icon">ℹ️</span>
+                  </sl-tooltip>
                 </li>
               `
             : ''}
-          <li>🔥 <span>${interest}</span></li>
+          <li>
+            🔥 <span>${interest}</span>
+            <sl-tooltip
+              content="interest (🔥) is how much support an Idea has over time."
+            >
+              <span class="info-icon">ℹ️</span>
+            </sl-tooltip>
+          </li>
         </ul>
 
         ${description
