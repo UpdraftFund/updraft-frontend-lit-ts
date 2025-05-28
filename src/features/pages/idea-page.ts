@@ -88,10 +88,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         gap: 0.5rem;
         margin-left: 0.25rem;
       }
-      .info-icon {
-        font-size: 0.75rem;
-        cursor: help;
-      }
       .heading {
         font-size: var(--sl-font-size-2x-large);
         margin-bottom: 0;
@@ -165,6 +161,15 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         align-items: center;
         margin-bottom: 0.5rem;
       }
+      .item-with-tooltip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .info-icon {
+        font-size: 0.75rem;
+        cursor: help;
+      }
       .your-support h3 {
         margin: 0;
         font-size: 1.2rem;
@@ -184,6 +189,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       }
       .position-navigation span {
         font-size: 0.9rem;
+        text-wrap: nowrap;
         color: var(--sl-color-neutral-600);
       }
       .support-details {
@@ -490,11 +496,23 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         <span class="created"> Created ${formatDate(startTime, 'full')} </span>
         <div class="idea-info">
           ${pctFunderReward
-            ? html`
+            ? html` <div class="item-with-tooltip">
                 <span> 🎁 ${pctFunderReward.toFixed(0)}% funder reward </span>
-              `
+                <sl-tooltip
+                  content="This is the percentage of each contribution that is paid to previous contributors. You can collect your 🎁 funder rewards by withdrawing your support for an Idea."
+                >
+                  <span class="info-icon">ℹ️</span>
+                </sl-tooltip>
+              </div>`
             : html``}
-          <span>🔥 ${formatAmount(shares)}</span>
+          <div class="item-with-tooltip">
+            <span>🔥 ${formatAmount(shares)}</span>
+            <sl-tooltip
+              content="interest (🔥) is how much support an Idea has over time."
+            >
+              <span class="info-icon">ℹ️</span>
+            </sl-tooltip>
+          </div>
         </div>
         <div class="description-tags">
           <h3>Description</h3>
@@ -563,9 +581,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                         ${formatAmount(position.currentPosition)} UPD
                       </strong>
                     </p>
-                    <sl-button variant="primary" @click=${this.handleWithdraw}>
-                      Withdraw Support
-                    </sl-button>
+                    <div class="item-with-tooltip">
+                      <sl-button
+                        variant="primary"
+                        @click=${this.handleWithdraw}
+                      >
+                        Withdraw Support
+                      </sl-button>
+                      <sl-tooltip
+                        content="Your entire position will be withdrawn and refunded (minus any fees) plus any 🎁 funder rewards you have earned."
+                      >
+                        <span class="info-icon">ℹ️</span>
+                      </sl-tooltip>
+                    </div>
                   </div>
                   <transaction-watcher
                     class="withdraw"
@@ -576,7 +604,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 <h3>Add More Support</h3>
               `;
             } else {
-              return html`<h3>Support this Idea</h3>`;
+              return html` <div class="item-with-tooltip">
+                <h3>Support this Idea</h3>
+                <sl-tooltip
+                  content="Supporting an Idea signals that you would like someone to create a Solution for it. You also have a chance to earn 🎁 funder rewards. Your support can be withdrawn at any time, minus anti-spam and funder reward fees."
+                >
+                  <span class="info-icon">ℹ️</span>
+                </sl-tooltip>
+              </div>`;
             }
           },
         })}
@@ -602,7 +637,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 variant="primary"
                 @click=${this.handleSupport}
               >
-                ${this.isAirdropMode ? 'Airdrop' : 'Support this Idea'}
+                ${this.isAirdropMode ? 'Airdrop' : 'Support Idea'}
               </sl-button>
             </token-input>
             <transaction-watcher
