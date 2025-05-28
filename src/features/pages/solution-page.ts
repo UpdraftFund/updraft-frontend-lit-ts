@@ -69,17 +69,15 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     css`
       main {
         flex: 1;
-        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         gap: 2rem;
-        padding: 2rem;
+        padding: 2rem 2rem 0;
       }
       .header-container {
         display: flex;
         flex-direction: column;
         gap: var(--sl-spacing-medium);
-        background-color: var(--main-background);
       }
       .error-container {
         display: flex;
@@ -221,6 +219,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .position-navigation span {
         font-size: 0.9rem;
+        text-wrap: nowrap;
         color: var(--sl-color-neutral-600);
       }
       .position-details {
@@ -240,9 +239,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .error {
         color: var(--sl-color-danger-600);
       }
-      .button-with-tooltip {
+      .item-with-tooltip {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 0.5rem;
       }
       .info-icon {
@@ -547,9 +546,19 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               : html``}
             ${position.feesEarned > 0n
               ? html`
-                  <sl-button variant="primary" @click=${this.handleCollectFees}>
-                    Collect Fees
-                  </sl-button>
+                  <div class="item-with-tooltip">
+                    <sl-button
+                      variant="primary"
+                      @click=${this.handleCollectFees}
+                    >
+                      Collect Fees
+                    </sl-button>
+                    <sl-tooltip
+                      content="These are 🎁 funder rewards you earned from funders making contributions after yours."
+                    >
+                      <span class="info-icon">ℹ️</span>
+                    </sl-tooltip>
+                  </div>
                 `
               : html``}
             <transaction-watcher
@@ -594,11 +603,25 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       </div>
       <div class="stat-row">
         <span class="stat-label">Total Staked:</span>
-        <span>💎 ${totalStake} UPD</span>
+        <div class="item-with-tooltip">
+          <span>💎 ${totalStake} UPD</span>
+          <sl-tooltip
+            content="💎 Stake is divided among funders if a Solution's funding goal isn't reached by the deadline. Contributions are also refunded minus any funder reward fees."
+          >
+            <span class="info-icon">ℹ️</span>
+          </sl-tooltip>
+        </div>
       </div>
       <div class="stat-row">
         <span class="stat-label">Funder Reward:</span>
-        <span>🎁 ${formatReward(this.solution!.funderReward)}</span>
+        <div class="item-with-tooltip">
+          <span>🎁 ${formatReward(this.solution!.funderReward)}</span>
+          <sl-tooltip
+            content="This is the percentage of each contribution that is paid to previous contributors. You can collect your 🎁 funder rewards for a Solution after new contributions are made."
+          >
+            <span class="info-icon">ℹ️</span>
+          </sl-tooltip>
+        </div>
       </div>
     `;
   }
@@ -1007,7 +1030,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                               Fund Solution
                             </sl-button>
                           `}
-                      <div class="button-with-tooltip" slot="valid">
+                      <div class="item-with-tooltip" slot="valid">
                         <sl-button variant="success" @click=${this.handleFund}>
                           Fund Solution
                         </sl-button>
@@ -1045,7 +1068,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       >
                         Get more UPD
                       </sl-button>
-                      <div class="button-with-tooltip" slot="valid">
+                      <div class="item-with-tooltip" slot="valid">
                         <sl-button variant="primary" @click=${this.handleStake}>
                           Add Stake
                         </sl-button>

@@ -162,8 +162,22 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
           </li>
           ${this.renderGoalStatus()}
           <li>⏰ Due ${deadline}</li>
-          <li>💎 ${stake} UPD stake</li>
-          <li>🎁 ${funderRewardFormatted} funder reward</li>
+          <li>
+            <span>💎 ${stake} UPD stake</span>
+            <sl-tooltip
+              content="💎Stake is divided among funders if a Solution's funding goal isn't reached by the deadline."
+            >
+              <span class="info-icon">ℹ️</span>
+            </sl-tooltip>
+          </li>
+          <li>
+            <span>🎁 ${funderRewardFormatted} funder reward</span>
+            <sl-tooltip
+              content="The 🎁 funder reward is the percentage of each contribution that is paid to previous contributors."
+            >
+              <span class="info-icon">ℹ️</span>
+            </sl-tooltip>
+          </li>
         </ul>
 
         ${solutionInfo.description
