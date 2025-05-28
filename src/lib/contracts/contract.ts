@@ -59,6 +59,20 @@ export class Contract implements IContract {
     });
   }
 
+  async willSucceed(functionName: string, args?: unknown[]) {
+    try {
+      await simulateContract(config, {
+        abi: this.abi,
+        address: this.address,
+        functionName,
+        args,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async write(functionName: string, args?: unknown[]) {
     try {
       const { request } = await simulateContract(config, {
