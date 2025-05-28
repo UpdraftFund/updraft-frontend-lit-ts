@@ -39,11 +39,6 @@ export class AppLayout extends SignalWatcher(LitElement) {
       flex: 1;
       justify-content: space-between;
     }
-    main {
-      display: flex;
-      flex: 1 1 47rem;
-      flex-direction: column;
-    }
     right-side-bar {
       flex: 0 0 18rem;
     }
@@ -56,8 +51,10 @@ export class AppLayout extends SignalWatcher(LitElement) {
         flex-direction: column;
         justify-content: normal;
       }
-      .right-sidebar-below main {
-        flex: 1;
+      .right-sidebar-below right-side-bar {
+        flex: 0 0 100%;
+        border: 0;
+        padding-left: 2rem;
       }
     }
 
@@ -70,6 +67,11 @@ export class AppLayout extends SignalWatcher(LitElement) {
         flex-direction: column;
         justify-content: normal;
         z-index: 1;
+      }
+      right-side-bar {
+        flex: 0 0 100%;
+        border: 0;
+        padding-left: 1rem;
       }
     }
   `;
@@ -103,9 +105,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
             ? 'right-sidebar-below'
             : ''}"
         >
-          <main>
-            <slot></slot>
-          </main>
+          <slot></slot>
           ${showRightSidebar.get()
             ? html` <right-side-bar
                 class="${nav.get() === 'edit-profile' ||
