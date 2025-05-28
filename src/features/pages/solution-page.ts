@@ -400,11 +400,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         ) {
           try {
             // Get position details from positionsByAddress mapping
-            const [contributionAfterFees, contributionCycle, , refunded] =
+            const [contributionAfterFees, , contributionCycle] =
               (await solution.read('positionsByAddress', [
                 address,
                 positionIndex,
-              ])) as [bigint, bigint, bigint, boolean];
+              ])) as [bigint, bigint, bigint, bigint, boolean];
 
             // Get fees earned from checkPosition
             const [feesEarned] = (await solution.read('checkPosition', [
@@ -412,28 +412,32 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               positionIndex,
             ])) as bigint[];
 
-            let contribution = contributionAfterFees;
-
-            // No contributor fees are paid in the first cycle
-            if (contributionCycle > firstCycle) {
-              const funderReward = BigInt(this.solution?.funderReward);
-              if (funderReward && percentScale > funderReward) {
-                contribution =
-                  (contributionAfterFees * percentScale) /
-                  (percentScale - funderReward);
-              }
-            }
-
-            const position: SolutionPosition = {
-              contribution,
-              contributionAfterFees,
-              feesEarned,
-              refunded,
+            const refundable = await solution.willSucceed('refund', [
               positionIndex,
-            };
+            ]);
 
             // Only include positions that can be refunded or have fees to collect
-            if (this.isRefundable(position) || feesEarned > 0n) {
+            if (feesEarned > 0n || refundable) {
+              let contribution = contributionAfterFees;
+
+              // No contributor fees are paid in the first cycle
+              if (contributionCycle > firstCycle) {
+                const funderReward = BigInt(this.solution?.funderReward);
+                if (funderReward && percentScale > funderReward) {
+                  contribution =
+                    (contributionAfterFees * percentScale) /
+                    (percentScale - funderReward);
+                }
+              }
+
+              const position: SolutionPosition = {
+                contribution,
+                contributionAfterFees,
+                feesEarned,
+                refundable,
+                positionIndex,
+              };
+
               positions.push(position);
             }
           } catch (error) {
@@ -531,13 +535,13 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${this.fundInput?.tokenSymbol}
             </strong>
           </p>
-          ${this.isRefundable(position)
+          ${position.refundable
             ? html` <p>
                 <strong>Goal Failed:</strong> You can refund your contribution.
               </p>`
             : html``}
           <div class="button-row">
-            ${this.isRefundable(position)
+            ${position.refundable
               ? html`
                   <sl-button variant="primary" @click=${this.handleRefund}>
                     Refund Position
@@ -633,10 +637,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     );
   }
 
-  private isRefundable(position: SolutionPosition) {
-    return goalFailed(this.solution) && !position.refunded;
-  }
-
   private get withdrawalStatus() {
     if (!this.solution) return '';
 
@@ -653,10 +653,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
   private async handleRefund() {
     try {
-      if (this.positions.length === 0) {
-        console.warn('No valid position to refund');
-        return;
-      }
       const currentPosition = this.positions[this.positionIndex];
       const solutionContract = new SolutionContract(this.solutionId);
 

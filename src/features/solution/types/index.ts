@@ -7,10 +7,10 @@ export interface SolutionInfo {
 
 export interface SolutionPosition {
   contribution: bigint;
-  refunded: boolean;
   contributionAfterFees: bigint;
   feesEarned: bigint;
   positionIndex: bigint;
+  refundable: boolean;
 }
 
 export type { Solution, SolutionContribution } from '@gql';
