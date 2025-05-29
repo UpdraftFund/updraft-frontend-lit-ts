@@ -12,6 +12,7 @@
   --sl-color-primary-950: rgb(6 41 62);
   --subtle-background: #dff5fc;
   --dialog-border: var(--sl-color-neutral-100);
+  --badge: var(--sl-color-primary-600);
 }
 
 .sl-theme-dark {
@@ -28,6 +29,7 @@
   --sl-color-primary-950: rgb(247 250 251);
   --subtle-background: var(--sl-color-primary-100);
   --dialog-border: var(--sl-color-neutral-400);
+  --badge: var(--sl-color-primary-300);
 }
 
 /* Use var(--sl-color-{name}-{n}) to have inverted colors for dark and light themes.
