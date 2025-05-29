@@ -12,6 +12,7 @@
   --sl-color-primary-950: rgb(6 41 62);
   --subtle-background: #dff5fc;
   --dialog-border: var(--sl-color-neutral-100);
+  --badge: var(--sl-color-primary-600);
 }
 
 .sl-theme-dark {
@@ -28,6 +29,7 @@
   --sl-color-primary-950: rgb(247 250 251);
   --subtle-background: var(--sl-color-primary-100);
   --dialog-border: var(--sl-color-neutral-400);
+  --badge: var(--sl-color-primary-300);
 }
 
 /* Use var(--sl-color-{name}-{n}) to have inverted colors for dark and light themes.
@@ -40,6 +42,7 @@
   --link: var(--sl-color-primary-500);
   --main-foreground: var(--sl-color-neutral-800);
   --subtle-text: var(--sl-color-neutral-600);
+  --badge-text: white;
   --no-results: var(--sl-color-neutral-500);
   --control-background: var(--sl-color-sky-200);
   --section-heading: var(--sl-color-neutral-500);
@@ -48,6 +51,7 @@
   --success: var(--sl-color-success-600);
   --attention: var(--sl-color-warning-600);
   --border-default: var(--sl-color-neutral-200);
+  --border-accent: var(--sl-color-primary-100);
 }
 
 /* Tab group specific styling */
