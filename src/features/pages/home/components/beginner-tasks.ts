@@ -65,7 +65,6 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
     sl-card.campaign {
       position: relative;
       --border-radius: 6px 12px 6px 6px;
-      --border-color: var(--sl-color-primary-200);
     }
     sl-card.campaign::part(base) {
       background: linear-gradient(
@@ -73,7 +72,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
         var(--sl-color-neutral-0) 0%,
         var(--sl-color-primary-100) 100%
       );
-      border: 2px solid var(--border-color);
+      border: 2px solid var(--border-accent);
     }
     sl-card.campaign::before {
       content: '🚀 Campaign';
@@ -81,7 +80,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       top: 0px;
       right: 0px;
       background: var(--badge);
-      color: white;
+      color: var(--badge-text);
       padding: 0.25rem 0.75rem;
       border-radius: 0 10px;
       font-size: 0.75rem;
@@ -101,7 +100,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       font-weight: 600;
       margin: 1rem 0 0.5rem 0;
       color: var(--subtle-text);
-      border-bottom: 2px solid var(--border-color);
+      border-bottom: 2px solid var(--border-accent);
       padding: 0.25rem;
       max-width: 50%;
     }

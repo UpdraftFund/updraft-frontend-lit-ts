@@ -42,6 +42,7 @@
   --link: var(--sl-color-primary-500);
   --main-foreground: var(--sl-color-neutral-800);
   --subtle-text: var(--sl-color-neutral-600);
+  --badge-text: white;
   --no-results: var(--sl-color-neutral-500);
   --control-background: var(--sl-color-sky-200);
   --section-heading: var(--sl-color-neutral-500);
@@ -50,6 +51,7 @@
   --success: var(--sl-color-success-600);
   --attention: var(--sl-color-warning-600);
   --border-default: var(--sl-color-neutral-200);
+  --border-accent: var(--sl-color-primary-200);
 }
 
 /* Tab group specific styling */
