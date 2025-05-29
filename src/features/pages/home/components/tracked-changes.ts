@@ -156,28 +156,29 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
       if (result.data) {
         // Extract idea IDs
-        const extractedIdeaIds =
-          result.data.fundedIdeas?.map(
-            (contribution) => contribution.idea.id
-          ) || [];
+        this.ideaIds = result.data.fundedIdeas.map(
+          (contribution) => contribution.idea.id
+        );
+        // Set to ['0x01'] if empty
+        this.ideaIds = this.ideaIds.length > 0 ? this.ideaIds : ['0x01'];
 
         // Extract and combine solution IDs
-        const createdSolutionIds =
-          result.data.createdSolutions?.map((solution) => solution.id) || [];
-        const fundedSolutionIds =
-          result.data.fundedSolutions?.map(
-            (contribution) => contribution.solution.id
-          ) || [];
+        const createdSolutionIds = result.data.createdSolutions.map(
+          (solution) => solution.id
+        );
+        const fundedSolutionIds = result.data.fundedSolutions.map(
+          (contribution) => contribution.solution.id
+        );
 
-        const uniqueSolutionIds = [
+        this.solutionIds = [
           ...new Set([...createdSolutionIds, ...fundedSolutionIds]),
         ];
+        // Set to ['0x01'] if empty
+        this.solutionIds =
+          this.solutionIds.length > 0 ? this.solutionIds : ['0x01'];
 
-        console.log('User ideas:', extractedIdeaIds);
-        console.log('User solutions:', uniqueSolutionIds);
-
-        this.ideaIds = extractedIdeaIds;
-        this.solutionIds = uniqueSolutionIds;
+        console.log('User ideas:', this.ideaIds);
+        console.log('User solutions:', this.solutionIds);
 
         this.fetchTrackedChanges();
       }

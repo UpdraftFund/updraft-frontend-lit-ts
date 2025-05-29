@@ -153,7 +153,8 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       case 'solutions':
         return { now: dayjs().unix() };
       case 'followed':
-        return { funders: Array.from(followedUsers.get()) };
+        const fundersArray = Array.from(followedUsers.get());
+        return { funders: fundersArray.length > 0 ? fundersArray : ['0x01'] };
       case 'search':
         return {
           text: this.search ?? '', // Ensure text is always string, default to '' if null
