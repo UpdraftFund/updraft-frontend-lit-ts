@@ -310,7 +310,10 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
         <sl-card class="campaign">
           <img src=${aura} alt="Aura logo" />
           <h3>Aura Use Cases</h3>
-          <p>Find realistic use cases for Aura.</p>
+          <p>
+            Find realistic use cases for
+            <a href="https://brightid.gitbook.io/aura" target="_blank">Aura</a>.
+          </p>
           <h4>Committed</h4>
           <ul class="committed-list">
             <li>100M UPD for Ideas</li>
