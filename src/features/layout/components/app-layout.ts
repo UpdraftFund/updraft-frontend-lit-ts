@@ -39,6 +39,11 @@ export class AppLayout extends SignalWatcher(LitElement) {
       flex: 1;
       justify-content: space-between;
     }
+    main {
+      display: flex;
+      flex: 1 1 47rem;
+      flex-direction: column;
+    }
     right-side-bar {
       flex: 0 0 18rem;
     }
@@ -106,7 +111,9 @@ export class AppLayout extends SignalWatcher(LitElement) {
             ? 'right-sidebar-below'
             : ''}"
         >
-          <slot></slot>
+          <main>
+            <slot></slot>
+          </main>
           ${showRightSidebar.get()
             ? html` <right-side-bar
                 class="${nav.get() === 'edit-profile' ||
