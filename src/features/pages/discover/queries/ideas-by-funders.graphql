@@ -1,4 +1,4 @@
-query IdeasByFunders($first: Int = 4, $skip: Int = 0, $funders: [String!]) {
+query IdeasByFunders($first: Int = 4, $skip: Int = 0, $funders: [String!]!) {
     ideaContributions(
         first: $first,
         skip: $skip,

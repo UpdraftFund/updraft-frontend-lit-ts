@@ -1,6 +1,6 @@
 query TrackedChanges(
-  $ideaIds: [String!]
-  $solutionIds: [Bytes!]
+    $ideaIds: [String!]!
+    $solutionIds: [Bytes!]!
   $since: BigInt!
     $now: BigInt!
 ) {
