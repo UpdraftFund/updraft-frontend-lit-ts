@@ -51,7 +51,7 @@
   --success: var(--sl-color-success-600);
   --attention: var(--sl-color-warning-600);
   --border-default: var(--sl-color-neutral-200);
-  --border-accent: var(--sl-color-primary-200);
+  --border-accent: var(--sl-color-primary-100);
 }
 
 /* Tab group specific styling */
