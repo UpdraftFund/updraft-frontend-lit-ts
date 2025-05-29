@@ -71,7 +71,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       background: linear-gradient(
         135deg,
         var(--sl-color-neutral-0) 0%,
-        var(--sl-color-primary-100) 100%
+        var(--sl-color-primary-50) 100%
       );
       border: 2px solid var(--border-accent);
     }
