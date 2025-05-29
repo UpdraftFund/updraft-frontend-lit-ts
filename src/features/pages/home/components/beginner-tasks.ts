@@ -11,6 +11,7 @@ import supportIdea from '@images/home/support-idea.png';
 import fundSolution from '@images/home/fund-solution.png';
 import createProfile from '@images/home/create-profile.png';
 import aura from '@images/home/aura-logo.png';
+import sad from '@images/home/song-a-day-logo.png';
 
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card';
@@ -84,10 +85,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       color: var(--badge-text);
       padding: 0.25rem 0.75rem;
       border-radius: 0 10px;
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.025em;
       z-index: 1;
     }
 
@@ -307,7 +307,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 </sl-button>
               </sl-card>
             `}
-        <sl-card class="campaign">
+        <!--  <sl-card class="campaign">
           <img src=${aura} alt="Aura logo" />
           <h3>Aura Use Cases</h3>
           <p>
@@ -326,6 +326,26 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             variant="primary"
             href="/discover?search=[aura][use-cases]"
             >View Ideas
+          </sl-button>
+        </sl-card> -->
+        <sl-card class="campaign">
+          <img src=${sad} alt="SongDust logo" />
+          <h3>SongDust Week 1</h3>
+          <p>
+            Use the
+            <a href="https://gallery.songaday.world/" target="_blank"
+              >Song-A-Day gallery</a
+            >
+            to find fitting songs and post them to Updraft with this week's
+            tags. The song with the most 🔥 wins!
+          </p>
+          <span class="tags">Tags: [songdust] [family] [insanity]</span>
+          <div class="clear-float"></div>
+          <sl-button
+            slot="footer"
+            variant="primary"
+            href="/discover?search=[songdust][family][insanity]"
+            >Songs with these tags
           </sl-button>
         </sl-card>
       </section>
