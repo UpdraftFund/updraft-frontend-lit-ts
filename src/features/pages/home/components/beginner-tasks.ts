@@ -10,6 +10,7 @@ import getUpd from '@images/home/get-upd.png';
 import supportIdea from '@images/home/support-idea.png';
 import fundSolution from '@images/home/fund-solution.png';
 import createProfile from '@images/home/create-profile.png';
+import aura from '@images/home/aura-logo.png';
 
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card';
@@ -307,7 +308,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               </sl-card>
             `}
         <sl-card class="campaign">
-          <img src=${createProfile} alt="Aura illustration" />
+          <img src=${aura} alt="Aura logo" />
           <h3>Aura Use Cases</h3>
           <p>Find realistic use cases for Aura.</p>
           <h4>Committed</h4>
