@@ -87,7 +87,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                     see a user's activity on their profile page.
                   <p> Go to
                     <a
-                      href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+                      href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
                     >Adam's profile</a
                     >
                     and follow him.
@@ -97,7 +97,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <sl-button
                     slot="footer"
                     variant="primary"
-                    href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+                    href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
                   >Adam's profile
                   </sl-button>
                 </sl-card>
@@ -200,7 +200,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <sl-button
                     slot="footer"
                     variant="primary"
-                    href="/idea/0xaff2df5502bf27b4338403c37415b643048d1c68"
+                    href="/idea/0x4a7e2b823d31b094e87303a1b239a4b9e139abf2"
                     >"Build Updraft" Idea
                   </sl-button>
                 </sl-card>
@@ -220,7 +220,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <sl-button
                     slot="footer"
                     variant="primary"
-                    href="/solution/0xdb07e23c068b672079eb3977f1e5dc4c1ae214d8"
+                    href="/solution/0x6863d6905de27fa150cc08633c823e1299aa5cc4"
                     >"Build Updraft" Solution
                   </sl-button>
                 </sl-card>
