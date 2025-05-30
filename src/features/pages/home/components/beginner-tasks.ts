@@ -343,7 +343,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           <p>
             Vote to decide which networks will have UPD liquidity pools and
             Updraft app support.
-            <a href="https://guide.updraft.fund/updraft/voting/networks"
+            <a
+              href="https://guide.updraft.fund/updraft/voting/networks"
+              target="_blank"
               >Read rules.</a
             >
           </p>
@@ -367,7 +369,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           <p>
             Vote to decide which stablecoins will appear on Updraft and in
             liquidity pools.
-            <a href="https://guide.updraft.fund/updraft/voting/stablecoins"
+            <a
+              href="https://guide.updraft.fund/updraft/voting/stablecoins"
+              target="_blank"
               >Read rules.</a
             >
           </p>
