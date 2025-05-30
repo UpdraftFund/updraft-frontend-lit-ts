@@ -88,7 +88,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
     .tag {
       font-weight: 600;
-      font-size: 1.75rem;
+      font-size: 1.5rem;
       color: var(--section-heading);
     }
 
