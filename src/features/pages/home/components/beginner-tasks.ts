@@ -10,8 +10,9 @@ import getUpd from '@images/home/get-upd.png';
 import supportIdea from '@images/home/support-idea.png';
 import fundSolution from '@images/home/fund-solution.png';
 import createProfile from '@images/home/create-profile.png';
-import aura from '@images/home/aura-logo.png';
+//import aura from '@images/home/aura-logo.png';
 import sad from '@images/home/song-a-day-logo.png';
+import updraft from '@images/home/updraft-logo.png';
 
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card';
@@ -90,13 +91,11 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       text-transform: uppercase;
       z-index: 1;
     }
-
     sl-card.campaign h3 {
       color: var(--accent);
       font-weight: 700;
     }
-
-    sl-card.campaign h4 {
+    sl-card.campaign > h4 {
       font-size: 1rem;
       font-weight: 600;
       margin: 1rem 0 0.5rem 0;
@@ -105,28 +104,38 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
       padding: 0.25rem;
       max-width: 50%;
     }
-
     sl-card.campaign .committed-list {
       margin: 0.5rem 0 1rem 0;
       padding-left: 1.25rem;
     }
-
-    sl-card.campaign .committed-list li {
+    .committed-list li {
       font-size: 0.875rem;
       font-weight: 500;
       color: var(--main-foreground);
       margin-bottom: 0.25rem;
     }
-
-    sl-card.campaign .tags {
-      display: inline-block;
+    .tags {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: 0;
+      list-style: none;
+      margin: 0;
+    }
+    .tags h4 {
+      font-size: 0.85rem;
+      margin: 0 0.25rem 0 0;
+      padding: 0.25rem 0 0;
+    }
+    .tags li {
       background: var(--subtle-background);
       color: var(--main-foreground);
       padding: 0.25rem 0.5rem;
+      margin-top: 0.25rem;
       border-radius: 6px;
       font-size: 0.75rem;
       font-weight: 500;
-      margin-top: 0.5rem;
     }
   `;
 
@@ -308,7 +317,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               </sl-card>
             `}
         <!--  <sl-card class="campaign">
-          <img src=${aura} alt="Aura logo" />
+          <img src=${updraft} alt="Aura logo" />
           <h3>Aura Use Cases</h3>
           <p>
             Find realistic use cases for
@@ -329,6 +338,54 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           </sl-button>
         </sl-card> -->
         <sl-card class="campaign">
+          <img src=${updraft} alt="Updraft logo" />
+          <h3>Updraft Networks</h3>
+          <p>
+            Vote to decide which networks will have UPD liquidity pools and
+            Updraft app support.
+            <a href="https://guide.updraft.fund/updraft/voting/networks"
+              >Read rules.</a
+            >
+          </p>
+          <div class="clear-float"></div>
+          <ul class="tags">
+            <h4>Tags:</h4>
+            <li>updraft</li>
+            <li>vote</li>
+            <li>networks</li>
+          </ul>
+          <sl-button
+            slot="footer"
+            variant="primary"
+            href="/discover?search=[updraft][vote][networks]"
+            >View Ideas
+          </sl-button>
+        </sl-card>
+        <sl-card class="campaign">
+          <img src=${updraft} alt="Updraft logo" />
+          <h3>Updraft Stablecoins</h3>
+          <p>
+            Vote to decide which stablecoins will appear on Updraft and in
+            liquidity pools.
+            <a href="https://guide.updraft.fund/updraft/voting/stablecoins"
+              >Read rules.</a
+            >
+          </p>
+          <div class="clear-float"></div>
+          <ul class="tags">
+            <h4>Tags:</h4>
+            <li>updraft</li>
+            <li>vote</li>
+            <li>stablecoins</li>
+          </ul>
+          <sl-button
+            slot="footer"
+            variant="primary"
+            href="/discover?search=[updraft][vote][stablecoins]"
+            >View Ideas
+          </sl-button>
+        </sl-card>
+        <sl-card class="campaign">
           <img src=${sad} alt="SongDust logo" />
           <h3>SongDust Week 1</h3>
           <p>
@@ -339,8 +396,13 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             to find fitting songs and post them to Updraft with this week's
             tags. The song with the most 🔥 wins!
           </p>
-          <span class="tags">Tags: [songdust] [family] [insanity]</span>
           <div class="clear-float"></div>
+          <ul class="tags">
+            <h4>Tags:</h4>
+            <li>songdust</li>
+            <li>family</li>
+            <li>insanity</li>
+          </ul>
           <sl-button
             slot="footer"
             variant="primary"
@@ -349,7 +411,6 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           </sl-button>
         </sl-card>
       </section>
-      <section class="campaigns"></section>
     `;
   }
 }
