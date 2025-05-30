@@ -333,7 +333,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           <sl-button
             slot="footer"
             variant="primary"
-            href="/discover?search=[aura][use-cases]"
+            href="/discover?search=[aura] [use-cases]"
             >View Ideas
           </sl-button>
         </sl-card> -->
@@ -357,7 +357,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           <sl-button
             slot="footer"
             variant="primary"
-            href="/discover?search=[updraft][vote][networks]"
+            href="/discover?search=[updraft] [vote] [networks]"
             >View Ideas
           </sl-button>
         </sl-card>
@@ -381,7 +381,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           <sl-button
             slot="footer"
             variant="primary"
-            href="/discover?search=[updraft][vote][stablecoins]"
+            href="/discover?search=[updraft] [vote] [stablecoins]"
             >View Ideas
           </sl-button>
         </sl-card>
@@ -406,7 +406,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           <sl-button
             slot="footer"
             variant="primary"
-            href="/discover?search=[songdust][family][insanity]"
+            href="/discover?search=[songdust] [family] [insanity]"
             >Songs with these tags
           </sl-button>
         </sl-card>
