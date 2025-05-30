@@ -783,26 +783,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     try {
       const solutionContract = new SolutionContract(this.solutionId);
       this.withdrawFundsTransaction.reset();
-
-      const userAddr = userAddress.get();
-      if (!userAddr) {
-        console.warn('No user address available');
-        modal.open({ view: 'Connect' });
-        return;
-      }
-
-      // Ensure both values are bigint for proper subtraction
-      const tokensContributed = BigInt(this.solution!.tokensContributed || '0');
-      const remainingAmount = tokensContributed - this.tokensWithdrawn;
-
-      // Call withdrawFunds with the user's address and the remaining amount
-      this.withdrawFundsTransaction.hash = await solutionContract.write(
-        'withdrawFunds',
-        [
-          userAddr, // Send funds to the drafter's address
-          remainingAmount,
-        ]
-      );
+      this.withdrawFundsTransaction.hash =
+        await solutionContract.write('withdrawFunds');
     } catch (err) {
       console.error('Withdraw funds error:', err);
       if (err instanceof Error && err.message.startsWith('connection')) {
