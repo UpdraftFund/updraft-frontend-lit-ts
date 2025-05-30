@@ -19,12 +19,21 @@ if (!('URLPattern' in globalThis)) {
 
 @customElement('my-app')
 export class MyApp extends LitElement {
+  private scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'smooth',
+    });
+  }
+
   private router = new Router(this, [
     {
       path: '/',
       enter: async () => {
         await import('@pages/home-page');
         nav.set('home');
+        this.scrollToTop();
         return true;
       },
       render: () => html` <home-page></home-page>`,
@@ -34,6 +43,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/discover-page');
         nav.set('discover');
+        this.scrollToTop();
         return true;
       },
       render: () => html` <discover-page></discover-page>`,
@@ -43,6 +53,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/idea-page');
         nav.set('idea');
+        this.scrollToTop();
         return true;
       },
       render: ({ id }) => html` <idea-page .ideaId=${id}></idea-page>`,
@@ -52,6 +63,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/create-idea');
         nav.set('create-idea');
+        this.scrollToTop();
         return true;
       },
       render: () => html` <create-idea></create-idea>`,
@@ -61,6 +73,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/edit-profile');
         nav.set('edit-profile');
+        this.scrollToTop();
         return true;
       },
       render: () => html` <edit-profile></edit-profile>`,
@@ -70,6 +83,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/edit-profile');
         nav.set('edit-profile');
+        this.scrollToTop();
         return true;
       },
       render: ({ entity }) =>
@@ -80,6 +94,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/view-profile');
         nav.set('view-profile');
+        this.scrollToTop();
         return true;
       },
       render: ({ address }) =>
@@ -90,6 +105,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/create-solution');
         nav.set('create-solution');
+        this.scrollToTop();
         return true;
       },
       render: ({ ideaId }) =>
@@ -100,6 +116,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/create-solution-page-two');
         nav.set('create-solution-two');
+        this.scrollToTop();
         return true;
       },
       render: ({ ideaId }) =>
@@ -112,6 +129,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/solution-page');
         nav.set('solution');
+        this.scrollToTop();
         return true;
       },
       render: ({ solutionId }) =>
@@ -122,6 +140,7 @@ export class MyApp extends LitElement {
       enter: async () => {
         await import('@pages/edit-solution');
         nav.set('edit-solution');
+        this.scrollToTop();
         return true;
       },
       render: ({ solutionId }) =>
