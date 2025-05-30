@@ -12,7 +12,7 @@ query IdeasByTags(
         first: $first,
         skip: $skip,
         where: {
-            or: [
+            and: [
                 { tags_contains: [$tag1] }
                 { tags_contains: [$tag2] }
                 { tags_contains: [$tag3] }
