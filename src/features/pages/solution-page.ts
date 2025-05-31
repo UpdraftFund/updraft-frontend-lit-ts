@@ -387,7 +387,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         }
 
         const percentScale = BigInt(updraftSettings.get().percentScale);
-        const [firstCycle] = (await solution.read('cycles', [0n])) as bigint[];
 
         // Collect all positions
         const positions: SolutionPosition[] = [];
@@ -416,30 +415,27 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               positionIndex,
             ]);
 
-            // Only include positions that can be refunded or have fees to collect
-            if (feesEarned > 0n || refundable) {
-              let contribution = contributionAfterFees;
+            let contribution = contributionAfterFees;
 
-              // No contributor fees are paid in the first cycle
-              if (contributionCycle > firstCycle) {
-                const funderReward = BigInt(this.solution?.funderReward);
-                if (funderReward && percentScale > funderReward) {
-                  contribution =
-                    (contributionAfterFees * percentScale) /
-                    (percentScale - funderReward);
-                }
+            // No contributor fees are paid in the first cycle
+            if (contributionCycle > 0n) {
+              const funderReward = BigInt(this.solution?.funderReward);
+              if (funderReward && percentScale > funderReward) {
+                contribution =
+                  (contributionAfterFees * percentScale) /
+                  (percentScale - funderReward);
               }
-
-              const position: SolutionPosition = {
-                contribution,
-                contributionAfterFees,
-                feesEarned,
-                refundable,
-                positionIndex,
-              };
-
-              positions.push(position);
             }
+
+            const position: SolutionPosition = {
+              contribution,
+              contributionAfterFees,
+              feesEarned,
+              refundable,
+              positionIndex,
+            };
+
+            positions.push(position);
           } catch (error) {
             // If position doesn't exist, skip it
             console.warn(`Position ${positionIndex} not available:`, error);
@@ -526,7 +522,15 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
-            (${formatAmount(position.contributionAfterFees)} after fees)
+            (${formatAmount(position.contributionAfterFees)} after fees
+            <sl-tooltip
+              content="You paid ${formatAmount(
+                position.contribution - position.contributionAfterFees
+              )} in Funder Reward fees to previous funders."
+            >
+              <span class="info-icon">ℹ️</span>
+            </sl-tooltip>
+            )
           </p>
           <p>
             Fees earned:
@@ -1017,7 +1021,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                           Fund Solution
                         </sl-button>
                         <sl-tooltip
-                          content="Part of your funding goes to the Solution fund to help this Solution reach its goal and part goes to 🎁 funder rewards for past funders. The percentage was set by the Solution drafter."
+                          content="Part of your funding goes to the Solution fund to help this Solution reach its goal and part goes to 🎁 Funder Rewards for past funders. The percentage was set by the Solution drafter."
                         >
                           <span class="info-icon">ℹ️</span>
                         </sl-tooltip>

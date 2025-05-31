@@ -294,7 +294,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         const minFee = (await updraft.read('minFee')) as bigint;
         const percentFee = (await updraft.read('percentFee')) as bigint;
         const percentScale = (await updraft.read('percentScale')) as bigint;
-        const [firstCycle] = (await idea.read('cycles', [0n])) as bigint[];
 
         // Collect all viable positions
         const viablePositions: IdeaPosition[] = [];
@@ -327,7 +326,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             let originalContribution = contributionAfterFees;
 
             // No contributor fees are paid in the first cycle
-            if (contributionCycle > firstCycle) {
+            if (contributionCycle > 0) {
               const funderReward = BigInt(this.idea?.funderReward);
               if (funderReward && percentScale > funderReward) {
                 originalContribution =
@@ -497,9 +496,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         <div class="idea-info">
           ${pctFunderReward
             ? html` <div class="item-with-tooltip">
-                <span> 🎁 ${pctFunderReward.toFixed(0)}% funder reward </span>
+                <span> 🎁 ${pctFunderReward.toFixed(0)}% Funder Reward </span>
                 <sl-tooltip
-                  content="This is the percentage of each contribution that is paid to previous contributors. You can collect your 🎁 funder rewards by withdrawing your support for an Idea."
+                  content="This is the percentage of each contribution that is paid to previous contributors. You can collect your 🎁 Funder Rewards by withdrawing your support for an Idea."
                 >
                   <span class="info-icon">ℹ️</span>
                 </sl-tooltip>
@@ -508,7 +507,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <div class="item-with-tooltip">
             <span>🔥 ${formatAmount(shares)}</span>
             <sl-tooltip
-              content="interest (🔥) is how much support an Idea has over time."
+              content="🔥 Interest is how much support an Idea has over time."
             >
               <span class="info-icon">ℹ️</span>
             </sl-tooltip>
@@ -570,6 +569,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                         >including ${formatAmount(position.feesPaid)} in
                         fees</small
                       >
+                      <sl-tooltip
+                        content="Fees consist of an anti-spam fee and a funder reward fee paid to previous supporters."
+                      >
+                        <span class="info-icon">ℹ️</span>
+                      </sl-tooltip>
                     </p>
                     <p>
                       Your earnings so far:
@@ -589,7 +593,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                         Withdraw Support
                       </sl-button>
                       <sl-tooltip
-                        content="Your entire position will be withdrawn and refunded (minus any fees) plus any 🎁 funder rewards you have earned."
+                        content="Your entire position will be withdrawn and refunded (minus any fees) plus any 🎁 Funder Rewards you have earned."
                       >
                         <span class="info-icon">ℹ️</span>
                       </sl-tooltip>
@@ -607,7 +611,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               return html` <div class="item-with-tooltip">
                 <h3>Support this Idea</h3>
                 <sl-tooltip
-                  content="Supporting an Idea signals that you would like someone to create a Solution for it. You also have a chance to earn 🎁 funder rewards. Your support can be withdrawn at any time, minus anti-spam and funder reward fees."
+                  content="Supporting an Idea signals that you would like someone to create a Solution for it. You also have a chance to earn 🎁 Funder Rewards. Your support can be withdrawn at any time, minus anti-spam and funder reward fees."
                 >
                   <span class="info-icon">ℹ️</span>
                 </sl-tooltip>
@@ -650,7 +654,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 >Airdrop to past contributors
               </sl-checkbox>
               <sl-tooltip
-                content="An airdrop uses 100% of its funds to reward past contributors and increase 🔥."
+                content="An airdrop will send your entire contribution to reward past contributors. You will forgo any funder rewards for yourself."
               >
                 <span class="info-icon">ℹ️</span>
               </sl-tooltip>

@@ -148,57 +148,47 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
         ${isComplete('follow-someone')
           ? html``
           : html`
-                <sl-card>
-                  <img
-                    src=${followUser}
-                    alt="Follow user illustration"
-                  />
-                  <h3>Follow Someone</h3>
-                  <p>
-                    A great way to learn is by watching another user. You can
-                    see a user's activity on their profile page.
-                  <p> Go to
-                    <a
-                      href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
+              <sl-card>
+                <img src=${followUser} alt="Follow user illustration" />
+                <h3>Follow Someone</h3>
+                <p>
+                  A great way to learn is by watching another user. You can see
+                  a user's activity on their profile page. Go to
+                  <a href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
                     >Adam's profile</a
-                    >
-                    and follow him.
-                  </p>
-                  </p>
-                  <div class="clear-float"></div>
-                  <sl-button
-                    slot="footer"
-                    variant="primary"
-                    href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
+                  >
+                  and follow him.
+                </p>
+                <div class="clear-float"></div>
+                <sl-button
+                  slot="footer"
+                  variant="primary"
+                  href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
                   >Adam's profile
-                  </sl-button>
-                </sl-card>
-              `}
+                </sl-button>
+              </sl-card>
+            `}
         ${isComplete('watch-tag')
           ? html``
           : html`
               <sl-card>
-                <img
-                  src=${watchTag}
-                  alt="Watch tag illustration"
-                />
+                <img src=${watchTag} alt="Watch tag illustration" />
                 <h3>Watch a Tag</h3>
                 <p>
                   Stay up to date on the latest activity from a project, DAO,
                   investor, builder, or topic.
-                <p>
-                    <a href="/discover?search=[updraft]"
-                    >Search for the updraft tag</a> and watch it.
-                  </p>
+                  <a href="/discover?search=[updraft]"
+                    >Search for the updraft tag</a
+                  >
+                  and click the Watch button to add it to your Watched Tags.
                 </p>
                 <div class="clear-float"></div>
                 <sl-button
                   slot="footer"
                   variant="primary"
                   href="/discover?search=[updraft]"
-                >Search for [updraft]
-                </sl-button
-                >
+                  >Search for [updraft]
+                </sl-button>
               </sl-card>
             `}
         ${isComplete('connect-wallet')
@@ -266,9 +256,9 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <img src=${supportIdea} alt="Support idea illustration" />
                 <h3>Support an Idea</h3>
                 <p>
-                  You can earn UPD by supporting a popular Idea. The more you
-                  deposit, the more you stand to earn. Find an Idea and support
-                  it with UPD.
+                  You can earn UPD by supporting an Idea that turns out to be
+                  popular. The more you deposit, the more you stand to earn. Go
+                  to the Build Updraft Idea and support it with UPD.
                 </p>
                 <div class="clear-float"></div>
                 <sl-button

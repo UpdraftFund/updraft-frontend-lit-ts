@@ -421,10 +421,6 @@ export class TokenInput
       this._error = 'Enter a number';
       this._validationMessage = 'Please enter a valid number';
       validityState.typeMismatch = true;
-    } else if (value <= 0) {
-      this._error = 'Amount must be greater than 0';
-      this._validationMessage = 'Amount must be greater than 0';
-      validityState.rangeUnderflow = true;
     } else if (this.showAntiSpamFee && value <= this.antiSpamFee) {
       this._error = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
       this._validationMessage = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
@@ -652,7 +648,7 @@ export class TokenInput
                         ${this._symbol}</span
                       >
                       <sl-tooltip
-                        content="This fee keeps spam out of Updraft. All anti-spam fees go to a faucet for new users, which you can collect from the Updraft Discord"
+                        content="This fee keeps spam out of Updraft. The fee is fixed at 1 UPD for editing a Solution or profile, and the greater of 1 UPD or 1% for supporting an Idea. All anti-spam fees go to a faucet for new users--which you can collect from the Updraft Discord."
                       >
                         <span class="info-icon">ℹ️</span>
                       </sl-tooltip>
