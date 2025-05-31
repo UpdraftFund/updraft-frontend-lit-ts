@@ -20,7 +20,6 @@ export class AppLayout extends SignalWatcher(LitElement) {
     :host {
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
     }
     .app-layout {
       display: flex;
@@ -46,6 +45,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
     }
     right-side-bar {
       flex: 0 0 18rem;
+      background-color: var(--main-background);
     }
     right-side-bar.wider {
       flex: 0 1 34rem;
