@@ -522,7 +522,15 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               ${formatAmount(position.contribution)}
               ${this.fundInput?.tokenSymbol}
             </strong>
-            (${formatAmount(position.contributionAfterFees)} after fees)
+            (${formatAmount(position.contributionAfterFees)} after fees
+            <sl-tooltip
+              content="You paid ${formatAmount(
+                position.contribution - position.contributionAfterFees
+              )} in Funder Reward fees to previous funders."
+            >
+              <span class="info-icon">ℹ️</span>
+            </sl-tooltip>
+            )
           </p>
           <p>
             Fees earned:
@@ -1013,7 +1021,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                           Fund Solution
                         </sl-button>
                         <sl-tooltip
-                          content="Part of your funding goes to the Solution fund to help this Solution reach its goal and part goes to 🎁 funder rewards for past funders. The percentage was set by the Solution drafter."
+                          content="Part of your funding goes to the Solution fund to help this Solution reach its goal and part goes to 🎁 Funder Rewards for past funders. The percentage was set by the Solution drafter."
                         >
                           <span class="info-icon">ℹ️</span>
                         </sl-tooltip>
