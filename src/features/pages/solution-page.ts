@@ -415,30 +415,27 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               positionIndex,
             ]);
 
-            // Only include positions that can be refunded or have fees to collect
-            if (feesEarned > 0n || refundable) {
-              let contribution = contributionAfterFees;
+            let contribution = contributionAfterFees;
 
-              // No contributor fees are paid in the first cycle
-              if (contributionCycle > 0n) {
-                const funderReward = BigInt(this.solution?.funderReward);
-                if (funderReward && percentScale > funderReward) {
-                  contribution =
-                    (contributionAfterFees * percentScale) /
-                    (percentScale - funderReward);
-                }
+            // No contributor fees are paid in the first cycle
+            if (contributionCycle > 0n) {
+              const funderReward = BigInt(this.solution?.funderReward);
+              if (funderReward && percentScale > funderReward) {
+                contribution =
+                  (contributionAfterFees * percentScale) /
+                  (percentScale - funderReward);
               }
-
-              const position: SolutionPosition = {
-                contribution,
-                contributionAfterFees,
-                feesEarned,
-                refundable,
-                positionIndex,
-              };
-
-              positions.push(position);
             }
+
+            const position: SolutionPosition = {
+              contribution,
+              contributionAfterFees,
+              feesEarned,
+              refundable,
+              positionIndex,
+            };
+
+            positions.push(position);
           } catch (error) {
             // If position doesn't exist, skip it
             console.warn(`Position ${positionIndex} not available:`, error);
