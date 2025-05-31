@@ -49,7 +49,7 @@ import { modal } from '@utils/web3';
 import { ethAddressPattern } from '@utils/format-utils';
 
 // State
-import { updraftSettings } from '@state/common';
+import { updraftSettings, refreshUpdraftSettings } from '@state/common';
 import layout from '@state/layout';
 import { hasProfile } from '@state/user';
 
@@ -98,7 +98,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
       sl-select,
       sl-input {
-        max-width: 22rem;
+        max-width: 26rem;
       }
 
       .deposit-row {
@@ -187,19 +187,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     `,
   ];
 
-  private handleGoalInput(e: Event) {
-    const input = e.target as SlInput;
-    const value = input.value;
-
-    // Ensure the goal is a valid number
-    if (isNaN(Number(value)) && value !== '') {
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
-    } else {
-      input.style.removeProperty('--sl-input-focus-ring-color');
-    }
-  }
-
-  private setDefaultFundingToken() {
+  private async setDefaultFundingToken() {
     // After loading the saved form values, if no funding token is chosen,
     // select the default value.
     if (this.fundingTokenInput.value) {
@@ -213,6 +201,10 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       if (updraftAddress) {
         this.fundingTokenSelect.value = updraftAddress;
         this.fundingTokenInput.value = updraftAddress;
+      } else {
+        await refreshUpdraftSettings();
+        this.fundingTokenSelect.value = updraftSettings.get().updAddress!;
+        this.fundingTokenInput.value = updraftSettings.get().updAddress!;
       }
     }
   }
@@ -224,16 +216,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     } else {
       this.showCustomTokenInput = false;
       this.fundingTokenInput.value = this.fundingTokenSelect.value as string;
-    }
-  }
-
-  private handleCustomTokenInput(e: Event) {
-    const input = e.target as SlInput;
-
-    if (input.value === '' || ethAddressPattern.test(input.value)) {
-      input.style.removeProperty('--sl-input-focus-ring-color');
-    } else {
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
     }
   }
 
@@ -393,7 +375,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           pattern=${ethAddressPattern.source}
           required
           placeholder="0x..."
-          @input=${this.handleCustomTokenInput}
         >
           <label-with-hint
             slot="label"
@@ -404,9 +385,11 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
         <sl-input
           name="goal"
+          type="number"
+          step="any"
+          min="0"
           required
           autocomplete="off"
-          @input=${this.handleGoalInput}
         >
           <label-with-hint
             slot="label"
@@ -415,7 +398,13 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           ></label-with-hint>
         </sl-input>
 
-        <sl-input type="date" name="deadline" required autocomplete="off">
+        <sl-input
+          type="date"
+          name="deadline"
+          required
+          autocomplete="off"
+          min="${dayjs().add(1, 'day').format('YYYY-MM-DD')}"
+        >
           <label-with-hint
             slot="label"
             label="Deadline*"
@@ -435,7 +424,6 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
               name="stake"
               spendingContract=${updraft.address}
               spendingContractName="Updraft"
-              antiSpamFeeMode="fixed"
               showDialogs="false"
             >
               <sl-button
