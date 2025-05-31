@@ -59,7 +59,7 @@ export class TopBar extends SignalWatcher(LitElement) {
     page-heading a {
       font-size: 1rem;
     }
-    @media (max-width: 860px) {
+    @media (max-width: 892px) {
       :host {
         padding: 0 1rem;
         gap: 1rem;
@@ -84,8 +84,6 @@ export class TopBar extends SignalWatcher(LitElement) {
         justify-content: flex-start;
         gap: 0.5rem;
       }
-    }
-    @media (max-width: 425px) {
       create-idea-button {
         display: none;
       }
