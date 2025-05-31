@@ -294,7 +294,6 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         const minFee = (await updraft.read('minFee')) as bigint;
         const percentFee = (await updraft.read('percentFee')) as bigint;
         const percentScale = (await updraft.read('percentScale')) as bigint;
-        const [firstCycle] = (await idea.read('cycles', [0n])) as bigint[];
 
         // Collect all viable positions
         const viablePositions: IdeaPosition[] = [];
@@ -327,7 +326,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             let originalContribution = contributionAfterFees;
 
             // No contributor fees are paid in the first cycle
-            if (contributionCycle > firstCycle) {
+            if (contributionCycle > 0) {
               const funderReward = BigInt(this.idea?.funderReward);
               if (funderReward && percentScale > funderReward) {
                 originalContribution =
@@ -650,7 +649,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                 >Airdrop to past contributors
               </sl-checkbox>
               <sl-tooltip
-                content="An airdrop uses 100% of its funds to reward past contributors and increase 🔥."
+                content="An airdrop will send your entire contribution to reward past contributors. You will forgo any funder rewards for yourself."
               >
                 <span class="info-icon">ℹ️</span>
               </sl-tooltip>

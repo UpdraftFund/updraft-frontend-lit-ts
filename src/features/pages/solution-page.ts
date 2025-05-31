@@ -387,7 +387,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         }
 
         const percentScale = BigInt(updraftSettings.get().percentScale);
-        const [firstCycle] = (await solution.read('cycles', [0n])) as bigint[];
 
         // Collect all positions
         const positions: SolutionPosition[] = [];
@@ -421,7 +420,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               let contribution = contributionAfterFees;
 
               // No contributor fees are paid in the first cycle
-              if (contributionCycle > firstCycle) {
+              if (contributionCycle > 0n) {
                 const funderReward = BigInt(this.solution?.funderReward);
                 if (funderReward && percentScale > funderReward) {
                   contribution =
