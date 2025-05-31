@@ -91,7 +91,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
           <li>
             🔥 <span>${interest}</span>
             <sl-tooltip
-              content="interest (🔥) is how much support an Idea has over time."
+              content="🔥 Interest is how much support an Idea has over time."
             >
               <span class="info-icon">ℹ️</span>
             </sl-tooltip>
