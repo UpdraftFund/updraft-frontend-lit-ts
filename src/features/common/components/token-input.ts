@@ -274,10 +274,8 @@ export class TokenInput
         }
       }
 
-      // Update component state with the new balance
       this._balance = balance;
       this.validate();
-      return balance;
     },
     // Include all dependencies that should trigger a refresh
     () => [userAddress.get(), this.tokenAddress]
@@ -583,7 +581,9 @@ export class TokenInput
   formStateRestoreCallback(state: string) {
     if (state) {
       this.value = state;
-      this.validate();
+      this.fetchTokenSymbol.run().then(() => {
+        this.refreshBalance.run();
+      });
     }
   }
 
@@ -596,8 +596,9 @@ export class TokenInput
   // Lifecycle methods
   connectedCallback() {
     super.connectedCallback();
-    this.refreshBalance.run();
-    this.fetchTokenSymbol.run();
+    this.fetchTokenSymbol.run().then(() => {
+      this.refreshBalance.run();
+    });
 
     // Add a form-associated validation listener
     if (this.closest('form')) {
@@ -610,7 +611,9 @@ export class TokenInput
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('value')) {
-      this.validate();
+      this.fetchTokenSymbol.run().then(() => {
+        this.refreshBalance.run();
+      });
     }
   }
 
@@ -632,13 +635,9 @@ export class TokenInput
                 <span>${this._symbol}</span>
 
                 <div class="slot-container">
-                  ${this.refreshBalance.render({
-                    complete: () =>
-                      this.invalid
-                        ? html` <slot name="invalid"></slot>`
-                        : html` <slot name="valid"></slot>`,
-                    error: () => html` <slot name="invalid"></slot>`,
-                  })}
+                  ${this.invalid
+                    ? html` <slot name="invalid"></slot>`
+                    : html` <slot name="valid"></slot>`}
                 </div>
 
                 ${this.showAntiSpamFee
