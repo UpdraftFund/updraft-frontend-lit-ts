@@ -77,6 +77,8 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       flex-direction: column;
       flex: 1;
       align-items: center;
+      background: var(--main-background);
+      color: var(--main-foreground);
     }
 
     main {
