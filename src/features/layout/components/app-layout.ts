@@ -45,6 +45,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
     }
     right-side-bar {
       flex: 0 0 18rem;
+      color: var(--main-foreground);
       background-color: var(--main-background);
     }
     right-side-bar.wider {
