@@ -72,6 +72,11 @@ type AnyVariables =
 @customElement('discover-page')
 export class DiscoverPage extends SignalWatcher(LitElement) {
   static styles = css`
+    :host {
+      background: var(--main-background);
+      color: var(--main-foreground);
+    }
+
     main {
       display: flex;
       flex-direction: column;
