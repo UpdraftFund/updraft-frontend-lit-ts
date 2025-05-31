@@ -15,7 +15,7 @@ export class SearchBar extends LitElement {
       container-type: inline-size;
     }
 
-    @container (max-width: 160px) {
+    @container (max-width: 130px) {
       sl-icon {
         display: none;
       }
