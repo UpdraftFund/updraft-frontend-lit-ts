@@ -73,6 +73,10 @@ type AnyVariables =
 export class DiscoverPage extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      align-items: center;
       background: var(--main-background);
       color: var(--main-foreground);
     }
@@ -83,6 +87,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       flex: 1;
       gap: 0.2rem;
       padding: 0.5rem 0.5rem 0.5rem 2rem;
+      max-width: 60rem;
     }
 
     .tag-list {
@@ -390,10 +395,10 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
   render() {
     return html`
+      ${this.dropTabBar
+        ? html` <discover-tabs .tab=${this.tab}></discover-tabs>`
+        : html``}
       <main>
-        ${this.dropTabBar
-          ? html` <discover-tabs .tab=${this.tab}></discover-tabs>`
-          : html``}
         ${this.tab === 'tags' ? this.renderTagList() : html``}
         ${this.renderQueryResults()}
       </main>
