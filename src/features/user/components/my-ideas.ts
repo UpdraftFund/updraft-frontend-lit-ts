@@ -14,12 +14,19 @@ import { IdeasByFunderOrCreatorDocument, Idea } from '@gql';
 export class MyIdeas extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    sl-button::part(base) {
+      font-weight: 500;
+      margin-left: 0.75rem;
+      width: fit-content;
     }
 
     .content {
-      padding: 1rem 0 0;
-      box-sizing: border-box;
+      padding: 0;
     }
 
     idea-card-small {
@@ -105,6 +112,9 @@ export class MyIdeas extends SignalWatcher(LitElement) {
   render() {
     return html`
       <section-heading>💡 My Ideas</section-heading>
+      <sl-button size="small" pill href="/create-idea">
+        Create an Idea
+      </sl-button>
       <div class="content">
         ${this.loading
           ? html` <sl-spinner></sl-spinner>`
