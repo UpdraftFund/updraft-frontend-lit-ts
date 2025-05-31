@@ -15,7 +15,12 @@ export class DiscoverTabs extends LitElement {
       flex: 1;
       max-width: fit-content;
     }
-    @media (max-width: 940px) {
+    @media (min-width: 769px) and (max-width: 940px) {
+      sl-tab::part(base) {
+        padding-left: 0;
+      }
+    }
+    @media (max-width: 424px) {
       sl-tab::part(base) {
         padding-left: 0;
       }
