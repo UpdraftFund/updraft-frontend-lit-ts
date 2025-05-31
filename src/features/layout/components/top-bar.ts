@@ -85,6 +85,11 @@ export class TopBar extends SignalWatcher(LitElement) {
         gap: 0.5rem;
       }
     }
+    @media (max-width: 425px) {
+      create-idea-button {
+        display: none;
+      }
+    }
   `;
 
   render() {
