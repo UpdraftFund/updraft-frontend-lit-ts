@@ -652,7 +652,7 @@ export class TokenInput
                         ${this._symbol}</span
                       >
                       <sl-tooltip
-                        content="This fee keeps spam out of Updraft. All anti-spam fees go to a faucet for new users, which you can collect from the Updraft Discord"
+                        content="This fee keeps spam out of Updraft. The fee is fixed at 1 UPD for editing a Solution or profile, and the greater of 1 UPD or 1% for supporting an Idea. All anti-spam fees go to a faucet for new users--which you can collect from the Updraft Discord."
                       >
                         <span class="info-icon">ℹ️</span>
                       </sl-tooltip>
