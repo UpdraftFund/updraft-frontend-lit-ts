@@ -421,10 +421,6 @@ export class TokenInput
       this._error = 'Enter a number';
       this._validationMessage = 'Please enter a valid number';
       validityState.typeMismatch = true;
-    } else if (value <= 0) {
-      this._error = 'Amount must be greater than 0';
-      this._validationMessage = 'Amount must be greater than 0';
-      validityState.rangeUnderflow = true;
     } else if (this.showAntiSpamFee && value <= this.antiSpamFee) {
       this._error = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
       this._validationMessage = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
