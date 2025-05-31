@@ -232,7 +232,6 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
             </token-input>
           </div>
         </div>
-        <input type="hidden" name="reward" value="50" />
         ${hasProfile.get()
           ? html` <sl-button
               class="submit"
