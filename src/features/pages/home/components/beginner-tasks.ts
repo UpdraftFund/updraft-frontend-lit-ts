@@ -401,7 +401,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             slot="footer"
             variant="primary"
             href="/discover?search=[songdust] [family] [insanity]"
-            >Songs with these tags
+            >Ideas with these tags
           </sl-button>
         </sl-card>
       </section>
