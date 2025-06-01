@@ -18,13 +18,12 @@ links now display rich previews with:
 
 ### Server-Side Implementation (Primary)
 
-**Social media crawlers cannot execute JavaScript**, so the primary implementation uses **Vercel Edge Functions** to
+**Social media crawlers cannot execute JavaScript**, so the primary implementation uses **Vercel Functions** to
 generate meta tags server-side:
 
-1. **`api/_middleware.ts`** - Edge function middleware that detects social media crawlers and routes requests
-2. **`api/idea-meta.ts`** - Handler for generating idea page meta tags server-side
-3. **`api/solution-meta.ts`** - Handler for generating solution page meta tags server-side
-4. **`index.html`** - Updated with default Open Graph and Twitter Card meta tags
+1. **`api/social-meta.ts`** - Vercel Function that generates meta tags for both ideas and solutions
+2. **`vercel.json`** - Configuration that routes crawler requests to the function
+3. **`index.html`** - Updated with default Open Graph and Twitter Card meta tags
 
 ### How It Works
 
@@ -43,10 +42,11 @@ The middleware detects social media crawlers by checking the User-Agent header a
 
 When a crawler requests `/idea/:id` or `/solution/:id`:
 
-1. The middleware extracts the ID from the URL
-2. Makes a GraphQL query to The Graph API to fetch the data
-3. Generates appropriate meta tags with the fetched data
-4. Returns modified HTML with the meta tags injected
+1. Vercel's routing configuration detects the crawler and routes to `/api/social-meta`
+2. The function extracts the ID and type from query parameters
+3. Makes a GraphQL query to The Graph API to fetch the data
+4. Generates appropriate meta tags with the fetched data
+5. Returns complete HTML with the meta tags injected
 
 #### Regular User Experience
 

@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+// Vercel Edge Function for social media meta tags
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // Social media crawler user agents
 const CRAWLER_USER_AGENTS = [
@@ -276,52 +277,43 @@ function generateMetaTags(
 </html>`;
 }
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const userAgent = request.headers.get('user-agent') || '';
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const userAgent = req.headers['user-agent'] || '';
+  const { type, id } = req.query;
 
   // Only process for social media crawlers
   if (!isCrawlerRequest(userAgent)) {
-    return NextResponse.next();
+    return res.redirect(302, `/${type}/${id}`);
   }
 
-  // Handle idea pages
-  const ideaMatch = pathname.match(/^\/idea\/(.+)$/);
-  if (ideaMatch) {
-    const ideaId = ideaMatch[1];
-    const data = await fetchGraphQLData(IDEA_QUERY, { ideaId });
+  if (type === 'idea' && typeof id === 'string') {
+    const data = await fetchGraphQLData(IDEA_QUERY, { ideaId: id });
 
     if (data?.idea) {
-      const html = generateIdeaMetaTags(data.idea, request.url);
-      return new NextResponse(html, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Cache-Control': 'public, max-age=300',
-        },
-      });
+      const html = generateIdeaMetaTags(
+        data.idea,
+        `${req.headers.host}/${type}/${id}`
+      );
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      return res.send(html);
     }
   }
 
-  // Handle solution pages
-  const solutionMatch = pathname.match(/^\/solution\/(.+)$/);
-  if (solutionMatch) {
-    const solutionId = solutionMatch[1];
-    const data = await fetchGraphQLData(SOLUTION_QUERY, { solutionId });
+  if (type === 'solution' && typeof id === 'string') {
+    const data = await fetchGraphQLData(SOLUTION_QUERY, { solutionId: id });
 
     if (data?.solution) {
-      const html = generateSolutionMetaTags(data.solution, request.url);
-      return new NextResponse(html, {
-        headers: {
-          'Content-Type': 'text/html',
-          'Cache-Control': 'public, max-age=300',
-        },
-      });
+      const html = generateSolutionMetaTags(
+        data.solution,
+        `${req.headers.host}/${type}/${id}`
+      );
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Cache-Control', 'public, max-age=300');
+      return res.send(html);
     }
   }
 
-  return NextResponse.next();
+  // Fallback: redirect to the normal SPA
+  return res.redirect(302, `/${type}/${id}`);
 }
-
-export const config = {
-  matcher: ['/idea/:path*', '/solution/:path*'],
-};

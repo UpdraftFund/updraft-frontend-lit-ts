@@ -1,10 +1,32 @@
 {
   "functions": {
-    "middleware.ts": {
-      "runtime": "edge"
+    "api/social-meta.ts": {
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
+    {
+      "source": "/idea/(.*)",
+      "destination": "/api/social-meta?type=idea&id=$1",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|skypeuripreview|applebot|googlebot|bingbot|yandexbot|pinterest|redditbot|mastodon|misskey|pleroma).*"
+        }
+      ]
+    },
+    {
+      "source": "/solution/(.*)",
+      "destination": "/api/social-meta?type=solution&id=$1",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|skypeuripreview|applebot|googlebot|bingbot|yandexbot|pinterest|redditbot|mastodon|misskey|pleroma).*"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
