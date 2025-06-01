@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "middleware.ts": {
+      "runtime": "edge"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",

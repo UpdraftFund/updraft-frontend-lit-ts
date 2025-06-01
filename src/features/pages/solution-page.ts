@@ -49,7 +49,6 @@ import {
 import { parseProfile } from '@utils/user/user-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
-import { setSolutionMetaTags, resetMetaTags } from '@utils/meta-utils';
 
 // GraphQL
 import { Solution, SolutionDocument } from '@gql';
@@ -320,8 +319,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         // Store the full solution object
         this.solution = result.data.solution as Solution;
         this.solutionInfo = parseSolutionInfo(this.solution.info);
-
-        setSolutionMetaTags(this.solution);
 
         layout.rightSidebarContent.set(html`
           <top-funders
@@ -847,12 +844,6 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     // initially set the right sidebar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    // Clear social media meta tags when leaving the page
-    resetMetaTags();
   }
 
   updated(changedProperties: Map<string, unknown>) {

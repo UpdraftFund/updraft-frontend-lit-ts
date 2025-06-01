@@ -16,38 +16,58 @@ links now display rich previews with:
 
 ## Implementation Details
 
-### Files Created/Modified
+### Server-Side Implementation (Primary)
 
-1. **`src/features/common/utils/meta-utils.ts`** - New utility functions for managing meta tags
-2. **`src/features/pages/idea-page.ts`** - Updated to set meta tags when idea data loads
-3. **`src/features/pages/solution-page.ts`** - Updated to set meta tags when solution data loads
-4. **`index.html`** - Added default Open Graph and Twitter Card meta tags
-5. **`src/features/common/utils/meta-utils.test.ts`** - Tests for the meta utils functions
+**Social media crawlers cannot execute JavaScript**, so the primary implementation uses **Vercel Edge Functions** to
+generate meta tags server-side:
 
-### Key Functions
+1. **`api/_middleware.ts`** - Edge function middleware that detects social media crawlers and routes requests
+2. **`api/idea-meta.ts`** - Handler for generating idea page meta tags server-side
+3. **`api/solution-meta.ts`** - Handler for generating solution page meta tags server-side
+4. **`index.html`** - Updated with default Open Graph and Twitter Card meta tags
 
-#### `setIdeaMetaTags(ideaData)`
+### How It Works
 
-Sets social media meta tags for an idea page with:
+#### Crawler Detection
 
-- Idea name as title
-- Idea description (if available) with creator attribution
-- Creator name parsed from profile data
-- Canonical URL for the idea
+The middleware detects social media crawlers by checking the User-Agent header against a list of known crawler patterns:
 
-#### `setSolutionMetaTags(solutionData)`
+- `facebookexternalhit` (Facebook)
+- `twitterbot` (Twitter/X)
+- `linkedinbot` (LinkedIn)
+- `slackbot` (Slack)
+- `discordbot` (Discord)
+- And many others...
 
-Sets social media meta tags for a solution page with:
+#### Dynamic Meta Tag Generation
 
-- Solution name as title
-- Solution description (if available) with drafter attribution
-- Drafter name parsed from profile data
-- Reference to the linked idea (if available)
-- Canonical URL for the solution
+When a crawler requests `/idea/:id` or `/solution/:id`:
 
-#### `clearSocialMediaTags()`
+1. The middleware extracts the ID from the URL
+2. Makes a GraphQL query to The Graph API to fetch the data
+3. Generates appropriate meta tags with the fetched data
+4. Returns modified HTML with the meta tags injected
 
-Resets meta tags to default Updraft values when navigating away from content pages.
+#### Regular User Experience
+
+Regular users (non-crawlers) continue to receive the normal SPA experience with client-side routing.
+
+### Key Features
+
+#### Idea Pages
+
+- **Title**: `"[Idea Name] | Updraft"`
+- **Description**: Idea description + creator attribution, or fallback message
+- **Creator**: Name extracted from profile data (name/team/address)
+- **URL**: Canonical URL for the idea
+
+#### Solution Pages
+
+- **Title**: `"[Solution Name] | Updraft"`
+- **Description**: Solution description + drafter attribution + idea context
+- **Drafter**: Name extracted from profile data
+- **Idea Context**: Reference to the linked idea
+- **URL**: Canonical URL for the solution
 
 ### Data Handling
 
@@ -79,16 +99,13 @@ The implementation properly handles:
 
 ## Usage
 
-The meta tags are automatically set when:
+The meta tags are automatically generated when:
 
-1. Users navigate to an idea page (`/idea/:id`)
-2. Users navigate to a solution page (`/solution/:id`)
-3. The GraphQL data for the idea/solution loads successfully
+1. Social media crawlers request an idea page (`/idea/:id`)
+2. Social media crawlers request a solution page (`/solution/:id`)
+3. The Edge Function successfully fetches data from The Graph API
 
-The meta tags are automatically cleared when:
-
-1. Users navigate away from idea/solution pages
-2. Components are disconnected
+Regular users continue to use the normal SPA without any changes to their experience.
 
 ## Testing
 
