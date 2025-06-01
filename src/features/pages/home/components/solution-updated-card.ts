@@ -1,6 +1,5 @@
 import { customElement, property } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
-import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -12,7 +11,8 @@ import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@components/solution/solution-details-bar';
 
 import { SolutionUpdated } from '@pages/home/types';
-import { SolutionInfo } from '@/features/solution/types';
+
+import { parseSolutionInfo } from '@utils/solution/solution-utils';
 
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -30,9 +30,7 @@ export class SolutionUpdatedCard extends LitElement {
   render() {
     const solution = this.change.solution;
     if (solution?.info) {
-      const solutionInfo: SolutionInfo = JSON.parse(
-        fromHex(solution.info as `0x${string}`, 'string')
-      );
+      const solutionInfo = parseSolutionInfo(solution.info);
       return html`
         <sl-card>
           <div slot="header">

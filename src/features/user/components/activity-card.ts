@@ -1,6 +1,5 @@
 import { customElement, property } from 'lit/decorators.js';
 import { css, html, LitElement } from 'lit';
-import { fromHex } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -15,7 +14,7 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@components/solution/solution-details-bar';
 
 import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
-import { goalFailed } from '@utils/solution/solution-utils';
+import { goalFailed, parseSolutionInfo } from '@utils/solution/solution-utils';
 
 import { Activity, SolutionInfo } from '@/types';
 
@@ -146,7 +145,7 @@ export class ActivityCard extends LitElement {
         infoHex = this.activity.info as `0x${string}`;
       }
       if (infoHex) {
-        this._solutionInfo = JSON.parse(fromHex(infoHex, 'string'));
+        this._solutionInfo = parseSolutionInfo(infoHex);
       }
     }
     return this._solutionInfo;

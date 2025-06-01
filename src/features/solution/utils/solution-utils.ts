@@ -3,7 +3,33 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
-import { Solution } from '@/types';
+import { fromHex } from 'viem';
+import { Solution, SolutionInfo } from '@/types';
+
+/**
+ * Parses solution info from a hex-encoded JSON string
+ * @param infoHex The hex-encoded solution info string
+ * @returns Parsed solution info object or default values if parsing fails
+ */
+export function parseSolutionInfo(
+  infoHex: `0x${string}` | string | undefined
+): SolutionInfo {
+  if (infoHex) {
+    try {
+      // Handle hex-encoded info data
+      const infoString = infoHex.startsWith('0x')
+        ? fromHex(infoHex as `0x${string}`, 'string')
+        : infoHex;
+      return JSON.parse(infoString);
+    } catch (e) {
+      console.error('Error parsing solution info', e);
+    }
+  }
+  return {
+    name: 'Untitled Solution',
+    description: '',
+  };
+}
 
 /**
  * Calculates progress percentage from a solution object

@@ -3,7 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
 
-import { fromHex, toHex, formatUnits, parseUnits } from 'viem';
+import { toHex, formatUnits, parseUnits } from 'viem';
 import dayjs from 'dayjs';
 
 // Shoelace components
@@ -26,7 +26,7 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { formatAmount } from '@utils/format-utils';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { modal } from '@utils/web3';
-import { goalReached } from '@utils/solution/solution-utils';
+import { goalReached, parseSolutionInfo } from '@utils/solution/solution-utils';
 
 // GraphQL
 import { SolutionDocument } from '@gql';
@@ -119,23 +119,12 @@ export class EditSolution extends SignalWatcher(LitElement) {
       }
       if (result.data?.solution) {
         this.solution = result.data.solution as Solution;
-        // Parse solution info from hex
-        try {
-          if (this.solution.info) {
-            this.solutionInfo = JSON.parse(
-              fromHex(this.solution.info as `0x${string}`, 'string')
-            );
-          }
-          // Set page heading
-          layout.topBarContent.set(html`
-            <page-heading
-              >Edit "${this.solutionInfo?.name || 'Solution'}"
-            </page-heading>
-          `);
-        } catch (e) {
-          console.error('Error parsing solution info:', e);
-          this.error = 'Error parsing solution data';
-        }
+        this.solutionInfo = parseSolutionInfo(this.solution.info);
+        layout.topBarContent.set(html`
+          <page-heading
+            >Edit "${this.solutionInfo?.name || 'Solution'}"
+          </page-heading>
+        `);
       } else {
         this.error = 'Solution not found';
       }

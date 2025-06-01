@@ -1,7 +1,6 @@
 import { LitElement, css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
-import { fromHex } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
@@ -16,8 +15,12 @@ import gaugeHighIcon from '@icons/solution/gauge-high.svg';
 import { Solution } from '@/features/solution/types';
 
 import { smallCardStyles } from '@styles/small-card-styles';
+
 import { formatDate, formatAmount } from '@utils/format-utils';
-import { calculateProgress } from '@utils/solution/solution-utils';
+import {
+  calculateProgress,
+  parseSolutionInfo,
+} from '@utils/solution/solution-utils';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends SignalWatcher(LitElement) {
@@ -64,7 +67,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
 
   render() {
     const { info: infoRaw, deadline, id, stake } = this.solution;
-    const info = JSON.parse(fromHex(infoRaw as `0x${string}`, 'string'));
+    const info = parseSolutionInfo(infoRaw);
     const name = info.name || 'Untitled Solution';
     const deadlineDate = formatDate(deadline, 'fromNow');
     const description = info.description;

@@ -47,6 +47,7 @@ import { TokenInput } from '@components/common/token-input';
 import { formatAmount, formatDate } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
+import { setIdeaMetaTags, resetMetaTags } from '@utils/meta-utils';
 
 // GraphQL
 import { Idea, IdeaDocument } from '@gql';
@@ -261,6 +262,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       this.idea = result.data?.idea as Idea;
 
       if (this.idea) {
+        // Set social media meta tags for this idea
+        setIdeaMetaTags(this.idea);
+
         layout.rightSidebarContent.set(html`
           <top-supporters .ideaId=${this.ideaId}></top-supporters>
           <related-ideas
@@ -716,6 +720,12 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     // initially set the right sidebar to empty html
     layout.rightSidebarContent.set(html``);
     layout.showRightSidebar.set(true);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    // Clear social media meta tags when leaving the page
+    resetMetaTags();
   }
 
   updated(changedProperties: Map<string, unknown>) {
