@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/social-meta.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/idea/(.*)",
