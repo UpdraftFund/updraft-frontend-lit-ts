@@ -3,9 +3,9 @@
  * Supports Open Graph and Twitter Card meta tags
  */
 
-import { fromHex } from 'viem';
 import { Solution, Idea } from '@gql';
 import { parseProfile } from '@utils/user/user-utils';
+import { parseSolutionInfo } from '@utils/solution/solution-utils';
 
 export interface MetaTagData {
   title: string;
@@ -147,22 +147,9 @@ export function setSolutionMetaTags(solution: Solution): void {
   const drafterName = profile.name || profile.team || solution.drafter.id;
 
   // Parse solution info to get name and description
-  let solutionName = 'Untitled Solution';
-  let solutionDescription = '';
-
-  if (solution.info) {
-    try {
-      // Handle hex-encoded info data
-      const infoString = solution.info.startsWith('0x')
-        ? fromHex(solution.info as `0x${string}`, 'string')
-        : solution.info;
-      const info = JSON.parse(infoString);
-      solutionName = info.name || 'Untitled Solution';
-      solutionDescription = info.description || '';
-    } catch {
-      // Use defaults if info parsing fails
-    }
-  }
+  const solutionInfo = parseSolutionInfo(solution.info);
+  const solutionName = solutionInfo.name || 'Untitled Solution';
+  const solutionDescription = solutionInfo.description || '';
 
   const ideaContext = ` for "${solution.idea.name}"`;
 

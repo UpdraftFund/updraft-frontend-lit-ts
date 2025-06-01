@@ -4,7 +4,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { cache } from 'lit/directives/cache.js';
 import { Task } from '@lit/task';
 
-import { fromHex, parseUnits } from 'viem';
+import { parseUnits } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -44,6 +44,7 @@ import {
   calculateProgress,
   goalFailed,
   goalReached,
+  parseSolutionInfo,
 } from '@utils/solution/solution-utils';
 import { parseProfile } from '@utils/user/user-utils';
 import { modal } from '@utils/web3';
@@ -318,19 +319,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       if (result.data?.solution) {
         // Store the full solution object
         this.solution = result.data.solution as Solution;
+        this.solutionInfo = parseSolutionInfo(this.solution.info);
 
-        // Parse the solution info from the info field
-        try {
-          if (this.solution.info) {
-            this.solutionInfo = JSON.parse(
-              fromHex(this.solution.info as `0x${string}`, 'string')
-            );
-          }
-        } catch (e) {
-          console.error('Error parsing solution info:', e);
-        }
-
-        // Set social media meta tags for this solution
         setSolutionMetaTags(this.solution);
 
         layout.rightSidebarContent.set(html`

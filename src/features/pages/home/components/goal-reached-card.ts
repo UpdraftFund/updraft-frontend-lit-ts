@@ -1,6 +1,5 @@
 import { customElement, property } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
-import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -8,8 +7,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import { GoalReached } from '@pages/home/types';
-import { SolutionInfo } from '@/features/solution/types';
 import { formatAmount } from '@utils/format-utils';
+import { parseSolutionInfo } from '@utils/solution/solution-utils';
 
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 
@@ -28,16 +27,8 @@ export class GoalReachedCard extends LitElement {
 
   render() {
     const solution = this.change.solution;
-    let solutionInfo: SolutionInfo | null = null;
-    if (solution?.info) {
-      try {
-        solutionInfo = JSON.parse(
-          fromHex(solution.info as `0x${string}`, 'string')
-        );
-      } catch (e) {
-        console.error('Error parsing solution info', e);
-      }
-    }
+    const solutionInfo = parseSolutionInfo(solution?.info);
+
     return html`
       <sl-card>
         <div slot="header">

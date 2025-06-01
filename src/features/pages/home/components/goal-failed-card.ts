@@ -1,7 +1,6 @@
 import { customElement, query, property } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
 import { Task } from '@lit/task';
-import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -15,12 +14,15 @@ import '@shoelace-style/shoelace/dist/components/card/card.js';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { GoalFailed } from '@pages/home/types';
 import { SolutionContract } from '@contracts/solution';
-import { Solution, SolutionInfo } from '@/features/solution/types';
+import { Solution } from '@/features/solution/types';
 
 import { userAddress } from '@state/user';
 
 import { formatAmount } from '@utils/format-utils';
-import { calculateProgress } from '@utils/solution/solution-utils';
+import {
+  calculateProgress,
+  parseSolutionInfo,
+} from '@utils/solution/solution-utils';
 
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -81,18 +83,7 @@ export class GoalFailedCard extends LitElement {
 
   render() {
     const solution = this.change.solution;
-
-    let solutionInfo: SolutionInfo | null = null;
-    if (solution?.info) {
-      try {
-        solutionInfo = JSON.parse(
-          fromHex(solution.info as `0x${string}`, 'string')
-        );
-      } catch (e) {
-        console.error('Error parsing solution info', e);
-      }
-    }
-
+    const solutionInfo = parseSolutionInfo(solution?.info);
     const progress = calculateProgress(solution as Solution);
 
     return html`
