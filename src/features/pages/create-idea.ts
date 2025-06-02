@@ -106,14 +106,15 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
 
   private handleTagsInput(e: Event) {
     const input = e.target as SlInput;
-    const value = input.value;
+    // Convert multiple consecutive spaces to a single space
+    input.value = input.value.replace(/\s{2,}/g, ' ').trimStart();
     const spacePositions =
-      [...value.matchAll(/\s/g)].map((match) => match.index as number) || [];
+      [...input.value.matchAll(/\s/g)].map((match) => match.index) || [];
 
     if (spacePositions.length > 4) {
       const fifthSpaceIndex = spacePositions[4];
       // Trim input to the fifth space and allow a trailing space
-      input.value = value.slice(0, fifthSpaceIndex + 1);
+      input.value = input.value.slice(0, fifthSpaceIndex + 1);
       input.style.setProperty('--sl-input-focus-ring-color', 'red');
     } else {
       input.style.removeProperty('--sl-input-focus-ring-color');

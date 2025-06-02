@@ -19,7 +19,7 @@ export class SaveableForm extends LitElement {
 
       for (const [key, value] of formData) {
         if (typeof value === 'string') {
-          formObject[key] = value; // Save the string value (even if it's empty)
+          formObject[key] = value.trim(); // Save the string value (even if it's empty)
         } else {
           console.warn(
             `saveForm(${
