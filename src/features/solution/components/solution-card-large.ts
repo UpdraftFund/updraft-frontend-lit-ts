@@ -2,7 +2,6 @@ import { LitElement, css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 
-import { fromHex } from 'viem';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -10,7 +9,7 @@ dayjs.extend(relativeTime);
 
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 
-import { Solution, SolutionInfo } from '@/features/solution/types';
+import { Solution } from '@/features/solution/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
 
@@ -19,6 +18,7 @@ import {
   calculateProgress,
   goalFailed,
   goalReached,
+  parseSolutionInfo,
 } from '@utils/solution/solution-utils';
 import { parseProfile } from '@utils/user/user-utils';
 
@@ -123,9 +123,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
   }
 
   render() {
-    const solutionInfo: SolutionInfo = JSON.parse(
-      fromHex(this.solution.info as `0x${string}`, 'string')
-    );
+    const solutionInfo = parseSolutionInfo(this.solution.info);
     const drafterProfile = parseProfile(
       this.solution.drafter.profile as `0x${string}`
     );

@@ -1,6 +1,5 @@
 import { customElement, property } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
-import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -12,7 +11,9 @@ import '@shoelace-style/shoelace/dist/components/card/card.js';
 import '@components/solution/solution-details-bar';
 
 import { NewSolution } from '@pages/home/types';
-import { SolutionInfo, Profile } from '@/types';
+
+import { parseSolutionInfo } from '@utils/solution/solution-utils';
+import { parseProfile } from '@utils/user/user-utils';
 
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -37,11 +38,9 @@ export class NewSolutionCard extends LitElement {
     const solution = this.change.solution;
 
     if (solution?.info) {
-      const solutionInfo: SolutionInfo = JSON.parse(
-        fromHex(solution.info as `0x${string}`, 'string')
-      );
-      const drafterProfile: Profile = JSON.parse(
-        fromHex(solution.drafter.profile as `0x${string}`, 'string')
+      const solutionInfo = parseSolutionInfo(solution.info);
+      const drafterProfile = parseProfile(
+        solution.drafter.profile as `0x${string}`
       );
       return html`
         <sl-card>

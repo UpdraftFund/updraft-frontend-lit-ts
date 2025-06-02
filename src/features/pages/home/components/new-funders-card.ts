@@ -1,14 +1,13 @@
 import { customElement } from 'lit/decorators.js';
 import { html, css, LitElement } from 'lit';
-import { fromHex } from 'viem';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import { NewFunders } from '@pages/home/types';
-import { SolutionInfo } from '@/features/solution/types';
 import { shortenAddress } from '@utils/format-utils';
+import { parseSolutionInfo } from '@utils/solution/solution-utils';
 import { changeCardStyles } from '@styles/change-card-styles';
 
 @customElement('new-funders-card')
@@ -31,17 +30,7 @@ export class NewFundersCard extends LitElement {
     const solution = this.change.solution;
     const funders = this.change.funders || [];
     const additionalCount = this.change.additionalCount || 0;
-
-    let solutionInfo: SolutionInfo | null = null;
-    if (solution?.info) {
-      try {
-        solutionInfo = JSON.parse(
-          fromHex(solution.info as `0x${string}`, 'string')
-        );
-      } catch (e) {
-        console.error('Error parsing solution info', e);
-      }
-    }
+    const solutionInfo = parseSolutionInfo(solution?.info);
 
     return html`
       <sl-card>
