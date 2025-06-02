@@ -60,7 +60,7 @@ export class ShareDialog extends LitElement {
 
   private async copyLink() {
     try {
-      await navigator.clipboard.writeText(this.url);
+      await navigator.clipboard.writeText(`${this.shareMessage} ${this.url}`);
       this.clipboardTip.content = 'Copied!';
     } catch {
       this.clipboardTip.content = 'Failed to copy';
