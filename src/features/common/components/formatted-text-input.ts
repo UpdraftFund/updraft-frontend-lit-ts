@@ -123,6 +123,14 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
     if (this.editor) {
       this.editor.innerHTML = value;
       setTimeout(() => this.autoResize(), 0);
+    } else {
+      // If editor is not yet available, wait for it to be rendered
+      this.updateComplete.then(() => {
+        if (this.editor && this._value === value) {
+          this.editor.innerHTML = value;
+          setTimeout(() => this.autoResize(), 0);
+        }
+      });
     }
     // Update form value when value changes
     if (this.internals) {
