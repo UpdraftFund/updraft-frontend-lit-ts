@@ -1,5 +1,6 @@
 // Vercel Edge Function for social media meta tags
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import DOMPurify from 'dompurify';
 
 // Social media crawler user agents
 const CRAWLER_USER_AGENTS = [
@@ -87,9 +88,6 @@ interface SolutionInfo {
   description?: string;
 }
 
-/**
- * Checks if the request is from a social media crawler
- */
 function isCrawlerRequest(userAgent: string): boolean {
   const ua = userAgent.toLowerCase();
   return CRAWLER_USER_AGENTS.some((crawler) => ua.includes(crawler));
@@ -187,17 +185,16 @@ async function fetchGraphQLData(
 }
 
 /**
- * Strips HTML tags for social media descriptions
+ * Strips HTML tags for social media descriptions using DOMPurify
  * Leaves HTML entities as-is since crawlers will decode them
  */
 function stripHtmlTags(html: string): string {
-  // Remove HTML tags but preserve content and entities
-  let text = html.replace(/<[^>]*>/g, '');
-
+  const text = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [],
+    KEEP_CONTENT: true,
+  });
   // Clean up extra whitespace and line breaks
-  text = text.replace(/\s+/g, ' ').trim();
-
-  return text;
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -214,9 +211,6 @@ function escapeForAttribute(text: string): string {
   );
 }
 
-/**
- * Generates meta tags for an idea
- */
 function generateIdeaMetaTags(idea: IdeaData, url: string): string {
   const profile = parseProfile(idea.creator.profile);
   const creatorName = profile.name || profile.team || idea.creator.id;
@@ -236,9 +230,6 @@ function generateIdeaMetaTags(idea: IdeaData, url: string): string {
   return generateMetaTags(title, description, url);
 }
 
-/**
- * Generates meta tags for a solution
- */
 function generateSolutionMetaTags(solution: SolutionData, url: string): string {
   const profile = parseProfile(solution.drafter.profile);
   const drafterName = profile.name || profile.team || solution.drafter.id;
@@ -261,9 +252,6 @@ function generateSolutionMetaTags(solution: SolutionData, url: string): string {
   return generateMetaTags(title, description, url);
 }
 
-/**
- * Generates the meta tags HTML
- */
 function generateMetaTags(
   title: string,
   description: string,
