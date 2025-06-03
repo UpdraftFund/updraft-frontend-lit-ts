@@ -187,20 +187,12 @@ async function fetchGraphQLData(
 }
 
 /**
- * Strips HTML tags and converts to plain text for social media descriptions
+ * Strips HTML tags for social media descriptions
+ * Leaves HTML entities as-is since crawlers will decode them
  */
 function stripHtmlTags(html: string): string {
-  // Remove HTML tags but preserve content
+  // Remove HTML tags but preserve content and entities
   let text = html.replace(/<[^>]*>/g, '');
-
-  // Convert common HTML entities to their text equivalents
-  text = text
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&nbsp;/g, ' ');
 
   // Clean up extra whitespace and line breaks
   text = text.replace(/\s+/g, ' ').trim();
@@ -209,17 +201,17 @@ function stripHtmlTags(html: string): string {
 }
 
 /**
- * Escapes HTML characters to prevent XSS
+ * Escapes characters that could break HTML attribute values
+ * Handles both user input and content that may already contain HTML entities
  */
-function escapeHtml(text: string): string {
-  const map: { [key: string]: string } = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
-  };
-  return text.replace(/[&<>"']/g, (m) => map[m]);
+function escapeForAttribute(text: string): string {
+  return (
+    text
+      // First escape any unescaped ampersands (must be done first)
+      .replace(/&(?![a-zA-Z0-9#]+;)/g, '&amp;')
+      // Then escape any unescaped quotes
+      .replace(/"/g, '&quot;')
+  );
 }
 
 /**
@@ -277,30 +269,36 @@ function generateMetaTags(
   description: string,
   url: string
 ): string {
+  // Escape content to prevent breaking HTML attributes
+  // This preserves existing HTML entities while escaping problematic characters
+  const safeTitle = escapeForAttribute(title);
+  const safeDescription = escapeForAttribute(description);
+  const safeUrl = escapeForAttribute(url);
+
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="${escapeHtml(description)}" />
-    
+    <meta name="description" content="${safeDescription}" />
+
     <!-- Open Graph meta tags -->
-    <meta property="og:title" content="${escapeHtml(title)}" />
-    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:title" content="${safeTitle}" />
+    <meta property="og:description" content="${safeDescription}" />
     <meta property="og:type" content="article" />
-    <meta property="og:url" content="${escapeHtml(url)}" />
+    <meta property="og:url" content="${safeUrl}" />
     <meta property="og:site_name" content="Updraft" />
     <meta property="og:image" content="https://www.updraft.fund/assets/updraft-icon.png" />
-    
+
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@updraftfund" />
-    <meta name="twitter:title" content="${escapeHtml(title)}" />
-    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:title" content="${safeTitle}" />
+    <meta name="twitter:description" content="${safeDescription}" />
     <meta name="twitter:image" content="https://www.updraft.fund/assets/updraft-icon.png" />
-    
-    <title>${escapeHtml(title)}</title>
+
+    <title>${safeTitle}</title>
   </head>
   <body>
     <div id="root"></div>
