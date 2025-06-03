@@ -1,13 +1,15 @@
 import { LitElement, css, html } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { SignalWatcher } from '@lit-labs/signals';
 
 /**
  * Formatted text input component that preserves pasted formatting
  * Uses contenteditable div to allow rich text paste while integrating with forms
+ * Implements Form-Associated Custom Elements API for proper form integration
  */
 @customElement('formatted-text-input')
 export class FormattedTextInput extends SignalWatcher(LitElement) {
+  static formAssociated = true;
   static styles = css`
     :host {
       display: block;
@@ -111,94 +113,94 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
   @property() name = '';
   @property({ type: Boolean }) required = false;
   @property({ type: Boolean }) disabled = false;
-
-  private _value = '';
-
   @property()
   get value() {
     return this._value;
   }
 
-  set value(newValue: string) {
-    const oldValue = this._value;
-    this._value = newValue;
-
-    // Update the contenteditable div when value changes
-    if (this.editor && this.editor.innerHTML !== newValue) {
-      this.editor.innerHTML = newValue;
-      // Auto-resize after setting content
+  set value(value: string) {
+    this._value = value;
+    if (this.editor) {
+      this.editor.innerHTML = value;
       setTimeout(() => this.autoResize(), 0);
     }
-
-    // Update the hidden input
-    if (this.hiddenInput && this.hiddenInput.value !== newValue) {
-      this.hiddenInput.value = newValue;
+    // Update form value when value changes
+    if (this.internals) {
+      this.internals.setFormValue(value);
+      this.updateValidity();
     }
-
-    this.requestUpdate('value', oldValue);
   }
+
+  @state() private _value = '';
+  @state() private _validationMessage = '';
 
   @query('.editor') editor!: HTMLDivElement;
-  @query('.hidden-input') hiddenInput!: HTMLInputElement;
 
-  connectedCallback() {
-    super.connectedCallback();
-    // Set initial content if value is provided
-    this.updateComplete.then(() => {
-      if (this.value && this.editor) {
-        this.editor.innerHTML = this.value;
-      }
-      // Set up form restoration compatibility
-      this.setupFormCompatibility();
-      // Initial auto-resize
-      setTimeout(() => this.autoResize(), 0);
-    });
+  // Form-associated custom element internals
+  private internals: ElementInternals;
+
+  constructor() {
+    super();
+    // Attach internals for form association
+    this.internals = this.attachInternals();
   }
 
-  private setupFormCompatibility() {
-    if (!this.hiddenInput) return;
+  // Form control API methods
+  get form() {
+    return this.internals.form;
+  }
 
-    // The key insight: SaveableForm only restores if !element.value
-    // So we need to make sure our hidden input reports empty initially
-    // and then handle the restoration properly
+  get type() {
+    return this.localName;
+  }
 
-    let isRestorationMode = true;
+  get validity() {
+    return this.internals.validity;
+  }
 
-    // Override the hidden input's value property to sync with our component
-    Object.defineProperty(this.hiddenInput, 'value', {
-      get: () => {
-        // During restoration, report empty so SaveableForm will set the value
-        if (isRestorationMode) {
-          return '';
-        }
-        return this._value;
-      },
-      set: (newValue: string) => {
-        // When the form restoration sets the value, update our component
-        if (newValue !== this._value) {
-          this.value = newValue;
-          // After first restoration, exit restoration mode
-          isRestorationMode = false;
-        }
-      },
-      configurable: true,
-      enumerable: true,
-    });
+  get validationMessage() {
+    return this.internals.validationMessage;
+  }
 
-    // Exit restoration mode after a short delay (fallback)
-    setTimeout(() => {
-      isRestorationMode = false;
-    }, 1000);
+  get willValidate() {
+    return this.internals.willValidate;
+  }
+
+  checkValidity() {
+    return this.internals.checkValidity();
+  }
+
+  reportValidity() {
+    return this.internals.reportValidity();
+  }
+
+  private updateValidity() {
+    // Check if the field is required and empty
+    if (
+      this.required &&
+      (!this._value || this._value.trim() === '' || this._value === '<br><br>')
+    ) {
+      this._validationMessage = 'This field is required';
+      this.internals.setValidity(
+        { valueMissing: true },
+        this._validationMessage,
+        this.editor
+      );
+    } else {
+      this._validationMessage = '';
+      this.internals.setValidity({});
+    }
+    this.internals.setFormValue(this._value);
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
   }
 
   private handleInput() {
     const content = this.editor.innerHTML;
-    this.value = content;
+    this._value = content;
 
-    // Update hidden input for form submission
-    if (this.hiddenInput) {
-      this.hiddenInput.value = content;
-    }
+    // Update form value and validity
+    this.internals.setFormValue(content);
+    this.updateValidity();
 
     // Auto-resize the editor to fit content
     this.autoResize();
@@ -214,8 +216,6 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
   }
 
   private autoResize() {
-    if (!this.editor) return;
-
     // Reset height to auto to get the natural height
     this.editor.style.height = 'auto';
 
@@ -248,6 +248,51 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
     }
   }
 
+  // Form lifecycle callbacks
+  formAssociatedCallback(form: HTMLFormElement | null) {
+    // Called when the element is associated with or disassociated from a form
+    if (form) {
+      form.addEventListener('reset', () => {
+        this.value = '';
+        this.internals.setValidity({});
+      });
+    }
+  }
+
+  formDisabledCallback(disabled: boolean) {
+    this.disabled = disabled;
+  }
+
+  formResetCallback() {
+    this.value = '';
+    this.internals.setValidity({});
+  }
+
+  formStateRestoreCallback(state: string) {
+    if (state) {
+      this.value = state;
+    }
+  }
+
+  // Lifecycle methods
+  connectedCallback() {
+    super.connectedCallback();
+
+    // Add form validation listener if in a form
+    if (this.closest('form')) {
+      this.addEventListener('invalid', () => {
+        this.updateValidity();
+      });
+    }
+  }
+
+  updated(changedProperties: Map<string, unknown>) {
+    super.updated(changedProperties);
+    if (changedProperties.has('_value') || changedProperties.has('required')) {
+      this.updateValidity();
+    }
+  }
+
   render() {
     return html`
       <div class="form-control">
@@ -262,15 +307,6 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
           @paste=${this.handlePaste}
           @keydown=${this.handleKeyDown}
         ></div>
-
-        <!-- Hidden input for form submission -->
-        <input
-          type="hidden"
-          name=${this.name}
-          class="hidden-input"
-          .value=${this.value}
-          ?required=${this.required}
-        />
       </div>
     `;
   }
