@@ -347,7 +347,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                     <label-with-hint
                       slot="label"
                       label="Description*"
-                      hint="A description of your solution. You can paste formatted text to preserve styling."
+                      hint="A description of your solution. You can paste formatted text."
                     ></label-with-hint>
                   </formatted-text-input>
 
@@ -358,7 +358,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                     <label-with-hint
                       slot="label"
                       label="News"
-                      hint="Share the latest progress on your solution. You can paste formatted text to preserve styling."
+                      hint="Share the latest progress on your solution. You can paste formatted text."
                     ></label-with-hint>
                   </formatted-text-input>
 

@@ -434,7 +434,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           <label-with-hint
             slot="label"
             label="About"
-            hint="Tell people about yourself or your team. You can paste formatted text to preserve styling."
+            hint="Tell people about yourself or your team. You can paste formatted text."
           ></label-with-hint>
         </formatted-text-input>
 
@@ -442,7 +442,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           <label-with-hint
             slot="label"
             label="News"
-            hint="Share your latest updates. You can paste formatted text to preserve styling."
+            hint="Share your latest updates. You can paste formatted text."
           ></label-with-hint>
         </formatted-text-input>
         <div class="links-section">
