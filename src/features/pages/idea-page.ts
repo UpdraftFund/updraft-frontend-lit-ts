@@ -37,6 +37,7 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/common/formatted-text';
 import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
@@ -109,6 +110,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         align-items: center;
         gap: 1rem;
         margin: 1rem 0 0;
+      }
+      formatted-text {
+        margin-bottom: 1rem;
       }
       .tags {
         display: flex;
@@ -513,9 +517,9 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             </sl-tooltip>
           </div>
         </div>
-        <div class="description-tags">
+        <div>
           <h3>Description</h3>
-          <p>${description}</p>
+          <formatted-text>${description}</formatted-text>
           ${tags
             ? html`
                 <div class="tags">

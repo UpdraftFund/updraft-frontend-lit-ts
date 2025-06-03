@@ -187,17 +187,31 @@ async function fetchGraphQLData(
 }
 
 /**
- * Escapes HTML characters to prevent XSS
+ * Strips HTML tags for social media descriptions
+ * Leaves HTML entities as-is since crawlers will decode them
  */
-function escapeHtml(text: string): string {
-  const map: { [key: string]: string } = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
-  };
-  return text.replace(/[&<>"']/g, (m) => map[m]);
+function stripHtmlTags(html: string): string {
+  // Remove HTML tags but preserve content and entities
+  let text = html.replace(/<[^>]*>/g, '');
+
+  // Clean up extra whitespace and line breaks
+  text = text.replace(/\s+/g, ' ').trim();
+
+  return text;
+}
+
+/**
+ * Escapes characters that could break HTML attribute values
+ * Handles both user input and content that may already contain HTML entities
+ */
+function escapeForAttribute(text: string): string {
+  return (
+    text
+      // First escape any unescaped ampersands (must be done first)
+      .replace(/&(?![a-zA-Z0-9#]+;)/g, '&amp;')
+      // Then escape any unescaped quotes
+      .replace(/"/g, '&quot;')
+  );
 }
 
 /**
@@ -208,10 +222,16 @@ function generateIdeaMetaTags(idea: IdeaData, url: string): string {
   const creatorName = profile.name || profile.team || idea.creator.id;
 
   const title = `${idea.name || 'Untitled Idea'} | Updraft`;
-  const description =
+
+  // Strip HTML tags from description for clean social media previews
+  const cleanDescription =
     idea.description && idea.description.trim()
-      ? `${idea.description.substring(0, 200)}${idea.description.length > 200 ? '...' : ''} - Created by ${creatorName}`
-      : `An idea created by ${creatorName} on Updraft - Get paid to crowdfund and work on public goods.`;
+      ? stripHtmlTags(idea.description)
+      : '';
+
+  const description = cleanDescription
+    ? `${cleanDescription.substring(0, 200)}${cleanDescription.length > 200 ? '...' : ''} - Created by ${creatorName}`
+    : `An idea created by ${creatorName} on Updraft - Get paid to crowdfund and work on public goods.`;
 
   return generateMetaTags(title, description, url);
 }
@@ -225,13 +245,17 @@ function generateSolutionMetaTags(solution: SolutionData, url: string): string {
 
   const solutionInfo = parseSolutionInfo(solution.info);
   const solutionName = solutionInfo.name || 'Untitled Solution';
-  const solutionDescription = solutionInfo.description || '';
+
+  // Strip HTML tags from description for clean social media previews
+  const cleanDescription = solutionInfo.description
+    ? stripHtmlTags(solutionInfo.description)
+    : '';
 
   const ideaContext = ` for "${solution.idea.name || 'Unknown Idea'}"`;
 
   const title = `${solutionName} | Updraft`;
-  const description = solutionDescription
-    ? `${solutionDescription.substring(0, 200)}${solutionDescription.length > 200 ? '...' : ''} - Solution${ideaContext} by ${drafterName}`
+  const description = cleanDescription
+    ? `${cleanDescription.substring(0, 200)}${cleanDescription.length > 200 ? '...' : ''} - Solution${ideaContext} by ${drafterName}`
     : `A solution${ideaContext} by ${drafterName} on Updraft - Get paid to crowdfund and work on public goods.`;
 
   return generateMetaTags(title, description, url);
@@ -245,30 +269,36 @@ function generateMetaTags(
   description: string,
   url: string
 ): string {
+  // Escape content to prevent breaking HTML attributes
+  // This preserves existing HTML entities while escaping problematic characters
+  const safeTitle = escapeForAttribute(title);
+  const safeDescription = escapeForAttribute(description);
+  const safeUrl = escapeForAttribute(url);
+
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="${escapeHtml(description)}" />
-    
+    <meta name="description" content="${safeDescription}" />
+
     <!-- Open Graph meta tags -->
-    <meta property="og:title" content="${escapeHtml(title)}" />
-    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:title" content="${safeTitle}" />
+    <meta property="og:description" content="${safeDescription}" />
     <meta property="og:type" content="article" />
-    <meta property="og:url" content="${escapeHtml(url)}" />
+    <meta property="og:url" content="${safeUrl}" />
     <meta property="og:site_name" content="Updraft" />
     <meta property="og:image" content="https://www.updraft.fund/assets/updraft-icon.png" />
-    
+
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@updraftfund" />
-    <meta name="twitter:title" content="${escapeHtml(title)}" />
-    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:title" content="${safeTitle}" />
+    <meta name="twitter:description" content="${safeDescription}" />
     <meta name="twitter:image" content="https://www.updraft.fund/assets/updraft-icon.png" />
-    
-    <title>${escapeHtml(title)}</title>
+
+    <title>${safeTitle}</title>
   </head>
   <body>
     <div id="root"></div>

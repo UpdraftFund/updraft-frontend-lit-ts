@@ -11,6 +11,7 @@ import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
 import '@components/user/activity-feed';
 import '@components/user/user-avatar';
+import '@components/common/formatted-text';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -78,7 +79,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       font-weight: 600;
     }
 
-    .section p {
+    .section formatted-text {
       margin-bottom: 0;
     }
 
@@ -279,7 +280,9 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   ? html`
                       <div class="about section">
                         <h2>About</h2>
-                        <p>${this.profileData.about}</p>
+                        <formatted-text
+                          >${this.profileData.about}
+                        </formatted-text>
                       </div>
                     `
                   : html``}
@@ -287,7 +290,9 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   ? html`
                       <div class="news section">
                         <h2>Latest Updates</h2>
-                        <p>${this.profileData.news}</p>
+                        <formatted-text
+                          >${this.profileData.news}
+                        </formatted-text>
                       </div>
                     `
                   : html``}

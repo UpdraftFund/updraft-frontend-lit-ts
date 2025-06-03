@@ -7,6 +7,7 @@ import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
+import '@components/common/formatted-text-input';
 import { SaveableForm } from '@components/common/saveable-form';
 
 import layout from '@state/layout';
@@ -79,13 +80,13 @@ export class CreateSolution extends SaveableForm {
           ></label-with-hint>
         </sl-input>
 
-        <sl-textarea name="description" required resize="auto">
+        <formatted-text-input name="description" required>
           <label-with-hint
             slot="label"
             label="Description*"
-            hint="A description of your solution"
+            hint="A description of your solution. You can paste formatted text."
           ></label-with-hint>
-        </sl-textarea>
+        </formatted-text-input>
 
         <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
