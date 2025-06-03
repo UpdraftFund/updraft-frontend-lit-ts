@@ -118,6 +118,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
+        margin-bottom: 1rem;
       }
       .tag {
         display: inline-block;
