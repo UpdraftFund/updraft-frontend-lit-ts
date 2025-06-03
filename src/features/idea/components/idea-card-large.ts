@@ -3,6 +3,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@components/common/formatted-text';
 
 import { Idea } from '@/features/idea/types';
 
@@ -99,7 +100,9 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
         </ul>
 
         ${description
-          ? html` <div class="description">${description}</div>`
+          ? html` <formatted-text class="description"
+              >${description}
+            </formatted-text>`
           : ''}
         ${tags && tags.length > 0
           ? html`

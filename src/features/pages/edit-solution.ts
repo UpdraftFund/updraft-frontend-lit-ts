@@ -20,6 +20,7 @@ import '@components/common/upd-dialog';
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
 import '@components/common/token-input';
+import '@components/common/formatted-text-input';
 import { TransactionWatcher } from '@components/common/transaction-watcher';
 
 // Utilities
@@ -338,30 +339,28 @@ export class EditSolution extends SignalWatcher(LitElement) {
                     ></label-with-hint>
                   </sl-input>
 
-                  <sl-textarea
+                  <formatted-text-input
                     name="description"
+                    .value=${this.solutionInfo?.description || ''}
                     required
-                    resize="auto"
-                    value=${this.solutionInfo?.description || ''}
                   >
                     <label-with-hint
                       slot="label"
                       label="Description*"
-                      hint="A description of your solution"
+                      hint="A description of your solution. You can paste formatted text to preserve styling."
                     ></label-with-hint>
-                  </sl-textarea>
+                  </formatted-text-input>
 
-                  <sl-textarea
+                  <formatted-text-input
                     name="news"
-                    resize="auto"
-                    value=${this.solutionInfo?.news || ''}
+                    .value=${this.solutionInfo?.news || ''}
                   >
                     <label-with-hint
                       slot="label"
                       label="News"
-                      hint="Share the latest progress on your solution"
+                      hint="Share the latest progress on your solution. You can paste formatted text to preserve styling."
                     ></label-with-hint>
-                  </sl-textarea>
+                  </formatted-text-input>
 
                   ${goalReached(this.solution)
                     ? html`

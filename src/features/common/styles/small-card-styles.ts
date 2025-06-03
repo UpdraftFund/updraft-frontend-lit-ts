@@ -30,7 +30,7 @@ export const smallCardStyles = css`
     font-weight: 700;
   }
 
-  p {
+  formatted-text {
     margin-top: 0.5rem;
     font-size: 0.75rem;
     color: var(--subtle-text);

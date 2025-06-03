@@ -24,6 +24,7 @@ import '@components/common/transaction-watcher';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/token-input';
+import '@components/common/formatted-text-input';
 import { ITokenInput } from '@components/common/token-input';
 import {
   TransactionWatcher,
@@ -429,18 +430,21 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           autocomplete="organization"
           .value=${profile?.team || ''}
         ></sl-input>
-        <sl-textarea
-          name="about"
-          label="About"
-          .value=${profile?.about || ''}
-          resize="auto"
-        ></sl-textarea>
-        <sl-textarea
-          name="news"
-          label="News"
-          .value=${profile?.news || ''}
-          resize="auto"
-        ></sl-textarea>
+        <formatted-text-input name="about" .value=${profile?.about || ''}>
+          <label-with-hint
+            slot="label"
+            label="About"
+            hint="Tell people about yourself or your team. You can paste formatted text to preserve styling."
+          ></label-with-hint>
+        </formatted-text-input>
+
+        <formatted-text-input name="news" .value=${profile?.news || ''}>
+          <label-with-hint
+            slot="label"
+            label="News"
+            hint="Share your latest updates. You can paste formatted text to preserve styling."
+          ></label-with-hint>
+        </formatted-text-input>
         <div class="links-section">
           <p>Links</p>
           ${this.renderLinks()}

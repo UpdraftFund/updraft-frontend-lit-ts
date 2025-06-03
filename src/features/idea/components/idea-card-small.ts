@@ -2,6 +2,8 @@ import { LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 
+import '@components/common/formatted-text';
+
 import { Idea } from '@/features/idea/types';
 
 import { smallCardStyles } from '@styles/small-card-styles';
@@ -24,7 +26,9 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
       <a href="/idea/${id}">
         <hr />
         <h3>${name}</h3>
-        ${description ? html` <p>${description}</p>` : html``}
+        ${description
+          ? html` <formatted-text>${description}</formatted-text>`
+          : html``}
         <ul class="info-row">
           <li>🌱 ${date}</li>
           ${this.showReward
