@@ -187,6 +187,28 @@ async function fetchGraphQLData(
 }
 
 /**
+ * Strips HTML tags and converts to plain text for social media descriptions
+ */
+function stripHtmlTags(html: string): string {
+  // Remove HTML tags but preserve content
+  let text = html.replace(/<[^>]*>/g, '');
+
+  // Convert common HTML entities to their text equivalents
+  text = text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+
+  // Clean up extra whitespace and line breaks
+  text = text.replace(/\s+/g, ' ').trim();
+
+  return text;
+}
+
+/**
  * Escapes HTML characters to prevent XSS
  */
 function escapeHtml(text: string): string {
@@ -208,10 +230,16 @@ function generateIdeaMetaTags(idea: IdeaData, url: string): string {
   const creatorName = profile.name || profile.team || idea.creator.id;
 
   const title = `${idea.name || 'Untitled Idea'} | Updraft`;
-  const description =
+
+  // Strip HTML tags from description for clean social media previews
+  const cleanDescription =
     idea.description && idea.description.trim()
-      ? `${idea.description.substring(0, 200)}${idea.description.length > 200 ? '...' : ''} - Created by ${creatorName}`
-      : `An idea created by ${creatorName} on Updraft - Get paid to crowdfund and work on public goods.`;
+      ? stripHtmlTags(idea.description)
+      : '';
+
+  const description = cleanDescription
+    ? `${cleanDescription.substring(0, 200)}${cleanDescription.length > 200 ? '...' : ''} - Created by ${creatorName}`
+    : `An idea created by ${creatorName} on Updraft - Get paid to crowdfund and work on public goods.`;
 
   return generateMetaTags(title, description, url);
 }
@@ -225,13 +253,17 @@ function generateSolutionMetaTags(solution: SolutionData, url: string): string {
 
   const solutionInfo = parseSolutionInfo(solution.info);
   const solutionName = solutionInfo.name || 'Untitled Solution';
-  const solutionDescription = solutionInfo.description || '';
+
+  // Strip HTML tags from description for clean social media previews
+  const cleanDescription = solutionInfo.description
+    ? stripHtmlTags(solutionInfo.description)
+    : '';
 
   const ideaContext = ` for "${solution.idea.name || 'Unknown Idea'}"`;
 
   const title = `${solutionName} | Updraft`;
-  const description = solutionDescription
-    ? `${solutionDescription.substring(0, 200)}${solutionDescription.length > 200 ? '...' : ''} - Solution${ideaContext} by ${drafterName}`
+  const description = cleanDescription
+    ? `${cleanDescription.substring(0, 200)}${cleanDescription.length > 200 ? '...' : ''} - Solution${ideaContext} by ${drafterName}`
     : `A solution${ideaContext} by ${drafterName} on Updraft - Get paid to crowdfund and work on public goods.`;
 
   return generateMetaTags(title, description, url);
