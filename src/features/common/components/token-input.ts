@@ -135,7 +135,7 @@ export class TokenInput
   static formAssociated = true;
 
   // ElementInternals for form association
-  private internals_: ElementInternals;
+  private internals: ElementInternals;
   static styles = [
     dialogStyles,
     css`
@@ -434,20 +434,20 @@ export class TokenInput
 
     // Update the element's validity state using ElementInternals
     if (this._error) {
-      this.internals_.setValidity(
+      this.internals.setValidity(
         validityState,
         this._validationMessage,
         this.input || undefined
       );
     } else {
-      this.internals_.setValidity({});
+      this.internals.setValidity({});
     }
 
     // Set form value
     if (this.value) {
-      this.internals_.setFormValue(this.value);
+      this.internals.setFormValue(this.value);
     } else {
-      this.internals_.setFormValue('');
+      this.internals.setFormValue('');
     }
 
     // Dispatch a change event to notify the form of validity changes
@@ -550,17 +550,17 @@ export class TokenInput
   // Form validation methods
   checkValidity(): boolean {
     this.validate();
-    return this.internals_.checkValidity();
+    return this.internals.checkValidity();
   }
 
   reportValidity(): boolean {
     this.validate();
-    return this.internals_.reportValidity();
+    return this.internals.reportValidity();
   }
 
   // Getter for form property
   get form(): HTMLFormElement | null {
-    return this.internals_.form;
+    return this.internals.form;
   }
 
   // Called when the element is associated with a form
@@ -570,7 +570,7 @@ export class TokenInput
       this.value = '';
       this._error = null;
       this._validationMessage = '';
-      this.internals_.setValidity({});
+      this.internals.setValidity({});
       if (this.input) {
         this.input.classList.remove('invalid');
       }
@@ -590,7 +590,7 @@ export class TokenInput
   constructor() {
     super();
     // Initialize ElementInternals
-    this.internals_ = this.attachInternals();
+    this.internals = this.attachInternals();
   }
 
   // Lifecycle methods
