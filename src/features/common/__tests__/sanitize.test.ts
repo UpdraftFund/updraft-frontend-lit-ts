@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { sanitizeRichText } from './sanitize.js';
+import { sanitizeRichText } from '@utils/sanitize';
 
 describe('sanitizeRichTextContent', () => {
   it('should preserve allowed formatting tags', () => {
