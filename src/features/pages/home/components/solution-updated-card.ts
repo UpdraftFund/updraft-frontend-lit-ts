@@ -9,6 +9,7 @@ dayjs.extend(relativeTime);
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 import '@components/solution/solution-details-bar';
+import '@components/common/formatted-text';
 
 import { SolutionUpdated } from '@pages/home/types';
 
@@ -41,7 +42,9 @@ export class SolutionUpdatedCard extends LitElement {
           </div>
           <a class="solution-body" href="/solution/${solution.id}">
             ${solutionInfo.news
-              ? html`<p class="solution-news">${solutionInfo.news}</p>`
+              ? html` <formatted-text class="solution-news"
+                  >${solutionInfo.news}</formatted-text
+                >`
               : html``}
             <solution-details-bar .solution=${solution}></solution-details-bar>
           </a>

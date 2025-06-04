@@ -12,6 +12,7 @@ import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import '@components/solution/solution-details-bar';
+import '@components/common/formatted-text';
 
 import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
 import { goalFailed, parseSolutionInfo } from '@utils/solution/solution-utils';
@@ -284,7 +285,9 @@ export class ActivityCard extends LitElement {
         <div class="entity">${this.renderEntity()}</div>
 
         <div class="description-container">
-          <div class="description">${this.getDescription()}</div>
+          <formatted-text class="description"
+            >${this.getDescription()}</formatted-text
+          >
           ${this.renderFundButton()}
         </div>
 
