@@ -55,6 +55,8 @@ const SOLUTION_QUERY = `
   }
 `;
 
+const DESCRIPTION_LIMIT = 250;
+
 interface IdeaData {
   id: string;
   name?: string;
@@ -225,7 +227,7 @@ function generateIdeaMetaTags(idea: IdeaData, url: string): string {
       : '';
 
   const description = cleanDescription
-    ? `${cleanDescription.substring(0, 200)}${cleanDescription.length > 200 ? '...' : ''} - Created by ${creatorName}`
+    ? `${cleanDescription.substring(0, DESCRIPTION_LIMIT)}${cleanDescription.length > DESCRIPTION_LIMIT ? '...' : ''} - Created by ${creatorName}`
     : `An idea created by ${creatorName} on Updraft - Get paid to crowdfund and work on public goods.`;
 
   return generateMetaTags(title, description, url);
@@ -247,7 +249,7 @@ function generateSolutionMetaTags(solution: SolutionData, url: string): string {
 
   const title = `${solutionName} | Updraft`;
   const description = cleanDescription
-    ? `${cleanDescription.substring(0, 200)}${cleanDescription.length > 200 ? '...' : ''} - Solution${ideaContext} by ${drafterName}`
+    ? `${cleanDescription.substring(0, DESCRIPTION_LIMIT)}${cleanDescription.length > DESCRIPTION_LIMIT ? '...' : ''} - Solution${ideaContext} by ${drafterName}`
     : `A solution${ideaContext} by ${drafterName} on Updraft - Get paid to crowdfund and work on public goods.`;
 
   return generateMetaTags(title, description, url);
