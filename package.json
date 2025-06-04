@@ -33,6 +33,7 @@
     "dompurify": "^3.2.6",
     "ethereum-blockies-base64": "^1.0.2",
     "graphql": "^16.10.0",
+    "isomorphic-dompurify": "^2.25.0",
     "lit": "^3.2.1",
     "react": "^19.0.0",
     "urql": "^4.2.1"
