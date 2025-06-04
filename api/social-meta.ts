@@ -55,7 +55,7 @@ const SOLUTION_QUERY = `
   }
 `;
 
-const DESCRIPTION_LIMIT = 250;
+const DESCRIPTION_LIMIT = 280;
 
 interface IdeaData {
   id: string;
