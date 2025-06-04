@@ -1,6 +1,6 @@
 // Vercel Edge Function for social media meta tags
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 
 // Social media crawler user agents
 const CRAWLER_USER_AGENTS = [
@@ -185,7 +185,8 @@ async function fetchGraphQLData(
 }
 
 /**
- * Strips HTML tags for social media descriptions using DOMPurify
+ * Strips HTML tags for social media descriptions using isomorphic-dompurify
+ * Works in both browser and Node.js environments
  * Leaves HTML entities as-is since crawlers will decode them
  */
 function stripHtmlTags(html: string): string {
