@@ -30,6 +30,7 @@
     "@wagmi/connectors": "^5.7.7",
     "@wagmi/core": "^2.16.4",
     "dayjs": "^1.11.13",
+    "dompurify": "^3.2.6",
     "ethereum-blockies-base64": "^1.0.2",
     "graphql": "^16.10.0",
     "lit": "^3.2.1",

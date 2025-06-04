@@ -17,6 +17,7 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
 import '@components/common/token-input';
+import '@components/common/formatted-text-input';
 import { ITokenInput } from '@components/common/token-input';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
@@ -189,14 +190,13 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
             hint="A short name for your idea"
           ></label-with-hint>
         </sl-input>
-        <sl-textarea name="description" resize="auto">
+        <formatted-text-input name="description">
           <label-with-hint
             slot="label"
             label="Description"
-            hint="How do you want to make your community, your project or the world better?"
-          >
-          </label-with-hint>
-        </sl-textarea>
+            hint="How do you want to make your community, your project or the world better? You can paste formatted text."
+          ></label-with-hint>
+        </formatted-text-input>
         <sl-input name="tags" @sl-input=${this.handleTagsInput}>
           <label-with-hint
             slot="label"

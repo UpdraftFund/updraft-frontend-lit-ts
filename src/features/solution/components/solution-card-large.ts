@@ -8,6 +8,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
+import '@components/common/formatted-text';
 
 import { Solution } from '@/features/solution/types';
 
@@ -179,13 +180,15 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         </ul>
 
         ${solutionInfo.description
-          ? html` <div class="description">${solutionInfo.description}</div>`
+          ? html` <formatted-text class="description"
+              >${solutionInfo.description}
+            </formatted-text>`
           : html``}
         ${solutionInfo.news
           ? html`
               <div class="news">
                 <h4>Latest Updates</h4>
-                <p>${solutionInfo.news}</p>
+                <formatted-text>${solutionInfo.news}</formatted-text>
               </div>
             `
           : html``}

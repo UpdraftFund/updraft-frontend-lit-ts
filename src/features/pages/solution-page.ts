@@ -32,6 +32,7 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
+import '@components/common/formatted-text';
 import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
@@ -1069,7 +1070,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             ? html`
                 <div class="solution-description">
                   <h3>Description</h3>
-                  <p>${this.solutionInfo.description}</p>
+                  <formatted-text
+                    >${this.solutionInfo.description}
+                  </formatted-text>
                 </div>
               `
             : html``}
@@ -1077,7 +1080,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             ? html`
                 <div class="solution-news">
                   <h3>Latest Updates</h3>
-                  <p>${this.solutionInfo.news}</p>
+                  <formatted-text>${this.solutionInfo.news}</formatted-text>
                 </div>
               `
             : html``}
