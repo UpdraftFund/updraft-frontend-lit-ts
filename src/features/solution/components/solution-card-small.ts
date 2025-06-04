@@ -6,6 +6,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@components/common/formatted-text';
 
 import gaugeMinIcon from '@icons/solution/gauge-min.svg';
 import gaugeLowIcon from '@icons/solution/gauge-low.svg';
@@ -76,7 +77,9 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
       <a href="/solution/${id}">
         <hr />
         <h3>${name}</h3>
-        ${description ? html`<p>${description}</p>` : html``}
+        ${description
+          ? html` <formatted-text>${description}</formatted-text>`
+          : html``}
         <ul class="info-row">
           <li>⏰ ${deadlineDate}</li>
           ${this.showStake ? html` <li>💎 ${formatAmount(stake)}</li>` : html``}
