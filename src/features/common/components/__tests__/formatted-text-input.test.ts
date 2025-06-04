@@ -1,5 +1,5 @@
 import { expect, fixture, html } from '@open-wc/testing';
-import { FormattedTextInput } from './formatted-text-input.js';
+import { FormattedTextInput } from '../formatted-text-input';
 
 describe('FormattedTextInput', () => {
   let element: FormattedTextInput;
