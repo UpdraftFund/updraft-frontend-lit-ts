@@ -1,7 +1,34 @@
 import { LitElement, css, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { SignalWatcher } from '@lit-labs/signals';
-import DOMPurify from 'dompurify';
+import { sanitizeRichText } from '@utils/sanitize';
+
+/**
+ * Helper function to replace a node with sanitized HTML content
+ * Uses a temporary div to convert HTML string to DOM nodes
+ * @param node - The node to replace
+ * @param sanitizedHTML - The sanitized HTML string
+ */
+function replaceNodeWithSanitizedHTML(node: Node, sanitizedHTML: string): void {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = sanitizedHTML;
+
+  if (node.parentNode) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      // For element nodes, replace with the first child of the temp div
+      const sanitizedElement = tempDiv.firstChild;
+      if (sanitizedElement) {
+        node.parentNode.replaceChild(sanitizedElement, node);
+      }
+    } else {
+      // For text nodes, replace with all children of the temp div
+      while (tempDiv.firstChild) {
+        node.parentNode.insertBefore(tempDiv.firstChild, node);
+      }
+      node.parentNode.removeChild(node);
+    }
+  }
+}
 
 /**
  * Component for safely displaying formatted text content using slots
@@ -16,97 +43,26 @@ export class FormattedText extends SignalWatcher(LitElement) {
     }
   `;
 
-  /**
-   * Sanitizes the slotted content to prevent XSS attacks
-   */
   private sanitizeSlotContent() {
     const slot = this.shadowRoot?.querySelector('slot');
     if (!slot) return;
 
-    // Get all assigned nodes from the slot
     const assignedNodes = slot.assignedNodes();
 
     assignedNodes.forEach((node) => {
       if (node.nodeType === Node.ELEMENT_NODE) {
         // For element nodes, sanitize the HTML content
         const element = node as Element;
-        const sanitizedHTML = DOMPurify.sanitize(element.outerHTML, {
-          ALLOWED_TAGS: [
-            'p',
-            'br',
-            'strong',
-            'b',
-            'em',
-            'i',
-            'u',
-            'a',
-            'ul',
-            'ol',
-            'li',
-            'h1',
-            'h2',
-            'h3',
-            'h4',
-            'h5',
-            'h6',
-            'blockquote',
-          ],
-          ALLOWED_ATTR: ['href'],
-          ALLOWED_URI_REGEXP:
-            /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-        });
-
-        // Replace the element with the sanitized version
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = sanitizedHTML;
-        const sanitizedElement = tempDiv.firstChild;
-
-        if (sanitizedElement && element.parentNode) {
-          element.parentNode.replaceChild(sanitizedElement, element);
-        }
+        const sanitizedHTML = sanitizeRichText(element.outerHTML);
+        replaceNodeWithSanitizedHTML(node, sanitizedHTML);
       } else if (node.nodeType === Node.TEXT_NODE) {
         // For text nodes, check if they contain HTML and process accordingly
         const textContent = node.textContent || '';
 
         // If text contains HTML tags, sanitize it
         if (/<[^>]+>/.test(textContent)) {
-          const sanitizedHTML = DOMPurify.sanitize(textContent, {
-            ALLOWED_TAGS: [
-              'p',
-              'br',
-              'strong',
-              'b',
-              'em',
-              'i',
-              'u',
-              'a',
-              'ul',
-              'ol',
-              'li',
-              'h1',
-              'h2',
-              'h3',
-              'h4',
-              'h5',
-              'h6',
-              'blockquote',
-            ],
-            ALLOWED_ATTR: ['href'],
-            ALLOWED_URI_REGEXP:
-              /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-          });
-
-          // Replace text node with sanitized HTML
-          const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = sanitizedHTML;
-
-          // Replace the text node with the sanitized elements
-          if (node.parentNode) {
-            while (tempDiv.firstChild) {
-              node.parentNode.insertBefore(tempDiv.firstChild, node);
-            }
-            node.parentNode.removeChild(node);
-          }
+          const sanitizedHTML = sanitizeRichText(textContent);
+          replaceNodeWithSanitizedHTML(node, sanitizedHTML);
         }
         // Plain text nodes are left as-is (they're safe)
       }
