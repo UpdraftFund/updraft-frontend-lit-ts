@@ -33,6 +33,10 @@ export const largeCardStyles = css`
     color: var(--sl-color-neutral-600);
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 26rem;
   }
 
   .info-row {
