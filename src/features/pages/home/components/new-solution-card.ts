@@ -29,6 +29,10 @@ export class NewSolutionCard extends LitElement {
       }
       .byline {
         font-size: 0.75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 26rem;
       }
     `,
   ];
