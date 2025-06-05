@@ -76,14 +76,13 @@ export class TrackedChangesManager {
     if (change.type === 'newSupporter') {
       const supporter = (change as NewSupporters).supporters[0];
 
-      // Only extract name if this is a supporter we'll display
       if (supporter.profile) {
         try {
           const profileData = JSON.parse(fromHex(supporter.profile, 'string'));
-          supporter.name = profileData.name || profileData.team || 'Anonymous';
+          supporter.name = profileData.name || profileData.team || supporter.id;
         } catch (e) {
           console.error('Error parsing profile data', e);
-          supporter.name = 'Anonymous';
+          supporter.name = supporter.id;
         }
       }
 
@@ -94,14 +93,13 @@ export class TrackedChangesManager {
     } else if (change.type === 'newFunder') {
       const funder = (change as NewFunders).funders[0];
 
-      // Only extract name if this is a funder we'll display
       if (funder.profile) {
         try {
           const profileData = JSON.parse(fromHex(funder.profile, 'string'));
-          funder.name = profileData.name || profileData.team || 'Anonymous';
+          funder.name = profileData.name || profileData.team || funder.id;
         } catch (e) {
           console.error('Error parsing profile data', e);
-          funder.name = 'Anonymous';
+          funder.name = funder.id;
         }
       }
 
