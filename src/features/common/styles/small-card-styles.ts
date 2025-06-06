@@ -39,6 +39,9 @@ export const smallCardStyles = css`
     margin-top: 0.5rem;
     font-size: 0.75rem;
     color: var(--subtle-text);
+    max-height: 3.5rem;
+    --fade-color: var(--main-background);
+    --fade-height: 0.75rem;
   }
 
   .info-row {
