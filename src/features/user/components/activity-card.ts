@@ -24,6 +24,12 @@ export class ActivityCard extends LitElement {
   static styles = css`
     sl-card {
       --padding: 1rem;
+      width: 100%;
+    }
+
+    sl-card::part(base) {
+      background: var(--card-background);
+      border-left: none;
     }
 
     .action-time {
@@ -84,22 +90,19 @@ export class ActivityCard extends LitElement {
     .description-container {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: center;
       width: 100%;
       gap: 1rem;
       margin-bottom: 1rem;
     }
 
-    .description {
+    formatted-text {
       font-size: 0.875rem;
       line-height: 1.5em;
       color: var(--sl-color-neutral-700);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
+      max-height: 8.25rem;
+      --fade-color: var(--card-background);
+      --fade-height: 1.25rem;
     }
 
     .details-bar {
@@ -299,9 +302,7 @@ export class ActivityCard extends LitElement {
         <div class="entity">${this.renderEntity()}</div>
 
         <div class="description-container">
-          <formatted-text class="description"
-            >${this.getDescription()}</formatted-text
-          >
+          <formatted-text>${this.getDescription()}</formatted-text>
           ${this.renderFundButton()}
         </div>
 
