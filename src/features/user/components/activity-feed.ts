@@ -42,7 +42,7 @@ export class ActivityFeed extends LitElement {
       justify-content: center;
       padding: 2rem;
       gap: 1rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
     }
 
     .empty-state {

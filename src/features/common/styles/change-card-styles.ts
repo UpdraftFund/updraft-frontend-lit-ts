@@ -7,7 +7,7 @@ export const changeCardStyles = css`
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    background: var(--sl-color-neutral-50);
+    background: var(--card-background);
   }
 
   sl-card::part(header) {
@@ -77,7 +77,7 @@ export const changeCardStyles = css`
 
   formatted-text {
     max-height: 7.25rem;
-    --fade-color: var(--sl-color-neutral-50);
+    --fade-color: var(--card-background);
     --fade-height: 1.25rem;
   }
 

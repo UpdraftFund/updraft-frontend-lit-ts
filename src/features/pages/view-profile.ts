@@ -100,7 +100,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
     .link:hover {
       text-decoration: underline;
-      color: var(--sl-color-primary-600);
+      color: var(--link);
     }
   `;
 

@@ -35,7 +35,7 @@ export const largeCardStyles = css`
   }
 
   .byline {
-    color: var(--sl-color-neutral-600);
+    color: var(--subtle-text);
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
     overflow: hidden;

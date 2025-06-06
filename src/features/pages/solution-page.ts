@@ -108,10 +108,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .idea-link {
         font-size: var(--sl-font-size-small);
-        color: var(--sl-color-neutral-600);
+        color: var(--subtle-text);
       }
       .idea-link a {
-        color: var(--sl-color-primary-600);
+        color: var(--link);
         text-decoration: none;
       }
       .idea-link a:hover {
@@ -214,7 +214,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .position-navigation sl-icon-button::part(base) {
         font-size: 1.2rem;
-        color: var(--sl-color-neutral-600);
+        color: var(--sl-color-neutral-700);
       }
       .position-navigation sl-icon-button::part(base):hover {
         color: var(--accent);
@@ -222,7 +222,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .position-navigation span {
         font-size: 0.9rem;
         text-wrap: nowrap;
-        color: var(--sl-color-neutral-600);
+        color: var(--sl-color-neutral-700);
       }
       .position-details {
         display: flex;
@@ -258,7 +258,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         font-size: var(--sl-font-size-large);
       }
       .solution-repository a {
-        color: var(--sl-color-primary-600);
+        color: var(--link);
         text-decoration: none;
         word-break: break-all;
       }

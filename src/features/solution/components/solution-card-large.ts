@@ -55,7 +55,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       .news {
         margin: 1rem 0;
         padding: 0.75rem;
-        background-color: var(--sl-color-neutral-50);
+        background-color: var(--card-background);
         border-radius: var(--sl-border-radius-medium);
       }
 
@@ -88,7 +88,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       .idea-link {
         margin-top: 1rem;
         font-size: 0.9rem;
-        color: var(--sl-color-neutral-600);
+        color: var(--subtle-text);
       }
 
       .idea-link a {

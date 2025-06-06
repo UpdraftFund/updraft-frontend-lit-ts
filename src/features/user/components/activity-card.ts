@@ -123,7 +123,7 @@ export class ActivityCard extends LitElement {
 
     .goal-text {
       font-size: 0.75rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
     }
 
     sl-badge {
