@@ -29,7 +29,7 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     }
 
     :host([collapsed]) {
-      flex-basis: 64px !important;
+      flex: 0 0 64px !important;
     }
 
     /* Toggle container for collapsed state */
