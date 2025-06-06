@@ -39,13 +39,14 @@ export class ActivityCard extends LitElement {
 
     .icon-user {
       display: flex;
+      align-items: center;
       gap: 0.25rem;
       font-size: 1rem;
       color: var(--main-foreground);
     }
 
     .username {
-      font-weight: 400;
+      font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
