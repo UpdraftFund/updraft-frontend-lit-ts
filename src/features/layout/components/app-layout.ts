@@ -63,7 +63,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
       .right-sidebar-below right-side-bar {
         flex: 0 0 100%;
         border: 0;
-        padding-left: 2rem;
+        padding-left: 1rem;
       }
     }
 
