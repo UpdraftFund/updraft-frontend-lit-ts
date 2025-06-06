@@ -39,7 +39,7 @@ export const smallCardStyles = css`
     margin-top: 0.5rem;
     font-size: 0.75rem;
     color: var(--subtle-text);
-    max-height: 4.5rem;
+    max-height: 4.625rem;
     --fade-color: var(--main-background);
     --fade-height: 0.75rem;
   }
