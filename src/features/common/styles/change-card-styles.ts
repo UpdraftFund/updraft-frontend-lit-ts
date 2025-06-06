@@ -9,6 +9,10 @@ export const changeCardStyles = css`
     box-sizing: border-box;
   }
 
+  sl-card::part(base) {
+    background: var(--card-background);
+  }
+
   sl-card::part(header) {
     border-bottom-width: 0;
   }
@@ -31,6 +35,16 @@ export const changeCardStyles = css`
     color: var(--main-foreground);
   }
 
+  .change-card-heading,
+  .new-solution-heading {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
   .change-card-heading:hover,
   .new-solution-heading:hover {
     color: var(--link);
@@ -39,7 +53,6 @@ export const changeCardStyles = css`
 
   .change-card-heading {
     font-size: 1.25rem;
-    font-weight: 600;
   }
 
   .change-card-subheading {
@@ -48,9 +61,13 @@ export const changeCardStyles = css`
     margin-top: 0.5rem;
   }
 
+  .new-solution-heading {
+    font-size: 1rem;
+  }
+
   .additional-count {
     font-style: italic;
-    color: var(--sl-color-neutral-600);
+    color: var(--subtle-text);
     margin-top: 0.25rem;
   }
 
@@ -61,9 +78,10 @@ export const changeCardStyles = css`
     margin-top: 0.5rem;
   }
 
-  .new-solution-heading {
-    font-size: 1rem;
-    font-weight: 600;
+  formatted-text {
+    max-height: 7.25rem;
+    --fade-color: var(--card-background);
+    --fade-height: 1.25rem;
   }
 
   .goal-message {

@@ -12,12 +12,17 @@ export const largeCardStyles = css`
     margin-bottom: 1rem;
   }
 
-  h3 {
+  .entity-name {
     margin-top: 0;
     margin-bottom: 0.25rem;
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   a {
@@ -30,7 +35,7 @@ export const largeCardStyles = css`
   }
 
   .byline {
-    color: var(--sl-color-neutral-600);
+    color: var(--subtle-text);
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
     overflow: hidden;
@@ -65,7 +70,13 @@ export const largeCardStyles = css`
   }
 
   .description {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     line-height: 1.5;
+  }
+
+  formatted-text {
+    max-height: 7.625rem;
+    --fade-color: var(--main-background);
+    --fade-height: 1.25rem;
   }
 `;

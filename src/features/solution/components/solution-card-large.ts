@@ -55,14 +55,18 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       .news {
         margin: 1rem 0;
         padding: 0.75rem;
-        background-color: var(--sl-color-neutral-50);
+        background-color: var(--sl-color-neutral-100);
         border-radius: var(--sl-border-radius-medium);
       }
 
       .news h4 {
-        margin-top: 0;
-        margin-bottom: 0.5rem;
+        margin: 0 0 0.5rem;
         font-size: 1rem;
+        color: var(--accent);
+      }
+
+      .news formatted-text {
+        --fade-color: var(--sl-color-neutral-100);
       }
 
       sl-button {
@@ -88,7 +92,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       .idea-link {
         margin-top: 1rem;
         font-size: 0.9rem;
-        color: var(--sl-color-neutral-600);
+        color: var(--subtle-text);
       }
 
       .idea-link a {
@@ -139,7 +143,9 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       <div class="card">
         <div class="card-header">
           <a href="/solution/${this.solution.id}">
-            <h3>${solutionInfo.name || 'Untitled Solution'}</h3>
+            <h3 class="entity-name">
+              ${solutionInfo.name || 'Untitled Solution'}
+            </h3>
           </a>
           <div class="byline">
             <a href="/profile/${this.solution.drafter.id}">
@@ -180,14 +186,18 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         </ul>
 
         ${solutionInfo.description
-          ? html` <formatted-text class="description"
-              >${solutionInfo.description}
-            </formatted-text>`
+          ? html`
+              <a href="/solution/${this.solution.id}">
+                <formatted-text class="description"
+                  >${solutionInfo.description}
+                </formatted-text>
+              </a>
+            `
           : html``}
         ${solutionInfo.news
           ? html`
               <div class="news">
-                <h4>Latest Updates</h4>
+                <h4>✨Updates</h4>
                 <formatted-text>${solutionInfo.news}</formatted-text>
               </div>
             `

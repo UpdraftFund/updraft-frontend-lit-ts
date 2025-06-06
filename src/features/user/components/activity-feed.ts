@@ -18,7 +18,7 @@ export class ActivityFeed extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      padding: 0 1rem;
+      padding-right: 1rem;
     }
 
     .activity-heading {
@@ -42,7 +42,7 @@ export class ActivityFeed extends LitElement {
       justify-content: center;
       padding: 2rem;
       gap: 1rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
     }
 
     .empty-state {

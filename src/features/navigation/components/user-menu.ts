@@ -67,7 +67,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
       line-height: normal;
     }
     .status {
-      color: var(--sl-color-neutral-500);
+      color: var(--status);
       font-size: 0.875rem;
       display: inline-block;
       max-width: 160px;

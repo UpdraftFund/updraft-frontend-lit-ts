@@ -66,7 +66,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
       <div class="card">
         <div class="card-header">
           <a href="/idea/${id}">
-            <h3>${name}</h3>
+            <h3 class="entity-name">${name}</h3>
           </a>
           <div class="byline">
             <a href="/profile/${creator.id}"

@@ -186,7 +186,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       }
       .position-navigation sl-icon-button::part(base) {
         font-size: 1.2rem;
-        color: var(--sl-color-neutral-600);
+        color: var(--sl-color-neutral-700);
       }
       .position-navigation sl-icon-button::part(base):hover {
         color: var(--accent);
@@ -194,7 +194,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       .position-navigation span {
         font-size: 0.9rem;
         text-wrap: nowrap;
-        color: var(--sl-color-neutral-600);
+        color: var(--sl-color-neutral-700);
       }
       .support-details {
         display: flex;

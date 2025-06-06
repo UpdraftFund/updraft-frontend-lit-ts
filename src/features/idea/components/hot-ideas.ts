@@ -31,7 +31,7 @@ export class HotIdeas extends LitElement {
     .hot-ideas-list {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0;
     }
 
     .no-ideas {

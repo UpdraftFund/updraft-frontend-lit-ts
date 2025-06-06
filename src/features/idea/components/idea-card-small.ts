@@ -25,7 +25,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
     return html`
       <a href="/idea/${id}">
         <hr />
-        <h3>${name}</h3>
+        <h3 class="entity-name">${name}</h3>
         ${description
           ? html` <formatted-text>${description}</formatted-text>`
           : html``}
