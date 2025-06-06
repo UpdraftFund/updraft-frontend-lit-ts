@@ -64,7 +64,7 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
     }
 
     .editor a {
-      color: var(--sl-color-primary-600);
+      color: var(--link);
       text-decoration: underline;
     }
 
@@ -106,7 +106,7 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
       margin: 0 0 1em 0;
       padding-left: 1em;
       border-left: 3px solid var(--sl-color-neutral-300);
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
     }
   `;
 
@@ -142,7 +142,7 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
   @state() private _value = '';
   @state() private _validationMessage = '';
 
-  @query('.editor') editor!: HTMLDivElement;
+  @query('.editor', true) editor!: HTMLDivElement;
 
   // Form-associated custom element internals
   private internals: ElementInternals;

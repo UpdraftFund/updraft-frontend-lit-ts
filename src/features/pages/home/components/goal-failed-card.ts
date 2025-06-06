@@ -44,7 +44,7 @@ export class GoalFailedCard extends LitElement {
 
   @property({ type: Object }) change!: GoalFailed;
 
-  @query('transaction-watcher') refundTransaction!: TransactionWatcher;
+  @query('transaction-watcher', true) refundTransaction!: TransactionWatcher;
 
   private readonly hasFundedTask = new Task(
     this,

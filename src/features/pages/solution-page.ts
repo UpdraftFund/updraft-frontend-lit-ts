@@ -108,10 +108,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .idea-link {
         font-size: var(--sl-font-size-small);
-        color: var(--sl-color-neutral-600);
+        color: var(--subtle-text);
       }
       .idea-link a {
-        color: var(--sl-color-primary-600);
+        color: var(--link);
         text-decoration: none;
       }
       .idea-link a:hover {
@@ -214,7 +214,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       }
       .position-navigation sl-icon-button::part(base) {
         font-size: 1.2rem;
-        color: var(--sl-color-neutral-600);
+        color: var(--sl-color-neutral-700);
       }
       .position-navigation sl-icon-button::part(base):hover {
         color: var(--accent);
@@ -222,7 +222,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .position-navigation span {
         font-size: 0.9rem;
         text-wrap: nowrap;
-        color: var(--sl-color-neutral-600);
+        color: var(--sl-color-neutral-700);
       }
       .position-details {
         display: flex;
@@ -258,7 +258,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         font-size: var(--sl-font-size-large);
       }
       .solution-repository a {
-        color: var(--sl-color-primary-600);
+        color: var(--link);
         text-decoration: none;
         word-break: break-all;
       }
@@ -272,16 +272,19 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @query('upd-dialog', true) updDialog!: UpdDialog;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('token-input', true) tokenInput!: TokenInput;
-  @query('transaction-watcher.refund') refundTransaction!: TransactionWatcher;
-  @query('transaction-watcher.collect') collectTransaction!: TransactionWatcher;
-  @query('transaction-watcher.stake') stakeTransaction!: TransactionWatcher;
-  @query('transaction-watcher.fund') fundTransaction!: TransactionWatcher;
-  @query('transaction-watcher.remove-stake')
+  @query('transaction-watcher.refund', true)
+  refundTransaction!: TransactionWatcher;
+  @query('transaction-watcher.collect', true)
+  collectTransaction!: TransactionWatcher;
+  @query('transaction-watcher.stake', true)
+  stakeTransaction!: TransactionWatcher;
+  @query('transaction-watcher.fund', true) fundTransaction!: TransactionWatcher;
+  @query('transaction-watcher.remove-stake', true)
   removeStakeTransaction!: TransactionWatcher;
-  @query('transaction-watcher.withdraw-funds')
+  @query('transaction-watcher.withdraw-funds', true)
   withdrawFundsTransaction!: TransactionWatcher;
   @query('token-input.stake-input', true) stakeInput!: TokenInput;
-  @query('token-input.fund-input', false) fundInput!: TokenInput;
+  @query('token-input.fund-input', false) fundInput?: TokenInput;
   @query('form.stake-form', true) stakeForm!: HTMLFormElement;
   @query('form.fund-form', true) fundForm!: HTMLFormElement;
 
@@ -711,7 +714,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       this.fundForm.reportValidity(); // Show validation messages
       return;
     }
-    const fund = parseUnits(this.fundInput.value, 18);
+    const fund = parseUnits(this.fundInput!.value, 18);
     this.fundTransaction.reset();
     try {
       const solutionContract = new SolutionContract(this.solutionId);
@@ -720,10 +723,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       ]);
     } catch (err) {
       let onLowBalance = () => {};
-      if (this.fundInput.tokenSymbol === 'UPD') {
+      if (this.fundInput!.tokenSymbol === 'UPD') {
         onLowBalance = () => this.updDialog.show();
       }
-      this.fundInput.handleTransactionError(
+      this.fundInput!.handleTransactionError(
         err,
         () => this.handleFund(), // Retry after approval
         onLowBalance

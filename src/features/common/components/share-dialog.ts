@@ -52,8 +52,8 @@ export class ShareDialog extends LitElement {
     `,
   ];
 
-  @query('sl-dialog') dialog!: SlDialog;
-  @query('sl-tooltip.clipboard') clipboardTip!: SlTooltip;
+  @query('sl-dialog', true) dialog!: SlDialog;
+  @query('sl-tooltip.clipboard', true) clipboardTip!: SlTooltip;
   @property() url!: string;
   @property() action!: string;
   @property() topic!: string;

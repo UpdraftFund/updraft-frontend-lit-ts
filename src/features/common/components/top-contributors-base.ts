@@ -8,7 +8,7 @@ import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 import '@components/user/user-avatar';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
-import { formatAmount, shortenAddress } from '@utils/format-utils';
+import { formatAmount } from '@utils/format-utils';
 import { parseProfile } from '@utils/user/user-utils';
 
 import { TypedDocumentNode } from '@urql/core';
@@ -75,6 +75,7 @@ export abstract class TopContributorsBase<
     .contributor-name {
       font-weight: 500;
       font-size: 0.9rem;
+      max-width: 12rem;
       color: var(--main-foreground);
       text-decoration: none;
       overflow: hidden;
@@ -288,7 +289,7 @@ export abstract class TopContributorsBase<
    * @returns The parsed name and avatar
    */
   private parseContributorProfile(funder: Pick<User, 'id' | 'profile'>) {
-    let name = shortenAddress(funder.id);
+    let name = funder.id;
     let avatar;
 
     if (funder.profile) {

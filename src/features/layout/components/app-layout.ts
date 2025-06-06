@@ -57,10 +57,13 @@ export class AppLayout extends SignalWatcher(LitElement) {
         flex-direction: column;
         justify-content: normal;
       }
+      .right-sidebar-below main {
+        flex: 1 1 100%;
+      }
       .right-sidebar-below right-side-bar {
         flex: 0 0 100%;
         border: 0;
-        padding-left: 2rem;
+        padding-left: 1rem;
       }
     }
 
@@ -74,10 +77,13 @@ export class AppLayout extends SignalWatcher(LitElement) {
         justify-content: normal;
         z-index: 1;
       }
+      main {
+        flex: 1 1 100%;
+      }
       right-side-bar {
         flex: 0 0 100%;
         border: 0;
-        padding-left: 1rem;
+        padding-left: 0.5rem;
         padding-right: 0.5rem;
       }
     }

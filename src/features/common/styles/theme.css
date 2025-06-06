@@ -38,18 +38,20 @@
   --sl-input-border-color: var(--sl-color-primary-300);
   --sl-input-focus-ring-color: var(--sl-color-primary-300);
   --main-background: var(--sl-color-neutral-0);
-  --accent: var(--sl-color-primary-800);
-  --link: var(--sl-color-primary-500);
+  --card-background: var(--sl-color-neutral-50);
+  --control-background: var(--sl-color-sky-200);
   --main-foreground: var(--sl-color-neutral-800);
   --subtle-text: var(--sl-color-neutral-600);
+  --section-heading: var(--sl-color-neutral-500);
+  --status: var(--sl-color-neutral-500);
+  --accent: var(--sl-color-primary-800);
+  --link: var(--sl-color-primary-500);
   --badge-text: white;
   --no-results: var(--sl-color-neutral-500);
-  --control-background: var(--sl-color-sky-200);
-  --section-heading: var(--sl-color-neutral-500);
-  --layout-divider: var(--sl-color-neutral-200);
   --danger: var(--sl-color-danger-600);
   --success: var(--sl-color-success-600);
   --attention: var(--sl-color-warning-600);
+  --layout-divider: var(--sl-color-neutral-200);
   --border-default: var(--sl-color-neutral-200);
   --border-accent: var(--sl-color-primary-100);
 }

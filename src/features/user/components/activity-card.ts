@@ -27,18 +27,36 @@ export class ActivityCard extends LitElement {
       width: 100%;
     }
 
+    sl-card::part(base) {
+      background: var(--card-background);
+      border-left: none;
+    }
+
     .action-time {
       display: flex;
       justify-content: space-between;
-      gap: 0.5rem;
-      width: 100%;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
     }
 
     .action {
-      font-weight: 500;
+      max-width: 70%;
+      color: var(--main-foreground);
+    }
+
+    .icon-user {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
       font-size: 1rem;
-      color: var(--sl-color-neutral-900);
+      color: var(--main-foreground);
+    }
+
+    .username {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 16rem;
     }
 
     .time {
@@ -50,7 +68,7 @@ export class ActivityCard extends LitElement {
       font-weight: 600;
       font-size: 1.25rem;
       line-height: 1.2em;
-      color: var(--sl-color-neutral-900);
+      color: var(--main-foreground);
       margin-bottom: 0.75rem;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -61,7 +79,7 @@ export class ActivityCard extends LitElement {
 
     .entity-link {
       text-decoration: none;
-      color: var(--sl-color-neutral-900);
+      color: var(--main-foreground);
     }
 
     .entity-link:hover {
@@ -72,22 +90,19 @@ export class ActivityCard extends LitElement {
     .description-container {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: center;
       width: 100%;
       gap: 1rem;
       margin-bottom: 1rem;
     }
 
-    .description {
+    formatted-text {
       font-size: 0.875rem;
       line-height: 1.5em;
       color: var(--sl-color-neutral-700);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
+      max-height: 8.25rem;
+      --fade-color: var(--card-background);
+      --fade-height: 1.25rem;
     }
 
     .details-bar {
@@ -111,7 +126,7 @@ export class ActivityCard extends LitElement {
 
     .goal-text {
       font-size: 0.75rem;
-      color: var(--sl-color-neutral-600);
+      color: var(--subtle-text);
     }
 
     sl-badge {
@@ -168,11 +183,11 @@ export class ActivityCard extends LitElement {
   private getActivityAction() {
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
+        return `supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a Solution with ${formatAmount(this.activity.contribution)}`;
+        return `funded a Solution with ${formatAmount(this.activity.contribution)}`;
       case 'solutionDrafted':
-        return `${this.userName} drafted a Solution`;
+        return `drafted a Solution`;
       default:
         return 'Unknown Activity';
     }
@@ -275,19 +290,19 @@ export class ActivityCard extends LitElement {
     const time = dayjs(this.activity.timestamp).fromNow();
     return html`
       <sl-card>
+        <div class="icon-user">
+          ${this.getActivityIcon()}
+          <span class="username">${this.userName}</span>
+        </div>
         <div class="action-time">
-          <div class="action">
-            ${this.getActivityIcon()} ${this.getActivityAction()}
-          </div>
-          <div class="time">${time}</div>
+          <span class="action">${this.getActivityAction()}</span>
+          <span class="time">${time}</span>
         </div>
 
         <div class="entity">${this.renderEntity()}</div>
 
         <div class="description-container">
-          <formatted-text class="description"
-            >${this.getDescription()}</formatted-text
-          >
+          <formatted-text>${this.getDescription()}</formatted-text>
           ${this.renderFundButton()}
         </div>
 

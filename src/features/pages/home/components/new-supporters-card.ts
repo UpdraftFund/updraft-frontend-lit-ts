@@ -6,7 +6,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import { NewSupporters } from '@pages/home/types';
-import { shortenAddress } from '@utils/format-utils';
+
 import { changeCardStyles } from '@styles/change-card-styles';
 
 @customElement('new-supporters-card')
@@ -15,9 +15,17 @@ export class NewSupportersCard extends LitElement {
     changeCardStyles,
     css`
       .supporters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .supporters a {
         font-size: 0.85rem;
-        text-overflow: ellipsis;
         overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     `,
   ];
@@ -40,13 +48,9 @@ export class NewSupportersCard extends LitElement {
         </div>
         <div class="supporters">
           ${supporters.map(
-            (supporter, index) => html`
-              ${supporter.name
-                ? html`<a href="/profile/${supporter.id}">${supporter.name}</a>`
-                : html`<a href="/profile/${supporter.id}"
-                    >${shortenAddress(supporter.id)}</a
-                  >`}${index < supporters.length - 1 ? html`, ` : html``}
-            `
+            (supporter, index) =>
+              html`<a href="/profile/${supporter.id}">${supporter.name}</a>
+                ${index < supporters.length - 1 ? html`, ` : html``}`
           )}
           ${additionalCount > 0
             ? html`
@@ -56,7 +60,6 @@ export class NewSupportersCard extends LitElement {
               `
             : ''}
         </div>
-
         <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
       </sl-card>
     `;
