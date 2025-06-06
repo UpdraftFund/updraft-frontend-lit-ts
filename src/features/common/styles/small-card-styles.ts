@@ -13,21 +13,26 @@ export const smallCardStyles = css`
     color: inherit;
   }
 
-  a:hover h3 {
+  a:hover .entity-name {
     text-decoration: underline;
     color: var(--accent);
+  }
+
+  .entity-name {
+    margin-top: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   hr {
     height: 1px;
     background-color: var(--layout-divider); /* Line color */
     border: none;
-  }
-
-  h3 {
-    margin-top: 0;
-    font-size: 0.9rem;
-    font-weight: 700;
   }
 
   formatted-text {
