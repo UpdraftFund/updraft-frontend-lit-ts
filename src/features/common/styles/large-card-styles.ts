@@ -75,7 +75,7 @@ export const largeCardStyles = css`
   }
 
   formatted-text {
-    max-height: 7.5rem;
+    max-height: 7.625rem;
     --fade-color: var(--main-background);
     --fade-height: 1.25rem;
   }
