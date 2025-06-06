@@ -18,7 +18,7 @@ export class ActivityFeed extends LitElement {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      padding: 0 1rem;
+      padding-right: 1rem;
     }
 
     .activity-heading {
