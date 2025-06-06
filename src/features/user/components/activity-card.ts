@@ -24,21 +24,32 @@ export class ActivityCard extends LitElement {
   static styles = css`
     sl-card {
       --padding: 1rem;
-      width: 100%;
     }
 
     .action-time {
       display: flex;
       justify-content: space-between;
-      gap: 0.5rem;
-      width: 100%;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
     }
 
     .action {
-      font-weight: 500;
+      max-width: 70%;
+      color: var(--main-foreground);
+    }
+
+    .icon-user {
+      display: flex;
+      gap: 0.25rem;
       font-size: 1rem;
-      color: var(--sl-color-neutral-900);
+      color: var(--main-foreground);
+    }
+
+    .username {
+      font-weight: 400;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 16rem;
     }
 
     .time {
@@ -50,7 +61,7 @@ export class ActivityCard extends LitElement {
       font-weight: 600;
       font-size: 1.25rem;
       line-height: 1.2em;
-      color: var(--sl-color-neutral-900);
+      color: var(--main-foreground);
       margin-bottom: 0.75rem;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -61,7 +72,7 @@ export class ActivityCard extends LitElement {
 
     .entity-link {
       text-decoration: none;
-      color: var(--sl-color-neutral-900);
+      color: var(--main-foreground);
     }
 
     .entity-link:hover {
@@ -168,11 +179,11 @@ export class ActivityCard extends LitElement {
   private getActivityAction() {
     switch (this.activity.type) {
       case 'ideaFunded':
-        return `${this.userName} supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
+        return `supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
-        return `${this.userName} funded a Solution with ${formatAmount(this.activity.contribution)}`;
+        return `funded a Solution with ${formatAmount(this.activity.contribution)}`;
       case 'solutionDrafted':
-        return `${this.userName} drafted a Solution`;
+        return `drafted a Solution`;
       default:
         return 'Unknown Activity';
     }
@@ -275,11 +286,13 @@ export class ActivityCard extends LitElement {
     const time = dayjs(this.activity.timestamp).fromNow();
     return html`
       <sl-card>
+        <div class="icon-user">
+          ${this.getActivityIcon()}
+          <span class="username">${this.userName}</span>
+        </div>
         <div class="action-time">
-          <div class="action">
-            ${this.getActivityIcon()} ${this.getActivityAction()}
-          </div>
-          <div class="time">${time}</div>
+          <span class="action">${this.getActivityAction()}</span>
+          <span class="time">${time}</span>
         </div>
 
         <div class="entity">${this.renderEntity()}</div>
