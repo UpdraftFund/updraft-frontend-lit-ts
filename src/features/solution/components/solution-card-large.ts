@@ -55,14 +55,18 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       .news {
         margin: 1rem 0;
         padding: 0.75rem;
-        background-color: var(--card-background);
+        background-color: var(--sl-color-neutral-100);
         border-radius: var(--sl-border-radius-medium);
       }
 
       .news h4 {
-        margin-top: 0;
-        margin-bottom: 0.5rem;
+        margin: 0 0 0.5rem;
         font-size: 1rem;
+        color: var(--accent);
+      }
+
+      .news formatted-text {
+        --fade-color: var(--sl-color-neutral-100);
       }
 
       sl-button {
@@ -182,14 +186,18 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         </ul>
 
         ${solutionInfo.description
-          ? html` <formatted-text class="description"
-              >${solutionInfo.description}
-            </formatted-text>`
+          ? html`
+              <a href="/solution/${this.solution.id}">
+                <formatted-text class="description"
+                  >${solutionInfo.description}
+                </formatted-text>
+              </a>
+            `
           : html``}
         ${solutionInfo.news
           ? html`
               <div class="news">
-                <h4>Latest Updates</h4>
+                <h4>✨Updates</h4>
                 <formatted-text>${solutionInfo.news}</formatted-text>
               </div>
             `

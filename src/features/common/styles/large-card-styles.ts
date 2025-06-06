@@ -70,7 +70,13 @@ export const largeCardStyles = css`
   }
 
   .description {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     line-height: 1.5;
+  }
+
+  formatted-text {
+    max-height: 7.5rem;
+    --fade-color: var(--main-background);
+    --fade-height: 1.25rem;
   }
 `;
