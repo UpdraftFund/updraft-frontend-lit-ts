@@ -40,6 +40,11 @@ export const changeCardStyles = css`
   .change-card-heading {
     font-size: 1.25rem;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .change-card-subheading {
