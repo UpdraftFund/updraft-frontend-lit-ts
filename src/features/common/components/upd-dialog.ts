@@ -48,8 +48,8 @@ export class UpdDialog extends SignalWatcher(LitElement) {
     `,
   ];
 
-  @query('sl-dialog') dialog!: SlDialog;
-  @query('sl-tooltip.clipboard') clipboardTip!: SlTooltip;
+  @query('sl-dialog', true) dialog!: SlDialog;
+  @query('sl-tooltip.clipboard', true) clipboardTip!: SlTooltip;
   @state() private loadingBalance = false;
 
   private checkBalance() {

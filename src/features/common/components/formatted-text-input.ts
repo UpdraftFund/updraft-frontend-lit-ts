@@ -142,7 +142,7 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
   @state() private _value = '';
   @state() private _validationMessage = '';
 
-  @query('.editor') editor!: HTMLDivElement;
+  @query('.editor', true) editor!: HTMLDivElement;
 
   // Form-associated custom element internals
   private internals: ElementInternals;

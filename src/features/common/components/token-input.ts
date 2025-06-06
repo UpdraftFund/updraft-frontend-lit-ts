@@ -222,11 +222,11 @@ export class TokenInput
   @state() private _validationMessage: string = '';
 
   // Element references
-  @query('sl-input') input!: SlInput;
-  @query('upd-dialog') updDialog!: UpdDialog;
-  @query('transaction-watcher.approve')
+  @query('sl-input', true) input!: SlInput;
+  @query('upd-dialog', true) updDialog!: UpdDialog;
+  @query('transaction-watcher.approve', true)
   approveTransaction!: ITransactionWatcher;
-  @query('sl-dialog') approveDialog!: SlDialog;
+  @query('sl-dialog', true) approveDialog!: SlDialog;
 
   private fetchTokenSymbol = new Task(
     this,

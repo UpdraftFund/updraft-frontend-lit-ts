@@ -99,7 +99,7 @@ export class WatchedTags extends SignalWatcher(LitElement) {
   @state() private editMode = false;
 
   @queryAll('.tag') tags!: NodeListOf<HTMLElement>;
-  @query('.tags-container') tagsContainer!: HTMLElement;
+  @query('.tags-container', true) tagsContainer!: HTMLElement;
 
   connectedCallback() {
     super.connectedCallback();
