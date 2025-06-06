@@ -1,5 +1,5 @@
 import { LitElement, css, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { SignalWatcher } from '@lit-labs/signals';
 import { sanitizeRichText } from '@utils/sanitize';
 
@@ -39,48 +39,63 @@ export class FormattedText extends SignalWatcher(LitElement) {
   static styles = css`
     :host {
       display: block;
-      word-wrap: break-word;
+      position: relative; /* Needed for absolute positioning of the overlay */
+      overflow: hidden;
+      padding-bottom: var(--fade-height, 0rem);
+    }
+
+    .overlay {
+      position: absolute; /* Position over the slot */
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: var(--fade-height, 0rem);
+      background: linear-gradient(transparent, var(--fade-color, transparent));
     }
   `;
 
-  private sanitizeSlotContent() {
-    const slot = this.shadowRoot?.querySelector('slot');
-    if (!slot) return;
+  @query('slot', true) slotContent!: HTMLSlotElement;
 
-    const assignedNodes = slot.assignedNodes();
+  private sanitize() {
+    if (this.slotContent) {
+      const assignedNodes = this.slotContent.assignedNodes();
 
-    assignedNodes.forEach((node) => {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        // For element nodes, sanitize the HTML content
-        const element = node as Element;
-        const sanitizedHTML = sanitizeRichText(element.outerHTML);
-        replaceNodeWithSanitizedHTML(node, sanitizedHTML);
-      } else if (node.nodeType === Node.TEXT_NODE) {
-        // For text nodes, check if they contain HTML and process accordingly
-        const textContent = node.textContent || '';
-
-        // If text contains HTML tags, sanitize it
-        if (/<[^>]+>/.test(textContent)) {
-          const sanitizedHTML = sanitizeRichText(textContent);
+      assignedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          // For element nodes, sanitize the HTML content
+          const element = node as Element;
+          const sanitizedHTML = sanitizeRichText(element.outerHTML);
           replaceNodeWithSanitizedHTML(node, sanitizedHTML);
+        } else if (node.nodeType === Node.TEXT_NODE) {
+          // For text nodes, check if they contain HTML and process accordingly
+          const textContent = node.textContent || '';
+
+          // If text contains HTML tags, sanitize it
+          if (/<[^>]+>/.test(textContent)) {
+            const sanitizedHTML = sanitizeRichText(textContent);
+            replaceNodeWithSanitizedHTML(node, sanitizedHTML);
+          }
+          // Plain text nodes are left as-is (they're safe)
         }
-        // Plain text nodes are left as-is (they're safe)
-      }
-    });
+      });
+    }
   }
 
   firstUpdated() {
     // Sanitize content after the component is first rendered
-    this.sanitizeSlotContent();
+    this.sanitize();
   }
 
   updated() {
     // Re-sanitize content when the component updates (in case slot content changes)
-    this.sanitizeSlotContent();
+    this.sanitize();
   }
 
   render() {
-    return html` <slot></slot>`;
+    return html`
+      <slot></slot>
+      <div class="overlay"></div>
+    `;
   }
 }
 
