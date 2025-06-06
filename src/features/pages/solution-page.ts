@@ -284,7 +284,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   @query('transaction-watcher.withdraw-funds', true)
   withdrawFundsTransaction!: TransactionWatcher;
   @query('token-input.stake-input', true) stakeInput!: TokenInput;
-  @query('token-input.fund-input', false) fundInput?: TokenInput = undefined;
+  @query('token-input.fund-input', false) fundInput?: TokenInput;
   @query('form.stake-form', true) stakeForm!: HTMLFormElement;
   @query('form.fund-form', true) fundForm!: HTMLFormElement;
 
