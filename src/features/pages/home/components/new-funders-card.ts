@@ -6,7 +6,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import { NewFunders } from '@pages/home/types';
-import { shortenAddress } from '@utils/format-utils';
 import { parseSolutionInfo } from '@utils/solution/solution-utils';
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -16,9 +15,18 @@ export class NewFundersCard extends LitElement {
     changeCardStyles,
     css`
       .funders {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .funders a {
         font-size: 0.85rem;
-        text-overflow: ellipsis;
         overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 11rem;
       }
     `,
   ];
@@ -43,13 +51,9 @@ export class NewFundersCard extends LitElement {
 
         <div class="funders">
           ${funders.map(
-            (funder, index) => html`
-              ${funder.name
-                ? html`<a href="/profile/${funder.id}">${funder.name}</a>`
-                : html`<a class="id" href="/profile/${funder.id}"
-                    >${shortenAddress(funder.id)}</a
-                  >`}${index < funders.length - 1 ? html`, ` : html``}
-            `
+            (funder, index) =>
+              html`<a href="/profile/${funder.id}">${funder.name}</a>
+                ${index < funders.length - 1 ? html`, ` : html``} `
           )}
           ${additionalCount > 0
             ? html`
