@@ -84,6 +84,8 @@ export class TrackedChangesManager {
           console.error('Error parsing profile data', e);
           supporter.name = supporter.id;
         }
+      } else {
+        supporter.name = supporter.id;
       }
 
       processedChange = {
@@ -101,6 +103,8 @@ export class TrackedChangesManager {
           console.error('Error parsing profile data', e);
           funder.name = funder.id;
         }
+      } else {
+        funder.name = funder.id;
       }
 
       processedChange = {
