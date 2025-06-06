@@ -139,7 +139,9 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       <div class="card">
         <div class="card-header">
           <a href="/solution/${this.solution.id}">
-            <h3>${solutionInfo.name || 'Untitled Solution'}</h3>
+            <h3 class="entity-name">
+              ${solutionInfo.name || 'Untitled Solution'}
+            </h3>
           </a>
           <div class="byline">
             <a href="/profile/${this.solution.drafter.id}">
