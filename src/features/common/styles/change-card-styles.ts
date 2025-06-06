@@ -7,6 +7,9 @@ export const changeCardStyles = css`
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+  }
+
+  sl-card::part(base) {
     background: var(--card-background);
   }
 
