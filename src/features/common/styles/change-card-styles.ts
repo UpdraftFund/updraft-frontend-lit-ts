@@ -31,14 +31,8 @@ export const changeCardStyles = css`
     color: var(--main-foreground);
   }
 
-  .change-card-heading:hover,
-  .new-solution-heading:hover {
-    color: var(--link);
-    text-decoration: underline;
-  }
-
-  .change-card-heading {
-    font-size: 1.25rem;
+  .change-card-heading,
+  .new-solution-heading {
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -47,15 +41,29 @@ export const changeCardStyles = css`
     -webkit-box-orient: vertical;
   }
 
+  .change-card-heading:hover,
+  .new-solution-heading:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+
+  .change-card-heading {
+    font-size: 1.25rem;
+  }
+
   .change-card-subheading {
     font-size: 1rem;
     color: var(--subtle-text);
     margin-top: 0.5rem;
   }
 
+  .new-solution-heading {
+    font-size: 1rem;
+  }
+
   .additional-count {
     font-style: italic;
-    color: var(--sl-color-neutral-600);
+    color: var(--subtle-text);
     margin-top: 0.25rem;
   }
 
@@ -64,11 +72,6 @@ export const changeCardStyles = css`
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 0.5rem;
-  }
-
-  .new-solution-heading {
-    font-size: 1rem;
-    font-weight: 600;
   }
 
   .goal-message {
