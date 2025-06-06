@@ -7,6 +7,7 @@ export const changeCardStyles = css`
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    background: var(--sl-color-neutral-50);
   }
 
   sl-card::part(header) {
@@ -72,6 +73,12 @@ export const changeCardStyles = css`
     flex-direction: column;
     gap: 0.5rem;
     margin-top: 0.5rem;
+  }
+
+  formatted-text {
+    max-height: 7.25rem;
+    --fade-color: var(--sl-color-neutral-50);
+    --fade-height: 1.25rem;
   }
 
   .goal-message {
