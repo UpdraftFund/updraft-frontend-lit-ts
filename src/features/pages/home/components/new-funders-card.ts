@@ -45,7 +45,7 @@ export class NewFundersCard extends LitElement {
           <a href="/solution/${solution.id}" class="change-card-heading">
             ${solutionInfo?.name || 'Solution'}
           </a>
-          <div class="change-card-subheading">has new funders</div>
+          <div class="change-card-subheading">has new funders 👥</div>
         </div>
 
         <div class="funders">
