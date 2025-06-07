@@ -38,7 +38,7 @@ export class SolutionUpdatedCard extends LitElement {
             <a class="change-card-heading" href="/solution/${solution.id}"
               >${solutionInfo.name || `Solution ${solution.id}`}</a
             >
-            <div class="change-card-subheading">has updates</div>
+            <div class="change-card-subheading">has updates ✨</div>
           </div>
           <a class="solution-body" href="/solution/${solution.id}">
             ${solutionInfo.news
