@@ -745,6 +745,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   }
 
   private handleStakeSuccess() {
+    // Clear the token-input
+    this.stakeInput.value = '';
     // Refresh user stake after successful stake
     this.userStakeTask.run();
   }
@@ -821,6 +823,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   );
 
   private handleFundSuccess() {
+    // Clear the token-input
+    this.fundInput!.value = '';
+
     // Refresh user positions after successful funding
     this.userPositionsTask.run();
 
