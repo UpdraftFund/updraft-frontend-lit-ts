@@ -95,6 +95,15 @@ export function loadForm(form: string): Record<string, string> | null {
 }
 
 /**
+ * Helper function to clear form data from localStorage by its name.
+ *
+ * @param form - The name of the form to clear data for.
+ */
+export function clearForm(form: string) {
+  localStorage.removeItem(`form:${form}`);
+}
+
+/**
  * Helper function to map form data stored in localStorage into a schema-compliant JSON object.
  *
  * @param forms - The name of the form (or array of form names) to load data for.
