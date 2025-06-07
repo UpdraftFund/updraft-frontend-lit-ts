@@ -29,8 +29,6 @@ export class AppLayout extends SignalWatcher(LitElement) {
     }
 
     left-side-bar {
-      width: 16rem;
-      max-width: 16rem;
       background-color: var(--main-background);
     }
     .main-extended {

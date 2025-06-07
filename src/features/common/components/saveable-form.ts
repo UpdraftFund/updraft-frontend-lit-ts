@@ -54,6 +54,12 @@ export class SaveableForm extends LitElement {
     }
   };
 
+  protected clearForm = () => {
+    if (this.formName) {
+      clearForm(this.formName);
+    }
+  };
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('blur', this.handleBlurEvent);
@@ -92,6 +98,15 @@ export class SaveableForm extends LitElement {
 export function loadForm(form: string): Record<string, string> | null {
   const formData = localStorage.getItem(`form:${form}`);
   return formData ? JSON.parse(formData) : null;
+}
+
+/**
+ * Helper function to clear form data from localStorage by its name.
+ *
+ * @param form - The name of the form to clear data for.
+ */
+export function clearForm(form: string) {
+  localStorage.removeItem(`form:${form}`);
 }
 
 /**

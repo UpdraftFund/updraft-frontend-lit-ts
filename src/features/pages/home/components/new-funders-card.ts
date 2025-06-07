@@ -19,13 +19,14 @@ export class NewFundersCard extends LitElement {
         flex-wrap: wrap;
         gap: 0.5rem;
         align-items: center;
+        font-size: 0.85rem;
       }
 
       .funders a {
-        font-size: 0.85rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        max-width: 6rem;
       }
     `,
   ];
@@ -45,14 +46,14 @@ export class NewFundersCard extends LitElement {
           <a href="/solution/${solution.id}" class="change-card-heading">
             ${solutionInfo?.name || 'Solution'}
           </a>
-          <div class="change-card-subheading">has new funders</div>
+          <div class="change-card-subheading">has new funders 👥</div>
         </div>
 
         <div class="funders">
           ${funders.map(
             (funder, index) =>
               html`<a href="/profile/${funder.id}">${funder.name}</a>
-                ${index < funders.length - 1 ? html`, ` : html``} `
+                ${index < funders.length - 1 ? html`,` : html``} `
           )}
           ${additionalCount > 0
             ? html`

@@ -26,10 +26,15 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
       padding: 0 1rem;
       transition: all 0.3s ease;
       box-sizing: border-box;
+      width: 16rem;
+      max-width: 16rem;
+      min-width: 15rem;
     }
 
     :host([collapsed]) {
-      flex: 0 0 64px !important;
+      width: 64px;
+      min-width: 64px;
+      max-width: 64px;
     }
 
     /* Toggle container for collapsed state */
