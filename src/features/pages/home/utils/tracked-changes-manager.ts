@@ -146,11 +146,13 @@ export class TrackedChangesManager {
               fromHex(newSupporter.profile, 'string')
             );
             newSupporter.name =
-              profileData.name || profileData.team || 'Anonymous';
+              profileData.name || profileData.team || newSupporter.id;
           } catch (e) {
             console.error('Error parsing profile data', e);
-            newSupporter.name = 'Anonymous';
+            newSupporter.name = newSupporter.id;
           }
+        } else {
+          newSupporter.name = newSupporter.id;
         }
 
         existingChange.supporters.push(newSupporter);
@@ -195,11 +197,13 @@ export class TrackedChangesManager {
               fromHex(newFunder.profile, 'string')
             );
             newFunder.name =
-              profileData.name || profileData.team || 'Anonymous';
+              profileData.name || profileData.team || newFunder.id;
           } catch (e) {
             console.error('Error parsing profile data', e);
-            newFunder.name = 'Anonymous';
+            newFunder.name = newFunder.id;
           }
+        } else {
+          newFunder.name = newFunder.id;
         }
 
         existingChange.funders.push(newFunder);
