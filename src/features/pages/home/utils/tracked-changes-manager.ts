@@ -4,6 +4,28 @@ import { fromHex } from 'viem';
 import { NewSupporters, NewFunders, Change } from '@/types';
 import { updateSince } from '@state/user/tracked-changes';
 
+/**
+ * Parse profile data to extract a display name
+ * @param profile - Hex-encoded profile data
+ * @param fallbackId - ID to use if parsing fails or no name is found
+ * @returns Parsed name or fallback ID
+ */
+function parseProfileName(
+  profile: `0x${string}` | null | undefined,
+  fallbackId: string
+): string {
+  if (!profile) {
+    return fallbackId;
+  }
+  try {
+    const profileData = JSON.parse(fromHex(profile, 'string'));
+    return profileData.name || profileData.team || fallbackId;
+  } catch (e) {
+    console.error('Error parsing profile data', e);
+    return fallbackId;
+  }
+}
+
 // Get a unique ID for the change based on type and related entity
 function getChangeId(change: Change): string {
   switch (change.type) {
@@ -75,38 +97,14 @@ export class TrackedChangesManager {
 
     if (change.type === 'newSupporter') {
       const supporter = (change as NewSupporters).supporters[0];
-
-      if (supporter.profile) {
-        try {
-          const profileData = JSON.parse(fromHex(supporter.profile, 'string'));
-          supporter.name = profileData.name || profileData.team || supporter.id;
-        } catch (e) {
-          console.error('Error parsing profile data', e);
-          supporter.name = supporter.id;
-        }
-      } else {
-        supporter.name = supporter.id;
-      }
-
+      supporter.name = parseProfileName(supporter.profile, supporter.id);
       processedChange = {
         ...change,
         additionalCount: 0,
       } as NewSupporters;
     } else if (change.type === 'newFunder') {
       const funder = (change as NewFunders).funders[0];
-
-      if (funder.profile) {
-        try {
-          const profileData = JSON.parse(fromHex(funder.profile, 'string'));
-          funder.name = profileData.name || profileData.team || funder.id;
-        } catch (e) {
-          console.error('Error parsing profile data', e);
-          funder.name = funder.id;
-        }
-      } else {
-        funder.name = funder.id;
-      }
-
+      funder.name = parseProfileName(funder.profile, funder.id);
       processedChange = {
         ...change,
         additionalCount: 0,
@@ -140,21 +138,10 @@ export class TrackedChangesManager {
     if (supporterNotFound && newSupporter.id) {
       if (existingChange.supporters.length < 3) {
         // If we need to show this supporter, extract the name from the profile
-        if (newSupporter.profile) {
-          try {
-            const profileData = JSON.parse(
-              fromHex(newSupporter.profile, 'string')
-            );
-            newSupporter.name =
-              profileData.name || profileData.team || newSupporter.id;
-          } catch (e) {
-            console.error('Error parsing profile data', e);
-            newSupporter.name = newSupporter.id;
-          }
-        } else {
-          newSupporter.name = newSupporter.id;
-        }
-
+        newSupporter.name = parseProfileName(
+          newSupporter.profile,
+          newSupporter.id
+        );
         existingChange.supporters.push(newSupporter);
       } else {
         // Just increment the count, no need to parse the profile
@@ -191,21 +178,7 @@ export class TrackedChangesManager {
     if (funderNotFound && newFunder.id) {
       if (existingChange.funders.length < 3) {
         // If we need to show this funder, extract the name from the profile
-        if (newFunder.profile) {
-          try {
-            const profileData = JSON.parse(
-              fromHex(newFunder.profile, 'string')
-            );
-            newFunder.name =
-              profileData.name || profileData.team || newFunder.id;
-          } catch (e) {
-            console.error('Error parsing profile data', e);
-            newFunder.name = newFunder.id;
-          }
-        } else {
-          newFunder.name = newFunder.id;
-        }
-
+        newFunder.name = parseProfileName(newFunder.profile, newFunder.id);
         existingChange.funders.push(newFunder);
       } else {
         // Just increment the count, no need to parse the profile
