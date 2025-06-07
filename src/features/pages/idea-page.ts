@@ -452,6 +452,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   }
 
   private async handleSupportSucces() {
+    // Clear the token-input
+    this.tokenInput.value = '';
     // Handle the success of the contribution or airdrop
     this.shareDialog.url = `${window.location.origin}/idea/${this.ideaId}`;
     this.approveDialog.hide();
