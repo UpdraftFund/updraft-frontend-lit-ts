@@ -17,14 +17,6 @@ export class RightSideBar extends SignalWatcher(LitElement) {
       gap: 1.5rem;
     }
 
-    @media (max-width: 1040px) and (min-width: 769px) {
-      :host {
-        transition:
-          opacity 0.3s ease,
-          visibility 0.3s ease;
-      }
-    }
-
     @media (max-width: 768px) {
       :host {
         border-left: none;
