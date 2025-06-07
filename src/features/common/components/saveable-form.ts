@@ -54,6 +54,12 @@ export class SaveableForm extends LitElement {
     }
   };
 
+  protected clearForm = () => {
+    if (this.formName) {
+      clearForm(this.formName);
+    }
+  };
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('blur', this.handleBlurEvent);

@@ -36,6 +36,7 @@ import {
   SaveableForm,
   loadForm,
   formToJson,
+  clearForm,
 } from '@components/common/saveable-form';
 
 // State
@@ -254,6 +255,7 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
     if (this.entity) {
       let show;
       if (this.entity === 'idea') {
+        clearForm('create-idea');
         const address = t.receipt?.logs?.[0]?.topics?.[1];
         if (address) {
           this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
@@ -261,6 +263,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
           show = true;
         }
       } else if (this.entity === 'solution') {
+        clearForm('create-solution');
+        clearForm('create-solution-two');
         const address = t.receipt?.logs?.[1]?.topics?.[1];
         const ideaId = t.receipt?.logs?.[1]?.topics?.[3];
         if (address && ideaId) {
