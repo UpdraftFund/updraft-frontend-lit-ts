@@ -31,6 +31,7 @@ import {
   SaveableForm,
   formToJson,
   loadForm,
+  clearForm,
 } from '@components/common/saveable-form';
 import {
   TransactionWatcher,
@@ -297,6 +298,11 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
   }
 
   private async handleTransactionSuccess(t: TransactionSuccess) {
+    // Clear both solution forms
+    clearForm('create-solution');
+    this.form.reset();
+    this.syncRangeTooltip();
+    this.clearForm();
     const address = t.receipt?.logs?.[1]?.topics?.[1];
     const ideaId = t.receipt?.logs?.[1]?.topics?.[3];
     if (address && ideaId) {

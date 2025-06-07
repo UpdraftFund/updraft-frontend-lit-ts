@@ -158,6 +158,8 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   }
 
   private async handleTransactionSuccess(t: TransactionSuccess) {
+    this.form.reset();
+    this.clearForm();
     const address = t.receipt?.logs?.[0]?.topics?.[1];
     if (address) {
       this.shareDialog.url = `${window.location.origin}/idea/${trim(address)}`;
