@@ -19,13 +19,14 @@ export class NewFundersCard extends LitElement {
         flex-wrap: wrap;
         gap: 0.5rem;
         align-items: center;
+        font-size: 0.85rem;
       }
 
       .funders a {
-        font-size: 0.85rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        max-width: 6rem;
       }
     `,
   ];
@@ -52,7 +53,7 @@ export class NewFundersCard extends LitElement {
           ${funders.map(
             (funder, index) =>
               html`<a href="/profile/${funder.id}">${funder.name}</a>
-                ${index < funders.length - 1 ? html`, ` : html``} `
+                ${index < funders.length - 1 ? html`,` : html``} `
           )}
           ${additionalCount > 0
             ? html`

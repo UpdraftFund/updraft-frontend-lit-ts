@@ -17,15 +17,16 @@ export class NewSupportersCard extends LitElement {
       .supporters {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.25rem;
         align-items: center;
+        font-size: 0.85rem;
       }
 
       .supporters a {
-        font-size: 0.85rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        max-width: 6rem;
       }
     `,
   ];
@@ -50,7 +51,7 @@ export class NewSupportersCard extends LitElement {
           ${supporters.map(
             (supporter, index) =>
               html`<a href="/profile/${supporter.id}">${supporter.name}</a>
-                ${index < supporters.length - 1 ? html`, ` : html``}`
+                ${index < supporters.length - 1 ? html`,` : html``} `
           )}
           ${additionalCount > 0
             ? html`
@@ -66,7 +67,6 @@ export class NewSupportersCard extends LitElement {
   }
 }
 
-// Register the component
 declare global {
   interface HTMLElementTagNameMap {
     'new-supporters-card': NewSupportersCard;
