@@ -61,7 +61,7 @@ export class ActivityFeed extends LitElement {
   private readonly activityController = new UrqlQueryController(
     this,
     UserActivityDocument,
-    { userId: this.userId, first: 10 },
+    { userId: this.userId, first: 5 },
     (result) => {
       this.isLoading = false;
 
