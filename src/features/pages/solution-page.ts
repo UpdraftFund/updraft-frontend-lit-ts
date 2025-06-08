@@ -407,6 +407,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                 positionIndex,
               ])) as [bigint, bigint, bigint, bigint, boolean];
 
+            // Skip positions with zero contribution (transferred)
+            if (contributionAfterFees <= 0n) continue;
+
             // Get fees earned from checkPosition
             const [feesEarned] = (await solution.read('checkPosition', [
               address,
