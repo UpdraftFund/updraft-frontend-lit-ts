@@ -47,7 +47,7 @@ export class SplitTransfer extends LitElement {
       .form-actions {
         display: flex;
         gap: 1rem;
-        justify-content: flex-end;
+        justify-content: center;
         margin-top: 2rem;
       }
 
