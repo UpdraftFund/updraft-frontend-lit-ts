@@ -305,10 +305,7 @@ export class SplitTransfer extends LitElement {
         </transaction-watcher>
 
         <!-- Back Button -->
-        <div
-          class="form-actions"
-          style="margin-top: 2rem; justify-content: center;"
-        >
+        <div class="form-actions">
           <sl-button variant="default" @click=${() => window.history.back()}>
             ← Back
           </sl-button>
