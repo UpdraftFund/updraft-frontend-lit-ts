@@ -146,6 +146,20 @@ export class MyApp extends LitElement {
       render: ({ solutionId }) =>
         html` <edit-solution .solutionId=${solutionId}></edit-solution>`,
     },
+    {
+      path: '/split-transfer/:id/:position',
+      enter: async () => {
+        await import('@pages/split-transfer');
+        nav.set('split-transfer');
+        this.scrollToTop();
+        return true;
+      },
+      render: ({ id, position }) =>
+        html` <split-transfer
+          .entityId=${id}
+          .position=${position || '0'}
+        ></split-transfer>`,
+    },
   ]);
 
   connectedCallback(): void {
