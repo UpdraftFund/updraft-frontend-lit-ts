@@ -14,6 +14,7 @@ dayjs.extend(relativeTime);
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
 import plusLgIcon from '@icons/navigation/plus-lg.svg';
+import split from '@icons/split.svg';
 
 // Styles
 import { dialogStyles } from '@styles/dialog-styles';
@@ -158,6 +159,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         padding: 1rem;
         margin: 1rem 0;
         max-width: 500px;
+        position: relative;
       }
       .support-header {
         display: flex;
@@ -195,6 +197,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         font-size: 0.9rem;
         text-wrap: nowrap;
         color: var(--sl-color-neutral-700);
+      }
+      .split-transfer {
+        position: absolute;
+        bottom: 0.5rem;
+        right: 0.5rem;
       }
       .support-details {
         display: flex;
@@ -604,6 +611,15 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                         <span class="info-icon">ℹ️</span>
                       </sl-tooltip>
                     </div>
+                  </div>
+                  <div class="split-transfer">
+                    <sl-icon-button
+                      class="split-transfer-button"
+                      src=${split}
+                      label="Split or transfer position"
+                      href="/split-transfer/${this
+                        .ideaId}/${position.positionIndex}"
+                    ></sl-icon-button>
                   </div>
                   <transaction-watcher
                     class="withdraw"

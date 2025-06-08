@@ -12,6 +12,7 @@ dayjs.extend(relativeTime);
 
 import chevronLeft from '@icons/navigation/chevron-left.svg';
 import chevronRight from '@icons/navigation/chevron-right.svg';
+import split from '@icons/split.svg';
 
 import { dialogStyles } from '@styles/dialog-styles';
 
@@ -200,6 +201,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         border-radius: 0.5rem;
         padding: 1rem;
         max-width: 500px;
+        position: relative;
       }
       .positions-header {
         display: flex;
@@ -223,6 +225,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         font-size: 0.9rem;
         text-wrap: nowrap;
         color: var(--sl-color-neutral-700);
+      }
+      .split-transfer {
+        position: absolute;
+        bottom: 0.5rem;
+        right: 0.5rem;
       }
       .position-details {
         display: flex;
@@ -572,6 +579,14 @@ export class SolutionPage extends SignalWatcher(LitElement) {
               class="collect"
               @transaction-success=${this.handleCollectSuccess}
             ></transaction-watcher>
+          </div>
+          <div class="split-transfer">
+            <sl-icon-button
+              src=${split}
+              label="Split or transfer position"
+              href="/split-transfer/${this
+                .solutionId}/${position.positionIndex}"
+            ></sl-icon-button>
           </div>
         </div>
       </div>
