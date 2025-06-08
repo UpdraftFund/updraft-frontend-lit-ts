@@ -25,6 +25,7 @@ import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/token-input';
 import '@components/common/formatted-text-input';
+import '@components/common/label-with-hint';
 import { ITokenInput } from '@components/common/token-input';
 import {
   TransactionWatcher,
@@ -441,7 +442,6 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             hint="Tell people about yourself or your team. You can paste formatted text."
           ></label-with-hint>
         </formatted-text-input>
-
         <formatted-text-input name="news" .value=${profile?.news || ''}>
           <label-with-hint
             slot="label"
