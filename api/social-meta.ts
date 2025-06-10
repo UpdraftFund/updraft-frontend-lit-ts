@@ -1,4 +1,8 @@
 // Vercel Edge Function for social media meta tags
+// Environment-based configuration:
+// - Dev/Preview: Uses Arbitrum Sepolia subgraph
+// - Production: Uses Arbitrum One subgraph
+// Future: Will support multiple networks/subgraphs for up to 10 networks
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import DOMPurify from 'isomorphic-dompurify';
 
@@ -135,6 +139,21 @@ function parseSolutionInfo(infoHex: string | undefined): SolutionInfo {
 }
 
 /**
+ * Get the appropriate subgraph URL based on environment
+ */
+function getSubgraphUrl(): string {
+  const isProduction = process.env.VITE_APP_ENV === 'production';
+
+  if (isProduction) {
+    // Production: Arbitrum One subgraph
+    return 'https://gateway.thegraph.com/api/subgraphs/id/8HcLxQ184ZKaTmA6614AsYSj5LtaxAu4DusbmABYgnnF';
+  } else {
+    // Dev/Preview: Arbitrum Sepolia subgraph
+    return 'https://gateway.thegraph.com/api/subgraphs/id/J9Y2YwQwX5QgW1naUe7kGAxPxXAA8A2Tp2SeyNxMB6bH';
+  }
+}
+
+/**
  * Fetches data from The Graph API
  */
 async function fetchGraphQLData(
@@ -142,8 +161,7 @@ async function fetchGraphQLData(
   variables: Record<string, unknown>
 ): Promise<{ idea?: IdeaData; solution?: SolutionData } | null> {
   const graphApiKey = process.env.VITE_GRAPH_API_KEY;
-  const graphUrl =
-    'https://gateway.thegraph.com/api/subgraphs/id/AX96zuXixk4ugPQG7CDypy1EdRnYE4Z9khjk2fpzHfAq';
+  const graphUrl = getSubgraphUrl();
 
   if (!graphApiKey) {
     console.error('Missing VITE_GRAPH_API_KEY environment variable');

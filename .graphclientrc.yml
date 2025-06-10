@@ -1,9 +1,12 @@
 # .graphclientrc.yml
+# Note: This configuration is used for schema generation and type generation
+# The actual runtime endpoint is configured in src/features/common/utils/urql-client.ts
+# For development, we use the Arbitrum Sepolia subgraph for schema generation
 sources:
   - name: updraft
     handler:
       graphql:
-        endpoint: https://gateway.thegraph.com/api/subgraphs/id/AX96zuXixk4ugPQG7CDypy1EdRnYE4Z9khjk2fpzHfAq
+        endpoint: https://gateway.thegraph.com/api/subgraphs/id/J9Y2YwQwX5QgW1naUe7kGAxPxXAA8A2Tp2SeyNxMB6bH
         schemaHeaders:
           Authorization: Bearer ${VITE_GRAPH_API_KEY}
         operationHeaders:

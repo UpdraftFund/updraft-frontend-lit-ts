@@ -16,6 +16,7 @@ export const modal = {
     }),
 };
 
+// Mock networks - in tests we'll mock both for flexibility
 export const networks = [
   { name: 'Arbitrum Sepolia', chainId: 421614 },
   { name: 'Arbitrum', chainId: 42161 },
