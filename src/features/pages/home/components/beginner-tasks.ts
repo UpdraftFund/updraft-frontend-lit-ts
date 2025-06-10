@@ -154,7 +154,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <p>
                   A great way to learn is by watching another user. You can see
                   a user's activity on their profile page. Go to
-                  <a href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
+                  <a href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
                     >Adam's profile</a
                   >
                   and follow him.
@@ -163,7 +163,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <sl-button
                   slot="footer"
                   variant="primary"
-                  href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
+                  href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
                   >Adam's profile
                 </sl-button>
               </sl-card>
