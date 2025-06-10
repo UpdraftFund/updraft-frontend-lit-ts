@@ -32,10 +32,10 @@ For production deployments on Vercel:
 ## Available Environment Variables
 
 - `VITE_GRAPH_API_KEY`: API key for The Graph API
-- `VITE_APP_ENV`: Environment setting that controls which endpoints are used. Values can be:
-    - Empty or undefined: Local development environment (default)
-    - `preview`: Preview deployment environment
-    - `production`: Production deployment environment
+- `VITE_APP_ENV`: Environment setting that controls which networks and endpoints are used. Values can be:
+    - Empty or undefined: Local development environment (default) - uses Arbitrum Sepolia
+    - `preview`: Preview deployment environment - uses Arbitrum Sepolia
+    - `production`: Production deployment environment - uses Arbitrum One
 
 ## How It Works
 
@@ -55,3 +55,5 @@ This approach ensures that:
 2. In production, Vercel's environment variables are used
 3. The code works consistently in both environments
 4. Sensitive information is not committed to the repository
+5. Network configuration automatically adapts to the deployment environment
+6. Subgraph endpoints match the deployed smart contracts on each network

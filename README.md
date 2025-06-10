@@ -69,8 +69,10 @@ This project uses environment variables for API keys and other sensitive informa
 ### Required Environment Variables
 
 - `VITE_GRAPH_API_KEY`: API key for The Graph (for GraphQL queries)
-- `VITE_APP_ENV`: Environment setting (leave empty for local development, 'preview' for preview deployments, '
-  production' for production)
+- `VITE_APP_ENV`: Environment setting that controls network and subgraph configuration
+    - Leave empty for local development (uses Arbitrum Sepolia)
+    - Set to 'preview' for preview deployments (uses Arbitrum Sepolia)
+    - Set to 'production' for production deployments (uses Arbitrum One)
 
 Note: All environment variables used in the frontend must be prefixed with `VITE_` to be accessible in the client-side
 code.

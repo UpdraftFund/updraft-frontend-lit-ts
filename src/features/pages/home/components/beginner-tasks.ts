@@ -154,7 +154,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <p>
                   A great way to learn is by watching another user. You can see
                   a user's activity on their profile page. Go to
-                  <a href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
+                  <a href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
                     >Adam's profile</a
                   >
                   and follow him.
@@ -163,7 +163,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <sl-button
                   slot="footer"
                   variant="primary"
-                  href="/profile/0xab9cbeef799b2fef5dd1acbbc82c631fbc0b0d2d"
+                  href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
                   >Adam's profile
                 </sl-button>
               </sl-card>
@@ -180,7 +180,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <a href="/discover?search=[updraft]"
                     >Search for the updraft tag</a
                   >
-                  and click the Watch button to add it to your Watched Tags.
+                  and add it to your Watched Tags.
                 </p>
                 <div class="clear-float"></div>
                 <sl-button
@@ -257,15 +257,15 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <h3>Support an Idea</h3>
                 <p>
                   You can earn UPD by supporting an Idea that turns out to be
-                  popular. The more you deposit, the more you stand to earn. Go
-                  to the Build Updraft Idea and support it with UPD.
+                  popular. The more you deposit, the more you stand to earn.
+                  Support a recent Idea by the Updraft team with UPD.
                 </p>
                 <div class="clear-float"></div>
                 <sl-button
                   slot="footer"
                   variant="primary"
-                  href="/idea/0x4a7e2b823d31b094e87303a1b239a4b9e139abf2"
-                  >"Build Updraft" Idea
+                  href="/idea/0x964c430bf51159470c678495b8757233654b5d89"
+                  >Support an Idea
                 </sl-button>
               </sl-card>
             `}
@@ -278,14 +278,15 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                 <p>
                   Every Idea needs a Solution. A great team and execution can
                   change the world. Fund a Solution you love and earn a reward
-                  if others feel the same way.
+                  if others feel the same way. Fund a recent Solution by the
+                  Updraft team.
                 </p>
                 <div class="clear-float"></div>
                 <sl-button
                   slot="footer"
                   variant="primary"
-                  href="/solution/0x6863d6905de27fa150cc08633c823e1299aa5cc4"
-                  >"Build Updraft" Solution
+                  href="/solution/0x3061dab956c830afd5ef94c98d295589f1a84928"
+                  >Fund a Solution
                 </sl-button>
               </sl-card>
             `}
@@ -379,6 +380,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             >Ideas with these tags
           </sl-button>
         </sl-card>
+        <!--
         <sl-card class="campaign">
           <img src=${sad} alt="SongDust logo" />
           <h3>SongDust Week 1</h3>
@@ -404,6 +406,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             >Ideas with these tags
           </sl-button>
         </sl-card>
+        -->
       </section>
     `;
   }
