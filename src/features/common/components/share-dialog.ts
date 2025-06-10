@@ -49,6 +49,28 @@ export class ShareDialog extends LitElement {
         border-radius: 15px;
         border: 5px solid var(--control-background);
       }
+
+      /* Responsive layout for narrow screens */
+      @media (max-width: 514px) {
+        .dialog-content {
+          flex-direction: column;
+        }
+
+        .content-left {
+          order: 2;
+        }
+
+        img {
+          order: 1;
+          align-self: center;
+          height: 120px;
+          width: 120px;
+        }
+
+        .buttons {
+          justify-content: center;
+        }
+      }
     `,
   ];
 
@@ -105,7 +127,7 @@ export class ShareDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog>
+      <sl-dialog open>
         <p slot="label">
           <sl-icon src=${share}></sl-icon>
           Share
