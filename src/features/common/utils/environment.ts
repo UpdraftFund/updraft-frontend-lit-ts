@@ -55,6 +55,16 @@ export function getSubgraphUrl(): string {
 }
 
 /**
+ * Get the appropriate Uniswap LP URL for the current environment
+ */
+export function getUniswapLpUrl(): string {
+  // For now, both production and dev/preview use the same Arbitrum One LP
+  // since there's no LP on Arbitrum Sepolia for dev/preview environments
+  // In the future, this can be expanded to support multiple networks
+  return 'https://app.uniswap.org/explore/tokens/arbitrum/0x329730dda41c079e684a18c47800572aafe2c1df';
+}
+
+/**
  * Get environment-specific configuration
  */
 export function getEnvironmentConfig() {
@@ -65,6 +75,7 @@ export function getEnvironmentConfig() {
     isProduction: isProduction(),
     isDevOrPreview: isDevOrPreview(),
     subgraphUrl: getSubgraphUrl(),
+    uniswapLpUrl: getUniswapLpUrl(),
     // Future: Add more environment-specific configuration here
     // such as API endpoints, feature flags, etc.
   };

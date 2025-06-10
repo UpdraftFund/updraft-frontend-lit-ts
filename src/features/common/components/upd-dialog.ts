@@ -17,6 +17,7 @@ import { SlDialog, SlTooltip } from '@shoelace-style/shoelace';
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { shortNum } from '@utils/format-utils';
 import { updraftSettings } from '@state/common';
+import { getUniswapLpUrl } from '@utils/environment';
 
 @customElement('upd-dialog')
 export class UpdDialog extends SignalWatcher(LitElement) {
@@ -115,6 +116,11 @@ export class UpdDialog extends SignalWatcher(LitElement) {
           <li>
             <a href="https://discord.gg/mQJ58MY6Nz" target="_blank">
               Get free UPD from our discord
+            </a>
+          </li>
+          <li>
+            <a href="${getUniswapLpUrl()}" target="_blank">
+              Buy UPD on Uniswap
             </a>
           </li>
           <li>
