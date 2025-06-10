@@ -50,32 +50,33 @@ export class UpdDialog extends SignalWatcher(LitElement) {
         font-weight: 700;
       }
 
-      .refresh-button {
-        background: var(--main-background);
-        border: 2px solid var(--border-default);
-        border-radius: 8px;
-        padding: 0.5rem 0.5rem;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        color: var(--main-foreground);
-        text-decoration: none;
-        font-family: inherit;
-        text-wrap: nowrap;
+      sl-button.refresh-button::part(base) {
+        border-color: var(--border-default);
       }
 
-      .refresh-button:hover {
+      sl-button.refresh-button::part(base):hover {
         border-color: var(--accent);
         background: var(--accent);
         color: var(--main-background);
-        transform: translateY(-1px);
       }
 
-      .refresh-button sl-icon {
-        font-size: 1rem;
+      sl-button.refresh-button::part(base):focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      sl-button.copy-button::part(base):focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      /* Prevent persistent focus highlighting on mobile */
+      @media (hover: none) {
+        sl-button::part(base):focus {
+          background: var(--sl-color-neutral-0);
+          border-color: var(--sl-color-neutral-300);
+          color: var(--sl-color-neutral-700);
+        }
       }
 
       .options-section {
@@ -165,17 +166,27 @@ export class UpdDialog extends SignalWatcher(LitElement) {
   ];
 
   @query('sl-dialog', true) dialog!: SlDialog;
-  @query('sl-tooltip.clipboard', true) clipboardTip!: SlTooltip;
+  @query('sl-tooltip', true) clipboardTip!: SlTooltip;
   @state() private loadingBalance = false;
 
-  private checkBalance() {
+  private checkBalance(event?: Event) {
+    // Remove focus from button to prevent mobile highlighting
+    if (event?.target instanceof HTMLElement) {
+      event.target.blur();
+    }
+
     this.loadingBalance = true;
     refreshBalances().finally(() => {
       this.loadingBalance = false;
     });
   }
 
-  private async copyTokenAddress() {
+  private async copyTokenAddress(event?: Event) {
+    // Remove focus from button to prevent mobile highlighting
+    if (event?.target instanceof HTMLElement) {
+      event.target.blur();
+    }
+
     const updAddress = updraftSettings.get().updAddress;
     if (updAddress) {
       try {
@@ -201,7 +212,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <sl-dialog open="true" label="Get UPD 🪁">
+      <sl-dialog label="Get UPD 🪁">
         <!-- Balance Section -->
         <div class="balance-section">
           <div class="balance-display">Your UPD Balance</div>
@@ -210,10 +221,14 @@ export class UpdDialog extends SignalWatcher(LitElement) {
               ? html` <sl-spinner></sl-spinner>`
               : shortNum(getBalance('updraft'))}
             UPD
-            <button class="refresh-button" @click=${this.checkBalance}>
-              <sl-icon src=${calculator}></sl-icon>
+            <sl-button
+              class="refresh-button"
+              size="small"
+              @click=${this.checkBalance}
+            >
+              <sl-icon slot="prefix" src=${calculator}></sl-icon>
               Refresh
-            </button>
+            </sl-button>
           </div>
         </div>
 
@@ -256,7 +271,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
             </div>
             <sl-tooltip placement="bottom" trigger="manual">
               <sl-button class="copy-button" @click=${this.copyTokenAddress}>
-                <sl-icon src=${copy}></sl-icon>
+                <sl-icon slot="prefix" src=${copy}></sl-icon>
                 Copy Address
               </sl-button>
             </sl-tooltip>
