@@ -380,6 +380,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             >Ideas with these tags
           </sl-button>
         </sl-card>
+        <!--
         <sl-card class="campaign">
           <img src=${sad} alt="SongDust logo" />
           <h3>SongDust Week 1</h3>
@@ -405,6 +406,7 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
             >Ideas with these tags
           </sl-button>
         </sl-card>
+        -->
       </section>
     `;
   }
