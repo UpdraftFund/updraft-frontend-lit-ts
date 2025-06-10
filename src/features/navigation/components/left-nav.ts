@@ -4,7 +4,7 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 
 import compass from '@icons/navigation/compass.svg';
 import house from '@icons/navigation/house.svg';
-import discord from '@icons/navigation/discord.svg';
+import discord from '@icons/discord.svg';
 import guide from '@icons/navigation/guide-link.svg';
 
 import { nav } from '@state/navigation';
