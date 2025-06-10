@@ -33,15 +33,6 @@ export function isProduction(): boolean {
 }
 
 /**
- * Check if the current environment is development or preview
- * (both use the same configuration - Arbitrum Sepolia)
- */
-export function isDevOrPreview(): boolean {
-  const env = getCurrentEnvironment();
-  return env === 'development' || env === 'preview';
-}
-
-/**
  * Get the appropriate subgraph URL for the current environment
  */
 export function getSubgraphUrl(): string {
@@ -73,7 +64,6 @@ export function getEnvironmentConfig() {
   return {
     environment,
     isProduction: isProduction(),
-    isDevOrPreview: isDevOrPreview(),
     subgraphUrl: getSubgraphUrl(),
     uniswapLpUrl: getUniswapLpUrl(),
     // Future: Add more environment-specific configuration here
