@@ -5,9 +5,9 @@ import { dialogStyles } from '@/features/common/styles/dialog-styles';
 
 // Icons
 import linkIcon from '@icons/link-45deg.svg';
-import xIcon from '@icons/common/twitter-x.svg';
-import warpcastIcon from '@icons/common/farcaster.svg';
-import share from '@icons/common/share.svg';
+import xIcon from '@icons/twitter-x.svg';
+import warpcastIcon from '@icons/farcaster.svg';
+import share from '@icons/share.svg';
 import shareThisImage from '@images/share-this-140.png';
 
 // Shoelace components
@@ -147,7 +147,7 @@ export class ShareDialog extends LitElement {
 
               <sl-tooltip class="clipboard" placement="bottom" trigger="manual">
                 <sl-button variant="primary" @click=${this.copyLink}>
-                  <sl-icon src=${linkIcon}></sl-icon>
+                  <sl-icon slot="prefix" src=${linkIcon}></sl-icon>
                   Copy Link
                 </sl-button>
               </sl-tooltip>
