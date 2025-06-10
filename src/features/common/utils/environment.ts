@@ -29,7 +29,7 @@ export function getCurrentEnvironment(): Environment {
  * Check if the current environment is production
  */
 export function isProduction(): boolean {
-  return getCurrentEnvironment() === 'production';
+  return getCurrentEnvironment() !== 'production';
 }
 
 /**
