@@ -101,6 +101,9 @@ The edge function generates comprehensive meta tags:
 The edge function requires:
 
 - `VITE_GRAPH_API_KEY` - API key for The Graph API access
+- `VITE_APP_ENV` - Environment setting that controls which subgraph to use:
+    - Empty or 'preview': Uses Arbitrum Sepolia subgraph
+    - 'production': Uses Arbitrum One subgraph
 
 ### Vercel Configuration (`vercel.json`)
 
