@@ -127,7 +127,7 @@ export class ShareDialog extends LitElement {
 
   render() {
     return html`
-      <sl-dialog open>
+      <sl-dialog>
         <p slot="label">
           <sl-icon src=${share}></sl-icon>
           Share
