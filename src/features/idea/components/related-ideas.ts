@@ -6,7 +6,7 @@ import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
-import { IdeasByTagsDocument } from '@gql';
+import { IdeasByTagsOrDocument } from '@gql';
 import { Idea } from '@/types';
 
 @customElement('related-ideas')
@@ -48,7 +48,7 @@ export class RelatedIdeas extends LitElement {
   // Controller for fetching related ideas
   private readonly ideasController = new UrqlQueryController(
     this,
-    IdeasByTagsDocument,
+    IdeasByTagsOrDocument,
     {
       tag1: this.tags?.[0] || '',
       tag2: this.tags?.[1] || this.tags?.[0] || '',
