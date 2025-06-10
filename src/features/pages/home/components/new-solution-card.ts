@@ -62,7 +62,7 @@ export class NewSolutionCard extends LitElement {
             >
             <div class=" byline">
               by
-              <a href=${solution.drafter.id}>
+              <a href="/profile/${solution.drafter.id}">
                 ${drafterProfile.name ||
                 drafterProfile.team ||
                 solution.drafter.id}
