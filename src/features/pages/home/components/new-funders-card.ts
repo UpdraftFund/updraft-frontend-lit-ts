@@ -17,7 +17,7 @@ export class NewFundersCard extends LitElement {
       .funders {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.25rem;
         align-items: center;
         font-size: 0.85rem;
       }
@@ -58,7 +58,8 @@ export class NewFundersCard extends LitElement {
           ${additionalCount > 0
             ? html`
                 <div class="additional-count">
-                  and ${additionalCount} others
+                  and ${additionalCount}
+                  other${additionalCount === 1 ? '' : 's'}
                 </div>
               `
             : ''}
