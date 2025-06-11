@@ -9,11 +9,12 @@ dayjs.extend(relativeTime);
 import '@shoelace-style/shoelace/dist/components/card/card.js';
 
 import '@components/solution/solution-details-bar';
-import '@components/common/formatted-text';
+import '@components/common/vertical-fade';
 
 import { SolutionUpdated } from '@pages/home/types';
 
 import { parseSolutionInfo } from '@utils/solution/solution-utils';
+import { formattedText } from '@utils/format-utils';
 
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -42,9 +43,9 @@ export class SolutionUpdatedCard extends LitElement {
           </div>
           <a class="solution-body" href="/solution/${solution.id}">
             ${solutionInfo.news
-              ? html` <formatted-text class="solution-news"
-                  >${solutionInfo.news}</formatted-text
-                >`
+              ? html` <vertical-fade class="solution-news"
+                  >${formattedText(solutionInfo.news)}
+                </vertical-fade>`
               : html``}
             <solution-details-bar .solution=${solution}></solution-details-bar>
           </a>

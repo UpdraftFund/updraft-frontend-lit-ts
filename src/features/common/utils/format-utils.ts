@@ -1,4 +1,8 @@
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { DirectiveResult } from 'lit/directive.js';
+
 import { formatUnits } from 'viem';
+import DOMPurify, { Config } from 'dompurify';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -103,3 +107,67 @@ export const shortNum = function (n: string | number, p = 3, e = p - 3) {
   ans = ans.replace(/\.0+(\D|$)/, '$1');
   return ans.replace(/(\.\d*?)0+(\D|$)/, '$1$2');
 };
+
+/**
+ * Default DOMPurify configuration for rich text content
+ * Allows common formatting tags while maintaining security
+ *
+ * Based on common rich text formatting needs:
+ * - Text formatting: strong, b, em, i, u
+ * - Structure: p, br, h1-h6, blockquote
+ * - Lists: ul, ol, li
+ * - Links: a (with href attribute)
+ *
+ * KEEP_CONTENT: true preserves text content when removing disallowed tags
+ * Note: Script tags and their content are completely removed for security
+ */
+export const RICH_TEXT_SANITIZE_CONFIG: Config = {
+  ALLOWED_TAGS: [
+    'p',
+    'br',
+    'strong',
+    'b',
+    'em',
+    'i',
+    'u',
+    'a',
+    'ul',
+    'ol',
+    'li',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'blockquote',
+  ],
+  ALLOWED_ATTR: ['href'],
+  ALLOWED_URI_REGEXP:
+    /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
+};
+
+/**
+ * Sanitizes HTML content using DOMPurify with rich text configuration
+ * and returns a Lit directive that safely renders the HTML in templates
+ *
+ * This function removes potentially dangerous HTML while preserving
+ * common rich text formatting. It returns a Lit unsafeHTML directive
+ * that can be used directly in Lit templates to render the sanitized HTML.
+ *
+ * @param htmlContent - The HTML content to sanitize
+ * @returns Lit directive that renders sanitized HTML safely
+ *
+ * @example
+ * ```typescript
+ * const userInput = '<p>Hello <script>alert("xss")</script> <strong>world</strong>!</p>';
+ * const safe = formatText(userInput);
+ * // Use in Lit template: html`<div>${safe}</div>`
+ * // Result: <div><p>Hello  <strong>world</strong>!</p></div>
+ * ```
+ */
+export function formattedText(htmlContent: string): DirectiveResult {
+  const sanitized = DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);
+  return unsafeHTML(sanitized);
+}
