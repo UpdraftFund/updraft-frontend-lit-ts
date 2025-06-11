@@ -12,7 +12,7 @@ import {
   formatReward,
   formatAmount,
   formatDate,
-  formatText,
+  formattedText,
 } from '@utils/format-utils';
 import { parseProfile } from '@utils/user/user-utils';
 
@@ -106,7 +106,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
 
         ${description
           ? html` <vertical-fade class="description"
-              >${formatText(description)}
+              >${formattedText(description)}
             </vertical-fade>`
           : ''}
         ${tags && tags.length > 0

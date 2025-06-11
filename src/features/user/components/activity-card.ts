@@ -18,7 +18,7 @@ import {
   formatReward,
   formatAmount,
   formatDate,
-  formatText,
+  formattedText,
 } from '@utils/format-utils';
 import { goalFailed, parseSolutionInfo } from '@utils/solution/solution-utils';
 
@@ -309,7 +309,7 @@ export class ActivityCard extends LitElement {
 
         ${description
           ? html` <div class="description-container">
-              <vertical-fade>${formatText(description)}</vertical-fade>
+              <vertical-fade>${formattedText(description)}</vertical-fade>
               ${this.renderFundButton()}
             </div>`
           : html``}

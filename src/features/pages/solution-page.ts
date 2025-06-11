@@ -44,7 +44,7 @@ import {
   formatDate,
   formatReward,
   formatAmount,
-  formatText,
+  formattedText,
 } from '@utils/format-utils';
 import {
   calculateProgress,
@@ -1100,7 +1100,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             ? html`
                 <div class="solution-description">
                   <h3>Description</h3>
-                  <p>${formatText(this.solutionInfo.description)}</p>
+                  <p>${formattedText(this.solutionInfo.description)}</p>
                 </div>
               `
             : html``}
@@ -1108,7 +1108,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             ? html`
                 <div class="solution-news">
                   <h3>Latest Updates</h3>
-                  <p>${formatText(this.solutionInfo.news)}</p>
+                  <p>${formattedText(this.solutionInfo.news)}</p>
                 </div>
               `
             : html``}

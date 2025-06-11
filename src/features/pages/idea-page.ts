@@ -45,7 +45,7 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
-import { formatAmount, formatDate, formatText } from '@utils/format-utils';
+import { formatAmount, formatDate, formattedText } from '@utils/format-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -526,7 +526,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           ${description
             ? html`
                 <h3>Description</h3>
-                <p>${formatText(description)}</p>
+                <p>${formattedText(description)}</p>
               `
             : html``}
           ${tags

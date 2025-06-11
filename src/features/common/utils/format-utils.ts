@@ -1,7 +1,10 @@
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { DirectiveResult } from 'lit/directive.js';
+
 import { formatUnits } from 'viem';
+import DOMPurify, { Config } from 'dompurify';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import DOMPurify, { Config } from 'dompurify';
 
 dayjs.extend(relativeTime);
 
@@ -147,20 +150,24 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
 
 /**
  * Sanitizes HTML content using DOMPurify with rich text configuration
+ * and returns a Lit directive that safely renders the HTML in templates
  *
  * This function removes potentially dangerous HTML while preserving
- * common rich text formatting. It's safe to use with user-generated content.
+ * common rich text formatting. It returns a Lit unsafeHTML directive
+ * that can be used directly in Lit templates to render the sanitized HTML.
  *
  * @param htmlContent - The HTML content to sanitize
- * @returns Sanitized HTML string safe for innerHTML
+ * @returns Lit directive that renders sanitized HTML safely
  *
  * @example
  * ```typescript
  * const userInput = '<p>Hello <script>alert("xss")</script> <strong>world</strong>!</p>';
  * const safe = formatText(userInput);
- * // Result: '<p>Hello  <strong>world</strong>!</p>'
+ * // Use in Lit template: html`<div>${safe}</div>`
+ * // Result: <div><p>Hello  <strong>world</strong>!</p></div>
  * ```
  */
-export function formatText(htmlContent: string): string {
-  return DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);
+export function formattedText(htmlContent: string): DirectiveResult {
+  const sanitized = DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);
+  return unsafeHTML(sanitized);
 }

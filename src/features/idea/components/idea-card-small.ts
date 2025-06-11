@@ -11,7 +11,7 @@ import {
   formatReward,
   formatAmount,
   formatDate,
-  formatText,
+  formattedText,
 } from '@utils/format-utils';
 
 @customElement('idea-card-small')
@@ -32,7 +32,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
         <hr />
         <h3 class="entity-name">${name}</h3>
         ${description
-          ? html` <vertical-fade>${formatText(description)}</vertical-fade>`
+          ? html` <vertical-fade>${formattedText(description)}</vertical-fade>`
           : html``}
         <ul class="info-row">
           <li>🌱 ${date}</li>

@@ -15,7 +15,7 @@ import { NewSolution } from '@pages/home/types';
 
 import { parseSolutionInfo } from '@utils/solution/solution-utils';
 import { parseProfile } from '@utils/user/user-utils';
-import { formatText } from '@utils/format-utils';
+import { formattedText } from '@utils/format-utils';
 
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -71,7 +71,7 @@ export class NewSolutionCard extends LitElement {
             </div>
             <a class="solution-body" href="/solution/${solution.id}">
               <vertical-fade
-                >${formatText(solutionInfo.description)}
+                >${formattedText(solutionInfo.description)}
               </vertical-fade>
               <solution-details-bar
                 .solution=${solution}

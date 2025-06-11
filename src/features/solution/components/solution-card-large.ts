@@ -18,7 +18,7 @@ import {
   formatReward,
   formatAmount,
   formatDate,
-  formatText,
+  formattedText,
 } from '@utils/format-utils';
 import {
   calculateProgress,
@@ -194,7 +194,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
           ? html`
               <a href="/solution/${this.solution.id}">
                 <vertical-fade class="description"
-                  >${formatText(solutionInfo.description)}
+                  >${formattedText(solutionInfo.description)}
                 </vertical-fade>
               </a>
             `
@@ -203,7 +203,9 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
           ? html`
               <div class="news">
                 <h4>✨Updates</h4>
-                <vertical-fade>${formatText(solutionInfo.news)}</vertical-fade>
+                <vertical-fade
+                  >${formattedText(solutionInfo.news)}
+                </vertical-fade>
               </div>
             `
           : html``}

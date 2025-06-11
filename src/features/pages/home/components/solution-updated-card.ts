@@ -14,7 +14,7 @@ import '@components/common/vertical-fade';
 import { SolutionUpdated } from '@pages/home/types';
 
 import { parseSolutionInfo } from '@utils/solution/solution-utils';
-import { formatText } from '@utils/format-utils';
+import { formattedText } from '@utils/format-utils';
 
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -44,7 +44,7 @@ export class SolutionUpdatedCard extends LitElement {
           <a class="solution-body" href="/solution/${solution.id}">
             ${solutionInfo.news
               ? html` <vertical-fade class="solution-news"
-                  >${formatText(solutionInfo.news)}
+                  >${formattedText(solutionInfo.news)}
                 </vertical-fade>`
               : html``}
             <solution-details-bar .solution=${solution}></solution-details-bar>

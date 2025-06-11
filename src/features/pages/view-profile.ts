@@ -21,7 +21,7 @@ import { markComplete } from '@state/user/beginner-tasks';
 
 import { ProfileDocument } from '@gql';
 import { Profile } from '@/features/user/types/profile';
-import { shortenAddress, formatText } from '@utils/format-utils';
+import { shortenAddress, formattedText } from '@utils/format-utils';
 
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
@@ -279,7 +279,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   ? html`
                       <div class="about section">
                         <h2>About</h2>
-                        <p>${formatText(this.profileData.about)}</p>
+                        <p>${formattedText(this.profileData.about)}</p>
                       </div>
                     `
                   : html``}
@@ -287,7 +287,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   ? html`
                       <div class="news section">
                         <h2>Latest Updates</h2>
-                        <p>${formatText(this.profileData.news)}</p>
+                        <p>${formattedText(this.profileData.news)}</p>
                       </div>
                     `
                   : html``}
