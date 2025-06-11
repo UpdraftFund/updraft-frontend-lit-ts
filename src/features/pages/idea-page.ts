@@ -743,15 +743,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
     if (changedProperties.has('ideaId') && this.ideaId) {
-      // Clear current idea data to prevent showing mixed old/new data during navigation
-      this.idea = undefined;
       this.loaded = false;
       this.error = null;
-      // Clear position-related state for clean transition
-      this.positions = [];
-      this.positionIndex = 0;
-      // Clear right sidebar content immediately to prevent showing stale related ideas
-      layout.rightSidebarContent.set(html``);
       this.ideaController.setVariablesAndSubscribe({ ideaId: this.ideaId });
     }
   }
