@@ -56,9 +56,23 @@ export class FormattedText extends SignalWatcher(LitElement) {
 
   @query('slot', true) slotContent!: HTMLSlotElement;
 
+  private lastProcessedContent = '';
+
   private sanitize = () => {
     if (this.slotContent) {
       const assignedNodes = this.slotContent.assignedNodes();
+
+      // Get current content to check if it has changed
+      const currentContent = assignedNodes
+        .map((node) => node.textContent || '')
+        .join('');
+
+      // Only process if content has actually changed
+      if (currentContent === this.lastProcessedContent) {
+        return;
+      }
+
+      this.lastProcessedContent = currentContent;
 
       assignedNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
