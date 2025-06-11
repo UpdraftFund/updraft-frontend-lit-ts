@@ -13,7 +13,8 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts --fix",
     "test": "web-test-runner --node-resolve",
-    "test:watch": "web-test-runner --node-resolve --watch"
+    "test:watch": "web-test-runner --node-resolve --watch",
+    "clear-vite-cache": "rm -rf node_modules/.vite"
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.3.2",
