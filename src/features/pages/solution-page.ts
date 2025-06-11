@@ -33,7 +33,6 @@ import '@components/common/token-input';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/transaction-watcher';
-import '@components/common/formatted-text';
 import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
@@ -41,7 +40,12 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
-import { formatDate, formatReward, formatAmount } from '@utils/format-utils';
+import {
+  formatDate,
+  formatReward,
+  formatAmount,
+  formatText,
+} from '@utils/format-utils';
 import {
   calculateProgress,
   goalFailed,
@@ -1096,9 +1100,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             ? html`
                 <div class="solution-description">
                   <h3>Description</h3>
-                  <formatted-text
-                    >${this.solutionInfo.description}
-                  </formatted-text>
+                  <p>${formatText(this.solutionInfo.description)}</p>
                 </div>
               `
             : html``}
@@ -1106,7 +1108,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             ? html`
                 <div class="solution-news">
                   <h3>Latest Updates</h3>
-                  <formatted-text>${this.solutionInfo.news}</formatted-text>
+                  <p>${formatText(this.solutionInfo.news)}</p>
                 </div>
               `
             : html``}

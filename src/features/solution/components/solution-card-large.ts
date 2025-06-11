@@ -8,13 +8,18 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
-import '@components/common/formatted-text';
+import '@components/common/vertical-fade';
 
 import { Solution } from '@/features/solution/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
 
-import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
+import {
+  formatReward,
+  formatAmount,
+  formatDate,
+  formatText,
+} from '@utils/format-utils';
 import {
   calculateProgress,
   goalFailed,
@@ -65,7 +70,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         color: var(--accent);
       }
 
-      .news formatted-text {
+      .news vertical-fade {
         --fade-color: var(--sl-color-neutral-100);
       }
 
@@ -188,9 +193,9 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         ${solutionInfo.description
           ? html`
               <a href="/solution/${this.solution.id}">
-                <formatted-text class="description"
-                  >${solutionInfo.description}
-                </formatted-text>
+                <vertical-fade class="description"
+                  >${formatText(solutionInfo.description)}
+                </vertical-fade>
               </a>
             `
           : html``}
@@ -198,7 +203,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
           ? html`
               <div class="news">
                 <h4>✨Updates</h4>
-                <formatted-text>${solutionInfo.news}</formatted-text>
+                <vertical-fade>${formatText(solutionInfo.news)}</vertical-fade>
               </div>
             `
           : html``}

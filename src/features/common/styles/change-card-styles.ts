@@ -78,7 +78,7 @@ export const changeCardStyles = css`
     margin-top: 0.5rem;
   }
 
-  formatted-text {
+  vertical-fade {
     max-height: 7.25rem;
     --fade-color: var(--card-background);
     --fade-height: 1.25rem;
