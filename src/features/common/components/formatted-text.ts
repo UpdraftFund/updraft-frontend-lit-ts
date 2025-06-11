@@ -56,7 +56,7 @@ export class FormattedText extends SignalWatcher(LitElement) {
 
   @query('slot', true) slotContent!: HTMLSlotElement;
 
-  private sanitize() {
+  private sanitize = () => {
     if (this.slotContent) {
       const assignedNodes = this.slotContent.assignedNodes();
 
@@ -79,16 +79,19 @@ export class FormattedText extends SignalWatcher(LitElement) {
         }
       });
     }
-  }
+  };
 
   firstUpdated() {
-    // Sanitize content after the component is first rendered
-    this.sanitize();
+    if (this.slotContent) {
+      this.slotContent.addEventListener('slotchange', this.sanitize);
+    }
   }
 
-  updated() {
-    // Re-sanitize content when the component updates (in case slot content changes)
-    this.sanitize();
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this.slotContent) {
+      this.slotContent.removeEventListener('slotchange', this.sanitize);
+    }
   }
 
   render() {
