@@ -56,7 +56,8 @@ export class NewSupportersCard extends LitElement {
           ${additionalCount > 0
             ? html`
                 <div class="additional-count">
-                  and ${additionalCount} others
+                  and ${additionalCount}
+                  other${additionalCount === 1 ? '' : 's'}
                 </div>
               `
             : ''}
