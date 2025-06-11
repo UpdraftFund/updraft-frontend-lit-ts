@@ -124,6 +124,18 @@ export default {
           ),
         },
         // Standard path aliases for other imports
+        {
+          find: '@utils',
+          replacement: path.resolve(process.cwd(), 'src/features/common/utils'),
+        },
+        {
+          find: '@state/common',
+          replacement: path.resolve(process.cwd(), 'src/features/common/state'),
+        },
+        {
+          find: '@contracts',
+          replacement: path.resolve(process.cwd(), 'src/lib/contracts'),
+        },
         { find: '@/', replacement: path.resolve(process.cwd(), 'src/') },
       ],
     }),

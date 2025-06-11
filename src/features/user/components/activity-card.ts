@@ -12,9 +12,14 @@ import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 
 import '@components/solution/solution-details-bar';
-import '@components/common/formatted-text';
+import '@components/common/vertical-fade';
 
-import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
+import {
+  formatReward,
+  formatAmount,
+  formatDate,
+  formattedText,
+} from '@utils/format-utils';
 import { goalFailed, parseSolutionInfo } from '@utils/solution/solution-utils';
 
 import { Activity, SolutionInfo } from '@/types';
@@ -96,7 +101,7 @@ export class ActivityCard extends LitElement {
       margin-bottom: 1rem;
     }
 
-    formatted-text {
+    vertical-fade {
       font-size: 0.875rem;
       line-height: 1.5em;
       color: var(--sl-color-neutral-700);
@@ -288,6 +293,7 @@ export class ActivityCard extends LitElement {
 
   render() {
     const time = dayjs(this.activity.timestamp).fromNow();
+    const description = this.getDescription();
     return html`
       <sl-card>
         <div class="icon-user">
@@ -301,10 +307,12 @@ export class ActivityCard extends LitElement {
 
         <div class="entity">${this.renderEntity()}</div>
 
-        <div class="description-container">
-          <formatted-text>${this.getDescription()}</formatted-text>
-          ${this.renderFundButton()}
-        </div>
+        ${description
+          ? html` <div class="description-container">
+              <vertical-fade>${formattedText(description)}</vertical-fade>
+              ${this.renderFundButton()}
+            </div>`
+          : html``}
 
         <sl-divider></sl-divider>
 

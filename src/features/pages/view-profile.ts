@@ -11,7 +11,6 @@ import '@components/navigation/search-bar';
 import '@components/navigation/create-idea-button';
 import '@components/user/activity-feed';
 import '@components/user/user-avatar';
-import '@components/common/formatted-text';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 
@@ -22,7 +21,7 @@ import { markComplete } from '@state/user/beginner-tasks';
 
 import { ProfileDocument } from '@gql';
 import { Profile } from '@/features/user/types/profile';
-import { shortenAddress } from '@utils/format-utils';
+import { shortenAddress, formattedText } from '@utils/format-utils';
 
 @customElement('view-profile')
 export class ViewProfile extends SignalWatcher(LitElement) {
@@ -79,7 +78,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
       font-weight: 600;
     }
 
-    .section formatted-text {
+    .section p {
       margin-bottom: 0;
     }
 
@@ -280,9 +279,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   ? html`
                       <div class="about section">
                         <h2>About</h2>
-                        <formatted-text
-                          >${this.profileData.about}
-                        </formatted-text>
+                        <p>${formattedText(this.profileData.about)}</p>
                       </div>
                     `
                   : html``}
@@ -290,9 +287,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   ? html`
                       <div class="news section">
                         <h2>Latest Updates</h2>
-                        <formatted-text
-                          >${this.profileData.news}
-                        </formatted-text>
+                        <p>${formattedText(this.profileData.news)}</p>
                       </div>
                     `
                   : html``}

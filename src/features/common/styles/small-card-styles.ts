@@ -35,7 +35,7 @@ export const smallCardStyles = css`
     border: none;
   }
 
-  formatted-text {
+  vertical-fade {
     margin-top: 0.5rem;
     font-size: 0.75rem;
     color: var(--subtle-text);

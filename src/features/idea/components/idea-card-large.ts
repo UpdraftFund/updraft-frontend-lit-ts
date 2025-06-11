@@ -3,12 +3,17 @@ import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 
 import '@shoelace-style/shoelace/dist/components/icon/icon.js';
-import '@components/common/formatted-text';
+import '@components/common/vertical-fade';
 
 import { Idea } from '@/features/idea/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
-import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
+import {
+  formatReward,
+  formatAmount,
+  formatDate,
+  formattedText,
+} from '@utils/format-utils';
 import { parseProfile } from '@utils/user/user-utils';
 
 @customElement('idea-card-large')
@@ -100,9 +105,9 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
         </ul>
 
         ${description
-          ? html` <formatted-text class="description"
-              >${description}
-            </formatted-text>`
+          ? html` <vertical-fade class="description"
+              >${formattedText(description)}
+            </vertical-fade>`
           : ''}
         ${tags && tags.length > 0
           ? html`

@@ -2,12 +2,17 @@ import { LitElement } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { customElement, property } from 'lit/decorators.js';
 
-import '@components/common/formatted-text';
+import '@components/common/vertical-fade';
 
 import { Idea } from '@/features/idea/types';
 
 import { smallCardStyles } from '@styles/small-card-styles';
-import { formatReward, formatAmount, formatDate } from '@utils/format-utils';
+import {
+  formatReward,
+  formatAmount,
+  formatDate,
+  formattedText,
+} from '@utils/format-utils';
 
 @customElement('idea-card-small')
 export class IdeaCardSmall extends SignalWatcher(LitElement) {
@@ -27,7 +32,7 @@ export class IdeaCardSmall extends SignalWatcher(LitElement) {
         <hr />
         <h3 class="entity-name">${name}</h3>
         ${description
-          ? html` <formatted-text>${description}</formatted-text>`
+          ? html` <vertical-fade>${formattedText(description)}</vertical-fade>`
           : html``}
         <ul class="info-row">
           <li>🌱 ${date}</li>
