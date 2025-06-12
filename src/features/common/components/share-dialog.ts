@@ -108,7 +108,7 @@ export class ShareDialog extends LitElement {
   }
 
   private get xShareMessage() {
-    return `I ${this.action} on @UpdraftFund : `;
+    return `I ${this.action} on @UpdraftFund: ${this.topic}`;
   }
 
   private shareX() {
