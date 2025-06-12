@@ -146,7 +146,6 @@ TurndownService.prototype.escape = function (text) {
   return text;
 };
 
-// Simple turndown service - mainly converts <div> to newlines and removes HTML comments
 const turndownService = new TurndownService();
 
 marked.setOptions({
@@ -175,18 +174,27 @@ marked.setOptions({
  * ```
  */
 export function formattedText(content: string): DirectiveResult {
-  // Simple approach: preserve &nbsp; entities and let turndown do minimal cleanup
-  // Turndown mainly just converts <div></div> to newlines and removes HTML comments
+  // Use placeholder approach to preserve spaces through turndown processing
+  const SPACE_PLACEHOLDER = '___SPACE___';
 
   let spacePreservedContent = content;
 
-  // Replace &nbsp; entities with regular spaces (contenteditable almost always uses &nbsp;)
-  spacePreservedContent = spacePreservedContent.replace(/&nbsp;/g, ' ');
+  // Replace &nbsp; entities with placeholders that turndown won't strip
+  spacePreservedContent = spacePreservedContent.replace(
+    /&nbsp;/g,
+    SPACE_PLACEHOLDER
+  );
 
-  // Let turndown handle basic HTML cleanup (mainly <div> to newlines, remove HTML comments)
+  // Process through turndown
   const unmangledMarkdown = turndownService.turndown(spacePreservedContent);
 
-  const htmlContent = marked(unmangledMarkdown) as string;
+  // Convert placeholders back to spaces
+  const markdownWithSpaces = unmangledMarkdown.replace(
+    new RegExp(SPACE_PLACEHOLDER, 'g'),
+    ' '
+  );
+
+  const htmlContent = marked(markdownWithSpaces) as string;
   const sanitized = DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);
   return unsafeHTML(sanitized);
 }
