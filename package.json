@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "tsc": "tsc",
-    "build": "yarn build-graph && yarn lint && yarn tsc && vite build",
+    "generate-version": "node scripts/generate-version.js",
+    "build": "yarn build-graph && yarn lint && yarn tsc && yarn generate-version && vite build",
     "preview": "vite preview",
     "build-graph": "[ -f .env.local ] && set -a && . .env.local; graphclient build",
     "validate-graph": "[ -f .env.local ] && set -a && . .env.local; graphclient validate",

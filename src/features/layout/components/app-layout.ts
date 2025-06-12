@@ -6,6 +6,7 @@ import '@layout/top-bar';
 import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 import '@components/common/full-overlay';
+import '@components/common/app-refresh-prompt';
 
 import {
   leftSidebarCollapsed,
@@ -96,6 +97,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
       showLeftSidebar.get() && !leftSidebarCollapsed.get();
 
     return html`
+      <app-refresh-prompt></app-refresh-prompt>
       <top-bar></top-bar>
       <div class="app-layout">
         <!-- Backdrop overlay for mobile only - positioned within app-layout (below top bar) -->
