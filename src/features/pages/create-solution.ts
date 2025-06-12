@@ -84,7 +84,7 @@ export class CreateSolution extends SaveableForm {
           <label-with-hint
             slot="label"
             label="Description*"
-            hint="A description of your solution. You can paste formatted text."
+            hint="A description of your solution. You can use markdown or paste formatted text."
           ></label-with-hint>
         </formatted-text-input>
 
