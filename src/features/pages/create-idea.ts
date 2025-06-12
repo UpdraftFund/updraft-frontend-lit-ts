@@ -196,7 +196,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
           <label-with-hint
             slot="label"
             label="Description"
-            hint="How do you want to make your community, your project or the world better? You can paste formatted text."
+            hint="How do you want to make your community, your project or the world better?"
           ></label-with-hint>
         </formatted-text-input>
         <sl-input name="tags" @sl-input=${this.handleTagsInput}>
