@@ -62,7 +62,7 @@ export class TransactionWatcher
   implements ITransactionWatcher
 {
   @property({ type: String }) hash?: `0x${string}`;
-  @property({ type: Number }) timeout = 60000; // 60 seconds default
+  @property({ type: Number }) timeout = 120000; // 2 minutes default (increased from 1 minute)
 
   receipt: TransactionReceipt | null = null;
 
