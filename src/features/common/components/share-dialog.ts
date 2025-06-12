@@ -23,10 +23,6 @@ export class ShareDialog extends LitElement {
   static styles = [
     dialogStyles,
     css`
-      sl-tooltip {
-        --sl-tooltip-arrow-size: 0;
-      }
-
       .dialog-content {
         display: flex;
         gap: 1rem;
@@ -93,7 +89,6 @@ export class ShareDialog extends LitElement {
   private async showClipboardTip() {
     await this.clipboardTip.show();
     setTimeout(() => {
-      this.clipboardTip.content = '';
       this.clipboardTip.hide();
     }, 1500);
   }
