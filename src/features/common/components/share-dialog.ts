@@ -107,10 +107,14 @@ export class ShareDialog extends LitElement {
     return `I ${this.action} on Updraft: ${this.topic}`;
   }
 
+  private get xShareMessage() {
+    return `I ${this.shareMessage} on @UpdraftFund ${this.url}`;
+  }
+
   private shareX() {
     const url = new URL('https://twitter.com/intent/tweet');
     url.searchParams.set('url', this.url);
-    url.searchParams.set('text', this.shareMessage);
+    url.searchParams.set('text', this.xShareMessage);
     window.open(url.toString(), '_blank');
   }
 
