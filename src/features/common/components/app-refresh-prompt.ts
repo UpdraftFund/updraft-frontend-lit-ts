@@ -91,8 +91,6 @@ export class AppRefreshPrompt extends LitElement {
     }
   `;
 
-  private visible = false;
-
   constructor() {
     super();
     // Listen for the custom event dispatched by the version check service
@@ -143,3 +141,4 @@ declare global {
     'app-refresh-prompt': AppRefreshPrompt;
   }
 }
+
