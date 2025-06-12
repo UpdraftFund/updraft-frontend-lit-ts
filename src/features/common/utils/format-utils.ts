@@ -129,6 +129,7 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'h4',
     'h5',
     'h6',
+    'hr',
     'blockquote',
     'pre',
     'code',
