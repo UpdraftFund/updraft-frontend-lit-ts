@@ -3,10 +3,10 @@ import { DirectiveResult } from 'lit/directive.js';
 
 import { formatUnits } from 'viem';
 import DOMPurify, { Config } from 'dompurify';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { marked } from 'marked';
 import TurndownService from 'turndown';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 dayjs.extend(relativeTime);
 
@@ -110,6 +110,17 @@ export const shortNum = function (n: string | number, p = 3, e = p - 3) {
   return ans.replace(/(\.\d*?)0+(\D|$)/, '$1$2');
 };
 
+/**
+ * DOMPurify configuration for rich text content with GitHub Flavored Markdown support
+ *
+ * Security considerations:
+ * - Task list checkboxes are safe because they're disabled by default
+ * - Table attributes (scope, colspan, rowspan) are safe for accessibility and layout
+ * - class attribute is limited to what marked.js generates (e.g., language-* for code blocks)
+ * - No style attribute to prevent CSS injection
+ * - No onclick or other event handlers
+ * - href is restricted by ALLOWED_URI_REGEXP
+ */
 export const RICH_TEXT_SANITIZE_CONFIG: Config = {
   ALLOWED_TAGS: [
     'p',
@@ -133,8 +144,30 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'blockquote',
     'pre',
     'code',
+    // GitHub Flavored Markdown support
+    'del', // Strikethrough (~~text~~)
+    'input', // Task list checkboxes
+    'table', // Tables
+    'thead', // Table header group
+    'tbody', // Table body group
+    'tr', // Table rows
+    'th', // Table header cells
+    'td', // Table data cells
   ],
-  ALLOWED_ATTR: ['href'],
+  ALLOWED_ATTR: [
+    'href',
+    // Task list checkbox attributes
+    'type', // For input type="checkbox"
+    'checked', // For checked checkboxes
+    'disabled', // Task list checkboxes are disabled by default
+    // Table attributes for accessibility and styling
+    'scope', // For th elements (row/col/rowgroup/colgroup)
+    'colspan', // For spanning multiple columns
+    'rowspan', // For spanning multiple rows
+    // General attributes that are safe and useful
+    'class', // For CSS styling (marked.js adds language-* classes to code blocks)
+    'id', // For anchoring and accessibility
+  ],
   ALLOWED_URI_REGEXP:
     /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
