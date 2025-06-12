@@ -27,6 +27,7 @@
     "@reown/appkit-adapter-wagmi": "^1.6.7",
     "@reown/appkit-siwe": "^1.6.7",
     "@shoelace-style/shoelace": "^2.20.0",
+    "@types/turndown": "^5.0.5",
     "@vercel/node": "^5.2.1",
     "@wagmi/connectors": "^5.7.7",
     "@wagmi/core": "^2.16.4",
@@ -36,7 +37,9 @@
     "graphql": "^16.10.0",
     "isomorphic-dompurify": "^2.25.0",
     "lit": "^3.2.1",
+    "marked": "^15.0.12",
     "react": "^19.0.0",
+    "turndown": "^7.2.0",
     "urql": "^4.2.1"
   },
   "devDependencies": {

@@ -5,6 +5,8 @@ import { formatUnits } from 'viem';
 import DOMPurify, { Config } from 'dompurify';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { marked } from 'marked';
+import TurndownService from 'turndown';
 
 dayjs.extend(relativeTime);
 
@@ -108,19 +110,6 @@ export const shortNum = function (n: string | number, p = 3, e = p - 3) {
   return ans.replace(/(\.\d*?)0+(\D|$)/, '$1$2');
 };
 
-/**
- * Default DOMPurify configuration for rich text content
- * Allows common formatting tags while maintaining security
- *
- * Based on common rich text formatting needs:
- * - Text formatting: strong, b, em, i, u
- * - Structure: p, br, h1-h6, blockquote
- * - Lists: ul, ol, li
- * - Links: a (with href attribute)
- *
- * KEEP_CONTENT: true preserves text content when removing disallowed tags
- * Note: Script tags and their content are completely removed for security
- */
 export const RICH_TEXT_SANITIZE_CONFIG: Config = {
   ALLOWED_TAGS: [
     'p',
@@ -141,6 +130,8 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'h5',
     'h6',
     'blockquote',
+    'pre',
+    'code',
   ],
   ALLOWED_ATTR: ['href'],
   ALLOWED_URI_REGEXP:
@@ -148,26 +139,63 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
 };
 
+// We use turndown to unmangle markdown that's been mangled by contenteditable
+
+// Don't escape existing markdown
+TurndownService.prototype.escape = function (text) {
+  return text;
+};
+
+const turndownService = new TurndownService();
+
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
+
 /**
- * Sanitizes HTML content using DOMPurify with rich text configuration
+ * Sanitizes HTML and markdown content using DOMPurify with rich text configuration
  * and returns a Lit directive that safely renders the HTML in templates
  *
- * This function removes potentially dangerous HTML while preserving
- * common rich text formatting. It returns a Lit unsafeHTML directive
- * that can be used directly in Lit templates to render the sanitized HTML.
- *
- * @param htmlContent - The HTML content to sanitize
+ * @param content - The content to process (HTML, markdown, or mangled contenteditable HTML)
  * @returns Lit directive that renders sanitized HTML safely
  *
  * @example
  * ```typescript
- * const userInput = '<p>Hello <script>alert("xss")</script> <strong>world</strong>!</p>';
- * const safe = formatText(userInput);
- * // Use in Lit template: html`<div>${safe}</div>`
- * // Result: <div><p>Hello  <strong>world</strong>!</p></div>
+ * // Plain text with entities (common from contenteditable)
+ * const textInput = '# Header\n\n&gt; Quote &amp; text';
+ * const cleaned = formattedText(textInput);
+ * // Result: <h1>Header</h1><blockquote><p>Quote & text</p></blockquote>
+ *
+ * // Actual HTML elements
+ * const htmlInput = '<h1>Header</h1><p>Text</p>';
+ * const converted = formattedText(htmlInput);
+ * // Result: <h1>Header</h1><p>Text</p>
  * ```
  */
-export function formattedText(htmlContent: string): DirectiveResult {
+export function formattedText(content: string): DirectiveResult {
+  // Use placeholder approach to preserve spaces through turndown processing
+  const SPACE_PLACEHOLDER = '___SPACE___';
+
+  let spacePreservedContent = content;
+
+  // Replace &nbsp; entities with placeholders that turndown won't strip
+  spacePreservedContent = spacePreservedContent
+    .replace(/&nbsp;/g, SPACE_PLACEHOLDER)
+    .replace(/\u00A0/g, SPACE_PLACEHOLDER)
+    .replace(/&#160;/g, SPACE_PLACEHOLDER)
+    .replace(/&#xa0;/gi, SPACE_PLACEHOLDER);
+
+  // Process through turndown
+  const unmangledMarkdown = turndownService.turndown(spacePreservedContent);
+
+  // Convert placeholders back to spaces
+  const markdownWithSpaces = unmangledMarkdown.replace(
+    new RegExp(SPACE_PLACEHOLDER, 'g'),
+    ' '
+  );
+
+  const htmlContent = marked(markdownWithSpaces) as string;
   const sanitized = DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);
   return unsafeHTML(sanitized);
 }
