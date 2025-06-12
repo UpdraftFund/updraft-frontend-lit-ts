@@ -1,5 +1,5 @@
 import { Client, cacheExchange, fetchExchange } from '@urql/core';
-import { getSubgraphUrl } from './environment';
+import { getSubgraphUrl } from '@state/common/environment';
 
 //TODO: each chain subgraph will need its own urql client
 

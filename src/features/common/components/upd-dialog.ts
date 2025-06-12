@@ -18,10 +18,13 @@ import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import { SlDialog, SlTooltip } from '@shoelace-style/shoelace';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
-import { refreshUpdraftSettings, updraftSettings } from '@state/common';
+import {
+  refreshUpdraftSettings,
+  updraftSettings,
+  getUniswapLpUrl,
+} from '@state/common';
 
 import { shortNum } from '@utils/format-utils';
-import { getUniswapLpUrl } from '@utils/environment';
 
 @customElement('upd-dialog')
 export class UpdDialog extends SignalWatcher(LitElement) {

@@ -5,7 +5,7 @@ import {
   arbitrum,
 } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { isProduction } from './environment';
+import { isProduction } from '@state/common/environment';
 
 const projectId = 'a259923fc99520ecad30021b33486037';
 
