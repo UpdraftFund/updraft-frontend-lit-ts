@@ -3,6 +3,8 @@ import { DirectiveResult } from 'lit/directive.js';
 
 import { formatUnits } from 'viem';
 import DOMPurify, { Config } from 'dompurify';
+import { marked } from 'marked';
+import TurndownService from 'turndown';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -109,17 +111,15 @@ export const shortNum = function (n: string | number, p = 3, e = p - 3) {
 };
 
 /**
- * Default DOMPurify configuration for rich text content
- * Allows common formatting tags while maintaining security
+ * DOMPurify configuration for rich text content with GitHub Flavored Markdown support
  *
- * Based on common rich text formatting needs:
- * - Text formatting: strong, b, em, i, u
- * - Structure: p, br, h1-h6, blockquote
- * - Lists: ul, ol, li
- * - Links: a (with href attribute)
- *
- * KEEP_CONTENT: true preserves text content when removing disallowed tags
- * Note: Script tags and their content are completely removed for security
+ * Security considerations:
+ * - Task list checkboxes are safe because they're disabled by default
+ * - Table attributes (scope, colspan, rowspan) are safe for accessibility and layout
+ * - class attribute is limited to what marked.js generates (e.g., language-* for code blocks)
+ * - No style attribute to prevent CSS injection
+ * - No onclick or other event handlers
+ * - href is restricted by ALLOWED_URI_REGEXP
  */
 export const RICH_TEXT_SANITIZE_CONFIG: Config = {
   ALLOWED_TAGS: [
@@ -140,34 +140,95 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'h4',
     'h5',
     'h6',
+    'hr',
     'blockquote',
+    'pre',
+    'code',
+    // GitHub Flavored Markdown support
+    'del', // Strikethrough (~~text~~)
+    'input', // Task list checkboxes
+    'table', // Tables
+    'thead', // Table header group
+    'tbody', // Table body group
+    'tr', // Table rows
+    'th', // Table header cells
+    'td', // Table data cells
   ],
-  ALLOWED_ATTR: ['href'],
+  ALLOWED_ATTR: [
+    'href',
+    // Task list checkbox attributes
+    'type', // For input type="checkbox"
+    'checked', // For checked checkboxes
+    'disabled', // Task list checkboxes are disabled by default
+    // Table attributes for accessibility and styling
+    'scope', // For th elements (row/col/rowgroup/colgroup)
+    'colspan', // For spanning multiple columns
+    'rowspan', // For spanning multiple rows
+    // General attributes that are safe and useful
+    'class', // For CSS styling (marked.js adds language-* classes to code blocks)
+    'id', // For anchoring and accessibility
+  ],
   ALLOWED_URI_REGEXP:
     /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
 };
 
+// We use turndown to unmangle markdown that's been mangled by contenteditable
+
+// Don't escape existing markdown
+TurndownService.prototype.escape = function (text) {
+  return text;
+};
+
+const turndownService = new TurndownService();
+
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
+
 /**
- * Sanitizes HTML content using DOMPurify with rich text configuration
+ * Sanitizes HTML and markdown content using DOMPurify with rich text configuration
  * and returns a Lit directive that safely renders the HTML in templates
  *
- * This function removes potentially dangerous HTML while preserving
- * common rich text formatting. It returns a Lit unsafeHTML directive
- * that can be used directly in Lit templates to render the sanitized HTML.
- *
- * @param htmlContent - The HTML content to sanitize
+ * @param content - The content to process (HTML, markdown, or mangled contenteditable HTML)
  * @returns Lit directive that renders sanitized HTML safely
  *
  * @example
  * ```typescript
- * const userInput = '<p>Hello <script>alert("xss")</script> <strong>world</strong>!</p>';
- * const safe = formatText(userInput);
- * // Use in Lit template: html`<div>${safe}</div>`
- * // Result: <div><p>Hello  <strong>world</strong>!</p></div>
+ * // Plain text with entities (common from contenteditable)
+ * const textInput = '# Header\n\n&gt; Quote &amp; text';
+ * const cleaned = formattedText(textInput);
+ * // Result: <h1>Header</h1><blockquote><p>Quote & text</p></blockquote>
+ *
+ * // Actual HTML elements
+ * const htmlInput = '<h1>Header</h1><p>Text</p>';
+ * const converted = formattedText(htmlInput);
+ * // Result: <h1>Header</h1><p>Text</p>
  * ```
  */
-export function formattedText(htmlContent: string): DirectiveResult {
+export function formattedText(content: string): DirectiveResult {
+  // Use placeholder approach to preserve spaces through turndown processing
+  const SPACE_PLACEHOLDER = '___SPACE___';
+
+  let spacePreservedContent = content;
+
+  // Replace &nbsp; entities with placeholders that turndown won't strip
+  spacePreservedContent = spacePreservedContent.replace(
+    /&nbsp;/g,
+    SPACE_PLACEHOLDER
+  );
+
+  // Process through turndown
+  const unmangledMarkdown = turndownService.turndown(spacePreservedContent);
+
+  // Convert placeholders back to spaces
+  const markdownWithSpaces = unmangledMarkdown.replace(
+    new RegExp(SPACE_PLACEHOLDER, 'g'),
+    ' '
+  );
+
+  const htmlContent = marked(markdownWithSpaces) as string;
   const sanitized = DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);
   return unsafeHTML(sanitized);
 }
