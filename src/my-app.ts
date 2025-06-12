@@ -12,6 +12,7 @@ import '@styles/reset.css';
 
 import { nav } from '@state/navigation';
 import { initializeUserState } from '@state/user';
+import { initVersionCheck } from '@utils/common/version-check';
 
 if (!('URLPattern' in globalThis)) {
   await import('urlpattern-polyfill');
@@ -167,6 +168,8 @@ export class MyApp extends LitElement {
     this.setupTheme();
     // Initialize user state including reconnect attempt
     initializeUserState();
+    // Initialize version check service
+    initVersionCheck();
   }
 
   private setupTheme() {
