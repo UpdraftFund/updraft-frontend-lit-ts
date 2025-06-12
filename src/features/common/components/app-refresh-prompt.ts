@@ -104,12 +104,10 @@ export class AppRefreshPrompt extends LitElement {
   }
 
   private showPrompt() {
-    this.visible = true;
     this.classList.add('visible');
   }
 
   private hidePrompt() {
-    this.visible = false;
     this.classList.remove('visible');
   }
 
@@ -145,4 +143,3 @@ declare global {
     'app-refresh-prompt': AppRefreshPrompt;
   }
 }
-
