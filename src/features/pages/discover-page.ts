@@ -157,14 +157,17 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   private getVariablesForQuery(queryType: DiscoverQueryType) {
     switch (queryType) {
       case 'hot-ideas':
-        return { first: 10, detailed: true };
+        return { first: 20, detailed: true };
       case 'new-ideas':
-        return {};
+        return { first: 10 };
       case 'solutions':
-        return { now: dayjs().unix() };
+        return { first: 10, now: dayjs().unix() };
       case 'followed':
         const fundersArray = Array.from(followedUsers.get());
-        return { funders: fundersArray.length > 0 ? fundersArray : ['0x01'] };
+        return {
+          first: 10,
+          funders: fundersArray.length > 0 ? fundersArray : ['0x01'],
+        };
       case 'search':
         return {
           text: this.search ?? '', // Ensure text is always string, default to '' if null
@@ -189,7 +192,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
       case 'hot-ideas':
         // Get ideas ordered by shares, then sub-sort by newest first and take the first 4
         const ideasByShares = (data as IdeasBySharesQuery).ideas as Idea[];
-        return sortIdeasByNewest(ideasByShares, 4);
+        return sortIdeasByNewest(ideasByShares, 10);
       case 'new-ideas':
         return (data as IdeasByStartTimeQuery).ideas as Idea[];
       case 'solutions':
