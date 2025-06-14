@@ -40,6 +40,7 @@ export const changeCardStyles = css`
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
+    word-break: break-all; /* Force breaking of long strings like repeated characters */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
