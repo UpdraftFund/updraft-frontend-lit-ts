@@ -15,6 +15,7 @@ export class VerticalFade extends LitElement {
       position: relative; /* Needed for absolute positioning of the overlay */
       overflow: hidden;
       padding-bottom: var(--fade-height, 0rem);
+      width: 100%; /* Ensure the component takes full width of its container */
     }
 
     .overlay {
@@ -24,6 +25,10 @@ export class VerticalFade extends LitElement {
       width: 100%;
       height: var(--fade-height, 0rem);
       background: linear-gradient(transparent, var(--fade-color, transparent));
+    }
+
+    ::slotted(*) {
+      word-break: break-all; /* Force breaking of long strings like repeated characters */
     }
   `;
 
