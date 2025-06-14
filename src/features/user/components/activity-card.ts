@@ -77,7 +77,7 @@ export class ActivityCard extends LitElement {
       margin-bottom: 0.75rem;
       overflow: hidden;
       text-overflow: ellipsis;
-      word-break: break-all; /* Force breaking of long strings like repeated characters */
+      word-break: break-word;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
