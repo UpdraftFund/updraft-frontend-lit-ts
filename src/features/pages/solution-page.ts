@@ -271,7 +271,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       .solution-repository a {
         color: var(--link);
         text-decoration: none;
-        word-break: break-all;
+        word-break: break-word;
       }
       .solution-repository a:hover {
         text-decoration: underline;

@@ -28,7 +28,7 @@ export class VerticalFade extends LitElement {
     }
 
     ::slotted(*) {
-      word-break: break-all; /* Force breaking of long strings like repeated characters */
+      word-break: break-word;
     }
   `;
 
