@@ -20,6 +20,7 @@ export const largeCardStyles = css`
     line-height: 1.4;
     overflow: hidden;
     text-overflow: ellipsis;
+    word-break: break-all; /* Force breaking of long strings like repeated characters */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
