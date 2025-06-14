@@ -1,11 +1,18 @@
 import { css, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { html, SignalWatcher } from '@lit-labs/signals';
 
 import compass from '@icons/navigation/compass.svg';
 import house from '@icons/navigation/house.svg';
 import discord from '@icons/discord.svg';
 import guide from '@icons/navigation/guide-link.svg';
+import kite from '@icons/navigation/kite.svg';
+
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
+import '@shoelace-style/shoelace/dist/components/icon-button/icon-button.js';
+
+import '@components/common/upd-dialog';
+import { UpdDialog } from '@components/common/upd-dialog';
 
 import { nav } from '@state/navigation';
 import { leftSidebarCollapsed } from '@state/layout';
@@ -73,6 +80,14 @@ export class LeftNav extends SignalWatcher(LitElement) {
     }
   `;
 
+  @query('upd-dialog', true) updDialog!: UpdDialog;
+
+  private handleGetUpdClick = async (e: Event) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await this.updDialog.show();
+  };
+
   render() {
     return html`
       <nav class=${leftSidebarCollapsed.get() ? 'collapsed' : 'expanded'}>
@@ -104,8 +119,15 @@ export class LeftNav extends SignalWatcher(LitElement) {
               <span class="location">Chat</span>
             </a>
           </li>
+          <li>
+            <a href="#" @click=${this.handleGetUpdClick}>
+              <sl-icon src=${kite}></sl-icon>
+              <span class="location">Get UPD</span>
+            </a>
+          </li>
         </ul>
       </nav>
+      <upd-dialog></upd-dialog>
     `;
   }
 }
