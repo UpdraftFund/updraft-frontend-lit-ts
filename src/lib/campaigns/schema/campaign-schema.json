@@ -9,8 +9,17 @@
       "type": "string"
     },
     "image": {
-      "description": "data URL of embedded image",
-      "type": "string"
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "data URL of embedded image"
+        },
+        "alt": {
+          "type": "string",
+          "description": "alt text for the image"
+        }
+      }
     },
     "link": {
       "description": "link that provides more info for participants",
@@ -40,6 +49,9 @@
       },
       "minItems": 1,
       "maxItems": 5
+    },
+    "active": {
+      "type": "boolean"
     }
   },
   "required": ["name", "tags"]

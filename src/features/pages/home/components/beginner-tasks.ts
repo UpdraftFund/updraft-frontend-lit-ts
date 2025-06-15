@@ -382,8 +382,8 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
         </sl-card>
         <!--
         <sl-card class="campaign">
-          <img src=${sad} alt="SongDust logo" />
-          <h3>SongDust Week 1</h3>
+          <img src=${sad} alt="SongADay logo" />
+          <h3>SongADay Week 1</h3>
           <p>
             Use the
             <a href="https://gallery.songaday.world/" target="_blank"
@@ -395,14 +395,14 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
           <div class="clear-float"></div>
           <ul class="tags">
             <h4>Tags:</h4>
-            <li>songdust</li>
-            <li>family</li>
-            <li>insanity</li>
+            <li>songaday</li>
+            <li>crypto</li>
+            <li>wearing-shorts</li>
           </ul>
           <sl-button
             slot="footer"
             variant="primary"
-            href="/discover?search=[songdust] [family] [insanity]"
+            href="/discover?search=[songaday] [crypto] [wearing-shorts]"
             >Ideas with these tags
           </sl-button>
         </sl-card>
