@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image": {
+      "description": "data URL of embedded image",
+      "type": "string"
+    },
+    "link": {
+      "description": "link that provides more info for participants",
+      "type": "string"
+    },
+    "funding": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "symbol of a token that will be given away as part of the campaign"
+          },
+          "amount": {
+            "type": "number",
+            "description": "amount of the token that will be given away as part of the campaign"
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 30
+      },
+      "minItems": 1,
+      "maxItems": 5
+    }
+  },
+  "required": ["name", "tags"]
+}
