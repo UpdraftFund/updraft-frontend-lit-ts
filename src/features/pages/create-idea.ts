@@ -1,4 +1,4 @@
-import { customElement, query } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
@@ -62,7 +62,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('sl-select[name="campaign"]', true) campaignSelect!: SlSelect;
   @query('sl-input[name="tags"]', true) tagsInput!: SlInput;
 
-  private campaigns: CampaignTags[] = [];
+  @state() private campaigns: CampaignTags[] = [];
 
   static styles = [
     dialogStyles,
@@ -209,6 +209,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
       const response = await fetch('/api/campaigns/tags');
       if (response.ok) {
         this.campaigns = await response.json();
+        console.log('Campaigns:', this.campaigns);
       }
     } catch (error) {
       console.error('Error fetching campaigns:', error);
@@ -222,9 +223,14 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
       (c) => c.id === selectedCampaignId
     );
 
-    if (selectedCampaign && this.tagsInput) {
-      // Set the tags input to the campaign's tags
-      this.tagsInput.value = selectedCampaign.tags.join(' ');
+    if (this.tagsInput) {
+      if (selectedCampaign) {
+        // Set the tags input to the campaign's tags
+        this.tagsInput.value = selectedCampaign.tags.join(' ');
+      } else {
+        // Clear the tags input when no campaign is selected
+        this.tagsInput.value = '';
+      }
       // Trigger input event to validate
       this.tagsInput.dispatchEvent(new Event('sl-input', { bubbles: true }));
     }
@@ -235,6 +241,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   }
 
   render() {
+    console.log('Render campaigns:', this.campaigns);
     return html`
       <form name="create-idea" @submit=${this.handleFormSubmit}>
         <sl-input name="name" required autocomplete="off">
@@ -257,7 +264,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
               slot="label"
               label="Tags"
               hint="Enter up to five tags separated by spaces to help people find your idea.
-                  Use hyphens for multi-word-tags."
+                  Use hyphens for multi-word-tags. Select a campaign to add its tags."
             >
             </label-with-hint>
           </sl-input>
