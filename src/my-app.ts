@@ -160,6 +160,16 @@ export class MyApp extends LitElement {
           .position=${position || '0'}
         ></split-transfer>`,
     },
+    {
+      path: '/submit-campaign',
+      enter: async () => {
+        await import('@pages/submit-campaign');
+        nav.set('submit-campaign');
+        this.scrollToTop();
+        return true;
+      },
+      render: () => html` <submit-campaign></submit-campaign>`,
+    },
   ]);
 
   connectedCallback(): void {
