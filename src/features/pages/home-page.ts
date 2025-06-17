@@ -7,7 +7,7 @@ import '@components/idea/hot-ideas';
 import '@components/tags/popular-tags';
 import '@components/tags/watched-tags';
 import '@components/home/tracked-changes';
-import '@components/home/beginner-tasks';
+import '@components/home/tasks-list.ts';
 
 import layout from '@state/layout';
 
@@ -44,7 +44,7 @@ export class HomePage extends LitElement {
   render() {
     return html`
       <tracked-changes></tracked-changes>
-      <beginner-tasks></beginner-tasks>
+      <tasks-list></tasks-list>
     `;
   }
 }

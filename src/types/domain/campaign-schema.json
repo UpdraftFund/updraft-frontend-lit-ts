@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Campaign",
   "type": "object",
   "properties": {
     "name": {
@@ -19,11 +19,22 @@
           "type": "string",
           "description": "alt text for the image"
         }
-      }
+      },
+      "required": ["url"]
     },
     "link": {
-      "description": "link that provides more info for participants",
-      "type": "string"
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to link to"
+        },
+        "text": {
+          "type": "string",
+          "description": "text to display for the link"
+        }
+      },
+      "required": ["url"]
     },
     "funding": {
       "type": "array",
@@ -38,7 +49,8 @@
             "type": "number",
             "description": "amount of the token that will be given away as part of the campaign"
           }
-        }
+        },
+        "required": ["token", "amount"]
       }
     },
     "tags": {
@@ -49,9 +61,6 @@
       },
       "minItems": 1,
       "maxItems": 5
-    },
-    "active": {
-      "type": "boolean"
     }
   },
   "required": ["name", "tags"]
