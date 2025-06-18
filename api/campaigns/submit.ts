@@ -47,7 +47,8 @@ export default async function handler(
     }
 
     res.status(201).json({
-      message: 'Campaign submitted successfully and is pending approval',
+      message:
+        "Campaign submitted. Contact us in Chat and we'll notify you when it's approved.",
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
