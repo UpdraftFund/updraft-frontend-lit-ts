@@ -20,16 +20,7 @@ import {
   User,
 } from '@gql';
 
-/**
- * Interface for a contributor (supporter or funder)
- */
-export interface Contributor {
-  id: string;
-  profile?: string;
-  name?: string;
-  avatar?: string;
-  contribution: bigint;
-}
+import { Contributor } from '@/types';
 
 /**
  * Base component for displaying top contributors (supporters or funders)

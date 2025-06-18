@@ -1,0 +1,67 @@
+{
+  "title": "Campaign",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "data URL of embedded image"
+        },
+        "alt": {
+          "type": "string",
+          "description": "alt text for the image"
+        }
+      },
+      "required": ["url"]
+    },
+    "link": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "URL to link to"
+        },
+        "text": {
+          "type": "string",
+          "description": "text to display for the link"
+        }
+      },
+      "required": ["url"]
+    },
+    "funding": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "symbol of a token that will be given away as part of the campaign"
+          },
+          "amount": {
+            "type": "number",
+            "description": "amount of the token that will be given away as part of the campaign"
+          }
+        },
+        "required": ["token", "amount"]
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 30
+      },
+      "minItems": 1,
+      "maxItems": 5
+    }
+  },
+  "required": ["name", "tags"]
+}

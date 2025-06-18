@@ -1,4 +1,4 @@
-import { customElement, query } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import { css } from 'lit';
 import { html, SignalWatcher } from '@lit-labs/signals';
 import { parseUnits, toHex, trim } from 'viem';
@@ -8,7 +8,9 @@ import '@shoelace-style/shoelace/dist/components/input/input.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import type { SlInput, SlDialog } from '@shoelace-style/shoelace';
+import '@shoelace-style/shoelace/dist/components/select/select.js';
+import '@shoelace-style/shoelace/dist/components/option/option.js';
+import type { SlInput, SlDialog, SlSelect } from '@shoelace-style/shoelace';
 
 // Components
 import '@layout/page-heading';
@@ -41,6 +43,12 @@ import { updraft } from '@contracts/updraft';
 // Schemas
 import ideaSchema from '@schemas/idea-schema.json';
 
+// Types
+import type { CampaignTags } from '@shared/types/campaigns';
+
+// Utils
+import { validateTagsInput } from '@utils/tags/tag-validation';
+
 @customElement('create-idea')
 export class CreateIdea extends SignalWatcher(SaveableForm) {
   @query('upd-dialog', true) updDialog!: UpdDialog;
@@ -51,10 +59,18 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   approveTransaction!: TransactionWatcher;
   @query('sl-dialog', true) approveDialog!: SlDialog;
   @query('token-input', true) tokenInput!: ITokenInput;
+  @query('sl-select[name="campaign"]', true) campaignSelect!: SlSelect;
+  @query('sl-input[name="tags"]', true) tagsInput!: SlInput;
+
+  @state() private campaigns: CampaignTags[] = [];
 
   static styles = [
     dialogStyles,
     css`
+      :host {
+        container-type: inline-size;
+      }
+
       form {
         display: flex;
         flex-direction: column;
@@ -92,14 +108,29 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
         width: fit-content;
       }
 
-      /* Responsive behavior for smaller screens */
-      @media (max-width: 768px) {
-        .container {
-          flex-direction: column;
-        }
+      .tags-row {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+      }
 
+      .tags-row > sl-input {
+        flex: 1 1 65%;
+      }
+
+      .tags-row > sl-select {
+        flex: 1 1 35%;
+      }
+
+      /* Responsive behavior for smaller screens */
+      @container (width <= 768px) {
         form {
           margin: 1rem;
+        }
+
+        .tags-row {
+          flex-direction: column;
+          align-items: stretch;
         }
       }
     `,
@@ -107,19 +138,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
 
   private handleTagsInput(e: Event) {
     const input = e.target as SlInput;
-    // Convert multiple consecutive spaces to a single space
-    input.value = input.value.replace(/\s{2,}/g, ' ').trimStart();
-    const spacePositions =
-      [...input.value.matchAll(/\s/g)].map((match) => match.index) || [];
-
-    if (spacePositions.length > 4) {
-      const fifthSpaceIndex = spacePositions[4];
-      // Trim input to the fifth space and allow a trailing space
-      input.value = input.value.slice(0, fifthSpaceIndex + 1);
-      input.style.setProperty('--sl-input-focus-ring-color', 'red');
-    } else {
-      input.style.removeProperty('--sl-input-focus-ring-color');
-    }
+    validateTagsInput(input);
   }
 
   private nextButtonClick(e: MouseEvent) {
@@ -176,6 +195,41 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
+
+    // Fetch campaigns for the dropdown
+    this.fetchCampaigns();
+  }
+
+  private async fetchCampaigns() {
+    try {
+      const response = await fetch('/api/campaigns/tags');
+      if (response.ok) {
+        this.campaigns = await response.json();
+        console.log('Campaigns:', this.campaigns);
+      }
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+    }
+  }
+
+  private handleCampaignSelection(e: Event) {
+    const select = e.target as SlSelect;
+    const selectedCampaignId = parseInt(select.value as string);
+    const selectedCampaign = this.campaigns.find(
+      (c) => c.id === selectedCampaignId
+    );
+
+    if (this.tagsInput) {
+      if (selectedCampaign) {
+        // Set the tags input to the campaign's tags
+        this.tagsInput.value = selectedCampaign.tags.join(' ');
+      } else {
+        // Clear the tags input when no campaign is selected
+        this.tagsInput.value = '';
+      }
+      // Trigger input event to validate
+      this.tagsInput.dispatchEvent(new Event('sl-input', { bubbles: true }));
+    }
   }
 
   updated(changedProperties: Map<string, unknown>) {
@@ -183,6 +237,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   }
 
   render() {
+    console.log('Render campaigns:', this.campaigns);
     return html`
       <form name="create-idea" @submit=${this.handleFormSubmit}>
         <sl-input name="name" required autocomplete="off">
@@ -199,15 +254,30 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
             hint="How do you want to make your community, your project or the world better?"
           ></label-with-hint>
         </formatted-text-input>
-        <sl-input name="tags" @sl-input=${this.handleTagsInput}>
-          <label-with-hint
-            slot="label"
-            label="Tags"
-            hint="Enter up to five tags separated by spaces to help people find your idea.
-                Use hyphens for multi-word-tags."
+        <div class="tags-row">
+          <sl-input name="tags" @sl-input=${this.handleTagsInput}>
+            <label-with-hint
+              slot="label"
+              label="Tags"
+              hint="Enter up to five tags separated by spaces to help people find your idea.
+                  Use hyphens for multi-word-tags. Select a campaign to add its tags."
+            >
+            </label-with-hint>
+          </sl-input>
+          <sl-select
+            name="campaign"
+            placeholder="Select campaign"
+            clearable
+            @sl-change=${this.handleCampaignSelection}
           >
-          </label-with-hint>
-        </sl-input>
+            <label slot="label">Campaign</label>
+            ${this.campaigns.map(
+              (campaign) => html`
+                <sl-option value=${campaign.id}>${campaign.name}</sl-option>
+              `
+            )}
+          </sl-select>
+        </div>
         <div class="deposit-container">
           <label-with-hint
             label="Deposit*"

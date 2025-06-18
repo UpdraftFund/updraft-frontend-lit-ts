@@ -57,10 +57,13 @@
       "@icons/user/*": ["src/features/user/assets/icons/*"],
       "@images/home/*": ["src/features/pages/home/assets/images/*"],
       "@utils/common/*": ["src/features/common/utils/*"],
-      "@utils/create-solution/*": ["src/features/pages/create-solution/utils/*"],
+      "@utils/create-solution/*": [
+        "src/features/pages/create-solution/utils/*"
+      ],
       "@utils/home/*": ["src/features/pages/home/utils/*"],
       "@utils/idea/*": ["src/features/idea/utils/*"],
       "@utils/solution/*": ["src/features/solution/utils/*"],
+      "@utils/tags/*": ["src/features/tags/utils/*"],
       "@utils/user/*": ["src/features/user/utils/*"],
       "@icons/*": ["src/features/common/assets/icons/*"],
       "@images/*": ["src/features/common/assets/images/*"],
@@ -70,8 +73,14 @@
       "@utils/*": ["src/features/common/utils/*"],
       "@contracts/*": ["src/lib/contracts/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
-      "@gql": [".graphclient"]
-    }
+      "@gql": [".graphclient"],
+      "@shared/*": ["shared/*"]
+    },
+    "allowJs": true,
+    "incremental": true,
+    "esModuleInterop": true,
+    "jsx": "preserve"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

@@ -53,7 +53,9 @@ fund ideas and solutions.
    ```bash
    yarn dev
    ```
-   This will deploy the test site to your browser. Any changes you make will be hot-reloaded and immediately visible.
+   This will start both the Vite development server (frontend on port 5173) and the Next.js API server (API routes on
+   port 3001). The Vite server proxies API requests to the Next.js server automatically. Any changes you make will be
+   hot-reloaded and immediately visible.
 
 ## Environment Variables
 
@@ -73,11 +75,30 @@ This project uses environment variables for API keys and other sensitive informa
     - Leave empty for local development (uses Arbitrum Sepolia)
     - Set to 'preview' for preview deployments (uses Arbitrum Sepolia)
     - Set to 'production' for production deployments (uses Arbitrum One)
+- `SUPABASE_PROJECT_ID`: Your Supabase project ID (from dashboard)
+- `SUPABASE_ANON_KEY`: Your Supabase anonymous key
 
 Note: All environment variables used in the frontend must be prefixed with `VITE_` to be accessible in the client-side
 code.
 
 For more details on environment configuration, see [Environment Configuration](src/features/common/utils/README.md).
+
+## Development Architecture
+
+This project uses a hybrid architecture for development:
+
+- **Frontend**: Vite development server (port 5173) serving the Lit-based frontend
+- **API**: Custom Node.js development server (port 3001) serving API routes from `api/`
+- **Proxy**: Vite proxies `/api/*` requests to the Node.js API server automatically
+- **Database**: Supabase for campaign data and other backend services (same database used in production)
+
+The development API server supports:
+
+- GET requests for data fetching (`/api/campaigns/campaigns`, `/api/campaigns/tags`)
+- POST requests with JSON bodies for data submission (`/api/campaigns/submit`)
+- Social media preview generation (`/api/social-meta`)
+
+The `yarn dev` command starts both servers concurrently using the `concurrently` package.
 
 ## Development Workflow
 

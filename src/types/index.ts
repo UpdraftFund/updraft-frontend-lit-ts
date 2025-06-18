@@ -1,3 +1,4 @@
+// Feature-specific types (GraphQL re-exports and feature-specific interfaces)
 export * from '@/features/common/types';
 export * from '@/features/idea/types';
 export * from '@/features/navigation/types';
