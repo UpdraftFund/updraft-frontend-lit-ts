@@ -1,7 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createSupabaseServerClient } from '../utils/supabase';
 import Ajv from 'ajv';
-import campaignSchema from '@/types/domain/campaign-schema.json';
+
+// Shared utilities that work in both browser and Node.js
+import { createSupabaseServerClient } from '../../shared/utils/supabase-utils';
+
+// Schema
+import campaignSchema from '../../shared/schemas/campaign-schema.json';
 
 export default async function handler(
   req: NextApiRequest,

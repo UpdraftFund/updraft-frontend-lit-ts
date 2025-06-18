@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '@/types';
+import { Database } from '../types/supabase';
 
 export async function createSupabaseServerClient(): Promise<
   SupabaseClient<Database>

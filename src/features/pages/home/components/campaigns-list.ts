@@ -6,7 +6,7 @@ import '@shoelace-style/shoelace/dist/components/card/card';
 import '@shoelace-style/shoelace/dist/components/button/button';
 
 // Types
-import type { CampaignsRow } from '@/types';
+import type { CampaignsRow } from '@shared/types/campaigns';
 
 // Utils
 import { shortNum } from '@utils/format-utils';

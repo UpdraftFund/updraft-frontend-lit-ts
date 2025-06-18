@@ -1,9 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { createSupabaseServerClient } from '../utils/supabase';
-import { sortCampaignsByFunding } from '../utils/campaign-sorting';
+// Shared utilities that work in both browser and Node.js
+import { createSupabaseServerClient } from '../../shared/utils/supabase-utils';
+import { sortCampaignsByFunding } from '../../shared/utils/campaign-utils';
 
-import type { CampaignsRow } from '@/types';
+// Types
+import type { CampaignsRow } from '../../shared/types/campaigns';
 
 export default async function handler(
   req: NextApiRequest,

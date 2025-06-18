@@ -6,6 +6,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import DOMPurify from 'isomorphic-dompurify';
 
+import { escapeForAttribute } from '../shared/utils/format-utils';
+
 // Social media crawler user agents
 const CRAWLER_USER_AGENTS = [
   'facebookexternalhit',
@@ -216,20 +218,6 @@ function stripHtmlTags(html: string): string {
   });
   // Clean up extra whitespace and line breaks
   return text.replace(/\s+/g, ' ').trim();
-}
-
-/**
- * Escapes characters that could break HTML attribute values
- * Handles both user input and content that may already contain HTML entities
- */
-function escapeForAttribute(text: string): string {
-  return (
-    text
-      // First escape any unescaped ampersands (must be done first)
-      .replace(/&(?![a-zA-Z0-9#]+;)/g, '&amp;')
-      // Then escape any unescaped quotes
-      .replace(/"/g, '&quot;')
-  );
 }
 
 function generateIdeaMetaTags(idea: IdeaData, url: string): string {

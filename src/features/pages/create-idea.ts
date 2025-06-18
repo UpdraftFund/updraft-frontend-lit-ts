@@ -44,7 +44,7 @@ import { updraft } from '@contracts/updraft';
 import ideaSchema from '@schemas/idea-schema.json';
 
 // Types
-import type { CampaignTags } from '@/types';
+import type { CampaignTags } from '@shared/types/campaigns';
 
 // Utils
 import { validateTagsInput } from '@utils/tags/tag-validation';

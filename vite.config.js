@@ -89,6 +89,7 @@ export default defineConfig(({ mode }) => ({
       '@contracts': resolve(__dirname, 'src/lib/contracts'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
       '@gql': resolve(__dirname, '.graphclient'),
+      '@shared': resolve(__dirname, 'shared'),
     },
   },
   define: {

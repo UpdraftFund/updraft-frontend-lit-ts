@@ -1,5 +1,5 @@
-import type { Database } from '@/types';
-import type { Campaign } from '@/types';
+import type { Database } from './supabase';
+import type { Campaign } from './campaign';
 
 export type CampaignsRow = Omit<
   Database['public']['Tables']['campaigns']['Row'],

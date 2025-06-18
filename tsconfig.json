@@ -73,7 +73,8 @@
       "@utils/*": ["src/features/common/utils/*"],
       "@contracts/*": ["src/lib/contracts/*"],
       "@schemas/*": ["updraft-schemas/json-schemas/*"],
-      "@gql": [".graphclient"]
+      "@gql": [".graphclient"],
+      "@shared/*": ["shared/*"]
     },
     "allowJs": true,
     "incremental": true,

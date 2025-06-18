@@ -18,8 +18,8 @@ import '@components/common/formatted-text-input';
 import { validateTagsInput } from '@utils/tags/tag-validation';
 
 // Types
-import type { Campaign } from '@/types';
-import campaignSchema from '@/types/domain/campaign-schema.json';
+import type { Campaign } from '@shared/types/campaign';
+import campaignSchema from '@shared/schemas/campaign-schema.json';
 
 // State
 import layout from '@state/layout';
