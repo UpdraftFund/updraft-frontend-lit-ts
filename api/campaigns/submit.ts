@@ -5,7 +5,7 @@ import Ajv from 'ajv';
 import { createSupabaseServerClient } from '../../shared/utils/supabase-utils.js';
 
 // Schema
-import campaignSchema from '../../shared/schemas/campaign-schema.json';
+import campaignSchema from '../../shared/schemas/campaign-schema.json' with { type: 'json' };
 
 export default async function handler(
   req: NextApiRequest,
