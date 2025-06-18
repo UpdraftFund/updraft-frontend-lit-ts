@@ -16,7 +16,7 @@ import { UpdDialog } from '@components/common/upd-dialog';
 import layersIcon from '@icons/navigation/layers.svg';
 import creditCardIcon from '@icons/navigation/credit-card.svg';
 import reconnectIcon from '@icons/common/arrow-clockwise.svg';
-import getUpdIcon from '@icons/navigation/plus-circle.svg';
+import getUpdIcon from '@icons/navigation/kite.svg';
 
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/format-utils';
@@ -167,7 +167,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
               >
                 <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
                 <div>
-                  <p>Deposit funds</p>
+                  <p>Deposit Funds</p>
                   <p class="status">${ethBalance} ${ethSymbol}</p>
                 </div>
               </sl-menu-item>
