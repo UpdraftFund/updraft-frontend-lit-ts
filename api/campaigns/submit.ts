@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createSupabaseServerClient } from '../utils/supabase';
 import Ajv from 'ajv';
-import campaignSchema from '../../src/types/domain/campaign-schema.json';
+import campaignSchema from '@/types/domain/campaign-schema.json';
 
 export default async function handler(
   req: NextApiRequest,
@@ -30,14 +30,9 @@ export default async function handler(
     }
 
     // Insert the campaign into the database
-    const { data: campaign, error } = await supabase
-      .from('campaigns')
-      .insert({
-        data: req.body,
-        status: 'pending',
-      })
-      .select('id')
-      .single();
+    const { error } = await supabase.from('campaigns').insert({
+      data: req.body,
+    });
 
     if (error) {
       console.error('Supabase error:', error);
@@ -49,7 +44,6 @@ export default async function handler(
 
     res.status(201).json({
       message: 'Campaign submitted successfully and is pending approval',
-      id: campaign.id,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
