@@ -162,10 +162,12 @@ export class UserMenu extends SignalWatcher(LitElement) {
                   <p class="status">${currentNetworkName || 'Unknown'}</p>
                 </div>
               </sl-menu-item>
-              <sl-menu-item>
+              <sl-menu-item
+                @click=${() => modal.open({ view: 'OnRampProviders' })}
+              >
                 <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
                 <div>
-                  <p>ETH Balance</p>
+                  <p>Deposit funds</p>
                   <p class="status">${ethBalance} ${ethSymbol}</p>
                 </div>
               </sl-menu-item>
