@@ -27,9 +27,16 @@ import layout from '@state/layout';
 @customElement('submit-campaign')
 export class SubmitCampaign extends LitElement {
   @query('form', true) form!: HTMLFormElement;
+  @query('.alert-container') alertContainer?: HTMLElement;
   @state() private isSubmitting = false;
   @state() private submitMessage = '';
   @state() private submitError = '';
+  @state() private fundingItems: Array<{
+    id: number;
+    token: string;
+    amount: string;
+  }> = [{ id: 0, token: '', amount: '' }];
+  private nextFundingId = 1;
 
   static styles = css`
     :host {
@@ -78,8 +85,27 @@ export class SubmitCampaign extends LitElement {
       flex: 1;
     }
 
+    .funding-item-controls {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.5rem;
+    }
+
+    .remove-funding-btn {
+      min-width: auto;
+      padding: 0.5rem;
+    }
+
+    .add-funding-btn {
+      margin-top: 0.5rem;
+    }
+
     sl-button {
       max-width: fit-content;
+    }
+
+    .alert-container {
+      margin-bottom: 1rem;
     }
 
     sl-alert {
@@ -107,6 +133,12 @@ export class SubmitCampaign extends LitElement {
         flex-direction: column;
         align-items: stretch;
       }
+
+      .funding-item-controls {
+        flex-direction: row;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+      }
     }
   `;
 
@@ -116,10 +148,7 @@ export class SubmitCampaign extends LitElement {
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
     layout.topBarContent.set(html`
-      <page-heading>
-        <h1>Submit Campaign</h1>
-        <p>Submit a new campaign for review and approval</p>
-      </page-heading>
+      <page-heading>Submit a Campaign</page-heading>
     `);
   }
 
@@ -178,16 +207,21 @@ export class SubmitCampaign extends LitElement {
         };
       }
 
-      // Funding (optional)
-      const fundingToken = formData.get('fundingToken') as string;
-      const fundingAmount = formData.get('fundingAmount') as string;
-      if (fundingToken && fundingAmount) {
-        campaignData.funding = [
-          {
-            token: fundingToken,
-            amount: parseFloat(fundingAmount),
-          },
-        ];
+      // Funding (optional) - collect all funding items
+      const fundingItems: Array<{ token: string; amount: number }> = [];
+      this.fundingItems.forEach((item) => {
+        const token = formData.get(`fundingToken_${item.id}`) as string;
+        const amount = formData.get(`fundingAmount_${item.id}`) as string;
+        if (token && amount && parseFloat(amount) > 0) {
+          fundingItems.push({
+            token: token.trim(),
+            amount: parseFloat(amount),
+          });
+        }
+      });
+
+      if (fundingItems.length > 0) {
+        campaignData.funding = fundingItems;
       }
 
       // Validate against schema
@@ -216,16 +250,37 @@ export class SubmitCampaign extends LitElement {
       if (response.ok) {
         this.submitMessage = result.message;
         this.form.reset();
+        // Reset funding items to initial state
+        this.fundingItems = [{ id: 0, token: '', amount: '' }];
+        this.nextFundingId = 1;
+        // Scroll to success message
+        this.scrollToAlerts();
       } else {
         this.submitError =
           result.error || result.message || 'Failed to submit campaign';
+        // Scroll to error message
+        this.scrollToAlerts();
       }
     } catch (error) {
       console.error('Error submitting campaign:', error);
       this.submitError = 'Network error. Please try again.';
+      // Scroll to error message
+      this.scrollToAlerts();
     } finally {
       this.isSubmitting = false;
     }
+  }
+
+  private scrollToAlerts() {
+    // Use requestAnimationFrame to ensure the DOM has updated
+    requestAnimationFrame(() => {
+      if (this.alertContainer) {
+        this.alertContainer.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    });
   }
 
   private handleTagsInput(e: Event) {
@@ -233,24 +288,57 @@ export class SubmitCampaign extends LitElement {
     validateTagsInput(input, 5, 1); // Max 5 tags, min 1 tag (since field is required)
   }
 
+  private addFundingItem() {
+    this.fundingItems = [
+      ...this.fundingItems,
+      { id: this.nextFundingId++, token: '', amount: '' },
+    ];
+  }
+
+  private removeFundingItem(id: number) {
+    if (this.fundingItems.length > 1) {
+      this.fundingItems = this.fundingItems.filter((item) => item.id !== id);
+    }
+  }
+
+  private handleFundingTokenInput(e: Event, id: number) {
+    const input = e.target as HTMLInputElement;
+    const itemIndex = this.fundingItems.findIndex((item) => item.id === id);
+    if (itemIndex !== -1) {
+      this.fundingItems[itemIndex].token = input.value;
+      this.requestUpdate();
+    }
+  }
+
+  private handleFundingAmountInput(e: Event, id: number) {
+    const input = e.target as HTMLInputElement;
+    const itemIndex = this.fundingItems.findIndex((item) => item.id === id);
+    if (itemIndex !== -1) {
+      this.fundingItems[itemIndex].amount = input.value;
+      this.requestUpdate();
+    }
+  }
+
   render() {
     return html`
-      ${this.submitMessage
-        ? html`
-            <sl-alert variant="success" open>
-              <sl-icon slot="icon" name="check2-circle"></sl-icon>
-              ${this.submitMessage}
-            </sl-alert>
-          `
-        : ''}
-      ${this.submitError
-        ? html`
-            <sl-alert variant="danger" open>
-              <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
-              ${this.submitError}
-            </sl-alert>
-          `
-        : ''}
+      <div class="alert-container">
+        ${this.submitMessage
+          ? html`
+              <sl-alert variant="success" open>
+                <sl-icon slot="icon" name="check2-circle"></sl-icon>
+                ${this.submitMessage}
+              </sl-alert>
+            `
+          : ''}
+        ${this.submitError
+          ? html`
+              <sl-alert variant="danger" open>
+                <sl-icon slot="icon" name="exclamation-octagon"></sl-icon>
+                ${this.submitError}
+              </sl-alert>
+            `
+          : ''}
+      </div>
 
       <form @submit=${this.handleFormSubmit}>
         <sl-input name="name" required autocomplete="off">
@@ -284,7 +372,7 @@ export class SubmitCampaign extends LitElement {
           <sl-input name="imageUrl" type="url">
             <label-with-hint
               slot="label"
-              label="Image URL (Optional)"
+              label="Image URL"
               hint="URL to an image that represents your campaign"
             ></label-with-hint>
           </sl-input>
@@ -301,7 +389,7 @@ export class SubmitCampaign extends LitElement {
           <sl-input name="linkUrl" type="url">
             <label-with-hint
               slot="label"
-              label="Link URL (Optional)"
+              label="Link URL"
               hint="Link to more information about your campaign"
             ></label-with-hint>
           </sl-input>
@@ -315,23 +403,69 @@ export class SubmitCampaign extends LitElement {
         </div>
 
         <div class="funding-section">
-          <h3>Funding Commitment (Optional)</h3>
-          <div class="funding-item">
-            <sl-input name="fundingToken" placeholder="UPD">
-              <label-with-hint
-                slot="label"
-                label="Token Symbol"
-                hint="Symbol of the token you're committing"
-              ></label-with-hint>
-            </sl-input>
-            <sl-input name="fundingAmount" type="number" step="any" min="0">
-              <label-with-hint
-                slot="label"
-                label="Amount"
-                hint="Amount of tokens you're committing to the campaign"
-              ></label-with-hint>
-            </sl-input>
-          </div>
+          <h3>Funding Commitment</h3>
+          ${this.fundingItems.map(
+            (item, index) => html`
+              <div class="funding-item">
+                <sl-input
+                  name="fundingToken_${item.id}"
+                  placeholder="UPD"
+                  .value=${item.token}
+                  @sl-input=${(e: Event) =>
+                    this.handleFundingTokenInput(e, item.id)}
+                >
+                  <label-with-hint
+                    slot="label"
+                    label="Token Symbol ${this.fundingItems.length > 1
+                      ? `#${index + 1}`
+                      : ''}"
+                    hint="Symbol of the token you're committing"
+                  ></label-with-hint>
+                </sl-input>
+                <sl-input
+                  name="fundingAmount_${item.id}"
+                  type="number"
+                  step="any"
+                  min="0"
+                  .value=${item.amount}
+                  @sl-input=${(e: Event) =>
+                    this.handleFundingAmountInput(e, item.id)}
+                >
+                  <label-with-hint
+                    slot="label"
+                    label="Amount ${this.fundingItems.length > 1
+                      ? `#${index + 1}`
+                      : ''}"
+                    hint="Number of tokens you're committing to the campaign"
+                  ></label-with-hint>
+                </sl-input>
+                <div class="funding-item-controls">
+                  ${this.fundingItems.length > 1
+                    ? html`
+                        <sl-button
+                          type="button"
+                          variant="default"
+                          size="small"
+                          class="remove-funding-btn"
+                          @click=${() => this.removeFundingItem(item.id)}
+                        >
+                          Remove
+                        </sl-button>
+                      `
+                    : ''}
+                </div>
+              </div>
+            `
+          )}
+          <sl-button
+            type="button"
+            variant="default"
+            size="small"
+            class="add-funding-btn"
+            @click=${this.addFundingItem}
+          >
+            Add Another Token
+          </sl-button>
         </div>
 
         <sl-button
