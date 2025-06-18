@@ -45,3 +45,4 @@ coverage
 # Testing artifacts
 test-results/
 .jest-cache
+/tsconfig.tsbuildinfo

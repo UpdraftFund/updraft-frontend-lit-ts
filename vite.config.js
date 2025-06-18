@@ -3,6 +3,16 @@ import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  server: {
+    proxy: {
+      // Proxy API requests to Next.js dev server
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -68,6 +78,7 @@ export default defineConfig(({ mode }) => ({
       '@utils/home': resolve(__dirname, 'src/features/pages/home/utils'),
       '@utils/idea': resolve(__dirname, 'src/features/idea/utils'),
       '@utils/solution': resolve(__dirname, 'src/features/solution/utils'),
+      '@utils/tags': resolve(__dirname, 'src/features/tags/utils'),
       '@utils/user': resolve(__dirname, 'src/features/user/utils'),
       '@icons': resolve(__dirname, 'src/features/common/assets/icons'),
       '@images': resolve(__dirname, 'src/features/common/assets/images'),
@@ -78,6 +89,7 @@ export default defineConfig(({ mode }) => ({
       '@contracts': resolve(__dirname, 'src/lib/contracts'),
       '@schemas': resolve(__dirname, 'updraft-schemas/json-schemas'),
       '@gql': resolve(__dirname, '.graphclient'),
+      '@shared': resolve(__dirname, 'shared'),
     },
   },
   define: {

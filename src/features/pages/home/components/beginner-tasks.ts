@@ -10,9 +10,6 @@ import getUpd from '@images/home/get-upd.png';
 import supportIdea from '@images/home/support-idea.png';
 import fundSolution from '@images/home/fund-solution.png';
 import createProfile from '@images/home/create-profile.png';
-//import aura from '@images/home/aura-logo.png';
-import sad from '@images/home/song-a-day-logo.png';
-import updraft from '@images/home/updraft-logo.png';
 
 // Shoelace components
 import '@shoelace-style/shoelace/dist/components/card/card';
@@ -31,14 +28,8 @@ import { modal } from '@utils/web3.ts';
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
   static styles = css`
-    h2 {
-      margin: 1.5rem 0 1rem;
-    }
-    section {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 1.25rem;
+    :host {
+      display: contents;
     }
     sl-card {
       --padding: 1.25rem;
@@ -65,168 +56,94 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
     .clear-float {
       clear: both;
     }
-    sl-card.campaign {
-      position: relative;
-      --border-radius: 6px 12px 6px 6px;
-    }
-    sl-card.campaign::part(base) {
-      background: linear-gradient(
-        135deg,
-        var(--sl-color-neutral-0) 0%,
-        var(--sl-color-primary-50) 100%
-      );
-      border: 2px solid var(--border-accent);
-    }
-    sl-card.campaign::before {
-      content: '🚀 Campaign';
-      position: absolute;
-      top: 0px;
-      right: 0px;
-      background: var(--badge);
-      color: var(--badge-text);
-      padding: 0.25rem 0.75rem;
-      border-radius: 0 10px;
-      font-size: 0.65rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      z-index: 1;
-    }
-    sl-card.campaign h3 {
-      color: var(--accent);
-      font-weight: 700;
-    }
-    sl-card.campaign > h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin: 1rem 0 0.5rem 0;
-      color: var(--subtle-text);
-      border-bottom: 2px solid var(--border-accent);
-      padding: 0.25rem;
-      max-width: 50%;
-    }
-    sl-card.campaign .committed-list {
-      margin: 0.5rem 0 1rem 0;
-      padding-left: 1.25rem;
-    }
-    .committed-list li {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--main-foreground);
-      margin-bottom: 0.25rem;
-    }
-    .tags {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.25rem;
-      padding: 0;
-      list-style: none;
-      margin: 0;
-    }
-    .tags h4 {
-      font-size: 0.85rem;
-      margin: 0 0.25rem 0 0;
-      padding: 0.25rem 0 0;
-    }
-    .tags li {
-      background: var(--subtle-background);
-      color: var(--main-foreground);
-      padding: 0.25rem 0.5rem;
-      margin-top: 0.25rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
   `;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
 
   render() {
     return html`
-      <h2>Tasks</h2>
-      <section>
-        ${isComplete('follow-someone')
-          ? html``
-          : html`
-              <sl-card>
-                <img src=${followUser} alt="Follow user illustration" />
-                <h3>Follow Someone</h3>
-                <p>
-                  A great way to learn is by watching another user. You can see
-                  a user's activity on their profile page. Go to
-                  <a href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
-                    >Adam's profile</a
-                  >
-                  and follow him.
-                </p>
-                <div class="clear-float"></div>
-                <sl-button
-                  slot="footer"
-                  variant="primary"
-                  href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
-                  >Adam's profile
-                </sl-button>
-              </sl-card>
-            `}
-        ${isComplete('watch-tag')
-          ? html``
-          : html`
-              <sl-card>
-                <img src=${watchTag} alt="Watch tag illustration" />
-                <h3>Watch a Tag</h3>
-                <p>
-                  Stay up to date on the latest activity from a project, DAO,
-                  investor, builder, or topic.
-                  <a href="/discover?search=[updraft]"
-                    >Search for the updraft tag</a
-                  >
-                  and add it to your Watched Tags.
-                </p>
-                <div class="clear-float"></div>
-                <sl-button
-                  slot="footer"
-                  variant="primary"
-                  href="/discover?search=[updraft]"
-                  >Search for [updraft]
-                </sl-button>
-              </sl-card>
-            `}
-        ${isComplete('connect-wallet')
-          ? html``
-          : html`
-              <sl-card>
-                <img src=${connectWallet} alt="Connect wallet illustration" />
-                <h3>Connect a Wallet</h3>
-                <p>
-                  A wallet identifies you to others, stores your funds, and
-                  allows you to take actions in Updraft. You can install a
-                  wallet from these links.
-                </p>
-                <p>
-                  ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a> ⬩<a
-                    href="https://frame.sh"
-                    target="_blank"
-                    >Frame</a
-                  >
-                  ⬩<a href="https://metamask.io/download" target="_blank"
-                    >Metamask</a
-                  >
-                  ⬩<a href="https://rabby.io/" target="_blank">Rabby</a>
-                </p>
-                <div class="clear-float"></div>
-                <sl-button
-                  slot="footer"
-                  variant="primary"
-                  @click=${() => {
-                    modal.open({ view: 'Connect' });
-                  }}
-                  >Connect Wallet
-                </sl-button>
-              </sl-card>
-            `}
-        ${isComplete('get-upd')
-          ? html``
-          : html`
+      ${isComplete('follow-someone')
+        ? html``
+        : html`
+            <sl-card>
+              <img src=${followUser} alt="Follow user illustration" />
+              <h3>Follow Someone</h3>
+              <p>
+                A great way to learn is by watching another user. You can see a
+                user's activity on their profile page. Go to
+                <a href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+                  >Adam's profile</a
+                >
+                and follow him.
+              </p>
+              <div class="clear-float"></div>
+              <sl-button
+                slot="footer"
+                variant="primary"
+                href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+                >Adam's profile
+              </sl-button>
+            </sl-card>
+          `}
+      ${isComplete('watch-tag')
+        ? html``
+        : html`
+            <sl-card>
+              <img src=${watchTag} alt="Watch tag illustration" />
+              <h3>Watch a Tag</h3>
+              <p>
+                Stay up to date on the latest activity from a project, DAO,
+                investor, builder, or topic.
+                <a href="/discover?search=[updraft]"
+                  >Search for the updraft tag</a
+                >
+                and add it to your Watched Tags.
+              </p>
+              <div class="clear-float"></div>
+              <sl-button
+                slot="footer"
+                variant="primary"
+                href="/discover?search=[updraft]"
+                >Search for [updraft]
+              </sl-button>
+            </sl-card>
+          `}
+      ${isComplete('connect-wallet')
+        ? html``
+        : html`
+            <sl-card>
+              <img src=${connectWallet} alt="Connect wallet illustration" />
+              <h3>Connect a Wallet</h3>
+              <p>
+                A wallet identifies you to others, stores your funds, and allows
+                you to take actions in Updraft. You can install a wallet from
+                these links.
+              </p>
+              <p>
+                ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a> ⬩<a
+                  href="https://frame.sh"
+                  target="_blank"
+                  >Frame</a
+                >
+                ⬩<a href="https://metamask.io/download" target="_blank"
+                  >Metamask</a
+                >
+                ⬩<a href="https://rabby.io/" target="_blank">Rabby</a>
+              </p>
+              <div class="clear-float"></div>
+              <sl-button
+                slot="footer"
+                variant="primary"
+                @click=${() => {
+                  modal.open({ view: 'Connect' });
+                }}
+                >Connect Wallet
+              </sl-button>
+            </sl-card>
+          `}
+      ${isComplete('get-upd')
+        ? html``
+        : html`
                 <sl-card>
                   <img
                     src=${getUpd}
@@ -249,165 +166,64 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   <upd-dialog></upd-dialog>
                 </sl-card>
               `}
-        ${isComplete('support-idea')
-          ? html``
-          : html`
-              <sl-card>
-                <img src=${supportIdea} alt="Support idea illustration" />
-                <h3>Support an Idea</h3>
-                <p>
-                  You can earn UPD by supporting an Idea that turns out to be
-                  popular. The more you deposit, the more you stand to earn.
-                  Support a recent Idea by the Updraft team with UPD.
-                </p>
-                <div class="clear-float"></div>
-                <sl-button
-                  slot="footer"
-                  variant="primary"
-                  href="/idea/0x964c430bf51159470c678495b8757233654b5d89"
-                  >Support an Idea
-                </sl-button>
-              </sl-card>
-            `}
-        ${isComplete('fund-solution')
-          ? html``
-          : html`
-              <sl-card>
-                <img src=${fundSolution} alt="Fund solution illustration" />
-                <h3>Fund a Solution</h3>
-                <p>
-                  Every Idea needs a Solution. A great team and execution can
-                  change the world. Fund a Solution you love and earn a reward
-                  if others feel the same way. Fund a recent Solution by the
-                  Updraft team.
-                </p>
-                <div class="clear-float"></div>
-                <sl-button
-                  slot="footer"
-                  variant="primary"
-                  href="/solution/0x3061dab956c830afd5ef94c98d295589f1a84928"
-                  >Fund a Solution
-                </sl-button>
-              </sl-card>
-            `}
-        ${isComplete('create-profile')
-          ? html``
-          : html`
-              <sl-card>
-                <img src=${createProfile} alt="Create profile illustration" />
-                <h3>Create a Profile</h3>
-                <p>
-                  You're nearing the end of your beginner's journey. Soon others
-                  will follow and learn from you. Create a profile so they can
-                  see what you're up to and follow your lead.
-                </p>
-                <div class="clear-float"></div>
-                <sl-button slot="footer" variant="primary" href="/edit-profile"
-                  >Go to Your Profile
-                </sl-button>
-              </sl-card>
-            `}
-        <!--  <sl-card class="campaign">
-          <img src=${updraft} alt="Aura logo" />
-          <h3>Aura Use Cases</h3>
-          <p>
-            Find realistic use cases for
-            <a href="https://brightid.gitbook.io/aura" target="_blank">Aura</a>.
-          </p>
-          <h4>Committed</h4>
-          <ul class="committed-list">
-            <li>100M UPD for Ideas</li>
-            <li>200M UPD for Solutions</li>
-          </ul>
-          <span class="tags">Tags: [aura] [use-cases]</span>
-          <div class="clear-float"></div>
-          <sl-button
-            slot="footer"
-            variant="primary"
-            href="/discover?search=[aura] [use-cases]"
-            >Ideas with these tags
-          </sl-button>
-        </sl-card> -->
-        <sl-card class="campaign">
-          <img src=${updraft} alt="Updraft logo" />
-          <h3>Updraft Networks</h3>
-          <p>
-            Vote to decide which networks will have UPD liquidity pools and
-            Updraft app support.
-            <a
-              href="https://guide.updraft.fund/updraft/voting/networks"
-              target="_blank"
-              >Read rules.</a
-            >
-          </p>
-          <div class="clear-float"></div>
-          <ul class="tags">
-            <h4>Tags:</h4>
-            <li>updraft</li>
-            <li>vote</li>
-            <li>networks</li>
-          </ul>
-          <sl-button
-            slot="footer"
-            variant="primary"
-            href="/discover?search=[updraft] [vote] [networks]"
-            >Ideas with these tags
-          </sl-button>
-        </sl-card>
-        <sl-card class="campaign">
-          <img src=${updraft} alt="Updraft logo" />
-          <h3>Updraft Stablecoins</h3>
-          <p>
-            Vote to decide which stablecoins will appear on Updraft and in
-            liquidity pools.
-            <a
-              href="https://guide.updraft.fund/updraft/voting/stablecoins"
-              target="_blank"
-              >Read rules.</a
-            >
-          </p>
-          <div class="clear-float"></div>
-          <ul class="tags">
-            <h4>Tags:</h4>
-            <li>updraft</li>
-            <li>vote</li>
-            <li>stablecoins</li>
-          </ul>
-          <sl-button
-            slot="footer"
-            variant="primary"
-            href="/discover?search=[updraft] [vote] [stablecoins]"
-            >Ideas with these tags
-          </sl-button>
-        </sl-card>
-        <!--
-        <sl-card class="campaign">
-          <img src=${sad} alt="SongDust logo" />
-          <h3>SongDust Week 1</h3>
-          <p>
-            Use the
-            <a href="https://gallery.songaday.world/" target="_blank"
-              >Song-A-Day gallery</a
-            >
-            to find fitting songs and post them to Updraft with this week's
-            tags. The song with the most 🔥 wins!
-          </p>
-          <div class="clear-float"></div>
-          <ul class="tags">
-            <h4>Tags:</h4>
-            <li>songdust</li>
-            <li>family</li>
-            <li>insanity</li>
-          </ul>
-          <sl-button
-            slot="footer"
-            variant="primary"
-            href="/discover?search=[songdust] [family] [insanity]"
-            >Ideas with these tags
-          </sl-button>
-        </sl-card>
-        -->
-      </section>
+      ${isComplete('support-idea')
+        ? html``
+        : html`
+            <sl-card>
+              <img src=${supportIdea} alt="Support idea illustration" />
+              <h3>Support an Idea</h3>
+              <p>
+                You can earn UPD by supporting an Idea that turns out to be
+                popular. The more you deposit, the more you stand to earn.
+                Support a recent Idea by the Updraft team with UPD.
+              </p>
+              <div class="clear-float"></div>
+              <sl-button
+                slot="footer"
+                variant="primary"
+                href="/idea/0x964c430bf51159470c678495b8757233654b5d89"
+                >Support an Idea
+              </sl-button>
+            </sl-card>
+          `}
+      ${isComplete('fund-solution')
+        ? html``
+        : html`
+            <sl-card>
+              <img src=${fundSolution} alt="Fund solution illustration" />
+              <h3>Fund a Solution</h3>
+              <p>
+                Every Idea needs a Solution. A great team and execution can
+                change the world. Fund a Solution you love and earn a reward if
+                others feel the same way. Fund a recent Solution by the Updraft
+                team.
+              </p>
+              <div class="clear-float"></div>
+              <sl-button
+                slot="footer"
+                variant="primary"
+                href="/solution/0x3061dab956c830afd5ef94c98d295589f1a84928"
+                >Fund a Solution
+              </sl-button>
+            </sl-card>
+          `}
+      ${isComplete('create-profile')
+        ? html``
+        : html`
+            <sl-card>
+              <img src=${createProfile} alt="Create profile illustration" />
+              <h3>Create a Profile</h3>
+              <p>
+                You're nearing the end of your beginner's journey. Soon others
+                will follow and learn from you. Create a profile so they can see
+                what you're up to and follow your lead.
+              </p>
+              <div class="clear-float"></div>
+              <sl-button slot="footer" variant="primary" href="/edit-profile"
+                >Go to Your Profile
+              </sl-button>
+            </sl-card>
+          `}
     `;
   }
 }
