@@ -12,7 +12,6 @@ import '@shoelace-style/shoelace/dist/components/alert/alert.js';
 // Components
 import '@layout/page-heading';
 import '@components/common/label-with-hint';
-import '@components/common/formatted-text-input';
 
 // Utils
 import { validateTagsInput } from '@utils/tags/tag-validation';
@@ -112,12 +111,6 @@ export class SubmitCampaign extends LitElement {
       margin-bottom: 1rem;
     }
 
-    .tags-hint {
-      font-size: 0.875rem;
-      color: var(--subtle-text);
-      margin-top: 0.25rem;
-    }
-
     /* Responsive behavior for smaller screens */
     @media (max-width: 768px) {
       :host {
@@ -193,7 +186,7 @@ export class SubmitCampaign extends LitElement {
       if (imageUrl) {
         campaignData.image = {
           url: imageUrl,
-          alt: imageAlt || campaignData.name,
+          alt: imageAlt,
         };
       }
 
@@ -203,7 +196,7 @@ export class SubmitCampaign extends LitElement {
       if (linkUrl) {
         campaignData.link = {
           url: linkUrl,
-          text: linkText || 'Learn more',
+          text: linkText,
         };
       }
 
@@ -349,24 +342,21 @@ export class SubmitCampaign extends LitElement {
           ></label-with-hint>
         </sl-input>
 
-        <formatted-text-input name="description" required>
+        <sl-textarea name="description" required>
           <label-with-hint
             slot="label"
             label="Description*"
-            hint="Describe your campaign and what participants should do. You can use markdown formatting."
+            hint="Briefly describe your campaign and what participants should do."
           ></label-with-hint>
-        </formatted-text-input>
+        </sl-textarea>
 
         <sl-input name="tags" required @sl-input=${this.handleTagsInput}>
           <label-with-hint
             slot="label"
             label="Tags*"
-            hint="Enter 1-5 tags separated by spaces. Use hyphens for multi-word-tags."
+            hint="Enter 1-5 tags separated by spaces that uniquely identify your campaign. Use hyphens for multi-word-tags."
           ></label-with-hint>
         </sl-input>
-        <div class="tags-hint">
-          Tags help participants find relevant ideas. Example: crypto web3 defi
-        </div>
 
         <div class="form-row">
           <sl-input name="imageUrl" type="url">
