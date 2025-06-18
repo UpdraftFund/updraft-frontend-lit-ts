@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createSupabaseServerClient } from '../utils/supabase';
-import type { CampaignTags } from '@/types/campaigns';
+import type { CampaignsRow, CampaignTags } from '@/types';
 import { sortCampaignsByFunding } from '../utils/campaign-sorting';
 
 export default async function handler(
@@ -15,7 +15,7 @@ export default async function handler(
   try {
     const supabase = await createSupabaseServerClient();
 
-    const { data: campaigns, error } = await supabase
+    const { data, error } = await supabase
       .from('campaigns')
       .select('id, data')
       .eq('status', 'approved');
@@ -27,12 +27,12 @@ export default async function handler(
         .json({ message: 'Error fetching campaigns', error: error.message });
     }
 
-    if (!campaigns) {
+    if (!data) {
       return res.status(200).json([]);
     }
 
     // Sort campaigns by UPD funding amount (highest first), then by ID (lowest first)
-    const sortedCampaigns = sortCampaignsByFunding(campaigns);
+    const sortedCampaigns = sortCampaignsByFunding(data as CampaignsRow[]);
 
     // Create campaign tags from sorted campaigns
     const campaignTags: CampaignTags[] = sortedCampaigns.map((campaign) => {
