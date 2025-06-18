@@ -155,7 +155,7 @@ export class CampaignsList extends LitElement {
           ${data.link
             ? html`
                 <a href=${data.link.url} target="_blank"
-                  >${data.link.text || data.link.url}</a
+                  >${data.link.text || 'Learn more'}</a
                 >
               `
             : ''}
