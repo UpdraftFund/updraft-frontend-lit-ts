@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import Ajv from 'ajv';
 
 // Shared utilities that work in both browser and Node.js
-import { createSupabaseServerClient } from '../../shared/utils/supabase-utils';
+import { createSupabaseServerClient } from '../../shared/utils/supabase-utils.js';
 
 // Schema
 import campaignSchema from '../../shared/schemas/campaign-schema.json';

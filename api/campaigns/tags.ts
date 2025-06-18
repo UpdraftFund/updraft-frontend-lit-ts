@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 // Shared utilities that work in both browser and Node.js
-import { createSupabaseServerClient } from '../../shared/utils/supabase-utils';
-import { sortCampaignsByFunding } from '../../shared/utils/campaign-utils';
+import { createSupabaseServerClient } from '../../shared/utils/supabase-utils.js';
+import { sortCampaignsByFunding } from '../../shared/utils/campaign-utils.js';
 
 // Types
 import {

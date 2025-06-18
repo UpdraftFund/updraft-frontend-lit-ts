@@ -6,7 +6,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import DOMPurify from 'isomorphic-dompurify';
 
-import { escapeForAttribute } from '../shared/utils/format-utils';
+import { escapeForAttribute } from '../shared/utils/format-utils.js';
 
 // Social media crawler user agents
 const CRAWLER_USER_AGENTS = [
