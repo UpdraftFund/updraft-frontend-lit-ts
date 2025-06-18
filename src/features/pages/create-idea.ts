@@ -67,6 +67,10 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   static styles = [
     dialogStyles,
     css`
+      :host {
+        container-type: inline-size;
+      }
+
       form {
         display: flex;
         flex-direction: column;
@@ -111,19 +115,15 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
       }
 
       .tags-row > sl-input {
-        flex: 1;
+        flex: 1 1 65%;
       }
 
       .tags-row > sl-select {
-        flex: 0 0 200px;
+        flex: 1 1 35%;
       }
 
       /* Responsive behavior for smaller screens */
-      @media (max-width: 768px) {
-        .container {
-          flex-direction: column;
-        }
-
+      @container (width <= 768px) {
         form {
           margin: 1rem;
         }
@@ -131,10 +131,6 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
         .tags-row {
           flex-direction: column;
           align-items: stretch;
-        }
-
-        .tags-row > sl-select {
-          flex: 1;
         }
       }
     `,
