@@ -16,7 +16,7 @@ import { UpdDialog } from '@components/common/upd-dialog';
 import layersIcon from '@icons/navigation/layers.svg';
 import creditCardIcon from '@icons/navigation/credit-card.svg';
 import reconnectIcon from '@icons/common/arrow-clockwise.svg';
-import getUpdIcon from '@icons/navigation/kite.svg';
+import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/format-utils';
@@ -193,8 +193,8 @@ export class UserMenu extends SignalWatcher(LitElement) {
                 </sl-menu-item>
               </a>
             </sl-menu>
-            <upd-dialog></upd-dialog>
           </sl-dropdown>
+          <upd-dialog></upd-dialog>
         `
       : html`
           <div class="button-with-tooltip">
