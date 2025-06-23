@@ -72,6 +72,11 @@ export class ActivityFeed extends LitElement {
 
       if (result.data) {
         const allActivities = [
+          ...result.data.ideasCreated.map((item) => ({
+            ...item,
+            type: 'ideaCreated',
+            timestamp: item.startTime * 1000,
+          })),
           ...result.data.ideasFunded.map((item) => ({
             ...item,
             type: 'ideaFunded',
