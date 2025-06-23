@@ -1,9 +1,20 @@
-import { IdeaContribution, Solution, SolutionContribution } from '@/types';
+import {
+  Idea,
+  IdeaContribution,
+  Solution,
+  SolutionContribution,
+} from '@/types';
 
 export type Activity =
+  | IdeaCreatedActivity
   | IdeaFundedActivity
   | SolutionFundedActivity
   | SolutionDraftedActivity;
+
+export interface IdeaCreatedActivity extends Idea {
+  type: 'ideaCreated';
+  timestamp: number;
+}
 
 export interface IdeaFundedActivity extends IdeaContribution {
   type: 'ideaFunded';

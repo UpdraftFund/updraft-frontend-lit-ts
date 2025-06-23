@@ -175,6 +175,8 @@ export class ActivityCard extends LitElement {
 
   private getActivityIcon() {
     switch (this.activity.type) {
+      case 'ideaCreated':
+        return '💡';
       case 'ideaFunded':
         return '🪁';
       case 'solutionFunded':
@@ -188,6 +190,8 @@ export class ActivityCard extends LitElement {
 
   private getActivityAction() {
     switch (this.activity.type) {
+      case 'ideaCreated':
+        return `created an Idea`;
       case 'ideaFunded':
         return `supported an Idea with ${formatAmount(this.activity.contribution)} UPD`;
       case 'solutionFunded':
@@ -200,7 +204,9 @@ export class ActivityCard extends LitElement {
   }
 
   private getDescription() {
-    if (this.activity.type === 'ideaFunded') {
+    if (this.activity.type === 'ideaCreated') {
+      return this.activity.description;
+    } else if (this.activity.type === 'ideaFunded') {
       return this.activity.idea.description;
     } else {
       return this.solutionInfo?.description;
@@ -210,7 +216,10 @@ export class ActivityCard extends LitElement {
   private renderEntity() {
     let href, name;
 
-    if (this.activity.type === 'ideaFunded') {
+    if (this.activity.type === 'ideaCreated') {
+      href = `/idea/${this.activity.id}`;
+      name = this.activity.name;
+    } else if (this.activity.type === 'ideaFunded') {
       href = `/idea/${this.activity.idea.id}`;
       name = this.activity.idea.name;
     } else if (this.activity.type === 'solutionFunded') {
@@ -226,7 +235,9 @@ export class ActivityCard extends LitElement {
 
   private renderFundButton() {
     let href, text, solution;
-    if (this.activity.type === 'ideaFunded') {
+    if (this.activity.type === 'ideaCreated') {
+      href = `/idea/${this.activity.id}`;
+    } else if (this.activity.type === 'ideaFunded') {
       href = `/idea/${this.activity.idea.id}`;
     } else if (this.activity.type === 'solutionFunded') {
       solution = this.activity.solution;
@@ -240,7 +251,7 @@ export class ActivityCard extends LitElement {
       return html``;
     }
 
-    if (this.activity.type === 'ideaFunded') {
+    if (this.activity.type.startsWith('idea')) {
       text = 'Support';
     } else {
       text = 'Fund';
@@ -254,8 +265,16 @@ export class ActivityCard extends LitElement {
   }
 
   private renderDetailsBar() {
-    if (this.activity.type === 'ideaFunded') {
-      const idea = this.activity.idea;
+    if (
+      this.activity.type === 'ideaCreated' ||
+      this.activity.type == 'ideaFunded'
+    ) {
+      let idea;
+      if (this.activity.type === 'ideaCreated') {
+        idea = this.activity;
+      } else {
+        idea = this.activity.idea;
+      }
       return html`
         <div class="details-bar">
           <span class="emoji-badge"
