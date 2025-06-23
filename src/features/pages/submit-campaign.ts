@@ -14,7 +14,10 @@ import '@layout/page-heading';
 import '@components/common/label-with-hint';
 
 // Utils
-import { validateTagsInput } from '@utils/tags/tag-validation';
+import {
+  normalizeAndValidateTagsInput,
+  splitTags,
+} from '@utils/tags/tag-validation';
 
 // Types
 import type { Campaign } from '@shared/types/campaign';
@@ -169,10 +172,10 @@ export class SubmitCampaign extends LitElement {
       campaignData.name = formData.get('name') as string;
       campaignData.description = formData.get('description') as string;
 
-      // Tags (space-separated)
+      // Tags are already normalized
       const tagsValue = formData.get('tags') as string;
       if (tagsValue) {
-        const tags = tagsValue.split(/\s+/);
+        const tags = splitTags(tagsValue);
         if (tags.length <= 5) {
           campaignData.tags = tags as Campaign['tags'];
         } else {
@@ -278,7 +281,7 @@ export class SubmitCampaign extends LitElement {
 
   private handleTagsInput(e: Event) {
     const input = e.target as HTMLInputElement;
-    validateTagsInput(input, 5, 1); // Max 5 tags, min 1 tag (since field is required)
+    normalizeAndValidateTagsInput(input, 1); // At least 1 tag is required
   }
 
   private addFundingItem() {

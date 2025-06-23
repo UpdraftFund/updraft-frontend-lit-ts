@@ -47,7 +47,7 @@ import ideaSchema from '@schemas/idea-schema.json';
 import type { CampaignTags } from '@shared/types/campaigns';
 
 // Utils
-import { validateTagsInput } from '@utils/tags/tag-validation';
+import { normalizeAndValidateTagsInput } from '@utils/tags/tag-validation';
 
 @customElement('create-idea')
 export class CreateIdea extends SignalWatcher(SaveableForm) {
@@ -138,7 +138,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
 
   private handleTagsInput(e: Event) {
     const input = e.target as SlInput;
-    validateTagsInput(input);
+    normalizeAndValidateTagsInput(input);
   }
 
   private nextButtonClick(e: MouseEvent) {
@@ -227,8 +227,6 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
         // Clear the tags input when no campaign is selected
         this.tagsInput.value = '';
       }
-      // Trigger input event to validate
-      this.tagsInput.dispatchEvent(new Event('sl-input', { bubbles: true }));
     }
   }
 
