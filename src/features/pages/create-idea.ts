@@ -10,6 +10,7 @@ import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
+import '@shoelace-style/shoelace/dist/components/icon/icon.js';
 import type { SlInput, SlDialog, SlSelect } from '@shoelace-style/shoelace';
 
 // Components
@@ -108,6 +109,13 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
         width: fit-content;
       }
 
+      .button-row {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
       .tags-row {
         display: flex;
         gap: 1rem;
@@ -131,6 +139,15 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
         .tags-row {
           flex-direction: column;
           align-items: stretch;
+        }
+
+        .button-row {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .button-row sl-button {
+          width: 100%;
         }
       }
     `,
@@ -303,22 +320,29 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
             </token-input>
           </div>
         </div>
-        ${hasProfile.get()
-          ? html` <sl-button
-              class="submit"
-              variant="primary"
-              @click=${this.createIdea}
-              >Create Idea
-            </sl-button>`
-          : html`<a
-              class="submit"
-              href="/submit-profile-and-create-idea"
-              rel="next"
-            >
-              <sl-button variant="primary" @click=${this.nextButtonClick}
-                >Next: Create your Profile
-              </sl-button>
-            </a>`}
+        <div class="button-row">
+          <sl-button variant="default" href="/preview-idea">
+            Preview
+          </sl-button>
+
+          ${hasProfile.get()
+            ? html` <sl-button
+                class="submit"
+                variant="primary"
+                @click=${this.createIdea}
+              >
+                Create Idea
+              </sl-button>`
+            : html`<a
+                class="submit"
+                href="/submit-profile-and-create-idea"
+                rel="next"
+              >
+                <sl-button variant="primary" @click=${this.nextButtonClick}>
+                  Next: Create your Profile
+                </sl-button>
+              </a>`}
+        </div>
         <transaction-watcher
           class="submit"
           @transaction-success=${this.handleTransactionSuccess}
