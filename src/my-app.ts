@@ -69,6 +69,16 @@ export class MyApp extends LitElement {
       render: () => html` <create-idea></create-idea>`,
     },
     {
+      path: '/preview-idea',
+      enter: async () => {
+        await import('@pages/preview-idea');
+        nav.set('preview-idea');
+        this.scrollToTop();
+        return true;
+      },
+      render: () => html` <preview-idea></preview-idea>`,
+    },
+    {
       path: '/edit-profile',
       enter: async () => {
         await import('@pages/edit-profile');
