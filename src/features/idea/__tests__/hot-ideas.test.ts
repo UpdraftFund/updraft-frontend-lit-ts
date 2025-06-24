@@ -115,6 +115,41 @@ describe('HotIdeas Component', () => {
     // Check for no ideas message
     const noIdeas = element.shadowRoot?.querySelector('.no-ideas');
     expect(noIdeas).to.exist;
-    expect(noIdeas?.textContent).to.include('No hot ideas found');
+    expect(noIdeas?.textContent).to.include('No ideas found');
+  });
+
+  it('shows a "see more" link when ideas are present', async () => {
+    element = await fixture(html`<hot-ideas></hot-ideas>`);
+
+    // Wait for task to complete
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Check for the "see more" link
+    const seeMoreLink = element.shadowRoot?.querySelector('.see-more-link');
+    expect(seeMoreLink).to.exist;
+    expect(seeMoreLink?.getAttribute('href')).to.equal(
+      '/discover?tab=hot-ideas'
+    );
+    expect(seeMoreLink?.textContent?.trim()).to.include('See more hot ideas');
+  });
+
+  it('does not show "see more" link when no ideas are found', async () => {
+    // Configure the mock to return empty ideas array
+    queryStub.returns({
+      toPromise: sinon.stub().resolves({
+        data: {
+          ideas: [],
+        },
+      }),
+    });
+
+    element = await fixture(html`<hot-ideas></hot-ideas>`);
+
+    // Wait for task to complete
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Check that the "see more" link is not present
+    const seeMoreLink = element.shadowRoot?.querySelector('.see-more-link');
+    expect(seeMoreLink).to.not.exist;
   });
 });
