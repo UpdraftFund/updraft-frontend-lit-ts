@@ -38,6 +38,20 @@ export class HotIdeas extends LitElement {
       color: var(--no-results);
       font-style: italic;
     }
+
+    .see-more-link {
+      display: block;
+      margin-top: 1rem;
+      text-align: center;
+      color: var(--link);
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .see-more-link:hover {
+      text-decoration: underline;
+      color: var(--accent);
+    }
   `;
 
   @state() private hotIdeas?: Idea[];
@@ -87,7 +101,12 @@ export class HotIdeas extends LitElement {
           ? html` <sl-spinner></sl-spinner>`
           : this.hotIdeas.length === 0
             ? html` <div class="no-ideas">No ideas found</div>`
-            : cache(this.renderHotIdeas(this.hotIdeas))}
+            : html`
+                ${cache(this.renderHotIdeas(this.hotIdeas))}
+                <a href="/discover?tab=hot-ideas" class="see-more-link">
+                  See more hot ideas →
+                </a>
+              `}
       </div>
     `;
   }
