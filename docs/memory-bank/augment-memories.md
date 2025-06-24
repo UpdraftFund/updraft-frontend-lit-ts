@@ -1,5 +1,4 @@
 # Lit Component Best Practices
-
 - Use @query decorator for element selection with cache:true for better performance instead of shadowRoot.querySelector
 - Use 'nothing' when removing attributes, empty template strings (html``) otherwise
 - Implement functionality as a Lit controller rather than a mixin when not modifying component's API
@@ -8,8 +7,6 @@
 - Clean up ResizeObservers in disconnectedCallback() to prevent memory leaks
 - Avoid updated() lifecycle method for signal changes as it runs too frequently
 - Avoid inline styles - use Lit's css template literal for styling instead
-- Lit adds HTML comments during the rendering process after content has been processed, not just from contentEditable
-  divs, not just from contentEditable divs, so comment removal needs to account for this timing.
 
 # Data Fetching and State Management
 - Use UrqlQueryController for data fetching with cache directive for successful results
@@ -24,17 +21,15 @@
 - Use standard HTML validation attributes with Shoelace components instead of manual validation
 - Allow fractional values in number inputs and avoid using the min attribute if it forces integer-only steps
 - Prefer implementing Form-Associated Custom Elements API over hidden input fields for custom form components
-- Implemented height-based text ellipsis across all card components to replace problematic -webkit-line-clamp
 - Use import aliases where possible (e.g., '@components/common/transaction-watcher')
 - Use sl-button components for refresh and copy buttons, utilizing the 'prefix' slot for icons
+- Setting window.location.href should only be used as a last resort - prefer using href attribute for navigation
 
 # Text Formatting and Content Display
 
-- The formatted-text component should handle height limiting and fade overlay functionality
-- Implemented UPD-171 content display guidelines with three categories: single-line non-formatted, multi-line
-  non-formatted, and multi-line formatted
-- ContentEditable divs mangle markdown by converting it to HTML with Lit comments and BR tags
-- Use turndown library only to unmangle HTML from contenteditable divs, not to convert regular HTML tags to markdown
+- Implement content display with three categories: single-line non-formatted, multi-line non-formatted, and multi-line
+  formatted
+- Use turndown library to unmangle HTML from contenteditable divs, not to convert regular HTML tags to markdown
 - Always pass strings through marked markdown processor without checking for markdown syntax first
 - Use full GitHub Flavored Markdown (GFM) support in turndown configuration
 - For GitHub Flavored Markdown support in formattedText(), consider allowing 'input' tag with 'type', 'checked', and '
@@ -44,10 +39,10 @@
   preserve spaces for proper markdown list nesting.
 - TurndownService prototype methods can be overridden to customize behavior like preventing whitespace stripping during
   HTML-to-markdown conversion.
+- The turndown service is successfully converting HTML back to clean markdown but all line breaks are being lost in the
+  process.
 - For HTML-to-Markdown conversion, look for characters that Marked interprets as indentation but Turndown won't
   collapse, and target any leading spaces for indentation preservation, not just list items.
-- User prefers efficient regex operations and questions if turndown is needed for their HTML unmangling use case since
-  they convert back to HTML anyway, and confirmed tabs are only needed for code blocks.
 
 # Token Handling and Transactions
 - Implement token-input component for handling different token types with appropriate validation
@@ -55,8 +50,6 @@
 - Use 10^29 for updraft contract approvals, but exact amounts for idea and solution contracts
 - Solution contract functions don't require anti-spam fees
 - Use formatAmount() function instead of shortNum(formatUnits()) for formatting token amounts
-- Ensure proper bigint handling by explicitly using bigint operations
-- Get UPD dialog should link to Uniswap LP on Arbitrum One
 
 # Solution Contract Functionality
 - Solution contract has withdrawFunds(address to, uint256 amount) for drafters when funding goal is reached
@@ -72,7 +65,6 @@
 - Set cursor:pointer on all clickable elements within anchor tags
 
 # Security and HTML Handling
-
 - Use dompurify for frontend HTML sanitization and isomorphic-dompurify for server-side/Vercel functions
 - For DOMPurify, use KEEP_CONTENT: true to preserve inner text of unsupported tags
 - DOMPurify with KEEP_CONTENT: true decodes HTML entities when stripping tags
@@ -80,11 +72,15 @@
 
 # Development and Testing
 
-- Project uses yarn as package manager, yarn tsc for TypeScript type checking
+- Project uses yarn as package manager, yarn tsc for TypeScript type checking, yarn lint && yarn tsc for checks
 - Testing uses @open-wc/testing framework with @web/test-runner
+- Tests should be placed in `__tests__` directories within each feature/module directory, not alongside the source files
 - Network configuration is environment-dependent: dev/preview uses Arbitrum Sepolia, production uses Arbitrum One
+- Vercel serverless functions require import assertion type 'json' when importing JSON files
 - API functions should use environment-specific subgraph URLs and support multiple network sources
 - Test markdown processing by putting markdown in contentEditable divs, reading it back out, and running through
   formattedText function to verify correct output.
-- Prefer headless tests over demo pages for testing functionality, and the turndown service is successfully converting
-  HTML back to clean markdown but all line breaks are being lost in the process.
+- Prefer headless tests over demo pages for testing functionality
+- When completing a Linear ticket, mark it as "code-review" state so a human can review the work
+- When updating memories, copy them to augment-memories.md file in the git repo so other developers can access and use
+  the accumulated knowledge.
