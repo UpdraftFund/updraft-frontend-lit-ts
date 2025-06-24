@@ -56,6 +56,7 @@ import { markComplete } from '@state/user/beginner-tasks';
 
 // Utilities
 import { capitalize } from '@utils/format-utils';
+import { resizeImage, isValidImageFile } from '@utils/image-utils';
 
 // Schemas
 import ideaSchema from '@schemas/idea-schema.json';
@@ -284,12 +285,27 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
   private async handleImageUpload(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+
+    if (!file) {
+      return;
+    }
+
+    // Validate file type
+    if (!isValidImageFile(file)) {
+      console.error('Invalid file type. Please select a valid image file.');
+      // Reset the input
+      input.value = '';
+      return;
+    }
+
+    try {
+      // Resize image to 64x64 pixels to prevent transaction failures
+      const resizedDataUrl = await resizeImage(file, 64, 64, 0.8);
+      setProfileImage(resizedDataUrl);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      // Reset the input on error
+      input.value = '';
     }
   }
 
