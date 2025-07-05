@@ -75,6 +75,12 @@ export const largeCardStyles = css`
     line-height: 1.5;
   }
 
+  .news a,
+  .description a {
+    color: var(--link);
+    text-decoration: underline;
+  }
+
   vertical-fade {
     max-height: 8rem;
     --fade-color: var(--main-background);
