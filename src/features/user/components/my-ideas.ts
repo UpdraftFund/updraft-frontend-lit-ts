@@ -6,6 +6,7 @@ import { SignalWatcher } from '@lit-labs/signals';
 import '@components/common/section-heading';
 import '@components/idea/idea-card-small';
 import '@shoelace-style/shoelace/dist/components/spinner/spinner.js';
+import '@shoelace-style/shoelace/dist/components/button/button.js';
 
 import { UrqlQueryController } from '@utils/urql-query-controller';
 import { IdeasByFunderOrCreatorDocument, Idea } from '@gql';
@@ -39,23 +40,40 @@ export class MyIdeas extends SignalWatcher(LitElement) {
       font-size: var(--sl-font-size-small);
       font-style: italic;
     }
+
+    .load-more-container {
+      display: flex;
+      padding: 1rem 0;
+    }
   `;
 
   @property({ type: String }) address: string | null = null;
   @state() private ideas: Idea[] = [];
   @state() private loading = true;
+  @state() private currentSkip = 0;
+  @state() private hasMoreResults = true;
+  @state() private isLoadingMore = false;
+
+  private readonly PAGE_SIZE = 3;
 
   // Controller for fetching ideas
   private readonly ideasController = new UrqlQueryController(
     this,
     IdeasByFunderOrCreatorDocument,
-    { user: this.address || '' },
+    {
+      user: this.address || '',
+      first: this.PAGE_SIZE,
+      skip: this.currentSkip,
+    },
     (result) => {
       this.loading = false;
+      this.isLoadingMore = false;
 
       if (result.error) {
         console.error('Error fetching ideas:', result.error);
-        this.ideas = [];
+        if (this.currentSkip === 0) {
+          this.ideas = [];
+        }
         return;
       }
 
@@ -90,13 +108,30 @@ export class MyIdeas extends SignalWatcher(LitElement) {
           });
         });
 
-        // Sort ideas by activity time (newest first), extract just the ideas, and limit to 3
-        this.ideas = Array.from(ideaActivityMap.values())
+        // Sort ideas by activity time (newest first) and extract just the ideas
+        const newIdeas = Array.from(ideaActivityMap.values())
           .sort((a, b) => b.activityTime - a.activityTime)
-          .map((item) => item.idea)
-          .slice(0, 3); // Limit to 3 ideas total
+          .map((item) => item.idea);
+
+        // Check if we have fewer results than requested, indicating no more results
+        const totalNewResults = fundedIdeas.length + createdIdeas.length;
+        this.hasMoreResults = totalNewResults >= this.PAGE_SIZE;
+
+        if (this.currentSkip === 0) {
+          // First page - replace existing ideas
+          this.ideas = newIdeas;
+        } else {
+          // Pagination - append new ideas, avoiding duplicates
+          const existingIds = new Set(this.ideas.map((idea) => idea.id));
+          const uniqueNewIdeas = newIdeas.filter(
+            (idea) => !existingIds.has(idea.id)
+          );
+          this.ideas = [...this.ideas, ...uniqueNewIdeas];
+        }
       } else {
-        this.ideas = [];
+        if (this.currentSkip === 0) {
+          this.ideas = [];
+        }
       }
     }
   );
@@ -105,8 +140,46 @@ export class MyIdeas extends SignalWatcher(LitElement) {
     super.updated(changedProperties);
     if (changedProperties.has('address') && this.address) {
       this.loading = true;
-      this.ideasController.setVariablesAndSubscribe({ user: this.address });
+      this.currentSkip = 0;
+      this.hasMoreResults = true;
+      this.ideasController.setVariablesAndSubscribe({
+        user: this.address,
+        first: this.PAGE_SIZE,
+        skip: this.currentSkip,
+      });
     }
+  }
+
+  private loadMore() {
+    if (!this.hasMoreResults || this.isLoadingMore || !this.address) return;
+
+    this.isLoadingMore = true;
+    this.currentSkip += this.PAGE_SIZE;
+
+    this.ideasController.setVariablesAndSubscribe({
+      user: this.address,
+      first: this.PAGE_SIZE,
+      skip: this.currentSkip,
+    });
+  }
+
+  private renderLoadMoreButton() {
+    if (!this.hasMoreResults) {
+      return html``;
+    }
+
+    return html`
+      <div class="load-more-container">
+        <sl-button
+          size="small"
+          pill
+          ?loading=${this.isLoadingMore}
+          @click=${this.loadMore}
+        >
+          ${this.isLoadingMore ? 'Loading...' : 'Load more ideas...'}
+        </sl-button>
+      </div>
+    `;
   }
 
   render() {
@@ -122,16 +195,19 @@ export class MyIdeas extends SignalWatcher(LitElement) {
             ? html`<div class="empty-message">
                 You haven't supported or created any ideas yet.
               </div>`
-            : cache(
-                this.ideas.map(
-                  (idea) => html`
-                    <idea-card-small
-                      .idea=${idea}
-                      .showReward=${false}
-                    ></idea-card-small>
-                  `
-                )
-              )}
+            : html`
+                ${cache(
+                  this.ideas.map(
+                    (idea) => html`
+                      <idea-card-small
+                        .idea=${idea}
+                        .showReward=${false}
+                      ></idea-card-small>
+                    `
+                  )
+                )}
+                ${this.renderLoadMoreButton()}
+              `}
       </div>
     `;
   }
