@@ -26,11 +26,27 @@ const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'h6',
     'blockquote',
   ],
-  ALLOWED_ATTR: ['href'],
+  ALLOWED_ATTR: ['href', 'target', 'rel'],
   ALLOWED_URI_REGEXP:
     /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
 };
+
+// Add hook to automatically make all links open in new tabs with security attributes
+// This runs after DOMPurify sanitization to ensure our security policy is enforced
+DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+  // Only process anchor tags with href attributes
+  if (node.tagName === 'A' && node.hasAttribute('href')) {
+    // SECURITY: Always force target="_blank" to open in new tab
+    // This overrides any user-supplied target attribute for security
+    node.setAttribute('target', '_blank');
+
+    // SECURITY: Always force rel="noreferrer" for security
+    // This prevents referrer header leakage and blocks window.opener access
+    // This overrides any user-supplied rel attribute to prevent security bypasses
+    node.setAttribute('rel', 'noreferrer');
+  }
+});
 
 function formatText(htmlContent: string): DirectiveResult {
   const sanitized = DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);
@@ -62,7 +78,7 @@ describe('formatText', () => {
     expect(container.innerHTML).to.equal('<!----><p>Hello  world!</p>');
   });
 
-  it('should preserve links with href attributes', () => {
+  it('should preserve links with href attributes and add target and rel attributes', () => {
     const input = '<p>Visit <a href="https://example.com">our website</a></p>';
     const result = formatText(input);
 
@@ -71,7 +87,49 @@ describe('formatText', () => {
     render(result, container);
 
     expect(container.innerHTML).to.equal(
-      '<!----><p>Visit <a href="https://example.com">our website</a></p>'
+      '<!----><p>Visit <a href="https://example.com" target="_blank" rel="noreferrer">our website</a></p>'
+    );
+  });
+
+  it('should add target and rel attributes to multiple links', () => {
+    const input =
+      '<p>Visit <a href="https://example.com">site 1</a> and <a href="https://another.com">site 2</a></p>';
+    const result = formatText(input);
+
+    // Create a test container and render the directive
+    const container = document.createElement('div');
+    render(result, container);
+
+    expect(container.innerHTML).to.equal(
+      '<!----><p>Visit <a href="https://example.com" target="_blank" rel="noreferrer">site 1</a> and <a href="https://another.com" target="_blank" rel="noreferrer">site 2</a></p>'
+    );
+  });
+
+  it('should not add target and rel to links without href', () => {
+    const input = '<p>This is <a>not a real link</a></p>';
+    const result = formatText(input);
+
+    // Create a test container and render the directive
+    const container = document.createElement('div');
+    render(result, container);
+
+    expect(container.innerHTML).to.equal(
+      '<!----><p>This is <a>not a real link</a></p>'
+    );
+  });
+
+  it('should override user-supplied target and rel attributes for security', () => {
+    const input =
+      '<p>Visit <a href="https://example.com" target="_self" rel="opener">malicious link</a></p>';
+    const result = formatText(input);
+
+    // Create a test container and render the directive
+    const container = document.createElement('div');
+    render(result, container);
+
+    // Should override the user's target="_self" and rel="opener" with our secure values
+    expect(container.innerHTML).to.equal(
+      '<!----><p>Visit <a href="https://example.com" target="_blank" rel="noreferrer">malicious link</a></p>'
     );
   });
 
