@@ -109,6 +109,8 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
   ],
   ALLOWED_ATTR: [
     'href',
+    'target', // For opening links in new tabs
+    'rel', // For security attributes like noreferrer
     // Task list checkbox attributes
     'type', // For input type="checkbox"
     'checked', // For checked checkboxes
@@ -125,6 +127,22 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
     /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
 };
+
+// Add hook to automatically make all links open in new tabs with security attributes
+// This runs after DOMPurify sanitization to ensure our security policy is enforced
+DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+  // Only process anchor tags with href attributes
+  if (node.tagName === 'A' && node.hasAttribute('href')) {
+    // SECURITY: Always force target="_blank" to open in new tab
+    // This overrides any user-supplied target attribute for security
+    node.setAttribute('target', '_blank');
+
+    // SECURITY: Always force rel="noreferrer" for security
+    // This prevents referrer header leakage and blocks window.opener access
+    // This overrides any user-supplied rel attribute to prevent security bypasses
+    node.setAttribute('rel', 'noreferrer');
+  }
+});
 
 // We use turndown to unmangle markdown that's been mangled by contenteditable
 
