@@ -324,13 +324,13 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
     super.firstUpdated(changedProperties);
 
     this.rewardRange.tooltipFormatter = (value: number) => `${value}%`;
-    this.rewardRange.defaultValue = 25;
+    this.rewardRange.defaultValue = 30;
     this.rewardRange.max = 80;
 
-    // Set the slider value to 25 only if there's no saved form value
+    // Set the slider value to 30 only if there's no saved form value
     const savedForm = loadForm('create-solution-two');
     if (!savedForm || !savedForm.reward) {
-      this.rewardRange.value = 25;
+      this.rewardRange.value = 30;
     }
 
     this.rewardRange.updateComplete.then(this.syncRangeTooltip);
