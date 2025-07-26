@@ -44,6 +44,25 @@ export const smallCardStyles = css`
     --fade-height: 0.75rem;
   }
 
+  /* Blockquote styling for formatted text content */
+  blockquote {
+    margin: 1em 0;
+    padding: 0.75em 1em;
+    border-left: 4px solid var(--sl-color-primary-300);
+    background-color: var(--sl-color-neutral-50);
+    color: var(--subtle-text);
+    font-style: italic;
+    border-radius: 0 4px 4px 0;
+  }
+
+  blockquote p {
+    margin: 0;
+  }
+
+  blockquote p:not(:last-child) {
+    margin-bottom: 0.5em;
+  }
+
   .info-row {
     display: flex;
     justify-content: space-between;
