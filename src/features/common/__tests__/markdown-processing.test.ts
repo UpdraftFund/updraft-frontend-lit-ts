@@ -233,4 +233,27 @@ Paragraph text`;
 
     expect(hasActualHTMLElements(actualHTML)).to.be.true;
   });
+
+  it('should properly render blockquotes from markdown', () => {
+    // Test direct markdown processing (what marked does with proper markdown)
+    const markdownWithBlockquote = `# Header
+
+> This is a blockquote
+> with multiple lines
+
+Regular text after blockquote.`;
+
+    const htmlResult = marked(markdownWithBlockquote) as string;
+    const sanitized = DOMPurify.sanitize(htmlResult);
+
+    console.log('\n=== BLOCKQUOTE TEST ===');
+    console.log('Input markdown:', markdownWithBlockquote);
+    console.log('Marked HTML result:', htmlResult);
+    console.log('Sanitized result:', sanitized);
+
+    // Should contain blockquote element
+    expect(sanitized).to.include('<blockquote>');
+    expect(sanitized).to.include('</blockquote>');
+    expect(sanitized).to.include('This is a blockquote');
+  });
 });
