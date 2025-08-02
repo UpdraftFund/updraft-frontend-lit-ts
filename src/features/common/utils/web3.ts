@@ -35,6 +35,7 @@ export const modal = createAppKit({
   networks,
   metadata,
   projectId,
+  enableNetworkSwitch: false,
   themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light',
@@ -46,5 +47,9 @@ export const modal = createAppKit({
   },
   features: {
     analytics: true,
+    socials: false,
+    email: false,
+    emailShowWallets: false,
   },
+  allWallets: 'HIDE',
 });
