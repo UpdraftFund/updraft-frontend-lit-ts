@@ -34,8 +34,8 @@
     "@supabase/supabase-js": "^2.50.0",
     "@types/turndown": "^5.0.5",
     "@vercel/node": "^5.2.1",
-    "@wagmi/connectors": "^5.7.7",
-    "@wagmi/core": "^2.16.4",
+    "@wagmi/connectors": "^5.9.1",
+    "@wagmi/core": "^2.18.1",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
     "ethereum-blockies-base64": "^1.0.2",
@@ -45,7 +45,8 @@
     "marked": "^15.0.12",
     "react": "^19.1.0",
     "turndown": "^7.2.0",
-    "urql": "^4.2.1"
+    "urql": "^4.2.1",
+    "viem": "^2.33.2"
   },
   "devDependencies": {
     "@graphprotocol/client-cli": "^3.0.7",
