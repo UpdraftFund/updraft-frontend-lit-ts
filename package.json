@@ -36,6 +36,8 @@
     "@vercel/node": "^5.2.1",
     "@wagmi/connectors": "^5.9.1",
     "@wagmi/core": "^2.18.1",
+    "@walletconnect/core": "^2.21.5",
+    "@walletconnect/utils": "^2.21.5",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
     "ethereum-blockies-base64": "^1.0.2",
