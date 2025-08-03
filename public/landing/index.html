@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Updraft - Ride the Wind of Change</title>
+  <meta name="description"
+        content="Where ideas take flight and communities soar together. Launch your vision into the wind of collective action with Updraft's decentralized funding platform." />
+  <meta name="keywords"
+        content="crowdfunding, decentralized funding, public goods, community funding, ideas, innovation" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="updraft-icon.png" />
+  <link rel="apple-touch-icon" href="updraft-icon.png" />
+
+  <!-- CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --wind-primary: #0e5e8c; /* Darker accent for headings and button backgrounds */
+      --wind-secondary: #3672a0; /* A mid-tone blue from the gradient */
+      --wind-accent: #748bb1; /* A lighter blue from the gradient */
+      --wind-purple: #a0c0d8; /* Another light blue from the gradient */
+      --wind-gold: #dff5fc; /* Main sky color */
+      --wind-deep: #06293e; /* Darkest blue from the gradient */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Space Grotesk", sans-serif;
+      overflow-x: hidden;
+      background: linear-gradient(
+        135deg,
+        rgb(247 250 251) 0%,
+        rgb(185 210 225) 100%
+      );
+      min-height: 100vh;
+    }
+
+    /* Wind Particle Container */
+    #wind-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Wind Kite Particle */
+    .wind-kite {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* Floating Navigation */
+    .floating-nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50px;
+      padding: 10px 30px;
+      display: inline-flex;
+      /* animation: float 6s ease-in-out infinite; */
+    }
+
+    @keyframes float {
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0px);
+      }
+      50% {
+        transform: translateX(-50%) translateY(-10px);
+      }
+    }
+
+    .floating-nav a {
+      color: var(--wind-deep);
+      text-decoration: none;
+      margin: 0 20px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .floating-nav a:hover {
+      color: var(--wind-accent);
+      text-shadow: 0 0 20px var(--wind-gold);
+    }
+
+    /* Kite Container */
+    .kite-container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+    }
+
+    /* Hero Section - Stratosphere */
+    .hero-stratosphere {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      padding: 0 20px;
+      padding-top: 75px;
+    }
+
+    .hero-title {
+      font-family: "Orbitron", monospace;
+      font-size: clamp(3rem, 8vw, 8rem);
+      font-weight: 900;
+      background: linear-gradient(
+        45deg,
+        var(--wind-primary),
+        var(--wind-secondary),
+        var(--wind-accent)
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 30px;
+      /* animation: titlePulse 4s ease-in-out infinite; */
+    }
+
+    @keyframes titlePulse {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 3vw, 1.75rem);
+      color: rgba(6, 41, 62, 0.9);
+      margin-bottom: 50px;
+      max-width: 800px;
+      line-height: 1.6;
+    }
+
+    /* Interactive Kite Launcher */
+    .kite-launcher {
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      padding-right: 20px;
+      margin-bottom: 20px;
+    }
+
+    .kite-launcher:hover {
+      border-color: var(--wind-accent);
+      background: var(--wind-gold);
+      transform: scale(1.05);
+    }
+
+    .kite-svg {
+      width: 80px;
+      height: 80px;
+      animation: kiteBob 3s ease-in-out infinite;
+      padding: 10px 0;
+      margin-top: 10px;
+    }
+
+    @keyframes kiteBob {
+      0%,
+      100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-15px) rotate(5deg);
+      }
+    }
+
+    /* Wind Strength Meter */
+    .wind-meter {
+      position: fixed;
+      top: 280px;
+      right: 15px;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(6, 41, 62, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      color: var(--wind-deep);
+      text-align: center;
+      opacity: 0.95;
+      transition: opacity 0.5s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+    }
+
+    .wind-gauge {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(6, 41, 62, 0.6);
+      border-radius: 50%;
+      position: relative;
+      margin: 8px 0;
+      cursor: pointer;
+      user-select: none;
+      touch-action: none;
+      background: rgba(6, 41, 62, 0.1);
+    }
+
+    .wind-needle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2px;
+      height: 16px;
+      background: var(--wind-deep);
+      transform-origin: bottom;
+      transform: translate(-50%, -100%) rotate(-45deg);
+      transition: transform 0.3s ease-out;
+    }
+
+    /* Section Transitions */
+    .sky-layer {
+      position: relative;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .troposphere {
+      background: linear-gradient(
+        180deg,
+        rgba(228, 238, 243, 0.1) 0%,
+        rgba(185, 210, 225, 0.2) 100%
+      );
+      padding: 100px 20px;
+    }
+
+    .mesosphere {
+      background: linear-gradient(
+        180deg,
+        rgba(155, 191, 212, 0.2) 0%,
+        rgba(74, 139, 177, 0.1) 100%
+      );
+      padding: 100px 20px;
+    }
+
+    .thermosphere {
+      background: linear-gradient(
+        180deg,
+        rgba(36, 114, 160, 0.1) 0%,
+        rgba(10, 67, 100, 0.2) 100%
+      );
+      padding: 100px 20px;
+    }
+
+    /* User Type Cards */
+    .user-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 40px;
+      margin: 20px;
+      text-align: center;
+      color: var(--wind-deep);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .animate-in {
+      transform: translateY(-10px);
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .animate-in::before {
+      left: 100%;
+    }
+
+    .user-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+      );
+      transition: left 0.5s;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .floating-nav {
+        left: 10px;
+        right: 10px;
+        transform: none;
+        width: auto;
+        padding: 10px 20px;
+        font-size: 14px;
+        justify-content: space-between;
+      }
+
+      .floating-nav a {
+        margin: 0 5px;
+        font-size: 14px;
+        flex: 1;
+        text-align: center;
+      }
+
+      .floating-nav a[style*="background"] {
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+        flex: 0 0 auto;
+        margin-left: 10px;
+      }
+    }
+
+    .user-card {
+      margin: 10px 0;
+    }
+
+    .wind-meter {
+      right: 8px;
+      padding: 8px;
+      min-width: 70px;
+    }
+
+    .wind-gauge {
+      width: 32px;
+      height: 32px;
+    }
+
+    .wind-needle {
+      height: 12px;
+    }
+
+    .image-links-container {
+      display: flex;
+      gap: 40px;
+    }
+
+    .links-section {
+      text-align: left;
+    }
+
+    .links-image {
+      max-width: 300px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .links-title {
+      color: var(--wind-deep);
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+
+    .links-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 25px;
+      color: #dff5fc;
+    }
+
+    .links-list li {
+      margin: 10px 0;
+    }
+
+    .links-list a {
+      color: #dff5fc;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    /* Kite link styles with inline SVG icons */
+    .kite-link {
+      position: relative;
+    }
+
+    .kite-link::before {
+      content: '';
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .kite1::before {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10 L30 40 L50 70 L70 40 Z' fill='url(%23kiteGradient1)' stroke='%23fff' stroke-width='2'/%3E%3Cline x1='50' y1='70' x2='50' y2='90' stroke='%23666' stroke-width='2'/%3E%3Cdefs%3E%3ClinearGradient id='kiteGradient1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23b57edc'/%3E%3Cstop offset='100%25' style='stop-color:%23ff6ec7'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+    }
+
+    .kite2::before {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10 L30 40 L50 70 L70 40 Z' fill='url(%23kiteGradient2)' stroke='%23fff' stroke-width='2'/%3E%3Cline x1='50' y1='70' x2='50' y2='90' stroke='%23666' stroke-width='2'/%3E%3Cdefs%3E%3ClinearGradient id='kiteGradient2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23fdb813'/%3E%3Cstop offset='100%25' style='stop-color:%23f76c1c'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+    }
+
+    .kite4::before {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10 L30 40 L50 70 L70 40 Z' fill='url(%23kiteGradient4)' stroke='%23fff' stroke-width='2'/%3E%3Cline x1='50' y1='70' x2='50' y2='90' stroke='%23666' stroke-width='2'/%3E%3Cdefs%3E%3ClinearGradient id='kiteGradient4' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23aed581'/%3E%3Cstop offset='100%25' style='stop-color:%23558b2f'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+    }
+
+    .kite5::before {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10 L30 40 L50 70 L70 40 Z' fill='url(%23kiteGradient5)' stroke='%23fff' stroke-width='2'/%3E%3Cline x1='50' y1='70' x2='50' y2='90' stroke='%23666' stroke-width='2'/%3E%3Cdefs%3E%3ClinearGradient id='kiteGradient5' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2381d4fa'/%3E%3Cstop offset='100%25' style='stop-color:%23f48fb1'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+    }
+
+    .kite6::before {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10 L30 40 L50 70 L70 40 Z' fill='url(%23kiteGradient6)' stroke='%23fff' stroke-width='2'/%3E%3Cline x1='50' y1='70' x2='50' y2='90' stroke='%23666' stroke-width='2'/%3E%3Cdefs%3E%3ClinearGradient id='kiteGradient6' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23d4af37'/%3E%3Cstop offset='100%25' style='stop-color:%23a97142'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+    }
+
+    .kite-link:hover {
+      transform: translateX(5px);
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    /* 3. Pink‑to‑gold “mystic” kite */
+    .kite3:hover {
+      background: linear-gradient(135deg, #ff69b4, #ffd700);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 4. Green star kite */
+    .kite4:hover {
+      background: linear-gradient(135deg, #aed581, #558b2f);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 5. Blue‑petal flower kite */
+    .kite5:hover {
+      background: linear-gradient(135deg, #81d4fa, #f48fb1);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* 6. Bronze‑carved ornate kite */
+    .kite6:hover {
+      background: linear-gradient(135deg, #d4af37, #a97142);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      -moz-background-clip: text;
+      -moz-text-fill-color: transparent;
+    }
+
+    /* 7. Light‑bulb kite */
+    .kite7:hover {
+      background: linear-gradient(135deg, #fff9c4, #fff176);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      -moz-background-clip: text;
+      -moz-text-fill-color: transparent;
+    }
+
+    .catch-the-wind {
+      margin-top: 30px;
+      font-size: 14px;
+      color: rgba(180, 203, 218, 0.8);
+    }
+
+    .catch-the-wind a {
+      color: var(--wind-gold);
+      font-weight: 600;
+    }
+
+    /* Section styling classes */
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--wind-deep);
+      margin-bottom: 50px;
+      font-family: 'Orbitron', monospace;
+    }
+
+    .section-subtitle {
+      font-size: 1.3rem;
+      color: rgba(6, 41, 62, 0.9);
+      margin-bottom: 50px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 50px;
+    }
+
+    .card-grid-large {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 40px;
+      margin-top: 50px;
+    }
+
+    .section-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .card-text {
+      color: rgba(6, 41, 62, 0.9);
+      line-height: 1.6;
+    }
+
+    .card-text-light {
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .highlight-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-top: 15px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Improved wind gauge */
+    .wind-gauge {
+      width: 60px;
+      height: 60px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      position: relative;
+      margin: 10px 0;
+      cursor: pointer;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .wind-gauge:hover {
+      border-color: rgba(6, 41, 62, 0.8);
+      background: rgba(6, 41, 62, 0.2);
+    }
+
+    /* App launch button */
+    .app-launch-btn {
+      display: inline-block;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, var(--wind-primary), var(--wind-secondary));
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(14, 94, 140, 0.3);
+    }
+
+    .app-launch-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(14, 94, 140, 0.4);
+      color: white;
+    }
+
+    /* Media query for responsive behavior */
+    @media (max-width: 900px) {
+      .image-links-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+        padding: 0 20px;
+      }
+
+      .links-section {
+        text-align: center;
+        width: auto;
+      }
+
+      .links-title {
+        text-align: center;
+      }
+
+      .links-image {
+        margin: 0 auto;
+        display: block;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .image-links-container {
+        padding: 0 15px;
+        gap: 35px;
+      }
+    }
+  </style>
+</head>
+<body>
+<!-- Wind Particle System -->
+<div id="wind-container"></div>
+
+<!-- Floating Navigation -->
+<nav class="floating-nav" style="text-align: center">
+  <a href="#creators">For Creators</a>
+  <a href="#funders">For Funders</a>
+  <a href="https://app.updraft.fund">🪁 Launch App</a>
+</nav>
+
+<!-- Wind Speed Meter -->
+<div class="wind-meter">
+  <div style="font-size: 11px; opacity: 0.8; margin-bottom: 4px;">WIND SPEED</div>
+  <div class="wind-gauge">
+    <div class="wind-needle"></div>
+  </div>
+  <div id="wind-strength-label" style="font-size: 12px; font-weight: 600; margin-top: 4px;">
+    CALM
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="kite-container">
+  <!-- Hero Section - Stratosphere -->
+  <section class="hero-stratosphere" style="border: none">
+    <img
+      src="../assets/updraft-1368-removebg.png"
+      alt="Updraft logo of a kite sailing in the clouds"
+      class="kite-img"
+      fetchpriority="high"
+    />
+    <h1 class="hero-title">UPDRAFT</h1>
+    <p class="hero-subtitle">
+      Where ideas take flight and communities soar together.<br />
+      Launch your vision into the wind of collective action.
+    </p>
+
+    <a href="https://app.updraft.fund" style="text-decoration: none">
+      <div class="kite-launcher">
+        <svg class="kite-svg" viewBox="0 0 100 100" fill="none">
+          <path
+            d="M50 10 L30 40 L50 70 L70 40 Z"
+            fill="url(#kiteGradient)"
+            stroke="#fff"
+            stroke-width="2"
+          />
+          <line
+            x1="50"
+            y1="70"
+            x2="50"
+            y2="90"
+            stroke="#666"
+            stroke-width="2"
+          />
+          <defs>
+            <linearGradient
+              id="kiteGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+              <stop offset="0%" style="stop-color: rgb(247 250 251)" />
+              <stop offset="50%" style="stop-color: rgb(155 191 212)" />
+              <stop offset="100%" style="stop-color: rgb(14 94 140)" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div style="color: rgba(6, 41, 62, 0.9); font-weight: 600; font-size: 1.1rem;">
+          Launch Your Idea on Updraft
+        </div>
+      </div>
+    </a>
+
+    <div style="margin-top: 20px;">
+      <a href="https://app.updraft.fund" class="app-launch-btn">
+        Open Updraft App →
+      </a>
+    </div>
+  </section>
+
+  <!-- Troposphere - For Creators -->
+  <section id="creators" class="sky-layer troposphere" style="border: none">
+    <div class="section-container">
+      <h2 class="section-title">
+        FOR VISIONARIES
+      </h2>
+      <p class="section-subtitle">
+        Got an idea that could change the world? Turn your vision into
+        reality and get paid for your creativity. The community rewards the
+        bold.
+      </p>
+
+      <div class="card-grid">
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">💰</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Earn from Ideas
+          </h3>
+          <p class="card-text">
+            Post your concept and earn money as supporters back your vision.
+            The earlier they support, the more you both earn.
+          </p>
+        </div>
+
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">🚀</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Community Amplification
+          </h3>
+          <p class="card-text">
+            Your ideas don't just sit in a void. Our community actively
+            discovers, discusses, and amplifies the best concepts.
+          </p>
+        </div>
+
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">⚡</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Zero Risk Launch
+          </h3>
+          <p class="card-text">
+            No upfront costs, no complex processes. Just pure idea
+            generation with financial upside when the community believes in
+            you.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mesosphere - For Builders -->
+  <section id="builders" class="sky-layer mesosphere" style="border: none">
+    <div style="max-width: 1200px; margin: 0 auto; text-align: center">
+      <h2
+        style="
+              font-size: 2.25rem;
+              font-weight: 700;
+              color: #06293e;
+              margin-bottom: 50px;
+              font-family: 'Orbitron', monospace;
+            "
+      >
+        FOR BUILDERS
+      </h2>
+      <p
+        style="
+              font-size: 1.3rem;
+              color: #06293e;
+              margin-bottom: 50px;
+              max-width: 800px;
+              margin-left: auto;
+              margin-right: auto;
+            "
+      >
+        Turn funded ideas into reality. Compete or collaborate with other
+        builders to deliver solutions that matter while getting paid for
+        your expertise.
+      </p>
+
+      <div
+        style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 30px;
+              margin-top: 50px;
+            "
+      >
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">🔨</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Pre-Funded Projects
+          </h3>
+          <p style="opacity: 0.8; line-height: 1.6">
+            Work on projects that already have community backing and
+            funding. No more building in the dark hoping someone will pay.
+          </p>
+        </div>
+
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">🎯</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Milestone Rewards
+          </h3>
+          <p style="opacity: 0.8; line-height: 1.6">
+            Get paid as you hit milestones. Add more goals, receive more
+            funding. Your progress directly translates to income.
+          </p>
+        </div>
+
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">🤝</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Collaborative Edge
+          </h3>
+          <p style="opacity: 0.8; line-height: 1.6">
+            Team up with other builders or compete - whatever gets the best
+            results. The community rewards effective execution.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lower Atmosphere - For Funders -->
+  <section id="funders" class="sky-layer thermosphere" style="border: none">
+    <div style="max-width: 1200px; margin: 0 auto; text-align: center">
+      <h2
+        style="
+              font-size: 2.25rem;
+              font-weight: 700;
+              color: var(--wind-deep);
+              margin-bottom: 50px;
+              font-family: 'Orbitron', monospace;
+            "
+      >
+        FOR FUNDERS
+      </h2>
+      <p
+        style="
+              font-size: 1.3rem;
+              color: rgba(6, 41, 62, 0.8);
+              margin-bottom: 50px;
+              max-width: 800px;
+              margin-left: auto;
+              margin-right: auto;
+            "
+      >
+        Finally, public goods funding with upside. Support early, earn more.
+        Back the right projects and benefit as they grow and attract more
+        funding.
+      </p>
+
+      <div
+        style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 30px;
+              margin-top: 50px;
+            "
+      >
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">📈</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Early Bird Returns
+          </h3>
+          <p style="color: rgba(6, 41, 62, 0.8); line-height: 1.6">
+            The earlier you back a project, the greater your potential
+            returns. Reward your ability to spot winners early.
+          </p>
+          <div class="highlight-text">
+            Average 3x Return on Early Backing
+          </div>
+        </div>
+
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">🔍</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Transparent Impact
+          </h3>
+          <p style="color: rgba(6, 41, 62, 0.8); line-height: 1.6">
+            See exactly how your funding is used, track progress in
+            real-time, and measure the actual impact of your investment.
+          </p>
+        </div>
+
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">🎪</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Portfolio Diversification
+          </h3>
+          <p style="color: rgba(6, 41, 62, 0.8); line-height: 1.6">
+            Spread funding across multiple projects and sectors. Reduce risk
+            while maximizing your positive impact on the world.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Organizations Section -->
+  <section
+    id="organizations"
+    class="sky-layer"
+    style="
+          background: linear-gradient(
+            180deg,
+            rgba(78, 205, 196, 0.2) 0%,
+            rgba(255, 234, 167, 0.1) 100%
+          );
+          padding: 100px 20px;
+          border: none;
+        "
+  >
+    <div style="max-width: 1200px; margin: 0 auto; text-align: center">
+      <h2
+        style="
+              font-size: 2.25rem;
+              font-weight: 700;
+              color: var(--wind-deep);
+              margin-bottom: 50px;
+              font-family: 'Orbitron', monospace;
+            "
+      >
+        FOR ORGANIZATIONS
+      </h2>
+      <p
+        style="
+              font-size: 1.3rem;
+              color: rgba(6, 41, 62, 0.8);
+              margin-bottom: 50px;
+              max-width: 800px;
+              margin-left: auto;
+              margin-right: auto;
+            "
+      >
+        Route your grant programs through Updraft. Engage broader
+        communities, discover better solutions, and measure real impact
+        through our decentralized coordination system.
+      </p>
+
+      <div
+        style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+              gap: 40px;
+              margin-top: 50px;
+            "
+      >
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">🌐</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Community Engagement
+          </h3>
+          <p style="color: rgba(6, 41, 62, 0.8); line-height: 1.6">
+            Tap into passionate communities who care about your mission. Get
+            better ideas and more committed execution.
+          </p>
+        </div>
+
+        <div class="user-card">
+          <div style="font-size: 3rem; margin-bottom: 20px">📊</div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 15px">
+            Impact Measurement
+          </h3>
+          <p style="color: rgba(6, 41, 62, 0.8); line-height: 1.6">
+            Real-time dashboards, community feedback, and transparent
+            progress tracking. Know your funding is making a difference.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Launch Section -->
+  <section
+    id="launch"
+    class="sky-layer"
+    style="
+          background: linear-gradient(
+            180deg,
+            rgba(255, 234, 167, 0.1) 0%,
+            rgba(45, 52, 54, 0.9) 100%
+          );
+          text-align: center;
+          border: none;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 0 20px 100px 20px;
+        "
+  >
+    <h2
+      style="
+              font-size: 4rem;
+              font-weight: 900;
+              color: var(--wind-deep);
+              margin-bottom: 30px;
+              font-family: 'Orbitron', monospace;
+            "
+    >
+      READY TO SOAR?
+    </h2>
+    <p
+      style="
+              font-size: 1.2rem;
+              color: var(--wind-gold);
+              margin-bottom: 50px;
+            "
+    >
+      Let the wind of collective action carry your ideas to new heights.
+      <a href="https://app.updraft.fund"
+         style="
+                 color: var(--wind-secondary);
+                 text-decoration: underline;
+                 font-weight: 600;
+            "
+      >
+        <br />🪁 Open the Updraft App
+      </a>
+    </p>
+    <div class="image-links-container">
+      <img
+        src="../assets/get-upd.png"
+        alt="Wizard and grandkids casting kites into the starry night sky over a valley with a river"
+        class="links-image"
+      />
+
+      <div class="links-section">
+        <h3 class="links-title">Learn More</h3>
+        <ul class="links-list">
+          <li>
+            <a
+              class="kite1 kite-link"
+              href="https://mirror.xyz/0xB7C5583C4C81e97e2883F4B2A250368d8eEcB0e2"
+            >Blog</a
+            >
+          </li>
+          <li>
+            <a class="kite2 kite-link" href="https://guide.updraft.fund/updraft/"
+            >Guide</a
+            >
+          </li>
+        </ul>
+        <h3 class="links-title">Get Involved</h3>
+        <ul class="links-list">
+          <li>
+            <a class="kite4 kite-link" href="https://discord.gg/mQJ58MY6Nz"
+            >Discord</a
+            >
+          </li>
+          <li>
+            <a class="kite5 kite-link" href="https://github.com/UpdraftFund"
+            >GitHub</a
+            >
+          </li>
+          <li>
+            <a class="kite6 kite-link" href="https://x.com/updraftfund">Twitter</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  // Wind Particle System
+  let container,
+    kites = [],
+    windStrength = 0.1; // Start at "Calm" strength
+
+  function initWindSystem() {
+    container = document.getElementById("wind-container");
+    resizeContainer();
+
+    // Set particle count based on device size
+    let kiteCount;
+    if (window.innerWidth <= 768) {
+      kiteCount = 10; // Mobile
+    } else if (window.innerWidth <= 1024) {
+      kiteCount = 25; // Tablet
+    } else {
+      kiteCount = 50; // Desktop
+    }
+
+    // Create kites
+    for (let i = 0; i < kiteCount; i++) {
+      kites.push(createKite());
+    }
+
+    // Set initial gauge state
+    updateWindGauge(windStrength);
+
+    animateKites();
+  }
+
+  function createKite() {
+    const kite = document.createElement("div");
+    kite.className = "wind-kite";
+
+    // Array of different kite colors and shapes
+    const kiteVariants = [
+      {
+        colors: ['rgb(247 250 251)', 'rgb(155 191 212)', 'rgb(14 94 140)'],
+        shape: 'M50 10 L30 40 L50 70 L70 40 Z'
+      },
+      {
+        colors: ['#b57edc', '#ff6ec7', '#9c4dcc'],
+        shape: 'M50 10 L30 40 L50 70 L70 40 Z'
+      },
+      {
+        colors: ['#fdb813', '#f76c1c', '#e65100'],
+        shape: 'M50 15 L25 35 L50 75 L75 35 Z'
+      },
+      {
+        colors: ['#aed581', '#558b2f', '#33691e'],
+        shape: 'M50 5 L35 45 L50 65 L65 45 Z'
+      },
+      {
+        colors: ['#81d4fa', '#f48fb1', '#4fc3f7'],
+        shape: 'M50 12 L28 38 L50 68 L72 38 Z'
+      },
+      {
+        colors: ['#d4af37', '#a97142', '#8d6e63'],
+        shape: 'M50 8 L32 42 L50 72 L68 42 Z'
+      }
+    ];
+
+    const variant = kiteVariants[Math.floor(Math.random() * kiteVariants.length)];
+    const gradientId = `kiteGradient${Math.random().toString(36).substr(2, 9)}`;
+
+    // Create kite SVG with random variant
+    kite.innerHTML = `
+          <svg viewBox="0 0 100 100" fill="none" width="100%" height="100%">
+            <defs>
+              <linearGradient
+                id="${gradientId}"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" style="stop-color: ${variant.colors[0]}" />
+                <stop offset="50%" style="stop-color: ${variant.colors[1]}" />
+                <stop offset="100%" style="stop-color: ${variant.colors[2]}" />
+              </linearGradient>
+            </defs>
+            <path
+              d="${variant.shape}"
+              fill="url(#${gradientId})"
+              stroke="#fff"
+              stroke-width="2"
+            />
+            <line
+              x1="50"
+              y1="70"
+              x2="50"
+              y2="90"
+              stroke="#666"
+              stroke-width="2"
+            />
+          </svg>
+        `;
+
+    const kiteObj = {
+      element: kite,
+      x: Math.random() * container.offsetWidth,
+      y: Math.random() * container.offsetHeight,
+      vx: (Math.random() - 0.5) * 0.5, // Further reduced horizontal velocity
+      vy: Math.random() * -0.8 - 0.3, // Reduced vertical velocity
+      size: Math.random() * 35 + 5,
+      opacity: Math.random() * 0.5 + 0.2,
+    };
+
+    kite.style.width = kiteObj.size + "px";
+    kite.style.height = kiteObj.size + "px";
+    kite.style.opacity = kiteObj.opacity;
+
+    container.appendChild(kite);
+    return kiteObj;
+  }
+
+  function resizeContainer() {
+    container.style.width = window.innerWidth + "px";
+    container.style.height = window.innerHeight + "px";
+  }
+
+  function animateKites() {
+    kites.forEach((kite, i) => {
+      // Use time for animation to ensure smooth swaying
+      const time = Date.now() * 0.001;
+
+      // Enhanced movement based on wind strength
+      const windMultiplier = windStrength > 0.8 ? 3 : 1; // Storm mode multiplier
+
+      // Apply sine wave sway for horizontal movement
+      const swayAmount =
+        Math.sin(time * (1 + windStrength * 3) + i) *
+        (0.5 + windStrength * 3) * windMultiplier;
+      kite.x += swayAmount;
+
+      // Apply constant vertical velocity, adjusted by windStrength
+      const baseVerticalSpeed = 1.5;
+      const verticalSpeed = baseVerticalSpeed * (0.3 + windStrength * 1.2) * windMultiplier;
+      kite.y -= verticalSpeed;
+
+      // Reset kites when they go off top or bottom of screen
+      if (kite.y < -20) {
+        kite.x = Math.random() * container.offsetWidth;
+        kite.y = container.offsetHeight + 20;
+      } else if (kite.y > container.offsetHeight + 20) {
+        kite.x = Math.random() * container.offsetWidth;
+        kite.y = -20;
+      }
+
+      // Wrap kites around horizontally for a continuous effect
+      if (kite.x < -20) {
+        kite.x = container.offsetWidth + 19;
+      } else if (kite.x > container.offsetWidth + 20) {
+        kite.x = -19;
+      }
+
+      // Update position
+      kite.element.style.left = kite.x + "px";
+      kite.element.style.top = kite.y + "px";
+
+      // Add rotation based on sway amount and wind strength
+      const baseRotation = swayAmount * 25;
+      const stormRotation = windStrength > 0.8 ? (Math.random() - 0.5) * 30 : 0;
+      const rotation = baseRotation + stormRotation;
+      kite.element.style.transform = `rotate(${rotation}deg)`;
+    });
+
+    requestAnimationFrame(animateKites);
+  }
+
+  // Wind Gauge Interaction
+  const windGauge = document.querySelector(".wind-gauge");
+  const windNeedle = document.querySelector(".wind-needle");
+  const windLabel = document.getElementById("wind-strength-label");
+  let isDragging = false;
+  let currentWindState = 0; // 0 = CALM, 1 = BREEZY, 2 = GUSTY, 3 = STORMY
+
+  const windStates = [
+    { name: "CALM", strength: 0.1 },
+    { name: "BREEZY", strength: 0.4 },
+    { name: "GUSTY", strength: 0.7 },
+    { name: "STORMY", strength: 1.0 }
+  ];
+
+  const updateWindGauge = (strength) => {
+    const angle = -45 + strength * 90;
+    windNeedle.style.transform = `translate(-50%, -100%) rotate(${angle}deg)`;
+
+    if (strength < 0.25) windLabel.textContent = "CALM";
+    else if (strength < 0.55) windLabel.textContent = "BREEZY";
+    else if (strength < 0.85) windLabel.textContent = "GUSTY";
+    else windLabel.textContent = "STORMY";
+  };
+
+  const cycleWindState = () => {
+    currentWindState = (currentWindState + 1) % windStates.length;
+    const state = windStates[currentWindState];
+    windStrength = state.strength;
+    windLabel.textContent = state.name;
+    updateWindGauge(state.strength);
+  };
+
+  const updateWindStrength = (clientY) => {
+    const rect = windGauge.getBoundingClientRect();
+    let strength = 1 - (clientY - rect.top) / rect.height;
+    strength = Math.max(0, Math.min(1, strength));
+    windStrength = strength;
+    updateWindGauge(strength);
+  };
+
+  // Click to cycle through wind states
+  windGauge.addEventListener("click", (e) => {
+    if (!isDragging) {
+      cycleWindState();
+    }
+    e.preventDefault();
+  });
+
+  // Mouse events for dragging (optional advanced control)
+  windGauge.addEventListener("mousedown", (e) => {
+    if (e.shiftKey) { // Only drag if shift is held
+      isDragging = true;
+      updateWindStrength(e.clientY);
+    }
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      updateWindStrength(e.clientY);
+    }
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+  });
+
+  // Touch events - simple tap to cycle
+  windGauge.addEventListener("touchstart", (e) => {
+    cycleWindState();
+    e.preventDefault();
+  });
+
+  // Smooth scrolling for navigation
+  document.querySelectorAll(".floating-nav a").forEach((anchor) => {
+    anchor.addEventListener("click", function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute("href"));
+      if (target) {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    });
+  });
+
+  // Resize handler
+  window.addEventListener("resize", () => {
+    resizeContainer();
+    resetParticles();
+  });
+
+  function resetParticles() {
+    // Clear existing kites
+    kites.forEach((kite) => {
+      if (kite.element && kite.element.parentNode) {
+        kite.element.parentNode.removeChild(kite.element);
+      }
+    });
+    kites = [];
+
+    // Set kite count based on device size
+    let kiteCount;
+    if (window.innerWidth <= 768) {
+      kiteCount = 10; // Mobile
+    } else if (window.innerWidth <= 1024) {
+      kiteCount = 25; // Tablet
+    } else {
+      kiteCount = 50; // Desktop
+    }
+
+    // Create new kites
+    for (let i = 0; i < kiteCount; i++) {
+      kites.push(createKite());
+    }
+  }
+
+  // Initialize everything
+  window.addEventListener("load", initWindSystem);
+
+  // Scroll-triggered animations
+  window.addEventListener("scroll", () => {
+    const scrolled = window.pageYOffset;
+    const windMeter = document.querySelector(".wind-meter");
+    const heroSection = document.querySelector(".hero-stratosphere");
+
+    if (heroSection) {
+      const heroBottom = heroSection.offsetTop + heroSection.offsetHeight / 2;
+
+      // Hide wind meter when scrolling past hero section
+      if (scrolled > heroBottom) {
+        windMeter.style.opacity = "0";
+      }
+      // Show wind meter when scrolling back to hero section
+      else {
+        windMeter.style.opacity = "1";
+      }
+    }
+  });
+
+  // Intersection Observer for user cards
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("animate-in");
+        } else {
+          entry.target.classList.remove("animate-in");
+        }
+      });
+    },
+    {
+      threshold: 0.5, // Trigger when 50% of the card is visible
+    }
+  );
+
+  // Observe all user cards
+  document.querySelectorAll(".user-card").forEach((card) => {
+    observer.observe(card);
+  });
+</script>
+</body>
+</html>

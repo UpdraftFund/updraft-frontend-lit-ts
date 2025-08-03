@@ -32,6 +32,15 @@ export const markComplete = (taskId: BeginnerTask): void => {
   updatedTasks.add(taskId);
   completedTasks.set(updatedTasks);
   localStorage.setItem('completedTasks', JSON.stringify([...updatedTasks]));
+
+  // Set cross-subdomain cookie to indicate user has used the app
+  // This allows www.updraft.fund to know they're not a new user
+  try {
+    document.cookie =
+      'hasUsedApp=true; domain=.updraft.fund; path=/; max-age=31536000; SameSite=Lax';
+  } catch (error) {
+    console.warn('Failed to set cross-subdomain cookie:', error);
+  }
 };
 
 export const isComplete = (taskId: BeginnerTask) => {
