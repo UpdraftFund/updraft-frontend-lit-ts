@@ -8,10 +8,6 @@
           "type": "header",
           "key": "user-agent",
           "value": ".*(facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|skypeuripreview|applebot|googlebot|bingbot|yandexbot|pinterest|redditbot|mastodon|misskey|pleroma).*"
-        },
-        {
-          "type": "host",
-          "value": "app.updraft.fund"
         }
       ]
     },
@@ -23,10 +19,6 @@
           "type": "header",
           "key": "user-agent",
           "value": ".*(facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|skypeuripreview|applebot|googlebot|bingbot|yandexbot|pinterest|redditbot|mastodon|misskey|pleroma).*"
-        },
-        {
-          "type": "host",
-          "value": "app.updraft.fund"
         }
       ]
     },
@@ -43,19 +35,6 @@
     {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "destination": "https://app.updraft.fund/$1",
-      "has": [
-        {
-          "type": "host",
-          "value": "updraft.fund"
-        }
-      ],
-      "permanent": false
     }
   ]
 }
