@@ -155,7 +155,7 @@ query SolutionsForIdea($ideaId: ID!) {
     fundingGoal
     tokensContributed
     deadline
-    progress
+      sweetness
   }
 }
 ```

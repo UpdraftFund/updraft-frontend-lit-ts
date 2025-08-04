@@ -16,7 +16,7 @@ This repository contains the frontend application for Updraft, built with Lit an
 
 ## Overview
 
-This frontend application provides the user interface for the Updraft platform, allowing users to browse, create, and
+This frontend application provides the user interface for the Updraft platform, allowing users to browse, create and
 fund ideas and solutions.
 
 ## Prerequisites
