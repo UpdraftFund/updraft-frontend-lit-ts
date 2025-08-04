@@ -24,6 +24,16 @@
     },
     {
       "source": "/(.*)",
+      "destination": "/api/smart-routing",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.updraft.fund"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
