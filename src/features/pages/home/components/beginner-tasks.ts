@@ -125,9 +125,6 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
                   target="_blank"
                   >Frame</a
                 >
-                ⬩<a href="https://metamask.io/download" target="_blank"
-                  >Metamask</a
-                >
                 ⬩<a href="https://rabby.io/" target="_blank">Rabby</a>
               </p>
               <div class="clear-float"></div>
