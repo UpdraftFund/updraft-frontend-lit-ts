@@ -8,7 +8,9 @@ import { join } from 'path';
  */
 function hasUsedAppCookie(req: VercelRequest): boolean {
   const cookies = req.headers.cookie || '';
-  return cookies.includes('hasUsedApp=true');
+  // More robust cookie parsing to avoid false positives
+  const cookieArray = cookies.split(';').map((c) => c.trim());
+  return cookieArray.some((cookie) => cookie === 'hasUsedApp=true');
 }
 
 /**
@@ -27,37 +29,52 @@ function serveLandingPage(res: VercelResponse): void {
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour - landing page is static
+    res.setHeader('X-Debug-Landing-Path', landingPagePath);
+    res.setHeader('X-Debug-Landing-Size', landingPageContent.length.toString());
     res.send(landingPageContent);
   } catch (error) {
-    console.error('Error serving landing page:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.setHeader('X-Debug-Landing-Error', errorMessage);
+    res.setHeader('X-Debug-Working-Dir', process.cwd());
     // Fallback: redirect to app
     res.redirect(302, 'https://app.updraft.fund/');
   }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const url = new URL(req.url!, `https://${req.headers.host}`);
-  const hostname = url.hostname;
-  const pathname = url.pathname;
+  // Parse the URL properly - req.url is just the path + query, not full URL
+  const pathname = req.url?.split('?')[0] || '/';
+  const search = req.url?.includes('?')
+    ? req.url.substring(req.url.indexOf('?'))
+    : '';
+  const hostname = req.headers.host || '';
+  const hasCookie = hasUsedAppCookie(req);
+
+  // Add debug headers (will be visible in browser dev tools)
+  res.setHeader('X-Debug-Hostname', hostname);
+  res.setHeader('X-Debug-Pathname', pathname);
+  res.setHeader('X-Debug-Search', search);
+  res.setHeader('X-Debug-Has-Cookie', hasCookie.toString());
 
   // Only handle www.updraft.fund requests
   if (hostname !== 'www.updraft.fund') {
-    return res.redirect(
-      302,
-      `https://app.updraft.fund${pathname}${url.search}`
-    );
+    res.setHeader('X-Debug-Action', 'redirect-to-app-wrong-host');
+    return res.redirect(302, `https://app.updraft.fund${pathname}${search}`);
   }
 
   // For www.updraft.fund root path
   if (pathname === '/') {
     // If user hasn't used the app before, show landing page
-    if (!hasUsedAppCookie(req)) {
+    if (!hasCookie) {
+      res.setHeader('X-Debug-Action', 'serve-landing-page');
       return serveLandingPage(res);
     }
     // Otherwise redirect to app
+    res.setHeader('X-Debug-Action', 'redirect-to-app-has-cookie');
     return res.redirect(302, 'https://app.updraft.fund/');
   }
 
   // For all other www.updraft.fund paths, redirect to app (preserves social links)
-  return res.redirect(302, `https://app.updraft.fund${pathname}${url.search}`);
+  res.setHeader('X-Debug-Action', 'redirect-to-app-other-path');
+  return res.redirect(302, `https://app.updraft.fund${pathname}${search}`);
 }
