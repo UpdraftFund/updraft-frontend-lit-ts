@@ -24,7 +24,14 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/api/smart-routing",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/(.+)",
+      "destination": "https://app.updraft.fund/$1",
+      "permanent": false,
       "has": [
         {
           "type": "host",
@@ -33,8 +40,20 @@
       ]
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/",
+      "destination": "https://app.updraft.fund/",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "www.updraft.fund"
+        },
+        {
+          "type": "cookie",
+          "key": "hasUsedApp",
+          "value": "true"
+        }
+      ]
     }
   ]
 }
