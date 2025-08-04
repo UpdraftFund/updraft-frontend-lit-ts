@@ -26,7 +26,7 @@ function serveLandingPage(res: VercelResponse): void {
     const landingPageContent = readFileSync(landingPagePath, 'utf8');
 
     res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
+    res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour - landing page is static
     res.send(landingPageContent);
   } catch (error) {
     console.error('Error serving landing page:', error);
