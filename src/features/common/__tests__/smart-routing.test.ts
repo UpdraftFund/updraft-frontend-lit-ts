@@ -62,10 +62,24 @@ function hasUsedAppCookie(req: MockVercelRequest): boolean {
  */
 function parseUrlComponents(req: MockVercelRequest) {
   const pathname = req.url?.split('?')[0] || '/';
-  const search = req.url?.includes('?')
-    ? req.url.substring(req.url.indexOf('?'))
-    : '';
   const hostname = req.headers.host || '';
+
+  // Filter out Vercel's internal query parameters
+  let search = '';
+  if (req.url?.includes('?')) {
+    const urlParams = new URLSearchParams(
+      req.url.substring(req.url.indexOf('?') + 1)
+    );
+    // Remove Vercel's internal parameters
+    urlParams.delete('host');
+    urlParams.delete('x-vercel-id');
+    urlParams.delete('x-vercel-cache');
+    // Only include search if there are remaining parameters
+    if (urlParams.toString()) {
+      search = '?' + urlParams.toString();
+    }
+  }
+
   return { pathname, search, hostname };
 }
 
@@ -232,6 +246,28 @@ describe('Smart Routing API', () => {
       expect(search).to.equal('');
       expect(hostname).to.equal('');
     });
+
+    it('should filter out Vercel internal parameters', () => {
+      const req: MockVercelRequest = {
+        url: '/discover?search=test&host=www.updraft.fund&x-vercel-id=123',
+        headers: { host: 'www.updraft.fund' },
+      };
+      const { pathname, search, hostname } = parseUrlComponents(req);
+      expect(pathname).to.equal('/discover');
+      expect(search).to.equal('?search=test');
+      expect(hostname).to.equal('www.updraft.fund');
+    });
+
+    it('should return empty search when only Vercel parameters present', () => {
+      const req: MockVercelRequest = {
+        url: '/test?host=www.updraft.fund&x-vercel-cache=HIT',
+        headers: { host: 'www.updraft.fund' },
+      };
+      const { pathname, search, hostname } = parseUrlComponents(req);
+      expect(pathname).to.equal('/test');
+      expect(search).to.equal('');
+      expect(hostname).to.equal('www.updraft.fund');
+    });
   });
 
   describe('Routing Logic', () => {
@@ -331,7 +367,7 @@ describe('Smart Routing API', () => {
 
     it('should preserve query parameters in redirects', () => {
       const req: MockVercelRequest = {
-        url: '/discover?search=[songaday]%20[redux]&sort=recent',
+        url: '/discover?search=[songaday] [redux]&sort=recent',
         headers: { host: 'www.updraft.fund' },
       };
       const res = createMockResponse();
@@ -339,11 +375,12 @@ describe('Smart Routing API', () => {
       simulateSmartRouting(req, res);
 
       expect(res.statusCode).to.equal(302);
+      // URLSearchParams properly encodes the parameters
       expect(res.redirectLocation).to.equal(
-        'https://app.updraft.fund/discover?search=[songaday]%20[redux]&sort=recent'
+        'https://app.updraft.fund/discover?search=%5Bsongaday%5D+%5Bredux%5D&sort=recent'
       );
       expect(res.headers['X-Debug-Search']).to.equal(
-        '?search=[songaday]%20[redux]&sort=recent'
+        '?search=%5Bsongaday%5D+%5Bredux%5D&sort=recent'
       );
     });
   });
