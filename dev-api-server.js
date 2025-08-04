@@ -97,6 +97,14 @@ const server = createServer(async (req, res) => {
     const apiReq = createApiReq(req, query, body);
     const apiRes = createApiRes(res);
 
+    // Simulate Vercel routing behavior for www.updraft.fund
+    const host = req.headers.host || '';
+    if (host === 'www.updraft.fund' || host.includes('www.updraft.fund')) {
+      const { default: handler } = await import('./api/smart-routing.ts');
+      await handler(apiReq, apiRes);
+      return;
+    }
+
     // Route API requests
     if (pathname === '/api/campaigns/campaigns') {
       const { default: handler } = await import('./api/campaigns/campaigns.ts');
@@ -109,6 +117,9 @@ const server = createServer(async (req, res) => {
       await handler(apiReq, apiRes);
     } else if (pathname === '/api/social-meta') {
       const { default: handler } = await import('./api/social-meta.ts');
+      await handler(apiReq, apiRes);
+    } else if (pathname === '/api/smart-routing') {
+      const { default: handler } = await import('./api/smart-routing.ts');
       await handler(apiReq, apiRes);
     } else {
       res.writeHead(404, { 'Content-Type': 'application/json' });

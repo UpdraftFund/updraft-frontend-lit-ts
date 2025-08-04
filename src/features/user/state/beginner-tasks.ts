@@ -26,21 +26,23 @@ export const allTasksComplete = computed(() => {
 });
 
 export const markComplete = (taskId: BeginnerTask): void => {
+  // Always refresh the cookie, even if task is already complete
+  // This extends the expiry for active users
+  try {
+    // Set cookie to expire in 30 days instead of 1 year
+    // This allows returning users to see landing page again after extended absence
+    document.cookie =
+      'hasUsedApp=true; domain=.updraft.fund; path=/; max-age=2592000; SameSite=Lax';
+  } catch (error) {
+    console.warn('Failed to set cross-subdomain cookie:', error);
+  }
+
   if (isComplete(taskId)) return; // avoid unnecessary rerenders
 
   const updatedTasks = new Set(completedTasks.get());
   updatedTasks.add(taskId);
   completedTasks.set(updatedTasks);
   localStorage.setItem('completedTasks', JSON.stringify([...updatedTasks]));
-
-  // Set cross-subdomain cookie to indicate user has used the app
-  // This allows www.updraft.fund to know they're not a new user
-  try {
-    document.cookie =
-      'hasUsedApp=true; domain=.updraft.fund; path=/; max-age=31536000; SameSite=Lax';
-  } catch (error) {
-    console.warn('Failed to set cross-subdomain cookie:', error);
-  }
 };
 
 export const isComplete = (taskId: BeginnerTask) => {
