@@ -8,27 +8,6 @@ import DOMPurify from 'isomorphic-dompurify';
 
 import { escapeForAttribute } from '../shared/utils/format-utils.js';
 
-// Social media crawler user agents
-const CRAWLER_USER_AGENTS = [
-  'facebookexternalhit',
-  'twitterbot',
-  'linkedinbot',
-  'slackbot',
-  'discordbot',
-  'telegrambot',
-  'whatsapp',
-  'skypeuripreview',
-  'applebot',
-  'googlebot',
-  'bingbot',
-  'yandexbot',
-  'pinterest',
-  'redditbot',
-  'mastodon',
-  'misskey',
-  'pleroma',
-];
-
 // GraphQL queries
 const IDEA_QUERY = `
   query Idea($ideaId: ID!) {
@@ -94,11 +73,6 @@ interface Profile {
 interface SolutionInfo {
   name?: string;
   description?: string;
-}
-
-function isCrawlerRequest(userAgent: string): boolean {
-  const ua = userAgent.toLowerCase();
-  return CRAWLER_USER_AGENTS.some((crawler) => ua.includes(crawler));
 }
 
 /**
@@ -305,24 +279,19 @@ function generateMetaTags(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const userAgent = req.headers['user-agent'] || '';
   const { type, id } = req.query;
 
-  // Only process for social media crawlers
-  if (!isCrawlerRequest(userAgent)) {
-    return res.redirect(302, `/${type}/${id}`);
-  }
+  // Note: vercel.json already filters for social media crawlers, so we only get crawler requests here
 
   if (type === 'idea' && typeof id === 'string') {
     const data = await fetchGraphQLData(IDEA_QUERY, { ideaId: id });
 
     if (data?.idea) {
-      const html = generateIdeaMetaTags(
-        data.idea,
-        `${req.headers.host}/${type}/${id}`
-      );
+      // Always use app.updraft.fund for canonical URLs in meta tags
+      const canonicalUrl = `https://app.updraft.fund/${type}/${id}`;
+      const html = generateIdeaMetaTags(data.idea, canonicalUrl);
       res.setHeader('Content-Type', 'text/html');
-      res.setHeader('Cache-Control', 'public, max-age=300');
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for one year - idea data can't change
       return res.send(html);
     }
   }
@@ -331,16 +300,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const data = await fetchGraphQLData(SOLUTION_QUERY, { solutionId: id });
 
     if (data?.solution) {
-      const html = generateSolutionMetaTags(
-        data.solution,
-        `${req.headers.host}/${type}/${id}`
-      );
+      // Always use app.updraft.fund for canonical URLs in meta tags
+      const canonicalUrl = `https://app.updraft.fund/${type}/${id}`;
+      const html = generateSolutionMetaTags(data.solution, canonicalUrl);
       res.setHeader('Content-Type', 'text/html');
-      res.setHeader('Cache-Control', 'public, max-age=300');
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for one day - solution data changes infrequently
       return res.send(html);
     }
   }
 
-  // Fallback: redirect to the normal SPA
-  return res.redirect(302, `/${type}/${id}`);
+  // Fallback: return a basic HTML page if data fetch fails
+  const fallbackTitle = `${type === 'idea' ? 'Idea' : 'Solution'} | Updraft`;
+  const fallbackDescription =
+    'Get paid to find ideas, crowdfund and work on what you love.';
+  const canonicalUrl = `https://app.updraft.fund/${type}/${id}`;
+
+  const html = generateMetaTags(
+    fallbackTitle,
+    fallbackDescription,
+    canonicalUrl
+  );
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Cache-Control', 'public, max-age=60'); // Cache for 1 minute - fallback should retry sooner
+  return res.send(html);
 }
