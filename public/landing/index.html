@@ -74,6 +74,7 @@
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
+      width: fit-content;
       z-index: 100;
       backdrop-filter: blur(20px);
       background: rgba(255, 255, 255, 0.1);
@@ -81,7 +82,8 @@
       border-radius: 50px;
       padding: 10px 30px;
       display: inline-flex;
-      /* animation: float 6s ease-in-out infinite; */
+      justify-content: space-between;
+      white-space: nowrap;
     }
 
     @keyframes float {
@@ -124,8 +126,7 @@
       align-items: center;
       text-align: center;
       position: relative;
-      padding: 0 20px;
-      padding-top: 75px;
+      padding: 75px 20px 0;
     }
 
     .hero-title {
@@ -141,8 +142,7 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      margin-bottom: 30px;
-      /* animation: titlePulse 4s ease-in-out infinite; */
+      margin-bottom: 20px;
     }
 
     @keyframes titlePulse {
@@ -158,7 +158,7 @@
     .hero-subtitle {
       font-size: clamp(1rem, 3vw, 1.75rem);
       color: rgba(6, 41, 62, 0.9);
-      margin-bottom: 50px;
+      margin-bottom: 24px;
       max-width: 800px;
       line-height: 1.6;
     }
@@ -332,7 +332,7 @@
         width: auto;
         padding: 10px 20px;
         font-size: 14px;
-        justify-content: space-between;
+        white-space: normal;
       }
 
       .floating-nav a {
@@ -583,15 +583,16 @@
     /* App launch button */
     .app-launch-btn {
       display: inline-block;
-      padding: 15px 30px;
+      padding: 14px 30px;
       background: linear-gradient(135deg, var(--wind-primary), var(--wind-secondary));
       color: white;
       text-decoration: none;
       border-radius: 50px;
       font-weight: 600;
-      font-size: 1.1rem;
+      font-size: 1rem;
       transition: all 0.3s ease;
       box-shadow: 0 4px 15px rgba(14, 94, 140, 0.3);
+      margin: 20px 0 0;
     }
 
     .app-launch-btn:hover {
@@ -707,12 +708,6 @@
         </div>
       </div>
     </a>
-
-    <div style="margin-top: 20px;">
-      <a href="https://app.updraft.fund" class="app-launch-btn">
-        Open Updraft App →
-      </a>
-    </div>
   </section>
 
   <!-- Troposphere - For Creators -->
@@ -1022,18 +1017,12 @@
       style="
               font-size: 1.2rem;
               color: var(--wind-gold);
-              margin-bottom: 50px;
+              margin-bottom: 30px;
             "
     >
-      Let the wind of collective action carry your ideas to new heights.
-      <a href="https://app.updraft.fund"
-         style="
-                 color: var(--wind-secondary);
-                 text-decoration: underline;
-                 font-weight: 600;
-            "
-      >
-        <br />🪁 Open the Updraft App
+      Let the wind of collective action carry your ideas to new heights.<br />
+      <a href="https://app.updraft.fund" class="app-launch-btn">
+        Open Updraft App →
       </a>
     </p>
     <div class="image-links-container">
