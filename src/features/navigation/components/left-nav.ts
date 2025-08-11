@@ -108,6 +108,12 @@ export class LeftNav extends SignalWatcher(LitElement) {
             </a>
           </li>
           <li>
+            <a href="/faucet" class=${nav.get() === 'faucet' ? 'active' : ''}>
+              <sl-icon src=${kite}></sl-icon>
+              <span class="location">Faucet</span>
+            </a>
+          </li>
+          <li>
             <a href="https://guide.updraft.fund/" target="_blank" }>
               <sl-icon src=${guide}></sl-icon>
               <span class="location">Guide</span>

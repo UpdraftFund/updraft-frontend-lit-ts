@@ -180,6 +180,16 @@ export class MyApp extends LitElement {
       },
       render: () => html` <submit-campaign></submit-campaign>`,
     },
+    {
+      path: '/faucet',
+      enter: async () => {
+        await import('@pages/faucet-page');
+        nav.set('faucet');
+        this.scrollToTop();
+        return true;
+      },
+      render: () => html` <faucet-page></faucet-page>`,
+    },
   ]);
 
   connectedCallback(): void {
