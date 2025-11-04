@@ -12,6 +12,11 @@
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "fundingRecipient_",
+        "type": "address"
+      },
+      {
         "internalType": "contract IERC20",
         "name": "stakingToken_",
         "type": "address"
@@ -101,6 +106,11 @@
       }
     ],
     "name": "GoalNotReached",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidDependencyData",
     "type": "error"
   },
   {
@@ -227,6 +237,24 @@
         "internalType": "uint256",
         "name": "totalTokens",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address[]",
+        "name": "dependencyAddresses",
+        "type": "address[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "dependencyChainIds",
+        "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "dependencyAmounts",
+        "type": "uint256[]"
       }
     ],
     "name": "Contributed",
@@ -262,20 +290,8 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "indexed": false,
         "internalType": "uint256",
         "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "tokensLeft",
         "type": "uint256"
       }
     ],
@@ -619,6 +635,40 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "dependencyAddresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "dependencyChainIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "dependencyAmounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "contributeWithDependencies",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "positionIndex",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "contributorFee",
     "outputs": [
@@ -798,6 +848,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "fundingRecipient",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1236,24 +1299,6 @@
   },
   {
     "inputs": [],
-    "name": "withdrawFunds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
     "name": "withdrawFunds",
     "outputs": [],
     "stateMutability": "nonpayable",
