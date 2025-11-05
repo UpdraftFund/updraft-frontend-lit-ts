@@ -8,7 +8,7 @@
       },
       {
         "internalType": "address",
-        "name": "humanity_",
+        "name": "faucet_",
         "type": "address"
       }
     ],
@@ -110,6 +110,12 @@
         "internalType": "uint256",
         "name": "totalTokens",
         "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "bool",
+        "name": "isAirdrop",
+        "type": "bool"
       }
     ],
     "name": "Contributed",
@@ -437,7 +443,7 @@
   },
   {
     "inputs": [],
-    "name": "humanity",
+    "name": "faucet",
     "outputs": [
       {
         "internalType": "address",

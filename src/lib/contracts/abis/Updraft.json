@@ -28,7 +28,7 @@
       },
       {
         "internalType": "address",
-        "name": "humanity_",
+        "name": "faucet_",
         "type": "address"
       }
     ],
@@ -172,6 +172,12 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "fundingRecipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "stake",
         "type": "uint256"
@@ -264,6 +270,54 @@
       }
     ],
     "name": "createIdeaWithProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "idea",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IERC20",
+        "name": "fundingToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "fundingRecipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "stake",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "goal",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "contributorFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "solutionData",
+        "type": "bytes"
+      }
+    ],
+    "name": "createSolution",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -374,10 +428,10 @@
   },
   {
     "inputs": [],
-    "name": "feeToken",
+    "name": "faucet",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -387,10 +441,10 @@
   },
   {
     "inputs": [],
-    "name": "humanity",
+    "name": "feeToken",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -486,12 +540,12 @@
   {
     "inputs": [
       {
-        "internalType": "contract IERC20",
-        "name": "token",
+        "internalType": "address",
+        "name": "faucet_",
         "type": "address"
       }
     ],
-    "name": "setFeeToken",
+    "name": "setFaucet",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -499,12 +553,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "humanity_",
+        "internalType": "contract IERC20",
+        "name": "token",
         "type": "address"
       }
     ],
-    "name": "setHumanity",
+    "name": "setFeeToken",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
