@@ -8,7 +8,7 @@
     "dev:vite": "vite",
     "dev:api": "tsx dev-api-server.js",
     "tsc": "tsc",
-    "build:all": "bun build:graph && bun lint && bun tsc && vite build",
+    "build": "bun build:graph && bun lint && bun tsc && vite build",
     "build:graph": "sh -c '[ -f .env.local ] && set -a && . .env.local && graphclient build'",
     "preview": "vite preview",
     "validate-graph": "sh -c '[ -f .env.local ] && set -a && . .env.local && graphclient validate'",
