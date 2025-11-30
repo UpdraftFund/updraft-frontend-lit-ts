@@ -19,10 +19,7 @@ import { Solution } from '@/features/solution/types';
 import { userAddress } from '@state/user';
 
 import { formatAmount } from '@utils/format-utils';
-import {
-  calculateProgress,
-  parseSolutionInfo,
-} from '@utils/solution/solution-utils';
+import { calculateProgress, parseSolutionInfo } from '@utils/solution/solution-utils';
 
 import { changeCardStyles } from '@styles/change-card-styles';
 
@@ -54,10 +51,7 @@ export class GoalFailedCard extends LitElement {
       try {
         const solution = new SolutionContract(solutionAddress as `0x${string}`);
         // Check if the user has a single, unrefunded position greater than zero
-        const [contribution, , , refunded] = (await solution.read(
-          'positionsByAddress',
-          [userAddr, 0]
-        )) as bigint[];
+        const [contribution, , , refunded] = (await solution.read('positionsByAddress', [userAddr, 0])) as bigint[];
         return contribution > 0n && !refunded;
       } catch (error) {
         console.warn('Error checking if user funded solution:', error);
@@ -69,9 +63,7 @@ export class GoalFailedCard extends LitElement {
 
   private async handleRefund() {
     try {
-      const solution = new SolutionContract(
-        this.change.solution.id as `0x${string}`
-      );
+      const solution = new SolutionContract(this.change.solution.id as `0x${string}`);
       // This works if there's only one position.
       this.refundTransaction.hash = await solution.write('refund', []);
     } catch (error) {
@@ -89,17 +81,14 @@ export class GoalFailedCard extends LitElement {
     return html`
       <sl-card>
         <div slot="header">
-          <a class="change-card-heading" href="/solution/${solution.id}"
-            >${solutionInfo?.name || 'Solution'}
-          </a>
+          <a class="change-card-heading" href="/solution/${solution.id}">${solutionInfo?.name || 'Solution'} </a>
           <div class="change-card-subheading">Goal Failed 😔</div>
         </div>
         <p class="goal-message">Funding goal was not met by the deadline</p>
         <div class="goal">
           <sl-progress-bar value="${progress}"></sl-progress-bar>
           <div class="goal-text">
-            ${formatAmount(solution.tokensContributed)} out of
-            ${formatAmount(solution.fundingGoal)} raised
+            ${formatAmount(solution.tokensContributed)} out of ${formatAmount(solution.fundingGoal)} raised
           </div>
         </div>
 
@@ -115,27 +104,16 @@ export class GoalFailedCard extends LitElement {
             hasFunded
               ? html`
                   <div class="refund-section">
-                    <p>
-                      You funded this Solution. You can get a refund since the
-                      goal was not met.
-                    </p>
-                    <sl-button
-                      class="refund-button"
-                      variant="primary"
-                      @click=${this.handleRefund}
-                    >
+                    <p>You funded this Solution. You can get a refund since the goal was not met.</p>
+                    <sl-button class="refund-button" variant="primary" @click=${this.handleRefund}>
                       Get refunded
                     </sl-button>
-                    <transaction-watcher
-                      @transaction-success=${() => this.hasFundedTask.run()}
-                    ></transaction-watcher>
+                    <transaction-watcher @transaction-success=${() => this.hasFundedTask.run()}></transaction-watcher>
                   </div>
                 `
               : html``,
           error: (error) =>
-            html` <div class="refund-section">
-              Error checking funding status: ${(error as Error).message}
-            </div>`,
+            html` <div class="refund-section">Error checking funding status: ${(error as Error).message}</div>`,
         })}
       </sl-card>
     `;

@@ -8,12 +8,7 @@ import '@components/common/vertical-fade';
 import { Idea } from '@/features/idea/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
-import {
-  formatReward,
-  formatAmount,
-  formatDate,
-  formattedText,
-} from '@utils/format-utils';
+import { formatReward, formatAmount, formatDate, formattedText } from '@utils/format-utils';
 import { parseProfile } from '@utils/user/user-utils';
 
 @customElement('idea-card-large')
@@ -51,16 +46,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
   @property() idea!: Idea;
 
   render() {
-    const {
-      startTime,
-      funderReward,
-      shares,
-      creator,
-      tags,
-      description,
-      id,
-      name,
-    } = this.idea;
+    const { startTime, funderReward, shares, creator, tags, description, id, name } = this.idea;
 
     const funderRewardFormatted = formatReward(funderReward);
     const interest = formatAmount(shares);
@@ -74,9 +60,7 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
             <h3 class="entity-name">${name}</h3>
           </a>
           <div class="byline">
-            <a href="/profile/${creator.id}"
-              >by ${profile.name || profile.team || creator.id}</a
-            >
+            <a href="/profile/${creator.id}">by ${profile.name || profile.team || creator.id}</a>
           </div>
         </div>
 
@@ -96,27 +80,17 @@ export class IdeaCardLarge extends SignalWatcher(LitElement) {
             : ''}
           <li>
             🔥 <span>${interest}</span>
-            <sl-tooltip
-              content="🔥 Interest is how much support an Idea has over time."
-            >
+            <sl-tooltip content="🔥 Interest is how much support an Idea has over time.">
               <span class="info-icon">ℹ️</span>
             </sl-tooltip>
           </li>
         </ul>
 
-        ${description
-          ? html` <vertical-fade class="description"
-              >${formattedText(description)}
-            </vertical-fade>`
-          : ''}
+        ${description ? html` <vertical-fade class="description">${formattedText(description)} </vertical-fade>` : ''}
         ${tags && tags.length > 0
           ? html`
               <div class="tags">
-                ${tags.map(
-                  (tag) => html`
-                    <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                  `
-                )}
+                ${tags.map((tag) => html` <a href="/discover?search=[${tag}]" class="tag">${tag}</a> `)}
               </div>
             `
           : ''}

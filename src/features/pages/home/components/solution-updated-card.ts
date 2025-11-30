@@ -43,9 +43,7 @@ export class SolutionUpdatedCard extends LitElement {
           </div>
           <a class="solution-body" href="/solution/${solution.id}">
             ${solutionInfo.news
-              ? html` <vertical-fade class="solution-news"
-                  >${formattedText(solutionInfo.news)}
-                </vertical-fade>`
+              ? html` <vertical-fade class="solution-news">${formattedText(solutionInfo.news)} </vertical-fade>`
               : html``}
             <solution-details-bar .solution=${solution}></solution-details-bar>
           </a>

@@ -68,19 +68,11 @@ export class IdeaSolutions extends LitElement {
           ? cache(html`
               <div class="solutions-list">
                 ${this.solutions.map(
-                  (solution) => html`
-                    <solution-card-large
-                      .solution=${solution}
-                    ></solution-card-large>
-                  `
+                  (solution) => html` <solution-card-large .solution=${solution}></solution-card-large> `
                 )}
               </div>
             `)
-          : html`
-              <div class="no-solutions">
-                No solutions yet. Be the first to draft one!
-              </div>
-            `}
+          : html` <div class="no-solutions">No solutions yet. Be the first to draft one!</div> `}
     `;
   }
 }

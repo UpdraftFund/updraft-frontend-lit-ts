@@ -21,11 +21,7 @@ export class SaveableForm extends LitElement {
         if (typeof value === 'string') {
           formObject[key] = value.trim(); // Save the string value (even if it's empty)
         } else {
-          console.warn(
-            `saveForm(${
-              this.formName
-            }): Skipping unsupported input type (${typeof value}) for key: ${key}`
-          );
+          console.warn(`saveForm(${this.formName}): Skipping unsupported input type (${typeof value}) for key: ${key}`);
         }
       }
       localStorage.setItem(`form:${this.formName}`, JSON.stringify(formObject));
@@ -139,10 +135,7 @@ export function formToJson(
   }
 
   const json: Record<string, unknown> = {};
-  const properties = Object.entries(schema.properties || {}) as [
-    string,
-    SchemaObject,
-  ][];
+  const properties = Object.entries(schema.properties || {}) as [string, SchemaObject][];
 
   for (const [key, schemaProperty] of properties) {
     switch (schemaProperty.type) {
@@ -180,9 +173,7 @@ export function formToJson(
         break;
 
       default:
-        throw new Error(
-          `Unsupported schema property type: ${schemaProperty.type}`
-        );
+        throw new Error(`Unsupported schema property type: ${schemaProperty.type}`);
     }
   }
 
@@ -191,12 +182,9 @@ export function formToJson(
     const validateSchema = ajv.compile(schema);
 
     if (!validateSchema(json)) {
-      const errorMessages = validateSchema.errors
-        ?.map((err) => `${err.instancePath} ${err.message}`)
-        .join(', ');
+      const errorMessages = validateSchema.errors?.map((err) => `${err.instancePath} ${err.message}`).join(', ');
       throw new Error(
-        `Schema: ${schema} validation failed for form(s):` +
-          `${formNames.join(', ')}. Errors: ${errorMessages}`
+        `Schema: ${schema} validation failed for form(s):` + `${formNames.join(', ')}. Errors: ${errorMessages}`
       );
     }
   }

@@ -101,10 +101,7 @@ export class MyIdeas extends SignalWatcher(LitElement) {
           ideaActivityMap.set(idea.id, {
             idea,
             // Use the latest activity time if this idea already exists in the map
-            activityTime: Math.max(
-              Number(idea.startTime),
-              ideaActivityMap.get(idea.id)?.activityTime || 0
-            ),
+            activityTime: Math.max(Number(idea.startTime), ideaActivityMap.get(idea.id)?.activityTime || 0),
           });
         });
 
@@ -123,9 +120,7 @@ export class MyIdeas extends SignalWatcher(LitElement) {
         } else {
           // Pagination - append new ideas, avoiding duplicates
           const existingIds = new Set(this.ideas.map((idea) => idea.id));
-          const uniqueNewIdeas = newIdeas.filter(
-            (idea) => !existingIds.has(idea.id)
-          );
+          const uniqueNewIdeas = newIdeas.filter((idea) => !existingIds.has(idea.id));
           this.ideas = [...this.ideas, ...uniqueNewIdeas];
         }
       } else {
@@ -170,12 +165,7 @@ export class MyIdeas extends SignalWatcher(LitElement) {
 
     return html`
       <div class="load-more-container">
-        <sl-button
-          size="small"
-          pill
-          ?loading=${this.isLoadingMore}
-          @click=${this.loadMore}
-        >
+        <sl-button size="small" pill ?loading=${this.isLoadingMore} @click=${this.loadMore}>
           ${this.isLoadingMore ? 'Loading...' : 'Load more ideas...'}
         </sl-button>
       </div>
@@ -185,25 +175,16 @@ export class MyIdeas extends SignalWatcher(LitElement) {
   render() {
     return html`
       <section-heading>💡 My Ideas</section-heading>
-      <sl-button size="small" pill href="/create-idea">
-        Create an Idea
-      </sl-button>
+      <sl-button size="small" pill href="/create-idea"> Create an Idea </sl-button>
       <div class="content">
         ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : this.ideas.length === 0
-            ? html`<div class="empty-message">
-                You haven't supported or created any ideas yet.
-              </div>`
+            ? html`<div class="empty-message">You haven't supported or created any ideas yet.</div>`
             : html`
                 ${cache(
                   this.ideas.map(
-                    (idea) => html`
-                      <idea-card-small
-                        .idea=${idea}
-                        .showReward=${false}
-                      ></idea-card-small>
-                    `
+                    (idea) => html` <idea-card-small .idea=${idea} .showReward=${false}></idea-card-small> `
                   )
                 )}
                 ${this.renderLoadMoreButton()}

@@ -2,13 +2,7 @@ import { signal, computed } from '@lit-labs/signals';
 import type { Address } from 'viem';
 import { fromHex } from 'viem';
 import { modal, config } from '@utils/web3';
-import {
-  disconnect,
-  watchAccount,
-  reconnect,
-  watchChainId,
-  getChainId,
-} from '@wagmi/core';
+import { disconnect, watchAccount, reconnect, watchChainId, getChainId } from '@wagmi/core';
 
 import type { Profile, CurrentUser } from '@/features/user/types';
 import { ProfileDocument } from '@gql';
@@ -25,9 +19,7 @@ export const connectionError = signal<string | null>(null);
 export const profileError = signal<string | null>(null);
 export const networkName = signal<string | null>(null);
 export const isConnected = computed(() => Boolean(userAddress.get()));
-export const hasProfile = computed(
-  () => userProfile.get()?.name || userProfile.get()?.team
-);
+export const hasProfile = computed(() => userProfile.get()?.name || userProfile.get()?.team);
 
 // Variables to track urql subscription for profile data
 let profileSubscription: { unsubscribe: () => void } | null = null;
@@ -98,11 +90,7 @@ const extractErrorMessage = (...args: ErrorArg[]): string | null => {
 
     // Extract error message for the signal
     const lastArg = args[args.length - 1];
-    return lastArg instanceof Error
-      ? lastArg.message
-      : lastArg
-        ? String(lastArg)
-        : 'Unknown error';
+    return lastArg instanceof Error ? lastArg.message : lastArg ? String(lastArg) : 'Unknown error';
   }
   return null;
 };
@@ -122,9 +110,7 @@ export const setConnectionError = (...args: ErrorArg[]): void => {
 export const setNetwork = (chainId: number | undefined): void => {
   if (chainId) {
     const currentNetworkName = networkName.get();
-    const newNetworkName = chainId
-      ? (config.chains.find((chain) => chain.id === chainId)?.name ?? null)
-      : null;
+    const newNetworkName = chainId ? (config.chains.find((chain) => chain.id === chainId)?.name ?? null) : null;
     if (currentNetworkName !== newNetworkName) {
       setNetworkName(newNetworkName);
       refreshUpdraftSettings().then(() => {
@@ -188,25 +174,21 @@ export const disconnectWallet = async (): Promise<void> => {
 // Subscribe to profile updates when address changes
 export const subscribeToProfileUpdates = (address: `0x${string}`): void => {
   cleanupProfileSubscription();
-  profileSubscription = urqlClient
-    .query(ProfileDocument, { userId: address })
-    .subscribe(async (result) => {
-      try {
-        if (result.error) {
-          setProfileError('Error fetching profile', result.error.message);
-        }
-        if (result.data?.user?.profile) {
-          const profileData = JSON.parse(
-            fromHex(result.data.user.profile as `0x${string}`, 'string')
-          );
-          setUserProfile(profileData);
-        } else {
-          setUserProfile(null);
-        }
-      } catch (err) {
-        setProfileError('Error processing profile data', err);
+  profileSubscription = urqlClient.query(ProfileDocument, { userId: address }).subscribe(async (result) => {
+    try {
+      if (result.error) {
+        setProfileError('Error fetching profile', result.error.message);
       }
-    });
+      if (result.data?.user?.profile) {
+        const profileData = JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
+        setUserProfile(profileData);
+      } else {
+        setUserProfile(null);
+      }
+    } catch (err) {
+      setProfileError('Error processing profile data', err);
+    }
+  });
 };
 
 // Clean up profile subscription (useful when component unmounts)

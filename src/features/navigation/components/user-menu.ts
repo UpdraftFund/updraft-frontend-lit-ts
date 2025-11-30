@@ -21,14 +21,7 @@ import getUpdIcon from '@icons/navigation/plus-circle.svg';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/format-utils';
 
-import {
-  userAddress,
-  networkName,
-  userProfile,
-  isConnecting,
-  connectWallet,
-  disconnectWallet,
-} from '@state/user';
+import { userAddress, networkName, userProfile, isConnecting, connectWallet, disconnectWallet } from '@state/user';
 import { balances, refreshBalances } from '@state/user/balances';
 
 @customElement('user-menu')
@@ -126,26 +119,18 @@ export class UserMenu extends SignalWatcher(LitElement) {
     const currentNetworkName = networkName.get();
     const profile = userProfile.get();
     const connectingValue = isConnecting.get();
-    const displayName =
-      profile?.name || profile?.team || (address ? address : 'Connecting...');
+    const displayName = profile?.name || profile?.team || (address ? address : 'Connecting...');
     const avatar = profile?.avatar;
     const ethBalanceRaw = balances.get()?.eth?.balance || '0';
     const ethSymbol = balances.get()?.eth?.symbol || 'ETH';
     const updBalanceRaw = balances.get()?.updraft?.balance || '0';
     const updSymbol = balances.get()?.updraft?.symbol || 'UPD';
-    const ethBalance = isNaN(Number(ethBalanceRaw))
-      ? '0.00000'
-      : parseFloat(ethBalanceRaw).toFixed(5);
+    const ethBalance = isNaN(Number(ethBalanceRaw)) ? '0.00000' : parseFloat(ethBalanceRaw).toFixed(5);
     const updBalance = shortNum(updBalanceRaw, 5);
 
     return address
       ? html`
-          <sl-dropdown
-            distance="12"
-            skidding="22"
-            placement="top-end"
-            @sl-show=${refreshBalances}
-          >
+          <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${refreshBalances}>
             <span slot="trigger" class="trigger-content" title="Profile menu">
               <user-avatar .address=${address} .image=${avatar}></user-avatar>
               <span class="name">${displayName}</span>
@@ -162,9 +147,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
                   <p class="status">${currentNetworkName || 'Unknown'}</p>
                 </div>
               </sl-menu-item>
-              <sl-menu-item
-                @click=${() => modal.open({ view: 'OnRampProviders' })}
-              >
+              <sl-menu-item @click=${() => modal.open({ view: 'OnRampProviders' })}>
                 <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
                 <div>
                   <p>Deposit Funds</p>
@@ -180,12 +163,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
               </sl-menu-item>
               <a href="/profile/${address}" title="My Profile">
                 <sl-menu-item>
-                  <user-avatar
-                    slot="prefix"
-                    class="menu-avatar"
-                    .address=${address}
-                    .image=${avatar}
-                  ></user-avatar>
+                  <user-avatar slot="prefix" class="menu-avatar" .address=${address} .image=${avatar}></user-avatar>
                   <div>
                     <p>My Profile</p>
                     <p class="status">${displayName}</p>
@@ -198,10 +176,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
         `
       : html`
           <div class="button-with-tooltip">
-            <sl-button
-              variant="primary"
-              @click=${() => connectWallet()}
-              ?loading=${connectingValue}
+            <sl-button variant="primary" @click=${() => connectWallet()} ?loading=${connectingValue}
               >Connect Wallet
             </sl-button>
             <sl-tooltip

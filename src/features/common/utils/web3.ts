@@ -1,9 +1,5 @@
 import { createAppKit } from '@reown/appkit';
-import {
-  AppKitNetwork,
-  arbitrumSepolia,
-  arbitrum,
-} from '@reown/appkit/networks';
+import { AppKitNetwork, arbitrumSepolia, arbitrum } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { porto } from 'wagmi/connectors';
 import { isProduction } from '@state/common/environment';
@@ -38,9 +34,7 @@ export const modal = createAppKit({
   metadata,
   projectId,
   enableNetworkSwitch: false,
-  themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light',
+  themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
   themeVariables: {
     '--w3m-accent': 'var(--accent);',
     '--w3m-font-family': 'var(--sl-font-sans);',

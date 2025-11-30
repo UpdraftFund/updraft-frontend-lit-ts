@@ -10,10 +10,7 @@ const DEV_API_BASE_URL = 'http://localhost:3001';
 /**
  * Helper function to make HTTP requests with custom headers
  */
-async function makeRequest(
-  path: string,
-  options: RequestInit = {}
-): Promise<Response> {
+async function makeRequest(path: string, options: RequestInit = {}): Promise<Response> {
   const url = `${DEV_API_BASE_URL}${path}`;
   return fetch(url, {
     ...options,
@@ -41,12 +38,8 @@ describe('Dev API Server Integration', () => {
     // Skip tests if dev server is not running
     const serverRunning = await isDevServerRunning();
     if (!serverRunning) {
-      console.warn(
-        '⚠️  Dev API server not running - skipping integration tests'
-      );
-      console.warn(
-        '   Run "yarn dev" in another terminal to enable these tests'
-      );
+      console.warn('⚠️  Dev API server not running - skipping integration tests');
+      console.warn('   Run "yarn dev" in another terminal to enable these tests');
       this.skip();
     }
   });
@@ -61,17 +54,11 @@ describe('Dev API Server Integration', () => {
 
       expect(response.status).to.equal(200);
       expect(response.headers.get('Content-Type')).to.include('text/html');
-      expect(response.headers.get('Cache-Control')).to.equal(
-        'public, max-age=3600'
-      );
-      expect(response.headers.get('X-Debug-Hostname')).to.equal(
-        'www.updraft.fund'
-      );
+      expect(response.headers.get('Cache-Control')).to.equal('public, max-age=3600');
+      expect(response.headers.get('X-Debug-Hostname')).to.equal('www.updraft.fund');
       expect(response.headers.get('X-Debug-Pathname')).to.equal('/');
       expect(response.headers.get('X-Debug-Has-Cookie')).to.equal('false');
-      expect(response.headers.get('X-Debug-Action')).to.equal(
-        'serve-landing-page'
-      );
+      expect(response.headers.get('X-Debug-Action')).to.equal('serve-landing-page');
 
       const body = await response.text();
       expect(body).to.include('<!DOCTYPE html>');
@@ -89,17 +76,11 @@ describe('Dev API Server Integration', () => {
       });
 
       expect(response.status).to.equal(302);
-      expect(response.headers.get('Location')).to.equal(
-        'https://app.updraft.fund/'
-      );
-      expect(response.headers.get('X-Debug-Hostname')).to.equal(
-        'www.updraft.fund'
-      );
+      expect(response.headers.get('Location')).to.equal('https://app.updraft.fund/');
+      expect(response.headers.get('X-Debug-Hostname')).to.equal('www.updraft.fund');
       expect(response.headers.get('X-Debug-Pathname')).to.equal('/');
       expect(response.headers.get('X-Debug-Has-Cookie')).to.equal('true');
-      expect(response.headers.get('X-Debug-Action')).to.equal(
-        'redirect-to-app-has-cookie'
-      );
+      expect(response.headers.get('X-Debug-Action')).to.equal('redirect-to-app-has-cookie');
     });
 
     it('should redirect www.updraft.fund non-root paths to app.updraft.fund', async () => {
@@ -111,17 +92,11 @@ describe('Dev API Server Integration', () => {
       });
 
       expect(response.status).to.equal(302);
-      expect(response.headers.get('Location')).to.equal(
-        'https://app.updraft.fund/idea/123?foo=bar'
-      );
-      expect(response.headers.get('X-Debug-Hostname')).to.equal(
-        'www.updraft.fund'
-      );
+      expect(response.headers.get('Location')).to.equal('https://app.updraft.fund/idea/123?foo=bar');
+      expect(response.headers.get('X-Debug-Hostname')).to.equal('www.updraft.fund');
       expect(response.headers.get('X-Debug-Pathname')).to.equal('/idea/123');
       expect(response.headers.get('X-Debug-Search')).to.equal('?foo=bar');
-      expect(response.headers.get('X-Debug-Action')).to.equal(
-        'redirect-to-app-other-path'
-      );
+      expect(response.headers.get('X-Debug-Action')).to.equal('redirect-to-app-other-path');
     });
 
     it('should redirect non-www.updraft.fund hosts to app.updraft.fund', async () => {
@@ -133,15 +108,9 @@ describe('Dev API Server Integration', () => {
       });
 
       expect(response.status).to.equal(302);
-      expect(response.headers.get('Location')).to.equal(
-        'https://app.updraft.fund/test'
-      );
-      expect(response.headers.get('X-Debug-Hostname')).to.equal(
-        'app.updraft.fund'
-      );
-      expect(response.headers.get('X-Debug-Action')).to.equal(
-        'redirect-to-app-wrong-host'
-      );
+      expect(response.headers.get('Location')).to.equal('https://app.updraft.fund/test');
+      expect(response.headers.get('X-Debug-Hostname')).to.equal('app.updraft.fund');
+      expect(response.headers.get('X-Debug-Action')).to.equal('redirect-to-app-wrong-host');
     });
 
     it('should preserve complex query parameters in redirects', async () => {
@@ -181,9 +150,7 @@ describe('Dev API Server Integration', () => {
 
       expect(response.status).to.equal(302);
       expect(response.headers.get('X-Debug-Has-Cookie')).to.equal('true');
-      expect(response.headers.get('X-Debug-Action')).to.equal(
-        'redirect-to-app-has-cookie'
-      );
+      expect(response.headers.get('X-Debug-Action')).to.equal('redirect-to-app-has-cookie');
     });
 
     it('should not be fooled by similar cookie names', async () => {
@@ -196,9 +163,7 @@ describe('Dev API Server Integration', () => {
 
       expect(response.status).to.equal(200); // Should serve landing page
       expect(response.headers.get('X-Debug-Has-Cookie')).to.equal('false');
-      expect(response.headers.get('X-Debug-Action')).to.equal(
-        'serve-landing-page'
-      );
+      expect(response.headers.get('X-Debug-Action')).to.equal('serve-landing-page');
     });
   });
 
@@ -236,12 +201,8 @@ describe('Dev API Server Integration', () => {
       const response = await makeRequest('/api/campaigns/campaigns');
 
       expect(response.headers.get('Access-Control-Allow-Origin')).to.equal('*');
-      expect(response.headers.get('Access-Control-Allow-Methods')).to.include(
-        'GET'
-      );
-      expect(response.headers.get('Access-Control-Allow-Headers')).to.include(
-        'Content-Type'
-      );
+      expect(response.headers.get('Access-Control-Allow-Methods')).to.include('GET');
+      expect(response.headers.get('Access-Control-Allow-Headers')).to.include('Content-Type');
     });
 
     it('should handle OPTIONS requests', async () => {

@@ -18,11 +18,7 @@ import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import { SlDialog, SlTooltip } from '@shoelace-style/shoelace';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
-import {
-  refreshUpdraftSettings,
-  updraftSettings,
-  getUniswapLpUrl,
-} from '@state/common';
+import { refreshUpdraftSettings, updraftSettings, getUniswapLpUrl } from '@state/common';
 
 import { shortNum } from '@utils/format-utils';
 
@@ -224,15 +220,8 @@ export class UpdDialog extends SignalWatcher(LitElement) {
         <div class="balance-section">
           <div class="balance-display">Your UPD Balance</div>
           <div class="balance-amount">
-            ${this.loadingBalance
-              ? html` <sl-spinner></sl-spinner>`
-              : shortNum(getBalance('updraft'))}
-            UPD
-            <sl-button
-              class="refresh-button"
-              size="small"
-              @click=${this.checkBalance}
-            >
+            ${this.loadingBalance ? html` <sl-spinner></sl-spinner>` : shortNum(getBalance('updraft'))} UPD
+            <sl-button class="refresh-button" size="small" @click=${this.checkBalance}>
               <sl-icon slot="prefix" src=${calculator}></sl-icon>
               Refresh
             </sl-button>
@@ -243,17 +232,11 @@ export class UpdDialog extends SignalWatcher(LitElement) {
         <h3>How to get UPD</h3>
         <div class="options-section">
           <!-- Discord Option -->
-          <a
-            href="https://discord.gg/mQJ58MY6Nz"
-            target="_blank"
-            class="option-card"
-          >
+          <a href="https://discord.gg/mQJ58MY6Nz" target="_blank" class="option-card">
             <sl-icon class="option-icon" src=${discord}></sl-icon>
             <div class="option-content">
               <div class="option-title">Get free UPD from Discord</div>
-              <div class="option-description">
-                Join our community and get free UPD tokens
-              </div>
+              <div class="option-description">Join our community and get free UPD tokens</div>
             </div>
           </a>
 
@@ -262,9 +245,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
             <sl-icon class="option-icon" src=${uniswap}></sl-icon>
             <div class="option-content">
               <div class="option-title">Buy UPD on Uniswap</div>
-              <div class="option-description">
-                Purchase UPD tokens directly from the liquidity pool
-              </div>
+              <div class="option-description">Purchase UPD tokens directly from the liquidity pool</div>
             </div>
           </a>
 
@@ -272,9 +253,7 @@ export class UpdDialog extends SignalWatcher(LitElement) {
           <div class="copy-address-card">
             <div class="address-info">
               <div class="address-label">UPD Token Address</div>
-              <div class="address-description">
-                Copy the contract address to add UPD to your wallet
-              </div>
+              <div class="address-description">Copy the contract address to add UPD to your wallet</div>
             </div>
             <sl-tooltip placement="bottom" trigger="manual">
               <sl-button class="copy-button" @click=${this.copyTokenAddress}>

@@ -73,11 +73,7 @@ export class CreateSolution extends SaveableForm {
     return html`
       <form name="create-solution" @submit=${this.handleFormSubmit}>
         <sl-input name="name" required autocomplete="off">
-          <label-with-hint
-            slot="label"
-            label="Name*"
-            hint="A short name for your solution"
-          ></label-with-hint>
+          <label-with-hint slot="label" label="Name*" hint="A short name for your solution"></label-with-hint>
         </sl-input>
 
         <formatted-text-input name="description" required>
@@ -90,10 +86,7 @@ export class CreateSolution extends SaveableForm {
 
         <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
-        <sl-button
-          href="/create-solution-two/${this.ideaId}"
-          variant="primary"
-          @click=${this.nextButtonClick}
+        <sl-button href="/create-solution-two/${this.ideaId}" variant="primary" @click=${this.nextButtonClick}
           >Next: Funding Details
         </sl-button>
       </form>

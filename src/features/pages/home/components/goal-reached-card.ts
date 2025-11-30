@@ -32,15 +32,11 @@ export class GoalReachedCard extends LitElement {
     return html`
       <sl-card>
         <div slot="header">
-          <a class="change-card-heading" href="/solution/${solution.id}">
-            ${solutionInfo?.name || 'Solution'}
-          </a>
+          <a class="change-card-heading" href="/solution/${solution.id}"> ${solutionInfo?.name || 'Solution'} </a>
           <div class="change-card-subheading">Goal Reached! 🎉</div>
         </div>
         <div class="goal-message">Funding goal has been reached!</div>
-        <div class="funding-details">
-          ${formatAmount(solution.tokensContributed)} raised
-        </div>
+        <div class="funding-details">${formatAmount(solution.tokensContributed)} raised</div>
         <div slot="footer">${dayjs(this.change.time).fromNow()}</div>
       </sl-card>
     `;

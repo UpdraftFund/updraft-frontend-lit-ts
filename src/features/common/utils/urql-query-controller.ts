@@ -11,9 +11,7 @@ import urqlClient from '@utils/urql-client';
  * - Cleans up subscriptions when the component disconnects
  * - Supports reactive variables that trigger re-subscription when changed
  */
-export class UrqlQueryController<TData, TVariables extends AnyVariables>
-  implements ReactiveController
-{
+export class UrqlQueryController<TData, TVariables extends AnyVariables> implements ReactiveController {
   private subscription: { unsubscribe: () => void } | null = null;
   private _variables: TVariables;
   private _document: TypedDocumentNode<TData, TVariables>;
@@ -67,10 +65,7 @@ export class UrqlQueryController<TData, TVariables extends AnyVariables>
    * @param variables
    */
 
-  setQueryAndSubscribe(
-    queryDocument: TypedDocumentNode<TData, TVariables>,
-    variables: TVariables
-  ): void {
+  setQueryAndSubscribe(queryDocument: TypedDocumentNode<TData, TVariables>, variables: TVariables): void {
     this._document = queryDocument;
     this._variables = variables;
     if (this._isActive) {
@@ -102,10 +97,7 @@ export class UrqlQueryController<TData, TVariables extends AnyVariables>
   hostDisconnected(): void {
     this._isActive = false;
     this.unsubscribe();
-    document.removeEventListener(
-      'visibilitychange',
-      this.handleVisibilityChange
-    );
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   /**
@@ -116,11 +108,9 @@ export class UrqlQueryController<TData, TVariables extends AnyVariables>
     this.unsubscribe();
 
     // Create a new subscription
-    this.subscription = urqlClient
-      .query(this._document, this._variables)
-      .subscribe((result) => {
-        this._callback(result);
-      });
+    this.subscription = urqlClient.query(this._document, this._variables).subscribe((result) => {
+      this._callback(result);
+    });
   }
 
   /**

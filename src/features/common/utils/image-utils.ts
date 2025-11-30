@@ -25,12 +25,7 @@ export function resizeImage(
     img.onload = () => {
       try {
         // Calculate new dimensions while maintaining aspect ratio
-        const { width: newWidth, height: newHeight } = calculateDimensions(
-          img.width,
-          img.height,
-          maxWidth,
-          maxHeight
-        );
+        const { width: newWidth, height: newHeight } = calculateDimensions(img.width, img.height, maxWidth, maxHeight);
 
         // Create canvas for resizing
         const canvas = document.createElement('canvas');
@@ -115,13 +110,7 @@ function calculateDimensions(
  * @returns true if file is a supported image type
  */
 export function isValidImageFile(file: File): boolean {
-  const supportedTypes = [
-    'image/jpeg',
-    'image/jpg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-  ];
+  const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
 
   return supportedTypes.includes(file.type);
 }

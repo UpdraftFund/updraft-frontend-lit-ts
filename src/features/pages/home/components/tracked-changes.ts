@@ -25,11 +25,7 @@ import './goal-reached-card';
 import './goal-failed-card';
 
 // GraphQL
-import {
-  Solution,
-  TrackedChangesDocument,
-  UserIdeasSolutionsDocument,
-} from '@gql';
+import { Solution, TrackedChangesDocument, UserIdeasSolutionsDocument } from '@gql';
 
 // Utils
 import { UrqlQueryController } from '@utils/urql-query-controller';
@@ -156,26 +152,17 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
 
       if (result.data) {
         // Extract idea IDs
-        this.ideaIds = result.data.fundedIdeas.map(
-          (contribution) => contribution.idea.id
-        );
+        this.ideaIds = result.data.fundedIdeas.map((contribution) => contribution.idea.id);
         // Set to ['0x01'] if empty
         this.ideaIds = this.ideaIds.length > 0 ? this.ideaIds : ['0x01'];
 
         // Extract and combine solution IDs
-        const createdSolutionIds = result.data.createdSolutions.map(
-          (solution) => solution.id
-        );
-        const fundedSolutionIds = result.data.fundedSolutions.map(
-          (contribution) => contribution.solution.id
-        );
+        const createdSolutionIds = result.data.createdSolutions.map((solution) => solution.id);
+        const fundedSolutionIds = result.data.fundedSolutions.map((contribution) => contribution.solution.id);
 
-        this.solutionIds = [
-          ...new Set([...createdSolutionIds, ...fundedSolutionIds]),
-        ];
+        this.solutionIds = [...new Set([...createdSolutionIds, ...fundedSolutionIds])];
         // Set to ['0x01'] if empty
-        this.solutionIds =
-          this.solutionIds.length > 0 ? this.solutionIds : ['0x01'];
+        this.solutionIds = this.solutionIds.length > 0 ? this.solutionIds : ['0x01'];
 
         console.log('User ideas:', this.ideaIds);
         console.log('User solutions:', this.solutionIds);
@@ -348,9 +335,7 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
     }
 
     if (!this.hasChanges) {
-      return html`
-        <div class="empty-state full-width">No recent changes to display.</div>
-      `;
+      return html` <div class="empty-state full-width">No recent changes to display.</div> `;
     }
 
     const changesToRender = this.changesManager.getChangesToRender();
@@ -360,29 +345,17 @@ export class TrackedChanges extends SignalWatcher(LitElement) {
         ${changesToRender.map((change) => {
           switch (change.type) {
             case 'newSupporter':
-              return html` <new-supporters-card
-                .change=${change}
-              ></new-supporters-card>`;
+              return html` <new-supporters-card .change=${change}></new-supporters-card>`;
             case 'newSolution':
-              return html` <new-solution-card
-                .change=${change}
-              ></new-solution-card>`;
+              return html` <new-solution-card .change=${change}></new-solution-card>`;
             case 'solutionUpdated':
-              return html` <solution-updated-card
-                .change=${change}
-              ></solution-updated-card>`;
+              return html` <solution-updated-card .change=${change}></solution-updated-card>`;
             case 'newFunder':
-              return html` <new-funders-card
-                .change=${change}
-              ></new-funders-card>`;
+              return html` <new-funders-card .change=${change}></new-funders-card>`;
             case 'goalReached':
-              return html` <goal-reached-card
-                .change=${change}
-              ></goal-reached-card>`;
+              return html` <goal-reached-card .change=${change}></goal-reached-card>`;
             case 'goalFailed':
-              return html` <goal-failed-card
-                .change=${change}
-              ></goal-failed-card>`;
+              return html` <goal-failed-card .change=${change}></goal-failed-card>`;
             default:
               return html``;
           }

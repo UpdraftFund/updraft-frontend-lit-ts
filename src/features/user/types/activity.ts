@@ -1,15 +1,6 @@
-import {
-  Idea,
-  IdeaContribution,
-  Solution,
-  SolutionContribution,
-} from '@/types';
+import { Idea, IdeaContribution, Solution, SolutionContribution } from '@/types';
 
-export type Activity =
-  | IdeaCreatedActivity
-  | IdeaFundedActivity
-  | SolutionFundedActivity
-  | SolutionDraftedActivity;
+export type Activity = IdeaCreatedActivity | IdeaFundedActivity | SolutionFundedActivity | SolutionDraftedActivity;
 
 export interface IdeaCreatedActivity extends Idea {
   type: 'ideaCreated';

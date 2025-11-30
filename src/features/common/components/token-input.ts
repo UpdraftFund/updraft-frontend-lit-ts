@@ -63,11 +63,7 @@ export interface ITokenInput {
   readonly tokenSymbol: string | null;
 
   // Public methods
-  handleTransactionError(
-    e: unknown,
-    onApprovalSuccess?: () => void,
-    onLowBalance?: () => void
-  ): boolean;
+  handleTransactionError(e: unknown, onApprovalSuccess?: () => void, onLowBalance?: () => void): boolean;
 
   // Form validation methods
   checkValidity(): boolean;
@@ -127,10 +123,7 @@ export interface ITokenInput {
  * ```
  */
 @customElement('token-input')
-export class TokenInput
-  extends SignalWatcher(LitElement)
-  implements ITokenInput
-{
+export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput {
   // Indicate that this component can be associated with forms
   static formAssociated = true;
 
@@ -287,10 +280,7 @@ export class TokenInput
   private get isUpdraftContract(): boolean {
     if (!this.spendingContract) return false;
 
-    return (
-      this.spendingContract.toLowerCase() ===
-      updraftSettings.get().updraftAddress.toLowerCase()
-    );
+    return this.spendingContract.toLowerCase() === updraftSettings.get().updraftAddress.toLowerCase();
   }
 
   // Check if the current token is the Updraft token
@@ -312,9 +302,7 @@ export class TokenInput
       return 'Updraft';
     }
 
-    return this.spendingContract
-      ? shortenAddress(this.spendingContract)
-      : 'the contract';
+    return this.spendingContract ? shortenAddress(this.spendingContract) : 'the contract';
   }
 
   // Get effective approval strategy - use explicit value if set, otherwise compute
@@ -401,18 +389,11 @@ export class TokenInput
     const validityState: ValidityStateFlags = {};
 
     // Check if the field is required and empty
-    if (
-      this.required &&
-      (this.value === '' || this.value === null || this.value === undefined)
-    ) {
+    if (this.required && (this.value === '' || this.value === null || this.value === undefined)) {
       this._error = 'This field is required';
       this._validationMessage = 'This field is required';
       validityState.valueMissing = true;
-    } else if (
-      this.value === '' ||
-      this.value === null ||
-      this.value === undefined
-    ) {
+    } else if (this.value === '' || this.value === null || this.value === undefined) {
       this._error = null;
       this._validationMessage = '';
     } else if (isNaN(value)) {
@@ -434,11 +415,7 @@ export class TokenInput
 
     // Update the element's validity state using ElementInternals
     if (this._error) {
-      this.internals.setValidity(
-        validityState,
-        this._validationMessage,
-        this.input || undefined
-      );
+      this.internals.setValidity(validityState, this._validationMessage, this.input || undefined);
     } else {
       this.internals.setValidity({});
     }
@@ -496,17 +473,10 @@ export class TokenInput
   }
 
   // Public API for error handling
-  public handleTransactionError(
-    e: unknown,
-    onApprovalSuccess?: () => void,
-    onLowBalance?: () => void
-  ): boolean {
+  public handleTransactionError(e: unknown, onApprovalSuccess?: () => void, onLowBalance?: () => void): boolean {
     if (e instanceof Error) {
       // Connection errors
-      if (
-        e.message.startsWith('connection') ||
-        e.message.includes('getChainId')
-      ) {
+      if (e.message.startsWith('connection') || e.message.includes('getChainId')) {
         modal.open({ view: 'Connect' });
         return true;
       }
@@ -635,17 +605,12 @@ export class TokenInput
                 <span>${this._symbol}</span>
 
                 <div class="slot-container">
-                  ${this.invalid
-                    ? html` <slot name="invalid"></slot>`
-                    : html` <slot name="valid"></slot>`}
+                  ${this.invalid ? html` <slot name="invalid"></slot>` : html` <slot name="valid"></slot>`}
                 </div>
 
                 ${this.showAntiSpamFee
                   ? html` <div class="fee-info">
-                      <span
-                        >Anti-Spam Fee: ${shortNum(this.antiSpamFee)}
-                        ${this._symbol}</span
-                      >
+                      <span>Anti-Spam Fee: ${shortNum(this.antiSpamFee)} ${this._symbol}</span>
                       <sl-tooltip
                         content="This fee keeps spam out of Updraft. The fee is fixed at 1 UPD for editing a Solution or profile, and the greater of 1 UPD or 1% for supporting an Idea. All anti-spam fees go to a faucet for new users--which you can collect from the Updraft Discord."
                       >
@@ -661,9 +626,7 @@ export class TokenInput
           : html``}
       </div>
 
-      ${this.isUpdraftToken && this.showDialogs
-        ? html` <upd-dialog></upd-dialog>`
-        : html``}
+      ${this.isUpdraftToken && this.showDialogs ? html` <upd-dialog></upd-dialog>` : html``}
       ${this.showDialogs
         ? html`
             <sl-dialog label="Set Allowance">

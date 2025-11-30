@@ -15,12 +15,7 @@ import { updraftSettings } from '@state/common';
 // Re-export shared utilities that work in both browser and Node.js
 import { shortNum } from '@shared/utils/format-utils';
 
-export {
-  ethAddressPattern,
-  shortenAddress,
-  shortNum,
-  capitalize,
-} from '@shared/utils/format-utils';
+export { ethAddressPattern, shortenAddress, shortNum, capitalize } from '@shared/utils/format-utils';
 
 /**
  * Formats a funder reward percentage from the raw value
@@ -28,8 +23,7 @@ export {
  * @returns Formatted percentage string with 0 decimal places
  */
 export function formatReward(funderReward: number): string {
-  const pctFunderReward =
-    (funderReward * 100) / updraftSettings.get().percentScale;
+  const pctFunderReward = (funderReward * 100) / updraftSettings.get().percentScale;
   return `${pctFunderReward.toFixed(0)}%`;
 }
 
@@ -123,8 +117,7 @@ export const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'class', // For CSS styling (marked.js adds language-* classes to code blocks)
     'id', // For anchoring and accessibility
   ],
-  ALLOWED_URI_REGEXP:
-    /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
 };
 
@@ -185,19 +178,13 @@ export function formattedText(content: string): DirectiveResult {
   let spacePreservedContent = content;
 
   // Replace &nbsp; entities with placeholders that turndown won't strip
-  spacePreservedContent = spacePreservedContent.replace(
-    /&nbsp;/g,
-    SPACE_PLACEHOLDER
-  );
+  spacePreservedContent = spacePreservedContent.replace(/&nbsp;/g, SPACE_PLACEHOLDER);
 
   // Process through turndown
   const unmangledMarkdown = turndownService.turndown(spacePreservedContent);
 
   // Convert placeholders back to spaces
-  const markdownWithSpaces = unmangledMarkdown.replace(
-    new RegExp(SPACE_PLACEHOLDER, 'g'),
-    ' '
-  );
+  const markdownWithSpaces = unmangledMarkdown.replace(new RegExp(SPACE_PLACEHOLDER, 'g'), ' ');
 
   const htmlContent = marked(markdownWithSpaces) as string;
   const sanitized = DOMPurify.sanitize(htmlContent, RICH_TEXT_SANITIZE_CONFIG);

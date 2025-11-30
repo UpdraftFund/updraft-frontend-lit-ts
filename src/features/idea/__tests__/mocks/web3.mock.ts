@@ -7,8 +7,7 @@ export const modal = {
       chainId: 42161, // Arbitrum
     }),
   disconnect: () => Promise.resolve(undefined),
-  getAccounts: () =>
-    Promise.resolve(['0x1234567890123456789012345678901234567890']),
+  getAccounts: () => Promise.resolve(['0x1234567890123456789012345678901234567890']),
   getNetwork: () =>
     Promise.resolve({
       name: 'Arbitrum',

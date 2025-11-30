@@ -79,10 +79,7 @@ export class MySolutions extends SignalWatcher(LitElement) {
           solutionActivityMap.set(solution.id, {
             solution,
             // Use the latest activity time if this solution already exists in the map
-            activityTime: Math.max(
-              Number(solution.startTime),
-              solutionActivityMap.get(solution.id)?.activityTime || 0
-            ),
+            activityTime: Math.max(Number(solution.startTime), solutionActivityMap.get(solution.id)?.activityTime || 0),
           });
         });
 
@@ -113,16 +110,11 @@ export class MySolutions extends SignalWatcher(LitElement) {
         ${this.loading
           ? html` <sl-spinner></sl-spinner>`
           : this.solutions.length === 0
-            ? html`<div class="empty-message">
-                You haven't funded or drafted any solutions yet.
-              </div>`
+            ? html`<div class="empty-message">You haven't funded or drafted any solutions yet.</div>`
             : cache(
                 this.solutions.map(
                   (solution) => html`
-                    <solution-card-small
-                      .solution=${solution}
-                      .showStake=${false}
-                    ></solution-card-small>
+                    <solution-card-small .solution=${solution} .showStake=${false}></solution-card-small>
                   `
                 )
               )}

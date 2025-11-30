@@ -155,9 +155,7 @@ export class PreviewIdea extends SignalWatcher(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    layout.topBarContent.set(html`
-      <page-heading>Preview Your Idea</page-heading>
-    `);
+    layout.topBarContent.set(html` <page-heading>Preview Your Idea</page-heading> `);
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
@@ -200,18 +198,12 @@ export class PreviewIdea extends SignalWatcher(LitElement) {
         <div class="preview-info">
           This is how your idea will appear to others once submitted.
           <br /><br />
-          <strong>💡 Tip:</strong> You can use markdown formatting in your
-          description like **bold**, *italic*, and [links](https://example.com)
-          or paste formatted text from other applications.
+          <strong>💡 Tip:</strong> You can use markdown formatting in your description like **bold**, *italic*, and
+          [links](https://example.com) or paste formatted text from other applications.
         </div>
 
         <div class="card-header">
-          <h3 class="entity-name">
-            ${name ||
-            html`<span class="placeholder"
-              >Your idea name will appear here</span
-            >`}
-          </h3>
+          <h3 class="entity-name">${name || html`<span class="placeholder">Your idea name will appear here</span>`}</h3>
           <div class="byline">
             <span class="placeholder">by You</span>
           </div>
@@ -219,23 +211,13 @@ export class PreviewIdea extends SignalWatcher(LitElement) {
 
         <ul class="info-row">
           <li>🌱 <span class="placeholder">Just now</span></li>
-          <li>
-            🎁 <span class="placeholder">Funder reward will be shown here</span>
-          </li>
-          <li>
-            🔥 <span class="placeholder">Interest will grow over time</span>
-          </li>
+          <li>🎁 <span class="placeholder">Funder reward will be shown here</span></li>
+          <li>🔥 <span class="placeholder">Interest will grow over time</span></li>
         </ul>
 
-        ${description
-          ? html` <p class="description">${formattedText(description)}</p> `
-          : html``}
+        ${description ? html` <p class="description">${formattedText(description)}</p> ` : html``}
         ${tags && tags.length > 0
-          ? html`
-              <div class="tags">
-                ${tags.map((tag) => html`<span class="tag">${tag}</span>`)}
-              </div>
-            `
+          ? html` <div class="tags">${tags.map((tag) => html`<span class="tag">${tag}</span>`)}</div> `
           : html`
               <div class="tags">
                 <span class="tag placeholder">your-tags</span>
@@ -254,13 +236,10 @@ export class PreviewIdea extends SignalWatcher(LitElement) {
           <div class="no-data">
             <h2>No Idea Data Found</h2>
             <p>
-              It looks like you haven't started creating an idea yet, or your
-              form data has expired. Please go back to the create idea form to
-              get started.
+              It looks like you haven't started creating an idea yet, or your form data has expired. Please go back to
+              the create idea form to get started.
             </p>
-            <sl-button variant="primary" href="/create-idea">
-              Create New Idea
-            </sl-button>
+            <sl-button variant="primary" href="/create-idea"> Create New Idea </sl-button>
           </div>
         </div>
       `;
@@ -270,9 +249,7 @@ export class PreviewIdea extends SignalWatcher(LitElement) {
       <div class="container">
         <div class="preview-section">${this.renderPreviewCard()}</div>
         <div class="actions">
-          <sl-button variant="primary" href="/create-idea">
-            Back to Edit
-          </sl-button>
+          <sl-button variant="primary" href="/create-idea"> Back to Edit </sl-button>
         </div>
       </div>
     `;
