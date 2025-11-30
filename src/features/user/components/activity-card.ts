@@ -14,12 +14,7 @@ import '@shoelace-style/shoelace/dist/components/divider/divider.js';
 import '@components/solution/solution-details-bar';
 import '@components/common/vertical-fade';
 
-import {
-  formatReward,
-  formatAmount,
-  formatDate,
-  formattedText,
-} from '@utils/format-utils';
+import { formatReward, formatAmount, formatDate, formattedText } from '@utils/format-utils';
 import { goalFailed, parseSolutionInfo } from '@utils/solution/solution-utils';
 
 import { Activity, SolutionInfo } from '@/types';
@@ -257,18 +252,11 @@ export class ActivityCard extends LitElement {
       text = 'Fund';
     }
 
-    return html`
-      <sl-button variant="primary" size="small" href="${href}"
-        >${text}
-      </sl-button>
-    `;
+    return html` <sl-button variant="primary" size="small" href="${href}">${text} </sl-button> `;
   }
 
   private renderDetailsBar() {
-    if (
-      this.activity.type === 'ideaCreated' ||
-      this.activity.type == 'ideaFunded'
-    ) {
+    if (this.activity.type === 'ideaCreated' || this.activity.type == 'ideaFunded') {
       let idea;
       if (this.activity.type === 'ideaCreated') {
         idea = this.activity;
@@ -278,16 +266,10 @@ export class ActivityCard extends LitElement {
       return html`
         <div class="details-bar">
           <span class="emoji-badge"
-            ><span class="emoji">🌱</span> Created
-            ${formatDate(idea.startTime, 'fromNow')}</span
+            ><span class="emoji">🌱</span> Created ${formatDate(idea.startTime, 'fromNow')}</span
           >
-          <span class="emoji-badge"
-            ><span class="emoji">🎁</span>${formatReward(idea.funderReward)}
-            Funder Reward</span
-          >
-          <span class="emoji-badge"
-            ><span class="emoji">🔥</span>${formatAmount(idea.shares)}</span
-          >
+          <span class="emoji-badge"><span class="emoji">🎁</span>${formatReward(idea.funderReward)} Funder Reward</span>
+          <span class="emoji-badge"><span class="emoji">🔥</span>${formatAmount(idea.shares)}</span>
         </div>
       `;
     } else {
@@ -299,9 +281,7 @@ export class ActivityCard extends LitElement {
         solution = this.activity;
       }
 
-      return html` <solution-details-bar
-        .solution=${solution}
-      ></solution-details-bar>`;
+      return html` <solution-details-bar .solution=${solution}></solution-details-bar>`;
     }
   }
 

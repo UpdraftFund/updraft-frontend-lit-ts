@@ -11,15 +11,11 @@ import { Solution, SolutionInfo } from '@/types';
  * @param infoHex The hex-encoded solution info string
  * @returns Parsed solution info object or default values if parsing fails
  */
-export function parseSolutionInfo(
-  infoHex: `0x${string}` | string | undefined
-): SolutionInfo {
+export function parseSolutionInfo(infoHex: `0x${string}` | string | undefined): SolutionInfo {
   if (infoHex) {
     try {
       // Handle hex-encoded info data
-      const infoString = infoHex.startsWith('0x')
-        ? fromHex(infoHex as `0x${string}`, 'string')
-        : infoHex;
+      const infoString = infoHex.startsWith('0x') ? fromHex(infoHex as `0x${string}`, 'string') : infoHex;
       return JSON.parse(infoString);
     } catch (e) {
       console.error('Error parsing solution info', e);
@@ -38,10 +34,7 @@ export function parseSolutionInfo(
  */
 export function calculateProgress(solution?: Solution): number {
   if (solution && solution.tokensContributed && solution.fundingGoal) {
-    return Math.min(
-      Number(solution.tokensContributed / solution.fundingGoal) * 100,
-      100
-    );
+    return Math.min(Number(solution.tokensContributed / solution.fundingGoal) * 100, 100);
   } else {
     return 0;
   }

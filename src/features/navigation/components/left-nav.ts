@@ -99,10 +99,7 @@ export class LeftNav extends SignalWatcher(LitElement) {
             </a>
           </li>
           <li>
-            <a
-              href="/discover"
-              class=${nav.get() === 'discover' ? 'active' : ''}
-            >
+            <a href="/discover" class=${nav.get() === 'discover' ? 'active' : ''}>
               <sl-icon src=${compass}></sl-icon>
               <span class="location">Discover</span>
             </a>

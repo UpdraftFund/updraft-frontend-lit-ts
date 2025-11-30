@@ -127,9 +127,7 @@ describe('HotIdeas Component', () => {
     // Check for the "see more" link
     const seeMoreLink = element.shadowRoot?.querySelector('.see-more-link');
     expect(seeMoreLink).to.exist;
-    expect(seeMoreLink?.getAttribute('href')).to.equal(
-      '/discover?tab=hot-ideas'
-    );
+    expect(seeMoreLink?.getAttribute('href')).to.equal('/discover?tab=hot-ideas');
     expect(seeMoreLink?.textContent?.trim()).to.include('See more hot ideas');
   });
 

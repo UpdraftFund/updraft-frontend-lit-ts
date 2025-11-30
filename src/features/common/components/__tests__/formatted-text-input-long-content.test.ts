@@ -23,9 +23,7 @@ describe('FormattedTextInput - Long Content', () => {
     expect(element.value).to.equal(longContent);
     expect(element.value.length).to.be.greaterThan(2500);
 
-    const editor = element.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = element.shadowRoot?.querySelector('.editor') as HTMLDivElement;
     expect(editor.innerHTML).to.equal(longContent);
   });
 
@@ -46,9 +44,7 @@ describe('FormattedTextInput - Long Content', () => {
     expect(element.value).to.equal(longHtmlContent);
     expect(element.value.length).to.be.greaterThan(2500);
 
-    const editor = element.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = element.shadowRoot?.querySelector('.editor') as HTMLDivElement;
     expect(editor.innerHTML).to.equal(longHtmlContent);
   });
 
@@ -61,9 +57,7 @@ describe('FormattedTextInput - Long Content', () => {
       </form>
     `);
 
-    const input = form.querySelector(
-      'formatted-text-input'
-    ) as FormattedTextInput;
+    const input = form.querySelector('formatted-text-input') as FormattedTextInput;
 
     // Set content longer than 2500 characters
     const longContent = '<p>' + 'B'.repeat(3000) + '</p>';
@@ -85,9 +79,7 @@ describe('FormattedTextInput - Long Content', () => {
       inputEventValue = customEvent.detail.value;
     });
 
-    const editor = element.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = element.shadowRoot?.querySelector('.editor') as HTMLDivElement;
 
     // Simulate typing long content
     const longContent = '<p>' + 'C'.repeat(3000) + '</p>';

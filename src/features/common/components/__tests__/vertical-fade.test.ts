@@ -6,9 +6,7 @@ describe('VerticalFade', () => {
 
   beforeEach(async () => {
     element = await fixture(html`
-      <vertical-fade
-        style="width: 200px; --fade-height: 1rem; --fade-color: white;"
-      >
+      <vertical-fade style="width: 200px; --fade-height: 1rem; --fade-color: white;">
         <div>Test content</div>
       </vertical-fade>
     `);
@@ -38,12 +36,8 @@ describe('VerticalFade', () => {
   it('handles wide content without horizontal scrollbar', async () => {
     // Create element with very wide content
     const wideElement = await fixture(html`
-      <vertical-fade
-        style="width: 200px; --fade-height: 1rem; --fade-color: white;"
-      >
-        <div style="width: 500px; background: red;">
-          This is very wide content that should be constrained
-        </div>
+      <vertical-fade style="width: 200px; --fade-height: 1rem; --fade-color: white;">
+        <div style="width: 500px; background: red;">This is very wide content that should be constrained</div>
       </vertical-fade>
     `);
 
@@ -55,13 +49,10 @@ describe('VerticalFade', () => {
 
   it('handles long text content with word wrapping', async () => {
     const longTextElement = await fixture(html`
-      <vertical-fade
-        style="width: 200px; --fade-height: 1rem; --fade-color: white;"
-      >
+      <vertical-fade style="width: 200px; --fade-height: 1rem; --fade-color: white;">
         <p>
-          This is a very long text that should wrap properly within the
-          container boundaries without causing horizontal overflow or scrollbars
-          to appear in the parent container.
+          This is a very long text that should wrap properly within the container boundaries without causing horizontal
+          overflow or scrollbars to appear in the parent container.
         </p>
       </vertical-fade>
     `);
@@ -74,9 +65,7 @@ describe('VerticalFade', () => {
 
   it('handles code blocks and pre elements', async () => {
     const codeElement = await fixture(html`
-      <vertical-fade
-        style="width: 200px; --fade-height: 1rem; --fade-color: white;"
-      >
+      <vertical-fade style="width: 200px; --fade-height: 1rem; --fade-color: white;">
         <pre><code>This is a very long line of code that might normally cause horizontal overflow but should be handled properly</code></pre>
       </vertical-fade>
     `);
@@ -89,9 +78,7 @@ describe('VerticalFade', () => {
 
   it('handles long URLs and links', async () => {
     const linkElement = await fixture(html`
-      <vertical-fade
-        style="width: 200px; --fade-height: 1rem; --fade-color: white;"
-      >
+      <vertical-fade style="width: 200px; --fade-height: 1rem; --fade-color: white;">
         <p>
           Check out this link:
           <a href="https://example.com/very/long/url/that/might/cause/overflow"
@@ -109,19 +96,11 @@ describe('VerticalFade', () => {
 
   it('handles formatted markdown content', async () => {
     const markdownElement = await fixture(html`
-      <vertical-fade
-        style="width: 200px; --fade-height: 1rem; --fade-color: white;"
-      >
+      <vertical-fade style="width: 200px; --fade-height: 1rem; --fade-color: white;">
         <h2>This is a very long heading that should wrap properly</h2>
-        <p>
-          This is a paragraph with <strong>bold text</strong> and
-          <em>italic text</em> that should wrap correctly.
-        </p>
+        <p>This is a paragraph with <strong>bold text</strong> and <em>italic text</em> that should wrap correctly.</p>
         <ul>
-          <li>
-            This is a very long list item that should wrap properly within the
-            container
-          </li>
+          <li>This is a very long list item that should wrap properly within the container</li>
           <li>Another list item</li>
         </ul>
       </vertical-fade>
@@ -135,21 +114,16 @@ describe('VerticalFade', () => {
 
   it('handles long strings of repeated characters (like equal signs)', async () => {
     const repeatedCharsElement = await fixture(html`
-      <vertical-fade
-        style="width: 200px; --fade-height: 1rem; --fade-color: white;"
-      >
+      <vertical-fade style="width: 200px; --fade-height: 1rem; --fade-color: white;">
         <h1>pasting stuff for fun<br />🪁Updraft</h1>
         <p><a href="https://guide.updraft.fund/updraft#overview"></a></p>
         <p>Overview</p>
         <hr />
         <p>
-          Updraft is a way for people to get paid to discover the best ideas for
-          their communities, their organizations and the world.
+          Updraft is a way for people to get paid to discover the best ideas for their communities, their organizations
+          and the world.
         </p>
-        <p>
-          This guide will teach you the concepts you need to make an impact in
-          Updraft.
-        </p>
+        <p>This guide will teach you the concepts you need to make an impact in Updraft.</p>
         <p>
           =================================================================================================================================================================================================================
         </p>
@@ -163,9 +137,7 @@ describe('VerticalFade', () => {
   });
 
   it('applies fade overlay correctly', async () => {
-    const overlay = element.shadowRoot?.querySelector(
-      '.overlay'
-    ) as HTMLElement;
+    const overlay = element.shadowRoot?.querySelector('.overlay') as HTMLElement;
     expect(overlay).to.exist;
 
     const overlayStyles = getComputedStyle(overlay);
@@ -182,9 +154,7 @@ describe('VerticalFade', () => {
       </vertical-fade>
     `);
 
-    const overlay = customElement.shadowRoot?.querySelector(
-      '.overlay'
-    ) as HTMLElement;
+    const overlay = customElement.shadowRoot?.querySelector('.overlay') as HTMLElement;
     const overlayStyles = getComputedStyle(overlay);
 
     // Note: The actual computed values might be different due to CSS variable resolution

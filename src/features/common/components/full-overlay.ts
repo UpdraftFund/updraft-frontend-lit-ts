@@ -67,8 +67,7 @@ export class FullOverlay extends LitElement {
    * The position of the overlay
    * @type {'absolute'|'fixed'|'relative'}
    */
-  @property({ type: String }) position: 'absolute' | 'fixed' | 'relative' =
-    'absolute';
+  @property({ type: String }) position: 'absolute' | 'fixed' | 'relative' = 'absolute';
 
   /**
    * The opacity of the overlay (0-1)
@@ -129,15 +128,12 @@ export class FullOverlay extends LitElement {
 
   render() {
     // If mobileOnly is true, only show on mobile screens
-    const isActive = this.mobileOnly
-      ? this.active && this.isMobile()
-      : this.active;
+    const isActive = this.mobileOnly ? this.active && this.isMobile() : this.active;
 
     return html`
       <div
         class="overlay position-${this.position} ${isActive ? 'active' : ''}"
-        style="--overlay-opacity: ${this.opacity}; z-index: ${this
-          .zIndex}; ${this.position === 'fixed'
+        style="--overlay-opacity: ${this.opacity}; z-index: ${this.zIndex}; ${this.position === 'fixed'
           ? `top: ${this.topOffset};`
           : ''}"
         @click=${this.handleClick}

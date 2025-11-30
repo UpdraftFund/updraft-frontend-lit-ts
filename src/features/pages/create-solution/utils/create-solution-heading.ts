@@ -5,9 +5,7 @@ import urqlClient from '@utils/urql-client';
 
 export function createSolutionHeading(ideaId: string) {
   // Set the default heading first
-  layout.topBarContent.set(html`
-    <page-heading>Draft a Solution</page-heading>
-  `);
+  layout.topBarContent.set(html` <page-heading>Draft a Solution</page-heading> `);
 
   return urqlClient
     .query(IdeaDocument, {

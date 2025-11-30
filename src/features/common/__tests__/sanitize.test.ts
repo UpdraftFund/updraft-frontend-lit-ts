@@ -27,8 +27,7 @@ const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'blockquote',
   ],
   ALLOWED_ATTR: ['href', 'target', 'rel'],
-  ALLOWED_URI_REGEXP:
-    /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
 };
 
@@ -62,9 +61,7 @@ describe('formatText', () => {
     const container = document.createElement('div');
     render(result, container);
 
-    expect(container.innerHTML).to.equal(
-      '<!----><p>Hello <strong>world</strong> with <em>emphasis</em>!</p>'
-    );
+    expect(container.innerHTML).to.equal('<!----><p>Hello <strong>world</strong> with <em>emphasis</em>!</p>');
   });
 
   it('should remove dangerous script tags and their content', () => {
@@ -92,8 +89,7 @@ describe('formatText', () => {
   });
 
   it('should add target and rel attributes to multiple links', () => {
-    const input =
-      '<p>Visit <a href="https://example.com">site 1</a> and <a href="https://another.com">site 2</a></p>';
+    const input = '<p>Visit <a href="https://example.com">site 1</a> and <a href="https://another.com">site 2</a></p>';
     const result = formatText(input);
 
     // Create a test container and render the directive
@@ -113,14 +109,11 @@ describe('formatText', () => {
     const container = document.createElement('div');
     render(result, container);
 
-    expect(container.innerHTML).to.equal(
-      '<!----><p>This is <a>not a real link</a></p>'
-    );
+    expect(container.innerHTML).to.equal('<!----><p>This is <a>not a real link</a></p>');
   });
 
   it('should override user-supplied target and rel attributes for security', () => {
-    const input =
-      '<p>Visit <a href="https://example.com" target="_self" rel="opener">malicious link</a></p>';
+    const input = '<p>Visit <a href="https://example.com" target="_self" rel="opener">malicious link</a></p>';
     const result = formatText(input);
 
     // Create a test container and render the directive
@@ -152,14 +145,11 @@ describe('formatText', () => {
     const container = document.createElement('div');
     render(result, container);
 
-    expect(container.innerHTML).to.equal(
-      '<!----><ul><li>Item 1</li><li>Item 2</li></ul>'
-    );
+    expect(container.innerHTML).to.equal('<!----><ul><li>Item 1</li><li>Item 2</li></ul>');
   });
 
   it('should remove disallowed tags but keep content', () => {
-    const input =
-      '<div><span>Hello</span> <custom-tag>world</custom-tag></div>';
+    const input = '<div><span>Hello</span> <custom-tag>world</custom-tag></div>';
     const result = formatText(input);
 
     // Create a test container and render the directive

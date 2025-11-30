@@ -92,12 +92,7 @@ export class TopBar extends SignalWatcher(LitElement) {
 
   render() {
     return html`
-      <sl-icon-button
-        class="menu-button"
-        src="${listIcon}"
-        label="Menu"
-        @click=${toggleLeftSidebar}
-      ></sl-icon-button>
+      <sl-icon-button class="menu-button" src="${listIcon}" label="Menu" @click=${toggleLeftSidebar}></sl-icon-button>
       <a href="/" title="Updraft Home" class="logo-button">
         <img src="${updraftLogo}" alt="Updraft logo" />
       </a>

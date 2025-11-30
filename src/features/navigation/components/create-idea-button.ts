@@ -28,15 +28,8 @@ export class CreateIdeaButton extends LitElement {
 
   render() {
     return html`
-      <sl-tooltip
-        class="${nav.get() === 'discover' ? 'hidden' : ''}"
-        content="create an idea"
-      >
-        <sl-icon-button
-          src="${plusLgIcon}"
-          href="/create-idea"
-          label="create an idea"
-        ></sl-icon-button>
+      <sl-tooltip class="${nav.get() === 'discover' ? 'hidden' : ''}" content="create an idea">
+        <sl-icon-button src="${plusLgIcon}" href="/create-idea" label="create an idea"></sl-icon-button>
       </sl-tooltip>
     `;
   }

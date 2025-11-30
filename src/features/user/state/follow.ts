@@ -1,8 +1,6 @@
 import { signal } from '@lit-labs/signals';
 
-const storedUsers: string[] = JSON.parse(
-  localStorage.getItem('followedUsers') || '[]'
-);
+const storedUsers: string[] = JSON.parse(localStorage.getItem('followedUsers') || '[]');
 const userSet = new Set<string>(storedUsers);
 export const followedUsers = signal<Set<string>>(userSet);
 

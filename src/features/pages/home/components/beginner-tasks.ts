@@ -69,18 +69,13 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               <img src=${followUser} alt="Follow user illustration" />
               <h3>Follow Someone</h3>
               <p>
-                A great way to learn is by watching another user. You can see a
-                user's activity on their profile page. Go to
-                <a href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
-                  >Adam's profile</a
-                >
+                A great way to learn is by watching another user. You can see a user's activity on their profile page.
+                Go to
+                <a href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518">Adam's profile</a>
                 and follow him.
               </p>
               <div class="clear-float"></div>
-              <sl-button
-                slot="footer"
-                variant="primary"
-                href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
+              <sl-button slot="footer" variant="primary" href="/profile/0xdC0046B52e2E38AEe2271B6171ebb65cCD337518"
                 >Adam's profile
               </sl-button>
             </sl-card>
@@ -92,18 +87,12 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               <img src=${watchTag} alt="Watch tag illustration" />
               <h3>Watch a Tag</h3>
               <p>
-                Stay up to date on the latest activity from a project, DAO,
-                investor, builder, or topic.
-                <a href="/discover?search=[updraft]"
-                  >Search for the updraft tag</a
-                >
+                Stay up to date on the latest activity from a project, DAO, investor, builder, or topic.
+                <a href="/discover?search=[updraft]">Search for the updraft tag</a>
                 and add it to your Watched Tags.
               </p>
               <div class="clear-float"></div>
-              <sl-button
-                slot="footer"
-                variant="primary"
-                href="/discover?search=[updraft]"
+              <sl-button slot="footer" variant="primary" href="/discover?search=[updraft]"
                 >Search for [updraft]
               </sl-button>
             </sl-card>
@@ -115,14 +104,11 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               <img src=${connectWallet} alt="Connect wallet illustration" />
               <h3>Connect a Wallet</h3>
               <p>
-                A wallet identifies you to others, stores your funds, and allows
-                you to take actions in Updraft. You can install a wallet from
-                these links.
+                A wallet identifies you to others, stores your funds, and allows you to take actions in Updraft. You can
+                install a wallet from these links.
               </p>
               <p>
-                ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a> ⬩<a
-                  href="https://frame.sh"
-                  target="_blank"
+                ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a> ⬩<a href="https://frame.sh" target="_blank"
                   >Frame</a
                 >
                 ⬩<a href="https://rabby.io/" target="_blank">Rabby</a>
@@ -170,15 +156,11 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               <img src=${supportIdea} alt="Support idea illustration" />
               <h3>Support an Idea</h3>
               <p>
-                You can earn UPD by supporting an Idea that turns out to be
-                popular. The more you deposit, the more you stand to earn.
-                Support a recent Idea by the Updraft team with UPD.
+                You can earn UPD by supporting an Idea that turns out to be popular. The more you deposit, the more you
+                stand to earn. Support a recent Idea by the Updraft team with UPD.
               </p>
               <div class="clear-float"></div>
-              <sl-button
-                slot="footer"
-                variant="primary"
-                href="/idea/0x964c430bf51159470c678495b8757233654b5d89"
+              <sl-button slot="footer" variant="primary" href="/idea/0x964c430bf51159470c678495b8757233654b5d89"
                 >Support an Idea
               </sl-button>
             </sl-card>
@@ -190,16 +172,11 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               <img src=${fundSolution} alt="Fund solution illustration" />
               <h3>Fund a Solution</h3>
               <p>
-                Every Idea needs a Solution. A great team and execution can
-                change the world. Fund a Solution you love and earn a reward if
-                others feel the same way. Fund a recent Solution by the Updraft
-                team.
+                Every Idea needs a Solution. A great team and execution can change the world. Fund a Solution you love
+                and earn a reward if others feel the same way. Fund a recent Solution by the Updraft team.
               </p>
               <div class="clear-float"></div>
-              <sl-button
-                slot="footer"
-                variant="primary"
-                href="/solution/0x3061dab956c830afd5ef94c98d295589f1a84928"
+              <sl-button slot="footer" variant="primary" href="/solution/0x3061dab956c830afd5ef94c98d295589f1a84928"
                 >Fund a Solution
               </sl-button>
             </sl-card>
@@ -211,14 +188,11 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               <img src=${createProfile} alt="Create profile illustration" />
               <h3>Create a Profile</h3>
               <p>
-                You're nearing the end of your beginner's journey. Soon others
-                will follow and learn from you. Create a profile so they can see
-                what you're up to and follow your lead.
+                You're nearing the end of your beginner's journey. Soon others will follow and learn from you. Create a
+                profile so they can see what you're up to and follow your lead.
               </p>
               <div class="clear-float"></div>
-              <sl-button slot="footer" variant="primary" href="/edit-profile"
-                >Go to Your Profile
-              </sl-button>
+              <sl-button slot="footer" variant="primary" href="/edit-profile">Go to Your Profile </sl-button>
             </sl-card>
           `}
     `;

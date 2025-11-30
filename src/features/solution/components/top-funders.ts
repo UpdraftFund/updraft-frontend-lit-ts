@@ -1,16 +1,9 @@
 import { customElement, property } from 'lit/decorators.js';
-import {
-  SolutionContributionsDocument,
-  SolutionContributionsQuery,
-  SolutionContributionsQueryVariables,
-} from '@gql';
+import { SolutionContributionsDocument, SolutionContributionsQuery, SolutionContributionsQueryVariables } from '@gql';
 import { TopContributorsBase } from '@components/common/top-contributors-base';
 
 @customElement('top-funders')
-export class TopFunders extends TopContributorsBase<
-  SolutionContributionsQuery,
-  SolutionContributionsQueryVariables
-> {
+export class TopFunders extends TopContributorsBase<SolutionContributionsQuery, SolutionContributionsQueryVariables> {
   @property({ type: String })
   get solutionId(): string {
     return this.entityId;

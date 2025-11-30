@@ -133,11 +133,7 @@ export class ActivityFeed extends LitElement {
               </sl-alert>
             `
           : this.activities.length === 0
-            ? html`
-                <div class="empty-state">
-                  No activities found for this user.
-                </div>
-              `
+            ? html` <div class="empty-state">No activities found for this user.</div> `
             : html`
                 <div class="activity-list">
                   ${cache(

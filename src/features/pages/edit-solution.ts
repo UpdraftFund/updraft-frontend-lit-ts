@@ -121,11 +121,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
       if (result.data?.solution) {
         this.solution = result.data.solution as Solution;
         this.solutionInfo = parseSolutionInfo(this.solution.info);
-        layout.topBarContent.set(html`
-          <page-heading
-            >Edit "${this.solutionInfo?.name || 'Solution'}"
-          </page-heading>
-        `);
+        layout.topBarContent.set(html` <page-heading>Edit "${this.solutionInfo?.name || 'Solution'}" </page-heading> `);
       } else {
         this.error = 'Solution not found';
       }
@@ -154,10 +150,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
     }
     try {
       const solutionContract = new SolutionContract(this.solutionId);
-      this.updateTransaction.hash = await solutionContract.write(
-        'updateSolution',
-        [this.getSolutionInfoFromForm()]
-      );
+      this.updateTransaction.hash = await solutionContract.write('updateSolution', [this.getSolutionInfoFromForm()]);
     } catch (e) {
       console.error('Update solution error:', e);
       if (e instanceof Error && e.message.startsWith('connection')) {
@@ -175,10 +168,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
     const goal = parseUnits(this.goalInput.value, 18);
     try {
       const solutionContract = new SolutionContract(this.solutionId);
-      this.extendTransaction.hash = await solutionContract.write('extendGoal', [
-        goal,
-        BigInt(deadline),
-      ]);
+      this.extendTransaction.hash = await solutionContract.write('extendGoal', [goal, BigInt(deadline)]);
     } catch (e) {
       console.error('Extend goal error:', e);
       if (e instanceof Error && e.message.startsWith('connection')) {
@@ -196,10 +186,11 @@ export class EditSolution extends SignalWatcher(LitElement) {
     const goal = parseUnits(this.goalInput.value, 18);
     try {
       const solutionContract = new SolutionContract(this.solutionId);
-      this.combinedTransaction.hash = await solutionContract.write(
-        'extendGoal',
-        [goal, BigInt(deadline), this.getSolutionInfoFromForm()]
-      );
+      this.combinedTransaction.hash = await solutionContract.write('extendGoal', [
+        goal,
+        BigInt(deadline),
+        this.getSolutionInfoFromForm(),
+      ]);
     } catch (e) {
       console.error('Update and extend error:', e);
       if (e instanceof Error && e.message.startsWith('connection')) {
@@ -214,10 +205,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
   }
 
   public get isUserDrafter() {
-    return (
-      userAddress.get()?.toLowerCase() ===
-      this.solution?.drafter.id.toLowerCase()
-    );
+    return userAddress.get()?.toLowerCase() === this.solution?.drafter.id.toLowerCase();
   }
 
   connectedCallback() {
@@ -227,9 +215,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
     layout.rightSidebarContent.set(html``);
 
     // Set default heading until we load the solution
-    layout.topBarContent.set(html`
-      <page-heading>Edit Solution</page-heading>
-    `);
+    layout.topBarContent.set(html` <page-heading>Edit Solution</page-heading> `);
 
     this.loaded = false;
 
@@ -267,9 +253,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
               <div class="error-container">
                 <h2>Error</h2>
                 <p>${this.error}</p>
-                <sl-button href="/discover?tab=solutions" variant="primary">
-                  Browse Solutions
-                </sl-button>
+                <sl-button href="/discover?tab=solutions" variant="primary"> Browse Solutions </sl-button>
               </div>
             `
           : !this.isUserDrafter
@@ -277,12 +261,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                 <div class="error-container">
                   <h2>Not the Drafter</h2>
                   <p>Only the Drafter of this Solution can edit it.</p>
-                  <sl-button
-                    href="/solution/${this.solutionId}"
-                    variant="primary"
-                  >
-                    View Solution
-                  </sl-button>
+                  <sl-button href="/solution/${this.solutionId}" variant="primary"> View Solution </sl-button>
                 </div>
               `
             : html`
@@ -293,10 +272,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                         <sl-input
                           name="goal"
                           type="number"
-                          min="${formatUnits(
-                            BigInt(this.solution!.fundingGoal) + 100000n,
-                            18
-                          )}"
+                          min="${formatUnits(BigInt(this.solution!.fundingGoal) + 100000n, 18)}"
                           step="any"
                           required
                         >
@@ -315,35 +291,17 @@ export class EditSolution extends SignalWatcher(LitElement) {
                           required
                           min="${dayjs().add(1, 'day').format('YYYY-MM-DD')}"
                         >
-                          <label-with-hint
-                            slot="label"
-                            label="New Deadline*"
-                          ></label-with-hint>
+                          <label-with-hint slot="label" label="New Deadline*"></label-with-hint>
                         </sl-input>
 
-                        <sl-button variant="primary" @click=${this.extendGoal}>
-                          Extend Goal Only
-                        </sl-button>
+                        <sl-button variant="primary" @click=${this.extendGoal}> Extend Goal Only </sl-button>
                       `
                     : html``}
-                  <sl-input
-                    name="name"
-                    required
-                    autocomplete="off"
-                    value=${this.solutionInfo?.name || ''}
-                  >
-                    <label-with-hint
-                      slot="label"
-                      label="Name*"
-                      hint="A short name for your solution"
-                    ></label-with-hint>
+                  <sl-input name="name" required autocomplete="off" value=${this.solutionInfo?.name || ''}>
+                    <label-with-hint slot="label" label="Name*" hint="A short name for your solution"></label-with-hint>
                   </sl-input>
 
-                  <formatted-text-input
-                    name="description"
-                    .value=${this.solutionInfo?.description || ''}
-                    required
-                  >
+                  <formatted-text-input name="description" .value=${this.solutionInfo?.description || ''} required>
                     <label-with-hint
                       slot="label"
                       label="Description*"
@@ -351,10 +309,7 @@ export class EditSolution extends SignalWatcher(LitElement) {
                     ></label-with-hint>
                   </formatted-text-input>
 
-                  <formatted-text-input
-                    name="news"
-                    .value=${this.solutionInfo?.news || ''}
-                  >
+                  <formatted-text-input name="news" .value=${this.solutionInfo?.news || ''}>
                     <label-with-hint
                       slot="label"
                       label="News"
@@ -364,29 +319,13 @@ export class EditSolution extends SignalWatcher(LitElement) {
 
                   ${goalReached(this.solution)
                     ? html`
-                        <sl-button
-                          variant="primary"
-                          @click=${this.updateSolutionAndExtendGoal}
-                        >
+                        <sl-button variant="primary" @click=${this.updateSolutionAndExtendGoal}>
                           Update Solution and Extend Goal
                         </sl-button>
                       `
-                    : html`
-                        <sl-button
-                          variant="primary"
-                          @click=${this.updateSolution}
-                        >
-                          Update Solution
-                        </sl-button>
-                      `}
-                  <transaction-watcher
-                    class="update"
-                    @transaction-success=${this.handleSuccess}
-                  ></transaction-watcher>
-                  <transaction-watcher
-                    class="extend"
-                    @transaction-success=${this.handleSuccess}
-                  ></transaction-watcher>
+                    : html` <sl-button variant="primary" @click=${this.updateSolution}> Update Solution </sl-button> `}
+                  <transaction-watcher class="update" @transaction-success=${this.handleSuccess}></transaction-watcher>
+                  <transaction-watcher class="extend" @transaction-success=${this.handleSuccess}></transaction-watcher>
                   <transaction-watcher
                     class="combined"
                     @transaction-success=${this.handleSuccess}

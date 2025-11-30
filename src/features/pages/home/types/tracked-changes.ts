@@ -1,8 +1,4 @@
-import {
-  Idea,
-  SolutionFieldsFragment,
-  SolutionFieldsDetailedFragment,
-} from '@gql';
+import { Idea, SolutionFieldsFragment, SolutionFieldsDetailedFragment } from '@gql';
 
 export interface NewSupporters {
   type: 'newSupporter';
@@ -52,10 +48,4 @@ export interface SolutionUpdated {
   time: number;
 }
 
-export type Change =
-  | NewSupporters
-  | NewSolution
-  | NewFunders
-  | GoalReached
-  | GoalFailed
-  | SolutionUpdated;
+export type Change = NewSupporters | NewSolution | NewFunders | GoalReached | GoalFailed | SolutionUpdated;

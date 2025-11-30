@@ -1,9 +1,5 @@
 import { expect } from '@open-wc/testing';
-import {
-  resizeImage,
-  isValidImageFile,
-  getDataUrlSize,
-} from '../image-utils.js';
+import { resizeImage, isValidImageFile, getDataUrlSize } from '../image-utils.js';
 
 describe('Image Utils', () => {
   describe('isValidImageFile', () => {

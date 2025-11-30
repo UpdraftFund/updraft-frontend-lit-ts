@@ -105,9 +105,7 @@ export class SplitTransfer extends LitElement {
 
     const numSplits = parseInt(this.numSplitsInput.value);
     if (numSplits < 2) {
-      this.numSplitsInput.setCustomValidity(
-        'Number of splits must be at least 2'
-      );
+      this.numSplitsInput.setCustomValidity('Number of splits must be at least 2');
       this.numSplitsInput.reportValidity();
       return;
     }
@@ -115,10 +113,7 @@ export class SplitTransfer extends LitElement {
     this.splitTransaction.reset();
     try {
       const contract = new IdeaContract(this.entityId);
-      this.splitTransaction.hash = await contract.write('split', [
-        BigInt(parseInt(this.position)),
-        BigInt(numSplits),
-      ]);
+      this.splitTransaction.hash = await contract.write('split', [BigInt(parseInt(this.position)), BigInt(numSplits)]);
     } catch (error) {
       console.error('Split transaction failed:', error);
       // The transaction watcher will handle the error display
@@ -133,9 +128,7 @@ export class SplitTransfer extends LitElement {
 
     const recipient = this.recipientInput.value.trim();
     if (!isAddress(recipient)) {
-      this.recipientInput.setCustomValidity(
-        'Please enter a valid Ethereum address'
-      );
+      this.recipientInput.setCustomValidity('Please enter a valid Ethereum address');
       this.recipientInput.reportValidity();
       return;
     }
@@ -172,8 +165,7 @@ export class SplitTransfer extends LitElement {
         </div>
 
         <div class="description">
-          Manage your position by splitting it into multiple smaller positions
-          or transferring it to another address.
+          Manage your position by splitting it into multiple smaller positions or transferring it to another address.
         </div>
 
         <!-- Position Info -->
@@ -203,9 +195,8 @@ export class SplitTransfer extends LitElement {
         <div class="form-container">
           <h2 class="operation-title">Split Position</h2>
           <p class="description">
-            Split your position into multiple smaller positions. This allows you
-            to manage your stake more flexibly or transfer parts of it to
-            different addresses.
+            Split your position into multiple smaller positions. This allows you to manage your stake more flexibly or
+            transfer parts of it to different addresses.
           </p>
 
           <form class="split-form" @submit=${this.handleSplitSubmit}>
@@ -224,9 +215,7 @@ export class SplitTransfer extends LitElement {
             </div>
 
             <div class="form-actions">
-              <sl-button variant="primary" type="submit">
-                Split Position
-              </sl-button>
+              <sl-button variant="primary" type="submit"> Split Position </sl-button>
             </div>
           </form>
         </div>
@@ -237,8 +226,8 @@ export class SplitTransfer extends LitElement {
         <div class="form-container">
           <h2 class="operation-title">Transfer Position</h2>
           <p class="description">
-            Transfer your position to another Ethereum address. The recipient
-            will receive full ownership of this position.
+            Transfer your position to another Ethereum address. The recipient will receive full ownership of this
+            position.
           </p>
 
           <form class="transfer-form" @submit=${this.handleTransferSubmit}>
@@ -255,49 +244,30 @@ export class SplitTransfer extends LitElement {
             </div>
 
             <div class="form-actions">
-              <sl-button variant="primary" type="submit">
-                Transfer Position
-              </sl-button>
+              <sl-button variant="primary" type="submit"> Transfer Position </sl-button>
             </div>
           </form>
         </div>
 
         <!-- Transaction Watchers -->
-        <transaction-watcher
-          class="split"
-          @transaction-success=${this.handleTransactionSuccess}
-        >
+        <transaction-watcher class="split" @transaction-success=${this.handleTransactionSuccess}>
           <div slot="pending">
-            <p>
-              Splitting position... Please wait for the transaction to complete.
-            </p>
+            <p>Splitting position... Please wait for the transaction to complete.</p>
           </div>
           <div slot="complete">
-            <p>
-              Position split successfully! Your position has been divided into
-              multiple parts.
-            </p>
+            <p>Position split successfully! Your position has been divided into multiple parts.</p>
           </div>
           <div slot="error">
             <p>Failed to split position. Please try again.</p>
           </div>
         </transaction-watcher>
 
-        <transaction-watcher
-          class="transfer"
-          @transaction-success=${this.handleTransactionSuccess}
-        >
+        <transaction-watcher class="transfer" @transaction-success=${this.handleTransactionSuccess}>
           <div slot="pending">
-            <p>
-              Transferring position... Please wait for the transaction to
-              complete.
-            </p>
+            <p>Transferring position... Please wait for the transaction to complete.</p>
           </div>
           <div slot="complete">
-            <p>
-              Position transferred successfully! The recipient now owns this
-              position.
-            </p>
+            <p>Position transferred successfully! The recipient now owns this position.</p>
           </div>
           <div slot="error">
             <p>Failed to transfer position. Please try again.</p>
@@ -306,9 +276,7 @@ export class SplitTransfer extends LitElement {
 
         <!-- Back Button -->
         <div class="form-actions">
-          <sl-button variant="default" @click=${() => window.history.back()}>
-            ← Back
-          </sl-button>
+          <sl-button variant="default" @click=${() => window.history.back()}> ← Back </sl-button>
         </div>
       </sl-card>
     `;

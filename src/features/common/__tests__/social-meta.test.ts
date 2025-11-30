@@ -108,23 +108,19 @@ describe('Social Media Meta Functions', () => {
     });
 
     it('should handle rich text editor content', () => {
-      const richTextInput =
-        '<p>Check out <strong>"John\'s Company"</strong> &amp; more!</p>';
+      const richTextInput = '<p>Check out <strong>"John\'s Company"</strong> &amp; more!</p>';
       const stripped = stripHtmlTags(richTextInput);
       const escaped = escapeForAttribute(stripped);
 
       expect(stripped).to.equal('Check out "John\'s Company" &amp; more!');
-      expect(escaped).to.equal(
-        "Check out &quot;John's Company&quot; &amp; more!"
-      );
+      expect(escaped).to.equal("Check out &quot;John's Company&quot; &amp; more!");
     });
   });
 
   describe('DOMPurify Configuration', () => {
     it('should use the exact configuration from api/social-meta.ts', () => {
       // Test that we're using ALLOWED_TAGS: [] and KEEP_CONTENT: true
-      const input =
-        '<div><span>Hello</span> <custom-tag>world</custom-tag></div>';
+      const input = '<div><span>Hello</span> <custom-tag>world</custom-tag></div>';
       const result = DOMPurify.sanitize(input, {
         ALLOWED_TAGS: [],
         KEEP_CONTENT: true,

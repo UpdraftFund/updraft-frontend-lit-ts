@@ -153,10 +153,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
   } as const;
 
   // Controller for handling query subscriptions
-  private readonly queryController = new UrqlQueryController<
-    AnyResult,
-    AnyVariables
-  >(
+  private readonly queryController = new UrqlQueryController<AnyResult, AnyVariables>(
     this,
     this.queries['hot-ideas'], // default
     this.getVariablesForQuery('hot-ideas'), // default
@@ -183,15 +180,9 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
               this.tab === 'tags' ||
               this.tab === 'followed'
             ) {
-              this.results = [
-                ...(this.results as Idea[]),
-                ...(newResults as Idea[]),
-              ];
+              this.results = [...(this.results as Idea[]), ...(newResults as Idea[])];
             } else if (this.tab === 'solutions') {
-              this.results = [
-                ...(this.results as Solution[]),
-                ...(newResults as Solution[]),
-              ];
+              this.results = [...(this.results as Solution[]), ...(newResults as Solution[])];
             }
           }
         }
@@ -272,8 +263,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         return (data as SolutionsBySweetnessQuery).solutions as Solution[];
       case 'followed':
         // Dedupe Ideas from IdeaContributions
-        const ideaContributions = (data as IdeasByFundersQuery)
-          .ideaContributions as IdeaContribution[];
+        const ideaContributions = (data as IdeasByFundersQuery).ideaContributions as IdeaContribution[];
         const uniqueIdeasMap = new Map<string, Idea>();
         ideaContributions.forEach((contribution) => {
           uniqueIdeasMap.set(contribution.idea.id, contribution.idea);
@@ -292,10 +282,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     this.currentSkip = 0;
     this.hasMoreResults = true;
 
-    const query = this.queries[this.tab] as TypedDocumentNode<
-      AnyResult,
-      AnyVariables
-    >;
+    const query = this.queries[this.tab] as TypedDocumentNode<AnyResult, AnyVariables>;
     const variables = this.getVariablesForQuery(this.tab);
     this.queryController.setQueryAndSubscribe(query, variables);
   }
@@ -306,10 +293,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     this.isLoadingMore = true;
     this.currentSkip += this.PAGE_SIZE;
 
-    const query = this.queries[this.tab] as TypedDocumentNode<
-      AnyResult,
-      AnyVariables
-    >;
+    const query = this.queries[this.tab] as TypedDocumentNode<AnyResult, AnyVariables>;
     const variables = this.getVariablesForQuery(this.tab);
     this.queryController.setQueryAndSubscribe(query, variables);
   }
@@ -322,12 +306,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
           (tag) => html`
             <span class="tag-with-button">
               <h2 class="tag">${tag}</h2>
-              <sl-button
-                pill
-                size="small"
-                @click=${() => watchTag(tag)}
-                ?disabled=${isWatched(tag)}
-              >
+              <sl-button pill size="small" @click=${() => watchTag(tag)} ?disabled=${isWatched(tag)}>
                 ${isWatched(tag) ? 'Watched' : 'Watch Tag'}
               </sl-button>
             </span>
@@ -348,9 +327,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         if (this.search.startsWith('[')) {
           this.tab = 'tags';
           const tagMatches = this.search?.match(/\[.*?]/g) || [];
-          this.tags = tagMatches
-            .map((tag) => tag.replace(/[\[\]]/g, ''))
-            .slice(0, 5); // only get up to 5 matches
+          this.tags = tagMatches.map((tag) => tag.replace(/[\[\]]/g, '')).slice(0, 5); // only get up to 5 matches
         } else {
           this.tab = 'search';
         }
@@ -396,10 +373,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
         html`${repeat(
           this.results as Solution[],
           (solution) => solution.id,
-          (solution) =>
-            html` <solution-card-large
-              .solution=${solution}
-            ></solution-card-large>`
+          (solution) => html` <solution-card-large .solution=${solution}></solution-card-large>`
         )}`
       );
     }
@@ -414,12 +388,7 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
 
     return html`
       <div class="load-more-container">
-        <sl-button
-          variant="default"
-          size="medium"
-          ?loading=${this.isLoadingMore}
-          @click=${this.loadMore}
-        >
+        <sl-button variant="default" size="medium" ?loading=${this.isLoadingMore} @click=${this.loadMore}>
           ${this.isLoadingMore ? 'Loading...' : 'Load more results...'}
         </sl-button>
       </div>
@@ -492,31 +461,20 @@ export class DiscoverPage extends SignalWatcher(LitElement) {
     this._setupUrlChangeListener();
 
     this.handleMediaQueryChange();
-    this.narrowScreenMediaQuery.addEventListener(
-      'change',
-      this.handleMediaQueryChange.bind(this)
-    );
+    this.narrowScreenMediaQuery.addEventListener('change', this.handleMediaQueryChange.bind(this));
   }
 
   disconnectedCallback() {
     window.removeEventListener('popstate', this.setTabFromUrl);
     this._teardownUrlChangeListener();
-    this.narrowScreenMediaQuery.removeEventListener(
-      'change',
-      this.handleMediaQueryChange.bind(this)
-    );
+    this.narrowScreenMediaQuery.removeEventListener('change', this.handleMediaQueryChange.bind(this));
     super.disconnectedCallback();
   }
 
   render() {
     return html`
-      ${this.dropTabBar
-        ? html` <discover-tabs .tab=${this.tab}></discover-tabs>`
-        : html``}
-      <main>
-        ${this.tab === 'tags' ? this.renderTagList() : html``}
-        ${this.renderQueryResults()}
-      </main>
+      ${this.dropTabBar ? html` <discover-tabs .tab=${this.tab}></discover-tabs>` : html``}
+      <main>${this.tab === 'tags' ? this.renderTagList() : html``} ${this.renderQueryResults()}</main>
     `;
   }
 }

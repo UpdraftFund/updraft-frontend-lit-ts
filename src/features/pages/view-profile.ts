@@ -123,9 +123,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
       if (result.data?.user?.profile) {
         try {
-          this.profileData = JSON.parse(
-            fromHex(result.data.user.profile as `0x${string}`, 'string')
-          );
+          this.profileData = JSON.parse(fromHex(result.data.user.profile as `0x${string}`, 'string'));
 
           // Update the activity feed in the right sidebar
           if (this.profileData) {
@@ -138,8 +136,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
             );
           }
         } catch (e) {
-          this.error =
-            e instanceof Error ? e : new Error('Failed to parse profile data');
+          this.error = e instanceof Error ? e : new Error('Failed to parse profile data');
         }
       } else {
         this.profileData = null;
@@ -159,11 +156,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
 
     // If the address is the current user's address, show Edit Profile button
     if (isCurrentUser) {
-      return html`
-        <sl-button variant="primary" href="/edit-profile">
-          Edit profile
-        </sl-button>
-      `;
+      return html` <sl-button variant="primary" href="/edit-profile"> Edit profile </sl-button> `;
     } else {
       // Otherwise, show Follow/Unfollow button based on follow status task
       if (isFollowed(this.address)) {
@@ -176,9 +169,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
           Unfollow
         </sl-button>`;
       } else {
-        return html` <sl-button variant="primary" @click=${this.handleFollow}>
-          Follow
-        </sl-button>`;
+        return html` <sl-button variant="primary" @click=${this.handleFollow}> Follow </sl-button>`;
       }
     }
   }
@@ -227,10 +218,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(true);
     layout.rightSidebarContent.set(
-      html` <activity-feed
-        .userId=${this.address}
-        .userName=${shortenAddress(this.address)}
-      ></activity-feed>`
+      html` <activity-feed .userId=${this.address} .userName=${shortenAddress(this.address)}></activity-feed>`
     );
 
     // Initialize the profile controller with the current address
@@ -257,15 +245,10 @@ export class ViewProfile extends SignalWatcher(LitElement) {
             ? html`<p>Error loading profile: ${this.error.message}</p>`
             : cache(html`
                 <div class="profile-header">
-                  <user-avatar
-                    .address=${this.address}
-                    .image=${this.profileData?.image}
-                  ></user-avatar>
+                  <user-avatar .address=${this.address} .image=${this.profileData?.image}></user-avatar>
                   <div>
                     ${this.profileData?.name || this.profileData?.team
-                      ? html` <h1 class="name">
-                          ${this.profileData?.name || this.profileData?.team}
-                        </h1>`
+                      ? html` <h1 class="name">${this.profileData?.name || this.profileData?.team}</h1>`
                       : html``}
                     <div class="address">${this.address}</div>
                     ${this.profileData?.team && this.profileData?.name
@@ -295,9 +278,7 @@ export class ViewProfile extends SignalWatcher(LitElement) {
                   ? html`
                       <div class="links section">
                         <h2>Links</h2>
-                        ${this.profileData!.links.map((link: string) =>
-                          this.createLink(link)
-                        )}
+                        ${this.profileData!.links.map((link: string) => this.createLink(link))}
                       </div>
                     `
                   : html``}

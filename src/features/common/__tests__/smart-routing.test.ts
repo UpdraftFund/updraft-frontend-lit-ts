@@ -67,9 +67,7 @@ function parseUrlComponents(req: MockVercelRequest) {
   // Filter out Vercel's internal query parameters
   let search = '';
   if (req.url?.includes('?')) {
-    const urlParams = new URLSearchParams(
-      req.url.substring(req.url.indexOf('?') + 1)
-    );
+    const urlParams = new URLSearchParams(req.url.substring(req.url.indexOf('?') + 1));
     // Remove Vercel's internal parameters
     urlParams.delete('host');
     urlParams.delete('x-vercel-id');
@@ -130,10 +128,7 @@ function simulateSmartRouting(
       res.setHeader('X-Debug-Action', 'serve-landing-page');
       // Simulate serving landing page
       if (options.shouldFailLandingPage) {
-        res.setHeader(
-          'X-Debug-Landing-Error',
-          'ENOENT: no such file or directory'
-        );
+        res.setHeader('X-Debug-Landing-Error', 'ENOENT: no such file or directory');
         res.setHeader('X-Debug-Working-Dir', '/mock/working/dir');
         return res.redirect(302, 'https://app.updraft.fund/');
       } else {
@@ -141,10 +136,7 @@ function simulateSmartRouting(
         res.setHeader('Content-Type', 'text/html');
         res.setHeader('Cache-Control', 'public, max-age=3600');
         res.setHeader('X-Debug-Landing-Path', mockPath);
-        res.setHeader(
-          'X-Debug-Landing-Size',
-          MOCK_LANDING_PAGE_CONTENT.length.toString()
-        );
+        res.setHeader('X-Debug-Landing-Size', MOCK_LANDING_PAGE_CONTENT.length.toString());
         return res.send(MOCK_LANDING_PAGE_CONTENT);
       }
     }
@@ -281,12 +273,8 @@ describe('Smart Routing API', () => {
       simulateSmartRouting(req, res);
 
       expect(res.statusCode).to.equal(302);
-      expect(res.redirectLocation).to.equal(
-        'https://app.updraft.fund/idea/123?foo=bar'
-      );
-      expect(res.headers['X-Debug-Action']).to.equal(
-        'redirect-to-app-wrong-host'
-      );
+      expect(res.redirectLocation).to.equal('https://app.updraft.fund/idea/123?foo=bar');
+      expect(res.headers['X-Debug-Action']).to.equal('redirect-to-app-wrong-host');
     });
 
     it('should serve landing page for www.updraft.fund root without cookie', () => {
@@ -304,12 +292,8 @@ describe('Smart Routing API', () => {
       expect(res.headers['X-Debug-Action']).to.equal('serve-landing-page');
       expect(res.body).to.include('<!DOCTYPE html>');
       expect(res.body).to.include('UPDRAFT');
-      expect(res.headers['X-Debug-Landing-Path']).to.include(
-        'public/landing/index.html'
-      );
-      expect(res.headers['X-Debug-Landing-Size']).to.equal(
-        MOCK_LANDING_PAGE_CONTENT.length.toString()
-      );
+      expect(res.headers['X-Debug-Landing-Path']).to.include('public/landing/index.html');
+      expect(res.headers['X-Debug-Landing-Size']).to.equal(MOCK_LANDING_PAGE_CONTENT.length.toString());
     });
 
     it('should redirect to app when landing page fails to load', () => {
@@ -341,9 +325,7 @@ describe('Smart Routing API', () => {
 
       expect(res.statusCode).to.equal(302);
       expect(res.redirectLocation).to.equal('https://app.updraft.fund/');
-      expect(res.headers['X-Debug-Action']).to.equal(
-        'redirect-to-app-has-cookie'
-      );
+      expect(res.headers['X-Debug-Action']).to.equal('redirect-to-app-has-cookie');
       expect(res.headers['X-Debug-Has-Cookie']).to.equal('true');
     });
 
@@ -357,12 +339,8 @@ describe('Smart Routing API', () => {
       simulateSmartRouting(req, res);
 
       expect(res.statusCode).to.equal(302);
-      expect(res.redirectLocation).to.equal(
-        'https://app.updraft.fund/idea/123?ref=twitter'
-      );
-      expect(res.headers['X-Debug-Action']).to.equal(
-        'redirect-to-app-other-path'
-      );
+      expect(res.redirectLocation).to.equal('https://app.updraft.fund/idea/123?ref=twitter');
+      expect(res.headers['X-Debug-Action']).to.equal('redirect-to-app-other-path');
     });
 
     it('should preserve query parameters in redirects', () => {
@@ -379,9 +357,7 @@ describe('Smart Routing API', () => {
       expect(res.redirectLocation).to.equal(
         'https://app.updraft.fund/discover?search=%5Bsongaday%5D+%5Bredux%5D&sort=recent'
       );
-      expect(res.headers['X-Debug-Search']).to.equal(
-        '?search=%5Bsongaday%5D+%5Bredux%5D&sort=recent'
-      );
+      expect(res.headers['X-Debug-Search']).to.equal('?search=%5Bsongaday%5D+%5Bredux%5D&sort=recent');
     });
   });
 
@@ -402,9 +378,7 @@ describe('Smart Routing API', () => {
       expect(res.headers['X-Debug-Pathname']).to.equal('/test');
       expect(res.headers['X-Debug-Search']).to.equal('?param=value');
       expect(res.headers['X-Debug-Has-Cookie']).to.equal('true');
-      expect(res.headers['X-Debug-Action']).to.equal(
-        'redirect-to-app-other-path'
-      );
+      expect(res.headers['X-Debug-Action']).to.equal('redirect-to-app-other-path');
     });
 
     it('should handle missing cookie in debug headers', () => {

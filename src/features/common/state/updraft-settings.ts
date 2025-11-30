@@ -29,6 +29,4 @@ export const refreshUpdraftSettings = async () => {
   });
 };
 
-export const defaultFunderReward = computed(
-  () => updraftSettings.get().percentScale * (defaultFunderRewardPct / 100)
-);
+export const defaultFunderReward = computed(() => updraftSettings.get().percentScale * (defaultFunderRewardPct / 100));

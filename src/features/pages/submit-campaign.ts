@@ -14,10 +14,7 @@ import '@layout/page-heading';
 import '@components/common/label-with-hint';
 
 // Utils
-import {
-  normalizeAndValidateTagsInput,
-  splitTags,
-} from '@utils/tags/tag-validation';
+import { normalizeAndValidateTagsInput, splitTags } from '@utils/tags/tag-validation';
 
 // Types
 import type { Campaign } from '@shared/types/campaign';
@@ -143,9 +140,7 @@ export class SubmitCampaign extends LitElement {
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
-    layout.topBarContent.set(html`
-      <page-heading>Submit a Campaign</page-heading>
-    `);
+    layout.topBarContent.set(html` <page-heading>Submit a Campaign</page-heading> `);
   }
 
   private handleFormSubmit(e: Event) {
@@ -225,9 +220,7 @@ export class SubmitCampaign extends LitElement {
       const validate = ajv.compile(campaignSchema);
 
       if (!validate(campaignData)) {
-        const errorMessages = validate.errors
-          ?.map((err) => `${err.instancePath} ${err.message}`)
-          .join(', ');
+        const errorMessages = validate.errors?.map((err) => `${err.instancePath} ${err.message}`).join(', ');
         this.submitError = `Validation failed: ${errorMessages}`;
         return;
       }
@@ -252,8 +245,7 @@ export class SubmitCampaign extends LitElement {
         // Scroll to success message
         this.scrollToAlerts();
       } else {
-        this.submitError =
-          result.error || result.message || 'Failed to submit campaign';
+        this.submitError = result.error || result.message || 'Failed to submit campaign';
         // Scroll to error message
         this.scrollToAlerts();
       }
@@ -285,10 +277,7 @@ export class SubmitCampaign extends LitElement {
   }
 
   private addFundingItem() {
-    this.fundingItems = [
-      ...this.fundingItems,
-      { id: this.nextFundingId++, token: '', amount: '' },
-    ];
+    this.fundingItems = [...this.fundingItems, { id: this.nextFundingId++, token: '', amount: '' }];
   }
 
   private removeFundingItem(id: number) {
@@ -387,11 +376,7 @@ export class SubmitCampaign extends LitElement {
             ></label-with-hint>
           </sl-input>
           <sl-input name="linkText">
-            <label-with-hint
-              slot="label"
-              label="Link Text"
-              hint="Text to display for the link"
-            ></label-with-hint>
+            <label-with-hint slot="label" label="Link Text" hint="Text to display for the link"></label-with-hint>
           </sl-input>
         </div>
 
@@ -404,14 +389,11 @@ export class SubmitCampaign extends LitElement {
                   name="fundingToken_${item.id}"
                   placeholder="UPD"
                   .value=${item.token}
-                  @sl-input=${(e: Event) =>
-                    this.handleFundingTokenInput(e, item.id)}
+                  @sl-input=${(e: Event) => this.handleFundingTokenInput(e, item.id)}
                 >
                   <label-with-hint
                     slot="label"
-                    label="Token Symbol ${this.fundingItems.length > 1
-                      ? `#${index + 1}`
-                      : ''}"
+                    label="Token Symbol ${this.fundingItems.length > 1 ? `#${index + 1}` : ''}"
                     hint="Symbol of the token you're committing"
                   ></label-with-hint>
                 </sl-input>
@@ -421,14 +403,11 @@ export class SubmitCampaign extends LitElement {
                   step="any"
                   min="0"
                   .value=${item.amount}
-                  @sl-input=${(e: Event) =>
-                    this.handleFundingAmountInput(e, item.id)}
+                  @sl-input=${(e: Event) => this.handleFundingAmountInput(e, item.id)}
                 >
                   <label-with-hint
                     slot="label"
-                    label="Amount ${this.fundingItems.length > 1
-                      ? `#${index + 1}`
-                      : ''}"
+                    label="Amount ${this.fundingItems.length > 1 ? `#${index + 1}` : ''}"
                     hint="Number of tokens you're committing to the campaign"
                   ></label-with-hint>
                 </sl-input>
@@ -450,23 +429,12 @@ export class SubmitCampaign extends LitElement {
               </div>
             `
           )}
-          <sl-button
-            type="button"
-            variant="default"
-            size="small"
-            class="add-funding-btn"
-            @click=${this.addFundingItem}
-          >
+          <sl-button type="button" variant="default" size="small" class="add-funding-btn" @click=${this.addFundingItem}>
             Add Another Token
           </sl-button>
         </div>
 
-        <sl-button
-          type="submit"
-          variant="primary"
-          ?loading=${this.isSubmitting}
-          ?disabled=${this.isSubmitting}
-        >
+        <sl-button type="submit" variant="primary" ?loading=${this.isSubmitting} ?disabled=${this.isSubmitting}>
           ${this.isSubmitting ? 'Submitting...' : 'Submit Campaign'}
         </sl-button>
       </form>

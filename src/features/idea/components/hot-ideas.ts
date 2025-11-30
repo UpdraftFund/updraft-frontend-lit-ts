@@ -86,9 +86,7 @@ export class HotIdeas extends LitElement {
   private renderHotIdeas(ideas: Idea[]) {
     return html`
       <div class="hot-ideas-list">
-        ${ideas.map(
-          (idea) => html` <idea-card-small .idea=${idea}></idea-card-small> `
-        )}
+        ${ideas.map((idea) => html` <idea-card-small .idea=${idea}></idea-card-small> `)}
       </div>
     `;
   }
@@ -103,9 +101,7 @@ export class HotIdeas extends LitElement {
             ? html` <div class="no-ideas">No ideas found</div>`
             : html`
                 ${cache(this.renderHotIdeas(this.hotIdeas))}
-                <a href="/discover?tab=hot-ideas" class="see-more-link">
-                  See more hot ideas →
-                </a>
+                <a href="/discover?tab=hot-ideas" class="see-more-link"> See more hot ideas → </a>
               `}
       </div>
     `;

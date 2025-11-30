@@ -24,10 +24,7 @@ import '@components/common/formatted-text-input';
 import { ITokenInput } from '@components/common/token-input';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ShareDialog } from '@components/common/share-dialog';
-import {
-  TransactionWatcher,
-  TransactionSuccess,
-} from '@components/common/transaction-watcher';
+import { TransactionWatcher, TransactionSuccess } from '@components/common/transaction-watcher';
 import { SaveableForm, formToJson } from '@components/common/saveable-form';
 
 // Styles
@@ -206,9 +203,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
 
   connectedCallback() {
     super.connectedCallback();
-    layout.topBarContent.set(html`
-      <page-heading>Create a new Idea</page-heading>
-    `);
+    layout.topBarContent.set(html` <page-heading>Create a new Idea</page-heading> `);
     layout.showLeftSidebar.set(true);
     layout.showRightSidebar.set(false);
     layout.rightSidebarContent.set(html``);
@@ -232,9 +227,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
   private handleCampaignSelection(e: Event) {
     const select = e.target as SlSelect;
     const selectedCampaignId = parseInt(select.value as string);
-    const selectedCampaign = this.campaigns.find(
-      (c) => c.id === selectedCampaignId
-    );
+    const selectedCampaign = this.campaigns.find((c) => c.id === selectedCampaignId);
 
     if (this.tagsInput) {
       if (selectedCampaign) {
@@ -256,11 +249,7 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
     return html`
       <form name="create-idea" @submit=${this.handleFormSubmit}>
         <sl-input name="name" required autocomplete="off">
-          <label-with-hint
-            slot="label"
-            label="Name*"
-            hint="A short name for your idea"
-          ></label-with-hint>
+          <label-with-hint slot="label" label="Name*" hint="A short name for your idea"></label-with-hint>
         </sl-input>
         <formatted-text-input name="description">
           <label-with-hint
@@ -279,18 +268,9 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
             >
             </label-with-hint>
           </sl-input>
-          <sl-select
-            name="campaign"
-            placeholder="Select campaign"
-            clearable
-            @sl-change=${this.handleCampaignSelection}
-          >
+          <sl-select name="campaign" placeholder="Select campaign" clearable @sl-change=${this.handleCampaignSelection}>
             <label slot="label">Campaign</label>
-            ${this.campaigns.map(
-              (campaign) => html`
-                <sl-option value=${campaign.id}>${campaign.name}</sl-option>
-              `
-            )}
+            ${this.campaigns.map((campaign) => html` <sl-option value=${campaign.id}>${campaign.name}</sl-option> `)}
           </sl-select>
         </div>
         <div class="deposit-container">
@@ -310,50 +290,28 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
               antiSpamFeeMode="variable"
               showDialogs="false"
             >
-              <sl-button
-                slot="invalid"
-                variant="primary"
-                @click=${() => this.updDialog.show()}
-              >
+              <sl-button slot="invalid" variant="primary" @click=${() => this.updDialog.show()}>
                 Get more UPD
               </sl-button>
             </token-input>
           </div>
         </div>
         <div class="button-row">
-          <sl-button variant="default" href="/preview-idea">
-            Preview
-          </sl-button>
+          <sl-button variant="default" href="/preview-idea"> Preview </sl-button>
 
           ${hasProfile.get()
-            ? html` <sl-button
-                class="submit"
-                variant="primary"
-                @click=${this.createIdea}
-              >
-                Create Idea
-              </sl-button>`
-            : html`<a
-                class="submit"
-                href="/submit-profile-and-create-idea"
-                rel="next"
-              >
-                <sl-button variant="primary" @click=${this.nextButtonClick}>
-                  Next: Create your Profile
-                </sl-button>
+            ? html` <sl-button class="submit" variant="primary" @click=${this.createIdea}> Create Idea </sl-button>`
+            : html`<a class="submit" href="/submit-profile-and-create-idea" rel="next">
+                <sl-button variant="primary" @click=${this.nextButtonClick}> Next: Create your Profile </sl-button>
               </a>`}
         </div>
-        <transaction-watcher
-          class="submit"
-          @transaction-success=${this.handleTransactionSuccess}
-        ></transaction-watcher>
+        <transaction-watcher class="submit" @transaction-success=${this.handleTransactionSuccess}></transaction-watcher>
       </form>
       <upd-dialog></upd-dialog>
       <share-dialog></share-dialog>
       <sl-dialog label="Set Allowance">
         <p>
-          Before you can create your idea, you need to sign a transaction to
-          allow Updraft to spend your UPD tokens.
+          Before you can create your idea, you need to sign a transaction to allow Updraft to spend your UPD tokens.
         </p>
         <transaction-watcher
           class="approve"

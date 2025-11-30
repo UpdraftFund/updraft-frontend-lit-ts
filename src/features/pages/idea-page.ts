@@ -272,31 +272,23 @@ export class IdeaPage extends SignalWatcher(LitElement) {
   //TODO: each url should include a network
   //@property() network!: string;
 
-  private readonly ideaController = new UrqlQueryController(
-    this,
-    IdeaDocument,
-    { ideaId: this.ideaId },
-    (result) => {
-      this.loaded = true;
+  private readonly ideaController = new UrqlQueryController(this, IdeaDocument, { ideaId: this.ideaId }, (result) => {
+    this.loaded = true;
 
-      if (result.error) {
-        this.error = result.error.message;
-        return;
-      }
-
-      this.idea = result.data?.idea as Idea;
-
-      if (this.idea) {
-        layout.rightSidebarContent.set(html`
-          <top-supporters .ideaId=${this.ideaId}></top-supporters>
-          <related-ideas
-            .ideaId=${this.ideaId}
-            .tags=${this.idea.tags}
-          ></related-ideas>
-        `);
-      }
+    if (result.error) {
+      this.error = result.error.message;
+      return;
     }
-  );
+
+    this.idea = result.data?.idea as Idea;
+
+    if (this.idea) {
+      layout.rightSidebarContent.set(html`
+        <top-supporters .ideaId=${this.ideaId}></top-supporters>
+        <related-ideas .ideaId=${this.ideaId} .tags=${this.idea.tags}></related-ideas>
+      `);
+    }
+  });
 
   // Task to fetch user's support for this idea
   private readonly userSupportTask = new Task(
@@ -307,9 +299,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       try {
         const idea = new IdeaContract(ideaId);
 
-        const numPositions = (await idea.read('numPositions', [
-          address,
-        ])) as bigint;
+        const numPositions = (await idea.read('numPositions', [address])) as bigint;
 
         // If user has no positions, return null
         if (numPositions === 0n) {
@@ -325,26 +315,19 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         const viablePositions: IdeaPosition[] = [];
 
         // Check each position
-        for (
-          let positionIndex = 0n;
-          positionIndex < numPositions;
-          positionIndex++
-        ) {
+        for (let positionIndex = 0n; positionIndex < numPositions; positionIndex++) {
           try {
             // Get current position (includes earnings)
-            const [currentPosition] = (await idea.read('checkPosition', [
-              address,
-              positionIndex,
-            ])) as bigint[];
+            const [currentPosition] = (await idea.read('checkPosition', [address, positionIndex])) as bigint[];
 
             // Skip positions with zero value (already withdrawn)
             if (currentPosition <= 0n) continue;
 
             // Get original contribution from positionsByAddress mapping
-            const [contributionCycle, contributionAfterFees] = (await idea.read(
-              'positionsByAddress',
-              [address, positionIndex]
-            )) as bigint[];
+            const [contributionCycle, contributionAfterFees] = (await idea.read('positionsByAddress', [
+              address,
+              positionIndex,
+            ])) as bigint[];
 
             // Skip positions with zero value (already withdrawn)
             if (contributionAfterFees <= 0n) continue;
@@ -355,15 +338,11 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             if (contributionCycle > 0) {
               const funderReward = BigInt(this.idea?.funderReward);
               if (funderReward && percentScale > funderReward) {
-                originalContribution =
-                  (contributionAfterFees * percentScale) /
-                  (percentScale - funderReward);
+                originalContribution = (contributionAfterFees * percentScale) / (percentScale - funderReward);
               }
             }
 
-            const contributionBeforeAntiSpamFee =
-              (originalContribution * percentScale) /
-              (percentScale - percentFee);
+            const contributionBeforeAntiSpamFee = (originalContribution * percentScale) / (percentScale - percentFee);
 
             // Use the greater of the minFee and percentFee, like the smart contract
             if (contributionBeforeAntiSpamFee > originalContribution + minFee) {
@@ -409,9 +388,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       const currentPosition = this.positions[this.positionIndex];
       const idea = new IdeaContract(this.ideaId);
 
-      this.withdrawTransaction.hash = await idea.write('withdraw', [
-        currentPosition.positionIndex,
-      ]);
+      this.withdrawTransaction.hash = await idea.write('withdraw', [currentPosition.positionIndex]);
     } catch (e) {
       console.error('Withdraw error:', e);
       if (e instanceof Error && e.message.startsWith('connection')) {
@@ -424,10 +401,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
 
     // Decrement position index, wrapping around to the end if needed
-    this.positionIndex =
-      this.positionIndex === 0
-        ? this.positions.length - 1
-        : this.positionIndex - 1;
+    this.positionIndex = this.positionIndex === 0 ? this.positions.length - 1 : this.positionIndex - 1;
   }
 
   private nextPosition() {
@@ -457,9 +431,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         if (this.isAirdropMode) {
           this.submitTransaction.hash = await idea.write('airdrop', [support]);
         } else {
-          this.submitTransaction.hash = await idea.write('contribute', [
-            support,
-          ]);
+          this.submitTransaction.hash = await idea.write('contribute', [support]);
         }
       } catch (err) {
         this.tokenInput.handleTransactionError(
@@ -492,32 +464,18 @@ export class IdeaPage extends SignalWatcher(LitElement) {
 
   private renderIdea() {
     if (this.idea) {
-      const {
-        startTime,
-        funderReward,
-        shares,
-        creator,
-        tags,
-        description,
-        name,
-      } = this.idea;
+      const { startTime, funderReward, shares, creator, tags, description, name } = this.idea;
 
-      const pctFunderReward =
-        (funderReward * 100) / updraftSettings.get().percentScale;
+      const pctFunderReward = (funderReward * 100) / updraftSettings.get().percentScale;
 
-      const profile = JSON.parse(
-        fromHex(creator.profile as `0x${string}`, 'string')
-      );
+      const profile = JSON.parse(fromHex(creator.profile as `0x${string}`, 'string'));
 
       const displayName = profile.name || profile.team || creator.id;
 
       return cache(html`
         <h1 class="heading">Idea: ${name}</h1>
         <a class="creator" href="/profile/${creator.id}">
-          <user-avatar
-            .address=${creator.id}
-            .image=${profile.image}
-          ></user-avatar>
+          <user-avatar .address=${creator.id} .image=${profile.image}></user-avatar>
           <span>${displayName}</span>
         </a>
         <span class="created"> Created ${formatDate(startTime, 'full')} </span>
@@ -534,9 +492,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
             : html``}
           <div class="item-with-tooltip">
             <span>🔥 ${formatAmount(shares)}</span>
-            <sl-tooltip
-              content="🔥 Interest is how much support an Idea has over time."
-            >
+            <sl-tooltip content="🔥 Interest is how much support an Idea has over time.">
               <span class="info-icon">ℹ️</span>
             </sl-tooltip>
           </div>
@@ -551,11 +507,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           ${tags
             ? html`
                 <div class="tags">
-                  ${tags.map(
-                    (tag) => html`
-                      <a href="/discover?search=[${tag}]" class="tag">${tag}</a>
-                    `
-                  )}
+                  ${tags.map((tag) => html` <a href="/discover?search=[${tag}]" class="tag">${tag}</a> `)}
                 </div>
               `
             : html``}
@@ -578,10 +530,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                               label="Previous position"
                               @click=${this.previousPosition}
                             ></sl-icon-button>
-                            <span
-                              >Position ${this.positionIndex + 1} of
-                              ${this.positions.length}</span
-                            >
+                            <span>Position ${this.positionIndex + 1} of ${this.positions.length}</span>
                             <sl-icon-button
                               src=${chevronRight}
                               label="Next position"
@@ -594,13 +543,8 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                   <div class="support-details">
                     <p>
                       Your contribution:
-                      <strong>
-                        ${formatAmount(position.originalContribution)} UPD
-                      </strong>
-                      <small
-                        >including ${formatAmount(position.feesPaid)} in
-                        fees</small
-                      >
+                      <strong> ${formatAmount(position.originalContribution)} UPD </strong>
+                      <small>including ${formatAmount(position.feesPaid)} in fees</small>
                       <sl-tooltip
                         content="Fees consist of an anti-spam fee and a funder reward fee paid to previous supporters."
                       >
@@ -613,17 +557,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                     </p>
                     <p>
                       Withdrawable amount:
-                      <strong>
-                        ${formatAmount(position.currentPosition)} UPD
-                      </strong>
+                      <strong> ${formatAmount(position.currentPosition)} UPD </strong>
                     </p>
                     <div class="item-with-tooltip">
-                      <sl-button
-                        variant="primary"
-                        @click=${this.handleWithdraw}
-                      >
-                        Withdraw Support
-                      </sl-button>
+                      <sl-button variant="primary" @click=${this.handleWithdraw}> Withdraw Support </sl-button>
                       <sl-tooltip
                         content="Your entire position will be withdrawn and refunded (minus any fees) plus any 🎁 Funder Rewards you have earned."
                       >
@@ -636,14 +573,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
                       class="split-transfer-button"
                       src=${split}
                       label="Split or transfer position"
-                      href="/split-transfer/${this
-                        .ideaId}/${position.positionIndex}"
+                      href="/split-transfer/${this.ideaId}/${position.positionIndex}"
                     ></sl-icon-button>
                   </div>
-                  <transaction-watcher
-                    class="withdraw"
-                    @transaction-success=${this.handleWithdrawSuccess}
-                  >
+                  <transaction-watcher class="withdraw" @transaction-success=${this.handleWithdrawSuccess}>
                   </transaction-watcher>
                 </div>
                 <h3>Add More Support</h3>
@@ -670,26 +603,14 @@ export class IdeaPage extends SignalWatcher(LitElement) {
               antiSpamFeeMode="variable"
               showDialogs="false"
             >
-              <sl-button
-                slot="invalid"
-                variant="primary"
-                @click=${() => this.updDialog.show()}
-              >
+              <sl-button slot="invalid" variant="primary" @click=${() => this.updDialog.show()}>
                 Get more UPD
               </sl-button>
-              <sl-button
-                slot="valid"
-                variant="primary"
-                @click=${this.handleSupport}
-              >
+              <sl-button slot="valid" variant="primary" @click=${this.handleSupport}>
                 ${this.isAirdropMode ? 'Airdrop' : 'Support Idea'}
               </sl-button>
             </token-input>
-            <transaction-watcher
-              class="submit"
-              @transaction-success=${this.handleSupportSucces}
-            >
-            </transaction-watcher>
+            <transaction-watcher class="submit" @transaction-success=${this.handleSupportSucces}> </transaction-watcher>
             <div class="airdrop-option">
               <sl-checkbox name="airdrop" @sl-change=${this.updateAirdropMode}
                 >Airdrop to past contributors
@@ -712,9 +633,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
         <idea-solutions .ideaId=${this.ideaId}></idea-solutions>
 
         <share-dialog
-          action=${this.isAirdropMode
-            ? 'airdropped to an Idea'
-            : 'supported an Idea'}
+          action=${this.isAirdropMode ? 'airdropped to an Idea' : 'supported an Idea'}
           .topic=${name}
         ></share-dialog>
       `);
@@ -724,11 +643,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Error Loading Idea</h2>
             <p>${this.error}</p>
-            <sl-button
-              variant="primary"
-              @click=${() => this.ideaController.refresh()}
-              >Retry
-            </sl-button>
+            <sl-button variant="primary" @click=${() => this.ideaController.refresh()}>Retry </sl-button>
           </div>
         `;
       } else if (this.loaded) {
@@ -736,9 +651,7 @@ export class IdeaPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Idea Not Found</h2>
             <p>Check the id in the URL.</p>
-            <sl-button href="/discover" variant="primary"
-              >Browse Ideas
-            </sl-button>
+            <sl-button href="/discover" variant="primary">Browse Ideas </sl-button>
           </div>
         `;
       } else {
@@ -774,13 +687,10 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       <upd-dialog></upd-dialog>
       <sl-dialog label="Set Allowance">
         <p>
-          Before you can support this Idea, you need to sign a transaction to
-          allow the Idea contract to spend your UPD tokens.
+          Before you can support this Idea, you need to sign a transaction to allow the Idea contract to spend your UPD
+          tokens.
         </p>
-        <transaction-watcher
-          class="approve"
-          @transaction-success=${this.handleSubmit}
-        ></transaction-watcher>
+        <transaction-watcher class="approve" @transaction-success=${this.handleSubmit}></transaction-watcher>
       </sl-dialog>
     `;
   }

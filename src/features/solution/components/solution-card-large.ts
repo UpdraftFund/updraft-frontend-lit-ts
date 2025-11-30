@@ -14,18 +14,8 @@ import { Solution } from '@/features/solution/types';
 
 import { largeCardStyles } from '@styles/large-card-styles';
 
-import {
-  formatReward,
-  formatAmount,
-  formatDate,
-  formattedText,
-} from '@utils/format-utils';
-import {
-  calculateProgress,
-  goalFailed,
-  goalReached,
-  parseSolutionInfo,
-} from '@utils/solution/solution-utils';
+import { formatReward, formatAmount, formatDate, formattedText } from '@utils/format-utils';
+import { calculateProgress, goalFailed, goalReached, parseSolutionInfo } from '@utils/solution/solution-utils';
 import { parseProfile } from '@utils/user/user-utils';
 
 @customElement('solution-card-large')
@@ -134,9 +124,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
 
   render() {
     const solutionInfo = parseSolutionInfo(this.solution.info);
-    const drafterProfile = parseProfile(
-      this.solution.drafter.profile as `0x${string}`
-    );
+    const drafterProfile = parseProfile(this.solution.drafter.profile as `0x${string}`);
     const deadline = formatDate(this.solution.deadline, 'fromNow');
     const progress = calculateProgress(this.solution);
     const tokensContributed = formatAmount(this.solution.tokensContributed);
@@ -148,26 +136,18 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
       <div class="card">
         <div class="card-header">
           <a href="/solution/${this.solution.id}">
-            <h3 class="entity-name">
-              ${solutionInfo.name || 'Untitled Solution'}
-            </h3>
+            <h3 class="entity-name">${solutionInfo.name || 'Untitled Solution'}</h3>
           </a>
           <div class="byline">
             <a href="/profile/${this.solution.drafter.id}">
-              by
-              ${drafterProfile.name ||
-              drafterProfile.team ||
-              this.solution.drafter.id}
+              by ${drafterProfile.name || drafterProfile.team || this.solution.drafter.id}
             </a>
           </div>
         </div>
 
         <ul class="info-row">
           <li class="progress-container">
-            <sl-progress-bar
-              class="progress-bar"
-              value="${progress}"
-            ></sl-progress-bar>
+            <sl-progress-bar class="progress-bar" value="${progress}"></sl-progress-bar>
             <div class="goal-text">${tokensContributed} of ${fundingGoal}</div>
           </li>
           ${this.renderGoalStatus()}
@@ -193,9 +173,7 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
         ${solutionInfo.description
           ? html`
               <a href="/solution/${this.solution.id}">
-                <vertical-fade class="description"
-                  >${formattedText(solutionInfo.description)}
-                </vertical-fade>
+                <vertical-fade class="description">${formattedText(solutionInfo.description)} </vertical-fade>
               </a>
             `
           : html``}
@@ -203,18 +181,12 @@ export class SolutionCardLarge extends SignalWatcher(LitElement) {
           ? html`
               <div class="news">
                 <h4>✨Updates</h4>
-                <vertical-fade
-                  >${formattedText(solutionInfo.news)}
-                </vertical-fade>
+                <vertical-fade>${formattedText(solutionInfo.news)} </vertical-fade>
               </div>
             `
           : html``}
         ${!goalFailed(this.solution)
-          ? html`
-              <sl-button variant="primary" href="/solution/${this.solution.id}">
-                Fund Solution
-              </sl-button>
-            `
+          ? html` <sl-button variant="primary" href="/solution/${this.solution.id}"> Fund Solution </sl-button> `
           : html``}
       </div>
     `;

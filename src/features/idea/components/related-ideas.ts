@@ -93,11 +93,7 @@ export class RelatedIdeas extends LitElement {
           : this.ideas.length > 0
             ? cache(html`
                 <div class="related-ideas-list">
-                  ${this.ideas.map(
-                    (idea) => html`
-                      <idea-card-small .idea=${idea}></idea-card-small>
-                    `
-                  )}
+                  ${this.ideas.map((idea) => html` <idea-card-small .idea=${idea}></idea-card-small> `)}
                 </div>
               `)
             : html` <div class="no-ideas">No related ideas</div> `}

@@ -23,9 +23,7 @@ export const hasProfile = computed(() => userProfile.get() !== null);
 // Helper function to dispatch custom events
 export const dispatchUserEvent = (
   eventName: string,
-  detail?:
-    | { address?: `0x${string}`; profile?: CurrentUser; networkName?: string }
-    | undefined
+  detail?: { address?: `0x${string}`; profile?: CurrentUser; networkName?: string } | undefined
 ) => {
   console.log(`Dispatching ${eventName} event with detail:`, detail);
   const event = new CustomEvent(eventName, {
@@ -74,11 +72,7 @@ const extractErrorMessage = (...args: ErrorArg[]): string | null => {
 
     // Extract error message for the signal
     const lastArg = args[args.length - 1];
-    return lastArg instanceof Error
-      ? lastArg.message
-      : lastArg
-        ? String(lastArg)
-        : 'Unknown error';
+    return lastArg instanceof Error ? lastArg.message : lastArg ? String(lastArg) : 'Unknown error';
   }
   return null;
 };

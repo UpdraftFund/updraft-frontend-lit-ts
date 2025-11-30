@@ -41,8 +41,7 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
 
     .editor:focus {
       border-color: var(--sl-input-border-color-focus);
-      box-shadow: 0 0 0 var(--sl-focus-ring-width)
-        var(--sl-input-focus-ring-color);
+      box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-input-focus-ring-color);
     }
 
     .editor p {
@@ -184,16 +183,9 @@ export class FormattedTextInput extends SignalWatcher(LitElement) {
 
   private updateValidity() {
     // Check if the field is required and empty
-    if (
-      this.required &&
-      (!this._value || this._value.trim() === '' || this._value === '<br><br>')
-    ) {
+    if (this.required && (!this._value || this._value.trim() === '' || this._value === '<br><br>')) {
       this._validationMessage = 'This field is required';
-      this.internals.setValidity(
-        { valueMissing: true },
-        this._validationMessage,
-        this.editor
-      );
+      this.internals.setValidity({ valueMissing: true }, this._validationMessage, this.editor);
     } else {
       this._validationMessage = '';
       this.internals.setValidity({});

@@ -49,18 +49,11 @@ export interface ITransactionWatcher extends HTMLElement {
    * @param listener The callback function
    * @param options Optional event listener options
    */
-  addEventListener(
-    type: string,
-    listener: EventListener,
-    options?: boolean | AddEventListenerOptions
-  ): void;
+  addEventListener(type: string, listener: EventListener, options?: boolean | AddEventListenerOptions): void;
 }
 
 @customElement('transaction-watcher')
-export class TransactionWatcher
-  extends LitElement
-  implements ITransactionWatcher
-{
+export class TransactionWatcher extends LitElement implements ITransactionWatcher {
   @property({ type: String }) hash?: `0x${string}`;
   @property({ type: Number }) timeout = 120000; // 2 minutes default (increased from 1 minute)
 
@@ -117,8 +110,7 @@ export class TransactionWatcher
           </slot>
         `,
         error: (error) => {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
           return html`
             <slot name="error">
               <p>Error: ${errorMessage}</p>

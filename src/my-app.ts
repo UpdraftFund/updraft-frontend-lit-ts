@@ -96,8 +96,7 @@ export class MyApp extends LitElement {
         this.scrollToTop();
         return true;
       },
-      render: ({ entity }) =>
-        html` <edit-profile .entity=${entity}></edit-profile>`,
+      render: ({ entity }) => html` <edit-profile .entity=${entity}></edit-profile>`,
     },
     {
       path: '/profile/:address',
@@ -107,8 +106,7 @@ export class MyApp extends LitElement {
         this.scrollToTop();
         return true;
       },
-      render: ({ address }) =>
-        html` <view-profile .address=${address}></view-profile>`,
+      render: ({ address }) => html` <view-profile .address=${address}></view-profile>`,
     },
     {
       path: '/create-solution/:ideaId',
@@ -118,8 +116,7 @@ export class MyApp extends LitElement {
         this.scrollToTop();
         return true;
       },
-      render: ({ ideaId }) =>
-        html` <create-solution .ideaId=${ideaId}></create-solution>`,
+      render: ({ ideaId }) => html` <create-solution .ideaId=${ideaId}></create-solution>`,
     },
     {
       path: '/create-solution-two/:ideaId',
@@ -129,10 +126,7 @@ export class MyApp extends LitElement {
         this.scrollToTop();
         return true;
       },
-      render: ({ ideaId }) =>
-        html` <create-solution-page-two
-          .ideaId=${ideaId}
-        ></create-solution-page-two>`,
+      render: ({ ideaId }) => html` <create-solution-page-two .ideaId=${ideaId}></create-solution-page-two>`,
     },
     {
       path: '/solution/:solutionId',
@@ -142,8 +136,7 @@ export class MyApp extends LitElement {
         this.scrollToTop();
         return true;
       },
-      render: ({ solutionId }) =>
-        html` <solution-page .solutionId=${solutionId}></solution-page>`,
+      render: ({ solutionId }) => html` <solution-page .solutionId=${solutionId}></solution-page>`,
     },
     {
       path: '/edit-solution/:solutionId',
@@ -153,8 +146,7 @@ export class MyApp extends LitElement {
         this.scrollToTop();
         return true;
       },
-      render: ({ solutionId }) =>
-        html` <edit-solution .solutionId=${solutionId}></edit-solution>`,
+      render: ({ solutionId }) => html` <edit-solution .solutionId=${solutionId}></edit-solution>`,
     },
     {
       path: '/split-transfer/:id/:position',
@@ -165,10 +157,7 @@ export class MyApp extends LitElement {
         return true;
       },
       render: ({ id, position }) =>
-        html` <split-transfer
-          .entityId=${id}
-          .position=${position || '0'}
-        ></split-transfer>`,
+        html` <split-transfer .entityId=${id} .position=${position || '0'}></split-transfer>`,
     },
     {
       path: '/submit-campaign',
@@ -191,17 +180,13 @@ export class MyApp extends LitElement {
 
   private setupTheme() {
     // Initial theme setup based on user preference
-    const prefersDark = window.matchMedia?.(
-      '(prefers-color-scheme: dark)'
-    ).matches;
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
     this.applyTheme(prefersDark);
 
     // Listen for changes in color scheme preference
-    window
-      .matchMedia('(prefers-color-scheme: dark)')
-      .addEventListener('change', (e) => {
-        this.applyTheme(e.matches);
-      });
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      this.applyTheme(e.matches);
+    });
   }
 
   private applyTheme(isDark: boolean) {

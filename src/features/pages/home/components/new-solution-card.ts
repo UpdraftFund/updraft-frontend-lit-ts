@@ -45,37 +45,25 @@ export class NewSolutionCard extends LitElement {
 
     if (solution?.info) {
       const solutionInfo = parseSolutionInfo(solution.info);
-      const drafterProfile = parseProfile(
-        solution.drafter.profile as `0x${string}`
-      );
+      const drafterProfile = parseProfile(solution.drafter.profile as `0x${string}`);
       return html`
         <sl-card>
           <div slot="header">
-            <a class="change-card-heading" href="/idea/${solution.idea.id}">
-              ${this.change.solution.idea.name}
-            </a>
+            <a class="change-card-heading" href="/idea/${solution.idea.id}"> ${this.change.solution.idea.name} </a>
             <div class="change-card-subheading">has a new Solution 📃</div>
           </div>
 
           <div class="solution-info">
-            <a class="new-solution-heading" href="/solution/${solution.id}"
-              >${solutionInfo.name}</a
-            >
+            <a class="new-solution-heading" href="/solution/${solution.id}">${solutionInfo.name}</a>
             <div class=" byline">
               by
               <a href="/profile/${solution.drafter.id}">
-                ${drafterProfile.name ||
-                drafterProfile.team ||
-                solution.drafter.id}
+                ${drafterProfile.name || drafterProfile.team || solution.drafter.id}
               </a>
             </div>
             <a class="solution-body" href="/solution/${solution.id}">
-              <vertical-fade
-                >${formattedText(solutionInfo.description)}
-              </vertical-fade>
-              <solution-details-bar
-                .solution=${solution}
-              ></solution-details-bar>
+              <vertical-fade>${formattedText(solutionInfo.description)} </vertical-fade>
+              <solution-details-bar .solution=${solution}></solution-details-bar>
             </a>
           </div>
 

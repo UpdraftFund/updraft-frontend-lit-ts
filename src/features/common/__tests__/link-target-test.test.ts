@@ -38,8 +38,7 @@ describe('Link Target Functionality', () => {
   });
 
   it('should handle multiple links correctly', () => {
-    const input =
-      'Check out [site 1](https://example.com) and [site 2](https://another.com)!';
+    const input = 'Check out [site 1](https://example.com) and [site 2](https://another.com)!';
     const result = formattedText(input);
 
     // Create a test container and render the directive
