@@ -43,8 +43,6 @@ export const modal = createAppKit({
   },
   features: {
     analytics: true,
-    socials: false,
-    email: false,
     emailShowWallets: false,
   },
   allWallets: 'HIDE',
