@@ -1,8 +1,12 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import  mkcert from 'vite-plugin-mkcert';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  plugins: [
+    mkcert(),
+  ],
   server: {
     proxy: {
       // Proxy API requests to Next.js dev server
