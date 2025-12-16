@@ -1,6 +1,7 @@
 import { createAppKit } from '@reown/appkit';
 import { AppKitNetwork, arbitrumSepolia, arbitrum } from '@reown/appkit/networks';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { porto } from 'wagmi/connectors';
 import { isProduction } from '@state/common/environment';
 
 const projectId = 'a259923fc99520ecad30021b33486037';
@@ -13,6 +14,7 @@ export const networks: [AppKitNetwork, ...AppKitNetwork[]] = isProduction()
 export const adapter = new WagmiAdapter({
   projectId,
   networks,
+  connectors: [porto()],
 });
 
 export const config = adapter.wagmiConfig;
@@ -41,8 +43,6 @@ export const modal = createAppKit({
   },
   features: {
     analytics: true,
-    socials: false,
-    email: false,
     emailShowWallets: false,
   },
   allWallets: 'HIDE',
