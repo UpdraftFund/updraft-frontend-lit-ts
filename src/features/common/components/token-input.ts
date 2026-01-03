@@ -415,7 +415,11 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
 
     // Update the element's validity state using ElementInternals
     if (this._error) {
-      this.internals.setValidity(validityState, this._validationMessage, this.input || undefined);
+      this.internals.setValidity(
+        validityState,
+        this._validationMessage,
+        (this.input as unknown as HTMLElement) || undefined
+      );
     } else {
       this.internals.setValidity({});
     }
