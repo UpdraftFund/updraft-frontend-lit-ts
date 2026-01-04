@@ -4,8 +4,14 @@ import mkcert from 'vite-plugin-mkcert';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  plugins: [mkcert()],
+  plugins: [
+    mkcert({
+      hosts: ['localhost', 'dev.updraft.fund'],
+    }),
+  ],
   server: {
+    host: '0.0.0.0',
+    allowedHosts: ['dev.updraft.fund'],
     proxy: {
       // Proxy API requests to Next.js dev server
       '/api': {
