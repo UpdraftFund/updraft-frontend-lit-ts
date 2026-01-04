@@ -180,7 +180,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
               >Connect Wallet
             </sl-button>
             <sl-tooltip
-              content="A wallet identifies you to others, stores your funds, and allows you to take actions in Updraft. You can get a wallet using this button."
+              content="A wallet identifies you to others, stores funds, and allows you to take actions in Updraft. You can create a wallet using this button."
             >
               <span class="info-icon">ℹ️</span>
             </sl-tooltip>
