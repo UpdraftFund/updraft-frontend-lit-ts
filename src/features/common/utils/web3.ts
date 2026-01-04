@@ -67,6 +67,10 @@ export const modal = createAppKit({
   metadata,
   projectId: APPKIT_PROJECT_ID,
   enableNetworkSwitch: false,
+  themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  themeVariables: {
+    '--apkt-font-family': 'var(--sl-font-sans);',
+  },
   features: {
     analytics: true,
     emailShowWallets: false,
