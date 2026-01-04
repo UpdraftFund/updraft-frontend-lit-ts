@@ -1,20 +1,53 @@
 import { createAppKit } from '@reown/appkit';
-import { AppKitNetwork, arbitrumSepolia, arbitrum } from '@reown/appkit/networks';
+import {
+  AppKitNetwork,
+  arbitrumSepolia as arbitrumSepoliaAppKit,
+  arbitrum as arbitrumAppKit,
+  Chain,
+} from '@reown/appkit/networks';
+import { arbitrumSepolia, arbitrum } from 'viem/chains';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { porto } from 'wagmi/connectors';
+import { passkeyConnector } from '@zerodev/wallet';
+import { type CreateConnectorFn } from '@wagmi/core';
 import { isProduction } from '@state/common/environment';
 
-const projectId = 'a259923fc99520ecad30021b33486037';
+const APPKIT_PROJECT_ID = 'a259923fc99520ecad30021b33486037';
 
-// Environment-based network configuration
-export const networks: [AppKitNetwork, ...AppKitNetwork[]] = isProduction()
-  ? [arbitrum] // Production: Only Arbitrum One
-  : [arbitrumSepolia]; // Dev/Preview: Only Arbitrum Sepolia
+interface Env {
+  zeroDevProjectId: string;
+  chain: Chain;
+  networks: [AppKitNetwork, ...AppKitNetwork[]];
+}
+
+const ENV: Env = isProduction()
+  ? {
+      zeroDevProjectId: '898fcf43-7a11-41f3-894b-4fed121bcc66',
+      chain: arbitrum,
+      networks: [arbitrumAppKit],
+    }
+  : {
+      zeroDevProjectId: '898fcf43-7a11-41f3-894b-4fed121bcc66',
+      chain: arbitrumSepolia,
+      networks: [arbitrumSepoliaAppKit],
+    };
+
+export const networks = ENV.networks;
+
+const zeroDevPasskey = passkeyConnector(ENV.zeroDevProjectId, ENV.chain, 'v3', 'Updraft');
+
+const updraftConnector: CreateConnectorFn = (config) => {
+  const baseConnector = zeroDevPasskey(config);
+  return {
+    ...baseConnector,
+    name: 'New or returning user',
+    icon: '/assets/updraft-icon.png',
+  };
+};
 
 export const adapter = new WagmiAdapter({
-  projectId,
+  projectId: APPKIT_PROJECT_ID,
   networks,
-  connectors: [porto()],
+  connectors: [updraftConnector],
 });
 
 export const config = adapter.wagmiConfig;
@@ -32,18 +65,13 @@ export const modal = createAppKit({
   adapters: [adapter],
   networks,
   metadata,
-  projectId,
+  projectId: APPKIT_PROJECT_ID,
   enableNetworkSwitch: false,
-  themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
-  themeVariables: {
-    '--w3m-accent': 'var(--accent);',
-    '--w3m-font-family': 'var(--sl-font-sans);',
-    '--w3m-color-mix': 'var(--sl-color-primary-100);',
-    '--w3m-color-mix-strength': 25,
-  },
   features: {
     analytics: true,
     emailShowWallets: false,
   },
-  allWallets: 'HIDE',
+  includeWalletIds: ['Updraft'],
+  enableWalletGuide: false,
+  allWallets: 'ONLY_MOBILE',
 });
