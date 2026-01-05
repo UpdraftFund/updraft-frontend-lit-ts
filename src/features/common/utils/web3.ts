@@ -122,7 +122,7 @@ export const config = adapter.wagmiConfig;
 const metadata = {
   name: 'Updraft',
   description: 'Get paid to find ideas, crowdfund and work on what you love.',
-  url: 'https://dev.updraft.fund:5173', // origin must match your domain & subdomain
+  url: 'https://app.updraft.fund', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/187091561'],
 };
 
