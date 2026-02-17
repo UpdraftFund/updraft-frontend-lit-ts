@@ -37,6 +37,7 @@ import { defaultFunderReward } from '@state/common';
 
 // Contracts
 import { updraft } from '@contracts/updraft';
+import { type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 // Schemas
 import ideaSchema from '@schemas/idea-schema.json';
@@ -174,18 +175,30 @@ export class CreateIdea extends SignalWatcher(SaveableForm) {
 
     const ideaData = formToJson('create-idea', ideaSchema);
 
+    const createIdeaArgs = [
+      BigInt(defaultFunderReward.get()),
+      parseUnits(this.tokenInput.value, 18),
+      toHex(JSON.stringify(ideaData)),
+    ];
+
     try {
-      this.submitTransaction.hash = await updraft.write('createIdea', [
-        BigInt(defaultFunderReward.get()),
-        parseUnits(this.tokenInput.value, 18),
-        toHex(JSON.stringify(ideaData)),
-      ]);
+      this.submitTransaction.hash = await updraft.write('createIdea', createIdeaArgs);
       this.shareDialog.topic = ideaData.name as string;
     } catch (e) {
+      const originalCall: BatchCall = {
+        to: updraft.address,
+        abi: updraft.abi,
+        functionName: 'createIdea',
+        args: createIdeaArgs,
+      };
       this.tokenInput.handleTransactionError(
         e,
-        () => this.createIdea(), // Retry after approval
-        () => this.updDialog.show() // Show UPD dialog on low balance
+        () => this.createIdea(), // Retry after approval (EOA)
+        () => this.updDialog.show(), // Show UPD dialog on low balance
+        originalCall,
+        (txHash) => {
+          this.submitTransaction.hash = txHash;
+        } // Batch success (smart account)
       );
     }
   }

@@ -51,6 +51,7 @@ import { Profile } from '@/types/user/profile';
 
 // Contracts
 import { updraft } from '@contracts/updraft';
+import { type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 @customElement('edit-profile')
 export class EditProfile extends SignalWatcher(SaveableForm) {
@@ -174,18 +175,22 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
       setUserProfile(profileData);
 
       const settings = updraftSettings.get();
+      let functionName = '';
+      let args: unknown[] = [];
 
       try {
         if (this.entity === 'idea') {
           const ideaData = formToJson('create-idea', ideaSchema);
           const ideaForm = loadForm('create-idea');
           if (ideaForm) {
-            this.submitTransaction.hash = await updraft.write('createIdeaWithProfile', [
+            functionName = 'createIdeaWithProfile';
+            args = [
               BigInt(defaultFunderReward.get()),
               parseUnits(ideaForm.deposit, 18),
               toHex(JSON.stringify(ideaData)),
               toHex(JSON.stringify(profileData)),
-            ]);
+            ];
+            this.submitTransaction.hash = await updraft.write(functionName, args);
             this.shareDialog.topic = ideaData.name as string;
           }
         } else if (this.entity === 'solution') {
@@ -197,7 +202,8 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
             // Format the deadline date properly
             const deadline = dayjs(solutionForm.deadline).unix();
 
-            this.submitTransaction.hash = await updraft.write('createSolutionWithProfile', [
+            functionName = 'createSolutionWithProfile';
+            args = [
               solutionForm.ideaId,
               solutionForm.fundingToken,
               parseUnits(solutionForm.stake, 18),
@@ -206,21 +212,34 @@ export class EditProfile extends SignalWatcher(SaveableForm) {
               BigInt((Number(solutionForm.reward) * Number(settings.percentScale)) / 100),
               toHex(JSON.stringify(solutionData)),
               toHex(JSON.stringify(profileData)),
-            ]);
+            ];
+            this.submitTransaction.hash = await updraft.write(functionName, args);
             this.shareDialog.topic = solutionData.name as string;
           }
         } else {
+          functionName = 'updateProfile';
+          args = [toHex(JSON.stringify(profileData))];
           console.log('Submitting profile update');
-          this.submitTransaction.hash = await updraft.write('updateProfile', [toHex(JSON.stringify(profileData))]);
+          this.submitTransaction.hash = await updraft.write(functionName, args);
         }
       } catch (e) {
         console.error('Profile update error:', e);
 
+        const originalCall: BatchCall = {
+          to: updraft.address,
+          abi: updraft.abi,
+          functionName,
+          args,
+        };
         // Use token-input's error handling
         this.tokenInput.handleTransactionError(
           e,
-          () => this.handleSubmit(), // Retry after approval
-          () => this.updDialog.show() // Show UPD dialog on low balance
+          () => this.handleSubmit(), // Retry after approval (EOA)
+          () => this.updDialog.show(), // Show UPD dialog on low balance
+          originalCall,
+          (txHash) => {
+            this.submitTransaction.hash = txHash;
+          } // Batch success (smart account)
         );
       }
     }

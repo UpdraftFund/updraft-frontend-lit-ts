@@ -63,6 +63,7 @@ import { userAddress } from '@state/user';
 
 // Contracts
 import { IdeaContract } from '@contracts/idea';
+import { type BatchCall } from '@/lib/zerodev/passkeyConnector';
 import { updraft } from '@contracts/updraft';
 
 @customElement('idea-page')
@@ -428,16 +429,25 @@ export class IdeaPage extends SignalWatcher(LitElement) {
       this.submitTransaction.reset();
       try {
         const idea = new IdeaContract(this.ideaId);
-        if (this.isAirdropMode) {
-          this.submitTransaction.hash = await idea.write('airdrop', [support]);
-        } else {
-          this.submitTransaction.hash = await idea.write('contribute', [support]);
-        }
+        const functionName = this.isAirdropMode ? 'airdrop' : 'contribute';
+        this.submitTransaction.hash = await idea.write(functionName, [support]);
       } catch (err) {
+        const idea = new IdeaContract(this.ideaId);
+        const functionName = this.isAirdropMode ? 'airdrop' : 'contribute';
+        const originalCall: BatchCall = {
+          to: idea.address,
+          abi: idea.abi,
+          functionName,
+          args: [support],
+        };
         this.tokenInput.handleTransactionError(
           err,
-          () => this.handleSupport(), // Retry after approval
-          () => this.updDialog.show() // Show UPD dialog on low balance
+          () => this.handleSupport(), // Retry after approval (EOA)
+          () => this.updDialog.show(), // Show UPD dialog on low balance
+          originalCall,
+          (txHash) => {
+            this.submitTransaction.hash = txHash;
+          } // Batch success (smart account)
         );
       }
     } else {

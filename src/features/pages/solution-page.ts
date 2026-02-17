@@ -52,6 +52,7 @@ import { SolutionInfo, SolutionPosition } from '@/features/solution/types';
 
 // Contracts
 import { SolutionContract } from '@contracts/solution';
+import { type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 // State
 import { updraftSettings } from '@state/common';
@@ -668,10 +669,21 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       const solutionContract = new SolutionContract(this.solutionId);
       this.stakeTransaction.hash = await solutionContract.write('addStake', [stake]);
     } catch (err) {
+      const solutionContract = new SolutionContract(this.solutionId);
+      const originalCall: BatchCall = {
+        to: solutionContract.address,
+        abi: solutionContract.abi,
+        functionName: 'addStake',
+        args: [stake],
+      };
       this.stakeInput.handleTransactionError(
         err,
-        () => this.handleStake(), // Retry after approval
-        () => this.updDialog.show() // Show UPD dialog on low balance
+        () => this.handleStake(), // Retry after approval (EOA)
+        () => this.updDialog.show(), // Show UPD dialog on low balance
+        originalCall,
+        (txHash) => {
+          this.stakeTransaction.hash = txHash;
+        } // Batch success (smart account)
       );
     }
   }
@@ -687,14 +699,25 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       const solutionContract = new SolutionContract(this.solutionId);
       this.fundTransaction.hash = await solutionContract.write('contribute', [fund]);
     } catch (err) {
+      const solutionContract = new SolutionContract(this.solutionId);
+      const originalCall: BatchCall = {
+        to: solutionContract.address,
+        abi: solutionContract.abi,
+        functionName: 'contribute',
+        args: [fund],
+      };
       let onLowBalance = () => {};
       if (this.fundInput!.tokenSymbol === 'UPD') {
         onLowBalance = () => this.updDialog.show();
       }
       this.fundInput!.handleTransactionError(
         err,
-        () => this.handleFund(), // Retry after approval
-        onLowBalance
+        () => this.handleFund(), // Retry after approval (EOA)
+        onLowBalance,
+        originalCall,
+        (txHash) => {
+          this.fundTransaction.hash = txHash;
+        } // Batch success (smart account)
       );
     }
   }

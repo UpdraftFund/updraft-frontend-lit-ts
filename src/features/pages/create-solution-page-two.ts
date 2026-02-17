@@ -43,6 +43,7 @@ import { hasProfile } from '@state/user';
 
 // Contracts
 import { updraft } from '@contracts/updraft';
+import { type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 // Schemas
 import solutionSchema from '@schemas/solution-schema.json';
@@ -251,28 +252,40 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
     const { ideaId, fundingToken, goal, deadline, stake, reward } = solutionForm;
 
-    try {
-      const settings = updraftSettings.get();
-      // Format the deadline date properly
-      const deadlineTimestamp = dayjs(deadline).unix();
+    const settings = updraftSettings.get();
+    // Format the deadline date properly
+    const deadlineTimestamp = dayjs(deadline).unix();
 
-      this.submitTransaction.hash = await updraft.write('createSolution', [
-        ideaId,
-        fundingToken,
-        stake ? parseUnits(stake, 18) : BigInt(0),
-        parseUnits(goal, 18),
-        BigInt(deadlineTimestamp),
-        BigInt((Number(reward) * Number(settings.percentScale)) / 100),
-        toHex(JSON.stringify(solutionData)),
-      ]);
+    const createSolutionArgs = [
+      ideaId,
+      fundingToken,
+      stake ? parseUnits(stake, 18) : BigInt(0),
+      parseUnits(goal, 18),
+      BigInt(deadlineTimestamp),
+      BigInt((Number(reward) * Number(settings.percentScale)) / 100),
+      toHex(JSON.stringify(solutionData)),
+    ];
+
+    try {
+      this.submitTransaction.hash = await updraft.write('createSolution', createSolutionArgs);
       this.shareDialog.topic = solutionData.name as string;
     } catch (e) {
       // Use token-input's error handling
       if (this.tokenInput) {
+        const originalCall: BatchCall = {
+          to: updraft.address,
+          abi: updraft.abi,
+          functionName: 'createSolution',
+          args: createSolutionArgs,
+        };
         this.tokenInput.handleTransactionError(
           e,
-          () => this.createSolution(), // Retry after approval
-          () => this.updDialog.show() // Show UPD dialog on low balance
+          () => this.createSolution(), // Retry after approval (EOA)
+          () => this.updDialog.show(), // Show UPD dialog on low balance
+          originalCall,
+          (txHash) => {
+            this.submitTransaction.hash = txHash;
+          } // Batch success (smart account)
         );
       } else {
         console.error('Transaction error:', e);

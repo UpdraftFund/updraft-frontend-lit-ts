@@ -4,7 +4,7 @@ import { initialState, Task } from '@lit/task';
 import { waitForTransactionReceipt } from '@wagmi/core';
 import { TransactionReceipt } from 'viem';
 
-import { config } from '@utils/web3';
+import { config, isSmartAccount } from '@utils/web3';
 
 export class TransactionSuccess extends Event {
   static readonly type = 'transaction-success';
@@ -97,23 +97,24 @@ export class TransactionWatcher extends LitElement implements ITransactionWatche
   }
 
   render() {
+    const smart = isSmartAccount();
     return html`
       ${this.transactionTask.render({
         pending: () => html`
           <slot name="pending">
-            <p>Waiting for transaction...</p>
+            <p>${smart ? 'Processing...' : 'Waiting for transaction...'}</p>
           </slot>
         `,
         complete: () => html`
           <slot name="complete">
-            <p>Transaction succeeded</p>
+            <p>${smart ? 'Done!' : 'Transaction succeeded'}</p>
           </slot>
         `,
         error: (error) => {
           const errorMessage = error instanceof Error ? error.message : String(error);
           return html`
             <slot name="error">
-              <p>Error: ${errorMessage}</p>
+              <p>${smart ? 'Something went wrong. Please try again.' : `Error: ${errorMessage}`}</p>
             </slot>
           `;
         },

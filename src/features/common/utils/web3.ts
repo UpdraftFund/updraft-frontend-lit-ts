@@ -7,19 +7,11 @@ import {
 } from '@reown/appkit/networks';
 import { arbitrumSepolia, arbitrum } from 'viem/chains';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { passkeyConnector } from '@zerodev/wallet';
-import {
-  toPasskeyValidator,
-  toWebAuthnKey,
-  WebAuthnMode,
-  PasskeyValidatorContractVersion,
-} from '@zerodev/passkey-validator';
-import { createKernelAccount } from '@zerodev/sdk';
-import { getEntryPoint } from '@zerodev/sdk/constants';
-import { type CreateConnectorFn, getPublicClient } from '@wagmi/core';
+import { passkeyConnector } from '@/lib/zerodev/passkeyConnector';
+import { type CreateConnectorFn, getAccount } from '@wagmi/core';
+import { createPublicClient, http } from 'viem';
 
 import { isProduction } from '@state/common/environment';
-import { Address } from 'viem';
 
 const APPKIT_PROJECT_ID = 'a259923fc99520ecad30021b33486037';
 
@@ -43,73 +35,20 @@ const ENV: Env = isProduction()
 
 export const networks = ENV.networks;
 
-async function passkeyValidator() {
-  const publicClient = getPublicClient(adapter.wagmiConfig)!;
+const publicClient = createPublicClient({
+  chain: ENV.chain,
+  transport: http(),
+});
 
-  const authnOpts = {
-    passkeyName: 'Updraft',
-    passkeyServerUrl: `https://passkeys.zerodev.app/api/v3/${ENV.zeroDevProjectId}`,
-  };
-
-  let webAuthnKey;
-  try {
-    webAuthnKey = await toWebAuthnKey({
-      ...authnOpts,
-      mode: WebAuthnMode.Login,
-    });
-  } catch {
-    console.log('Discovery failed, switching to Register mode...');
-    webAuthnKey = await toWebAuthnKey({
-      ...authnOpts,
-      mode: WebAuthnMode.Register,
-    });
-  }
-
-  return await toPasskeyValidator(publicClient, {
-    webAuthnKey,
-    entryPoint: getEntryPoint('0.7'),
-    kernelVersion: '0.3.1',
-    validatorContractVersion: PasskeyValidatorContractVersion.V0_0_2_UNPATCHED,
-  });
-}
-
-const zeroDevPasskey = passkeyConnector(ENV.zeroDevProjectId, ENV.chain, 'v3', 'Updraft');
-
-const updraftConnector: CreateConnectorFn = (config) => {
-  const baseConnector = zeroDevPasskey(config);
-
-  baseConnector.getValidator = passkeyValidator;
-
-  // Override connect to prevent the base connector from re-running the buggy factory logic.
-  baseConnector.connect = async function <withCapabilities extends boolean = false>(params?: { chainId?: number }) {
-    const validator = await passkeyValidator();
-
-    // Combine the validator with the Kernel factory to get the account
-    const publicClient = getPublicClient(adapter.wagmiConfig)!;
-    const account = await createKernelAccount(publicClient, {
-      plugins: {
-        sudo: validator,
-      },
-      entryPoint: getEntryPoint('0.7'),
-      kernelVersion: '0.3.1',
-    });
-
-    // Return the standard Wagmi connection result
-    return {
-      accounts: [account.address] as unknown as withCapabilities extends true
-        ? readonly { address: Address; capabilities: Record<string, unknown> }[]
-        : readonly Address[],
-      chainId: params?.chainId ?? ENV.chain.id,
-    };
-  };
-
-  return {
-    ...baseConnector,
-    id: 'updraft',
-    name: 'New or returning user',
-    icon: '/assets/updraft-icon.png',
-  };
-};
+const updraftConnector: CreateConnectorFn = passkeyConnector(
+  ENV.zeroDevProjectId,
+  ENV.chain,
+  'v3',
+  'Updraft', // passkey name
+  publicClient,
+  'New or returning user', // connection name
+  '/assets/updraft-icon.png' // connection icon
+);
 
 export const adapter = new WagmiAdapter({
   projectId: APPKIT_PROJECT_ID,
@@ -118,6 +57,15 @@ export const adapter = new WagmiAdapter({
 });
 
 export const config = adapter.wagmiConfig;
+
+/**
+ * Check if the current wallet connection is a smart account (passkey).
+ * Smart account users get gas sponsorship and transaction batching.
+ */
+export function isSmartAccount(): boolean {
+  const account = getAccount(config);
+  return account.connector?.type === 'passkeyConnector';
+}
 
 const metadata = {
   name: 'Updraft',

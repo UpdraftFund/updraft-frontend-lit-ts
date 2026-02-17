@@ -20,12 +20,13 @@ import { updraftSettings } from '@state/common';
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { userAddress } from '@state/user';
 
-import { modal } from '@utils/web3';
+import { isSmartAccount, modal } from '@utils/web3';
 import { shortenAddress, shortNum } from '@utils/format-utils';
 
 import { Upd } from '@contracts/upd';
 import { ERC20 } from '@contracts/erc20';
 import { IContract } from '@contracts/contract';
+import { sendBatchCalls, type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 /**
  * Interface for the token-input component.
@@ -61,9 +62,16 @@ export interface ITokenInput {
   readonly valid: boolean;
   readonly balance: number;
   readonly tokenSymbol: string | null;
+  readonly processing: boolean;
 
   // Public methods
-  handleTransactionError(e: unknown, onApprovalSuccess?: () => void, onLowBalance?: () => void): boolean;
+  handleTransactionError(
+    e: unknown,
+    onApprovalSuccess?: () => void,
+    onLowBalance?: () => void,
+    originalCall?: BatchCall,
+    onBatchSuccess?: (txHash: `0x${string}`) => void
+  ): boolean;
 
   // Form validation methods
   checkValidity(): boolean;
@@ -213,6 +221,7 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
   @state() private _error: string | null = null;
   @state() private _balance: number = 0;
   @state() private _validationMessage: string = '';
+  @state() processing = false;
 
   // Element references
   @query('sl-input', true) input!: SlInput;
@@ -476,8 +485,48 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
     }
   }
 
+  /**
+   * Handle a batched approve + action for smart account users.
+   * Sends both calls as a single user operation — no approval dialog needed.
+   */
+  private async handleBatchedApproval(
+    originalCall: BatchCall,
+    onBatchSuccess?: (txHash: `0x${string}`) => void
+  ): Promise<void> {
+    if (!this.spendingContract) return;
+
+    const tokenContract = this.getTokenContract();
+    if (!tokenContract) return;
+
+    const approveBatchCall: BatchCall = {
+      to: tokenContract.address,
+      abi: tokenContract.abi,
+      functionName: 'approve',
+      args: [this.spendingContract, this.approvalAmount],
+    };
+
+    this.processing = true;
+    try {
+      // sendBatchCalls waits for the user op receipt and returns the actual tx hash
+      const txHash = await sendBatchCalls([approveBatchCall, originalCall]);
+      if (onBatchSuccess) {
+        onBatchSuccess(txHash);
+      }
+    } catch (batchError) {
+      console.error('Batched approve+action failed:', batchError);
+    } finally {
+      this.processing = false;
+    }
+  }
+
   // Public API for error handling
-  public handleTransactionError(e: unknown, onApprovalSuccess?: () => void, onLowBalance?: () => void): boolean {
+  public handleTransactionError(
+    e: unknown,
+    onApprovalSuccess?: () => void,
+    onLowBalance?: () => void,
+    originalCall?: BatchCall,
+    onBatchSuccess?: (txHash: `0x${string}`) => void
+  ): boolean {
     if (e instanceof Error) {
       // Connection errors
       if (e.message.startsWith('connection') || e.message.includes('getChainId')) {
@@ -496,6 +545,12 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
       // Allowance errors
       else if (e.message.includes('exceeds allowance')) {
         if (this.spendingContract) {
+          // Smart account users: batch approve + action into a single user operation
+          if (isSmartAccount() && originalCall) {
+            this.handleBatchedApproval(originalCall, onBatchSuccess);
+            return true;
+          }
+          // EOA users: show the approval dialog (separate tx)
           this.handleApproval(onApprovalSuccess);
           return true;
         }
@@ -600,6 +655,7 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
                 <sl-input
                   name=${this.name}
                   ?required=${this.required}
+                  ?disabled=${this.processing}
                   autocomplete="off"
                   .value=${this.value}
                   @focus=${this.handleFocus}
@@ -609,7 +665,11 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
                 <span>${this._symbol}</span>
 
                 <div class="slot-container">
-                  ${this.invalid ? html` <slot name="invalid"></slot>` : html` <slot name="valid"></slot>`}
+                  ${this.processing
+                    ? html`<sl-spinner></sl-spinner> <span>Processing...</span>`
+                    : this.invalid
+                      ? html` <slot name="invalid"></slot>`
+                      : html` <slot name="valid"></slot>`}
                 </div>
 
                 ${this.showAntiSpamFee
