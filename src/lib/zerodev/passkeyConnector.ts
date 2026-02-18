@@ -304,6 +304,7 @@ export function passkeyConnector(
           passkeyServerUrl: `${ZERODEV_PASSKEY_URL}/${projectId}`,
           mode,
           passkeyServerHeaders: {},
+          rpID: getRegistrableDomain(),
         });
 
         // Attach a custom signMessageCallback that adds transports: ["internal"]
@@ -385,6 +386,10 @@ export function passkeyConnector(
         return { accounts, chainId: chain.id };
       } catch (error) {
         console.error('Error connecting:', error);
+        // TEMPORARY: surface the real error on deployed sites where console is stripped
+        alert(
+          `Passkey connect error: ${error instanceof Error ? error.message : String(error)}\n\nStack: ${error instanceof Error ? error.stack : 'N/A'}`
+        );
         throw new UserRejectedRequestError(error as Error);
       }
     },
