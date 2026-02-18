@@ -1,12 +1,17 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import mkcert from 'vite-plugin-mkcert';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
     mkcert({
       hosts: ['localhost', 'dev.updraft.fund'],
+    }),
+    nodePolyfills({
+      include: ['buffer'],
+      globals: { Buffer: true },
     }),
   ],
   server: {
