@@ -14,7 +14,7 @@ import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 
 import layersIcon from '@icons/navigation/layers.svg';
-import reconnectIcon from '@icons/common/arrow-clockwise.svg';
+import signInIcon from '@icons/navigation/arrow-door.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3';
@@ -133,8 +133,8 @@ export class UserMenu extends SignalWatcher(LitElement) {
             </span>
             <sl-menu class="menu">
               <sl-menu-item @click=${this.reconnect}>
-                <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
-                <span>Reconnect</span>
+                <sl-icon slot="prefix" src="${signInIcon}"></sl-icon>
+                <span>Sign in</span>
               </sl-menu-item>
               <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
                 <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
