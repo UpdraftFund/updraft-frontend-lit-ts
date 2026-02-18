@@ -14,7 +14,6 @@ import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 
 import layersIcon from '@icons/navigation/layers.svg';
-import creditCardIcon from '@icons/navigation/credit-card.svg';
 import reconnectIcon from '@icons/common/arrow-clockwise.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
@@ -121,11 +120,8 @@ export class UserMenu extends SignalWatcher(LitElement) {
     const connectingValue = isConnecting.get();
     const displayName = profile?.name || profile?.team || (address ? address : 'Connecting...');
     const avatar = profile?.avatar;
-    const ethBalanceRaw = balances.get()?.eth?.balance || '0';
-    const ethSymbol = balances.get()?.eth?.symbol || 'ETH';
     const updBalanceRaw = balances.get()?.updraft?.balance || '0';
     const updSymbol = balances.get()?.updraft?.symbol || 'UPD';
-    const ethBalance = isNaN(Number(ethBalanceRaw)) ? '0.00000' : parseFloat(ethBalanceRaw).toFixed(5);
     const updBalance = shortNum(updBalanceRaw, 5);
 
     return address
@@ -145,13 +141,6 @@ export class UserMenu extends SignalWatcher(LitElement) {
                 <div>
                   <p>Choose Network</p>
                   <p class="status">${currentNetworkName || 'Unknown'}</p>
-                </div>
-              </sl-menu-item>
-              <sl-menu-item @click=${() => modal.open({ view: 'OnRampProviders' })}>
-                <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
-                <div>
-                  <p>Deposit Funds</p>
-                  <p class="status">${ethBalance} ${ethSymbol}</p>
                 </div>
               </sl-menu-item>
               <sl-menu-item @click=${() => this.updDialog.show()}>
