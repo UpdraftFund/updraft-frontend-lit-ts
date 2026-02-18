@@ -23,7 +23,7 @@ interface Env {
 
 const ENV: Env = isProduction()
   ? {
-      zeroDevProjectId: '898fcf43-7a11-41f3-894b-4fed121bcc66',
+      zeroDevProjectId: '82a467c9-32f3-4993-9eb6-8680a4701446',
       chain: arbitrum,
       networks: [arbitrumAppKit],
     }
