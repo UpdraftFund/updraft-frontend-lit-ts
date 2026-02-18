@@ -289,14 +289,17 @@ export function passkeyConnector(
         // Determine mode based on existing signer
         const mode = passkeySigner ? WebAuthnMode.Login : WebAuthnMode.Register;
 
-        // For registration, generate a unique name so each user gets a distinct
-        // identity on ZeroDev's passkey server and in the browser's passkey manager.
-        // For login, the name doesn't matter (credential ID is used), but we pass
-        // the stored name for consistency.
-        let effectiveName = passkeyName;
+        // For registration, generate a unique name for the browser's passkey manager.
+        // For login, the passkeyName is ignored (credential ID is used).
+        let effectiveName = 'ignored';
         if (mode === WebAuthnMode.Register) {
-          const suffix = crypto.randomUUID();
-          effectiveName = `${passkeyName}-${suffix}`;
+          // Generate a short, memorable suffix: two random letters (mixed case) plus 1-2 random digits.
+          // Collision risk is negligible for a handful of accounts per device, and the format can't produce bad words.
+          const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+          const l1 = letters[Math.floor(Math.random() * letters.length)];
+          const l2 = letters[Math.floor(Math.random() * letters.length)];
+          const digits = Math.floor(Math.random() * 100); // 0-99
+          effectiveName = `${passkeyName}-${l1}${l2}${digits}`;
         }
 
         const webAuthnKey = await toWebAuthnKey({
