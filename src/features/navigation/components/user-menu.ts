@@ -20,7 +20,15 @@ import getUpdIcon from '@icons/navigation/plus-circle.svg';
 import { modal } from '@utils/web3';
 import { shortNum } from '@utils/format-utils';
 
-import { userAddress, networkName, userProfile, isConnecting, connectWallet, disconnectWallet } from '@state/user';
+import {
+  userAddress,
+  networkName,
+  userProfile,
+  isConnecting,
+  connectWallet,
+  disconnectWallet,
+  walletConnected,
+} from '@state/user';
 import { balances, refreshBalances } from '@state/user/balances';
 
 @customElement('user-menu')
@@ -96,6 +104,10 @@ export class UserMenu extends SignalWatcher(LitElement) {
       font-size: 0.75rem;
       cursor: help;
     }
+    .not-signed-in {
+      font-style: italic;
+      color: var(--status);
+    }
   `;
 
   @query('upd-dialog', true) updDialog!: UpdDialog;
@@ -131,13 +143,21 @@ export class UserMenu extends SignalWatcher(LitElement) {
                 <sl-icon slot="prefix" src="${signInIcon}"></sl-icon>
                 <span>Sign in</span>
               </sl-menu-item>
-              <sl-menu-item @click=${() => this.updDialog.show()}>
-                <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
-                <div>
-                  <p>UPD Balance</p>
-                  <p class="status">${updBalance} ${updSymbol}</p>
-                </div>
-              </sl-menu-item>
+              ${walletConnected.get()
+                ? html`
+                    <sl-menu-item @click=${() => this.updDialog.show()}>
+                      <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
+                      <div>
+                        <p>UPD Balance</p>
+                        <p class="status">${updBalance} ${updSymbol}</p>
+                      </div>
+                    </sl-menu-item>
+                  `
+                : html`
+                    <sl-menu-item disabled>
+                      <i>You are not signed in</i>
+                    </sl-menu-item>
+                  `}
               <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
                 <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
                 <div>

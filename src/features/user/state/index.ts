@@ -18,6 +18,7 @@ export const connectionError = signal<string | null>(null);
 export const profileError = signal<string | null>(null);
 export const networkName = signal<string | null>(null);
 export const isConnected = computed(() => Boolean(userAddress.get()));
+export const walletConnected = signal<boolean>(false);
 export const hasProfile = computed(() => userProfile.get()?.name || userProfile.get()?.team);
 
 // Variables to track urql subscription for profile data
@@ -130,6 +131,7 @@ export const resetState = (): void => {
   connectionError.set(null);
   profileError.set(null);
   networkName.set(null);
+  walletConnected.set(false);
 };
 
 // Connect wallet function
@@ -217,6 +219,9 @@ watchAccount(config, {
     }
     // Do NOT clear address/profile if newAddress is null (wallet locked)
     // Only clear on explicit disconnect (handled in disconnectWallet)
+
+    // Update wallet connected status (true only when actively connected, not just remembered)
+    walletConnected.set(account.status === 'connected');
 
     // Update connection status flags
     setIsConnecting(account.isConnecting);

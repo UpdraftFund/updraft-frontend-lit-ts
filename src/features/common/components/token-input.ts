@@ -18,7 +18,7 @@ import { dialogStyles } from '@styles/dialog-styles';
 
 import { updraftSettings } from '@state/common';
 import { getBalance, refreshBalances } from '@state/user/balances';
-import { userAddress } from '@state/user';
+import { userAddress, walletConnected } from '@state/user';
 
 import { isSmartAccount, modal } from '@utils/web3';
 import { shortenAddress, shortNum } from '@utils/format-utils';
@@ -413,6 +413,10 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
       this._error = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
       this._validationMessage = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
       validityState.customError = true;
+    } else if (value > this._balance && (!userAddress.get() || !walletConnected.get())) {
+      // User is not signed in (fully disconnected or read-only) — don't show "You have 0 UPD"
+      this._error = null;
+      this._validationMessage = '';
     } else if (value > this._balance) {
       this._error = `You have ${this._balance.toFixed(0)} ${this._symbol}`;
       this._validationMessage = `Insufficient balance. You have ${this._balance.toFixed(0)} ${this._symbol}`;
@@ -451,6 +455,12 @@ export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput
   }
 
   private handleFocus() {
+    // If user is not signed in (either fully disconnected or read-only/remembered),
+    // open the connect modal instead of showing 0 balance
+    if (!userAddress.get() || !walletConnected.get()) {
+      modal.open({ view: 'Connect' });
+      return;
+    }
     this.refreshBalance.run();
   }
 

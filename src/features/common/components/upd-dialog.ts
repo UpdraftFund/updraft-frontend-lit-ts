@@ -19,7 +19,9 @@ import { SlDialog, SlTooltip } from '@shoelace-style/shoelace';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
 import { getUniswapLpUrl } from '@state/common';
-import { userAddress } from '@state/user';
+import { userAddress, walletConnected, connectWallet } from '@state/user';
+
+import signInIcon from '@icons/navigation/arrow-door.svg';
 
 import { shortNum } from '@utils/format-utils';
 
@@ -226,13 +228,22 @@ export class UpdDialog extends SignalWatcher(LitElement) {
         <!-- Balance Section -->
         <div class="balance-section">
           <div class="balance-display">Your UPD Balance</div>
-          <div class="balance-amount">
-            ${this.loadingBalance ? html` <sl-spinner></sl-spinner>` : shortNum(getBalance('updraft'))} UPD
-            <sl-button class="refresh-button" size="small" @click=${this.checkBalance}>
-              <sl-icon slot="prefix" src=${calculator}></sl-icon>
-              Refresh
-            </sl-button>
-          </div>
+          ${walletConnected.get()
+            ? html`
+                <div class="balance-amount">
+                  ${this.loadingBalance ? html` <sl-spinner></sl-spinner>` : shortNum(getBalance('updraft'))} UPD
+                  <sl-button class="refresh-button" size="small" @click=${this.checkBalance}>
+                    <sl-icon slot="prefix" src=${calculator}></sl-icon>
+                    Refresh
+                  </sl-button>
+                </div>
+              `
+            : html`
+                <sl-button variant="primary" @click=${() => connectWallet()}>
+                  <sl-icon slot="prefix" src=${signInIcon}></sl-icon>
+                  Sign in
+                </sl-button>
+              `}
         </div>
 
         <!-- Options Section -->
