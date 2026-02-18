@@ -5,7 +5,6 @@ import { SignalWatcher, html } from '@lit-labs/signals';
 // Images
 import followUser from '@images/home/follow-user.png';
 import watchTag from '@images/home/watch-tag.png';
-import connectWallet from '@images/home/connect-wallet.png';
 import getUpd from '@images/home/get-upd.png';
 import supportIdea from '@images/home/support-idea.png';
 import fundSolution from '@images/home/fund-solution.png';
@@ -21,9 +20,6 @@ import { UpdDialog } from '@components/common/upd-dialog';
 
 // State
 import { isComplete } from '@state/user/beginner-tasks.ts';
-
-// Utils
-import { modal } from '@utils/web3.ts';
 
 @customElement('beginner-tasks')
 export class BeginnerTasks extends SignalWatcher(LitElement) {
@@ -94,33 +90,6 @@ export class BeginnerTasks extends SignalWatcher(LitElement) {
               <div class="clear-float"></div>
               <sl-button slot="footer" variant="primary" href="/discover?search=[updraft]"
                 >Search for [updraft]
-              </sl-button>
-            </sl-card>
-          `}
-      ${isComplete('connect-wallet')
-        ? html``
-        : html`
-            <sl-card>
-              <img src=${connectWallet} alt="Connect wallet illustration" />
-              <h3>Connect a Wallet</h3>
-              <p>
-                A wallet identifies you to others, stores your funds, and allows you to take actions in Updraft. You can
-                install a wallet from these links.
-              </p>
-              <p>
-                ⬩<a href="https://enkrypt.com" target="_blank">Enkrypt</a> ⬩<a href="https://frame.sh" target="_blank"
-                  >Frame</a
-                >
-                ⬩<a href="https://rabby.io/" target="_blank">Rabby</a>
-              </p>
-              <div class="clear-float"></div>
-              <sl-button
-                slot="footer"
-                variant="primary"
-                @click=${() => {
-                  modal.open({ view: 'Connect' });
-                }}
-                >Connect Wallet
               </sl-button>
             </sl-card>
           `}

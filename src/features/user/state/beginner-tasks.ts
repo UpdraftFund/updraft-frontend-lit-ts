@@ -3,8 +3,6 @@ import { signal, computed } from '@lit-labs/signals';
 export const BEGINNER_TASKS = [
   'follow-someone',
   'watch-tag',
-  'connect-wallet',
-  // 'get-gas',
   'get-upd',
   'support-idea',
   'fund-solution',

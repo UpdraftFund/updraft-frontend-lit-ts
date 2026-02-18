@@ -10,7 +10,6 @@ import urqlClient from '@utils/urql-client';
 
 import { refreshUpdraftSettings } from '@state/common';
 import { refreshBalances } from '@state/user/balances';
-import { markComplete } from '@state/user/beginner-tasks';
 
 export const userAddress = signal<Address | null>(null);
 export const userProfile = signal<CurrentUser | null>(null);
@@ -214,9 +213,6 @@ watchAccount(config, {
         setUserAddress(newAddress);
         // Profile fetch is now handled within setUserAddress
       }
-      // Mark the 'connect-wallet' beginner task as complete
-      markComplete('connect-wallet');
-
       refreshBalances();
     }
     // Do NOT clear address/profile if newAddress is null (wallet locked)
