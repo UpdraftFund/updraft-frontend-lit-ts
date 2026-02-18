@@ -92,11 +92,6 @@ export class UserMenu extends SignalWatcher(LitElement) {
       padding-top: 12px;
       box-shadow: -1px 4px 5px 3px rgba(0, 0, 0, 7%);
     }
-    .button-with-tooltip {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
     .info-icon {
       font-size: 0.75rem;
       cursor: help;
@@ -136,18 +131,18 @@ export class UserMenu extends SignalWatcher(LitElement) {
                 <sl-icon slot="prefix" src="${signInIcon}"></sl-icon>
                 <span>Sign in</span>
               </sl-menu-item>
-              <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
-                <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
-                <div>
-                  <p>Choose Network</p>
-                  <p class="status">${currentNetworkName || 'Unknown'}</p>
-                </div>
-              </sl-menu-item>
               <sl-menu-item @click=${() => this.updDialog.show()}>
                 <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
                 <div>
                   <p>UPD Balance</p>
                   <p class="status">${updBalance} ${updSymbol}</p>
+                </div>
+              </sl-menu-item>
+              <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
+                <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
+                <div>
+                  <p>Choose Network</p>
+                  <p class="status">${currentNetworkName || 'Unknown'}</p>
                 </div>
               </sl-menu-item>
               <a href="/profile/${address}" title="My Profile">
@@ -164,16 +159,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
           <upd-dialog></upd-dialog>
         `
       : html`
-          <div class="button-with-tooltip">
-            <sl-button variant="primary" @click=${() => connectWallet()} ?loading=${connectingValue}
-              >Connect Wallet
-            </sl-button>
-            <sl-tooltip
-              content="A wallet identifies you to others, stores funds, and lets you take actions in Updraft. You can create a wallet using this button."
-            >
-              <span class="info-icon">ℹ️</span>
-            </sl-tooltip>
-          </div>
+          <sl-button variant="primary" @click=${() => connectWallet()} ?loading=${connectingValue}>Sign in </sl-button>
         `;
   }
 }
