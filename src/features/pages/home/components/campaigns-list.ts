@@ -49,11 +49,7 @@ export class CampaignsList extends LitElement {
       --border-radius: 6px 12px 6px 6px;
     }
     sl-card.campaign::part(base) {
-      background: linear-gradient(
-        135deg,
-        var(--sl-color-neutral-0) 0%,
-        var(--sl-color-primary-50) 100%
-      );
+      background: linear-gradient(135deg, var(--sl-color-neutral-0) 0%, var(--sl-color-primary-50) 100%);
       border: 2px solid var(--border-accent);
     }
     sl-card.campaign::before {
@@ -143,32 +139,17 @@ export class CampaignsList extends LitElement {
 
     return html`
       <sl-card class="campaign">
-        ${data.image?.url
-          ? html`<img
-              src=${data.image.url}
-              alt=${data.image.alt || data.name}
-            />`
-          : ''}
+        ${data.image?.url ? html`<img src=${data.image.url} alt=${data.image.alt || data.name} />` : ''}
         <h3>${data.name}</h3>
         <p>
           ${data.description}
-          ${data.link
-            ? html`
-                <a href=${data.link.url} target="_blank"
-                  >${data.link.text || 'Learn more'}</a
-                >
-              `
-            : ''}
+          ${data.link ? html` <a href=${data.link.url} target="_blank">${data.link.text || 'Learn more'}</a> ` : ''}
         </p>
         ${data.funding && data.funding.length > 0
           ? html`
               <h4>Committed</h4>
               <ul class="committed-list">
-                ${data.funding.map(
-                  (funding) => html`
-                    <li>${shortNum(funding.amount)} ${funding.token}</li>
-                  `
-                )}
+                ${data.funding.map((funding) => html` <li>${shortNum(funding.amount)} ${funding.token}</li> `)}
               </ul>
             `
           : ''}
@@ -177,11 +158,7 @@ export class CampaignsList extends LitElement {
           <h4>Tags:</h4>
           ${data.tags.map((tag: string) => html` <li>${tag}</li>`)}
         </ul>
-        <sl-button
-          slot="footer"
-          variant="primary"
-          href="/discover?search=${searchTags}"
-        >
+        <sl-button slot="footer" variant="primary" href="/discover?search=${searchTags}">
           Ideas with these tags
         </sl-button>
       </sl-card>
@@ -189,9 +166,7 @@ export class CampaignsList extends LitElement {
   }
 
   render() {
-    return html`
-      ${this.campaigns.map((campaign) => this.renderCampaign(campaign))}
-    `;
+    return html` ${this.campaigns.map((campaign) => this.renderCampaign(campaign))} `;
   }
 }
 

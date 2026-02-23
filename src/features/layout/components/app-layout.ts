@@ -7,11 +7,7 @@ import '@layout/left-side-bar';
 import '@layout/right-side-bar';
 import '@components/common/full-overlay';
 
-import {
-  leftSidebarCollapsed,
-  showLeftSidebar,
-  showRightSidebar,
-} from '@state/layout';
+import { leftSidebarCollapsed, showLeftSidebar, showRightSidebar } from '@state/layout';
 import { nav } from '@state/navigation';
 
 @customElement('app-layout')
@@ -92,8 +88,7 @@ export class AppLayout extends SignalWatcher(LitElement) {
   };
 
   render() {
-    const leftSidebarVisible =
-      showLeftSidebar.get() && !leftSidebarCollapsed.get();
+    const leftSidebarVisible = showLeftSidebar.get() && !leftSidebarCollapsed.get();
 
     return html`
       <top-bar></top-bar>
@@ -108,23 +103,14 @@ export class AppLayout extends SignalWatcher(LitElement) {
           @overlay-click=${this.handleBackdropClick}
         ></full-overlay>
 
-        ${showLeftSidebar.get()
-          ? html` <left-side-bar></left-side-bar>`
-          : html``}
-        <div
-          class="main-extended ${leftSidebarVisible
-            ? 'right-sidebar-below'
-            : ''}"
-        >
+        ${showLeftSidebar.get() ? html` <left-side-bar></left-side-bar>` : html``}
+        <div class="main-extended ${leftSidebarVisible ? 'right-sidebar-below' : ''}">
           <main>
             <slot></slot>
           </main>
           ${showRightSidebar.get()
             ? html` <right-side-bar
-                class="${nav.get() === 'edit-profile' ||
-                nav.get() === 'view-profile'
-                  ? 'wider'
-                  : ''}"
+                class="${nav.get() === 'edit-profile' || nav.get() === 'view-profile' ? 'wider' : ''}"
               ></right-side-bar>`
             : html``}
         </div>

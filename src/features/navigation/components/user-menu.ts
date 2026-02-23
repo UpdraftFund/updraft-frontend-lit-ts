@@ -14,8 +14,7 @@ import '@components/user/user-avatar';
 import { UpdDialog } from '@components/common/upd-dialog';
 
 import layersIcon from '@icons/navigation/layers.svg';
-import creditCardIcon from '@icons/navigation/credit-card.svg';
-import reconnectIcon from '@icons/common/arrow-clockwise.svg';
+import signInIcon from '@icons/navigation/arrow-door.svg';
 import getUpdIcon from '@icons/navigation/plus-circle.svg';
 
 import { modal } from '@utils/web3';
@@ -28,6 +27,7 @@ import {
   isConnecting,
   connectWallet,
   disconnectWallet,
+  walletConnected,
 } from '@state/user';
 import { balances, refreshBalances } from '@state/user/balances';
 
@@ -100,14 +100,13 @@ export class UserMenu extends SignalWatcher(LitElement) {
       padding-top: 12px;
       box-shadow: -1px 4px 5px 3px rgba(0, 0, 0, 7%);
     }
-    .button-with-tooltip {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
     .info-icon {
       font-size: 0.75rem;
       cursor: help;
+    }
+    .not-signed-in {
+      font-style: italic;
+      color: var(--status);
     }
   `;
 
@@ -126,35 +125,39 @@ export class UserMenu extends SignalWatcher(LitElement) {
     const currentNetworkName = networkName.get();
     const profile = userProfile.get();
     const connectingValue = isConnecting.get();
-    const displayName =
-      profile?.name || profile?.team || (address ? address : 'Connecting...');
+    const displayName = profile?.name || profile?.team || (address ? address : 'Connecting...');
     const avatar = profile?.avatar;
-    const ethBalanceRaw = balances.get()?.eth?.balance || '0';
-    const ethSymbol = balances.get()?.eth?.symbol || 'ETH';
     const updBalanceRaw = balances.get()?.updraft?.balance || '0';
     const updSymbol = balances.get()?.updraft?.symbol || 'UPD';
-    const ethBalance = isNaN(Number(ethBalanceRaw))
-      ? '0.00000'
-      : parseFloat(ethBalanceRaw).toFixed(5);
     const updBalance = shortNum(updBalanceRaw, 5);
 
     return address
       ? html`
-          <sl-dropdown
-            distance="12"
-            skidding="22"
-            placement="top-end"
-            @sl-show=${refreshBalances}
-          >
+          <sl-dropdown distance="12" skidding="22" placement="top-end" @sl-show=${refreshBalances}>
             <span slot="trigger" class="trigger-content" title="Profile menu">
               <user-avatar .address=${address} .image=${avatar}></user-avatar>
               <span class="name">${displayName}</span>
             </span>
             <sl-menu class="menu">
               <sl-menu-item @click=${this.reconnect}>
-                <sl-icon slot="prefix" src="${reconnectIcon}"></sl-icon>
-                <span>Reconnect</span>
+                <sl-icon slot="prefix" src="${signInIcon}"></sl-icon>
+                <span>Sign in</span>
               </sl-menu-item>
+              ${walletConnected.get()
+                ? html`
+                    <sl-menu-item @click=${() => this.updDialog.show()}>
+                      <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
+                      <div>
+                        <p>UPD Balance</p>
+                        <p class="status">${updBalance} ${updSymbol}</p>
+                      </div>
+                    </sl-menu-item>
+                  `
+                : html`
+                    <sl-menu-item disabled>
+                      <i>You are not signed in</i>
+                    </sl-menu-item>
+                  `}
               <sl-menu-item @click=${() => modal.open({ view: 'Networks' })}>
                 <sl-icon slot="prefix" src="${layersIcon}"></sl-icon>
                 <div>
@@ -162,30 +165,9 @@ export class UserMenu extends SignalWatcher(LitElement) {
                   <p class="status">${currentNetworkName || 'Unknown'}</p>
                 </div>
               </sl-menu-item>
-              <sl-menu-item
-                @click=${() => modal.open({ view: 'OnRampProviders' })}
-              >
-                <sl-icon slot="prefix" src="${creditCardIcon}"></sl-icon>
-                <div>
-                  <p>Deposit Funds</p>
-                  <p class="status">${ethBalance} ${ethSymbol}</p>
-                </div>
-              </sl-menu-item>
-              <sl-menu-item @click=${() => this.updDialog.show()}>
-                <sl-icon slot="prefix" src="${getUpdIcon}"></sl-icon>
-                <div>
-                  <p>UPD Balance</p>
-                  <p class="status">${updBalance} ${updSymbol}</p>
-                </div>
-              </sl-menu-item>
               <a href="/profile/${address}" title="My Profile">
                 <sl-menu-item>
-                  <user-avatar
-                    slot="prefix"
-                    class="menu-avatar"
-                    .address=${address}
-                    .image=${avatar}
-                  ></user-avatar>
+                  <user-avatar slot="prefix" class="menu-avatar" .address=${address} .image=${avatar}></user-avatar>
                   <div>
                     <p>My Profile</p>
                     <p class="status">${displayName}</p>
@@ -197,19 +179,7 @@ export class UserMenu extends SignalWatcher(LitElement) {
           <upd-dialog></upd-dialog>
         `
       : html`
-          <div class="button-with-tooltip">
-            <sl-button
-              variant="primary"
-              @click=${() => connectWallet()}
-              ?loading=${connectingValue}
-              >Connect Wallet
-            </sl-button>
-            <sl-tooltip
-              content="A wallet identifies you to others, stores your funds, and allows you to take actions in Updraft. You can get a wallet using this button."
-            >
-              <span class="info-icon">ℹ️</span>
-            </sl-tooltip>
-          </div>
+          <sl-button variant="primary" @click=${() => connectWallet()} ?loading=${connectingValue}>Sign in </sl-button>
         `;
   }
 }

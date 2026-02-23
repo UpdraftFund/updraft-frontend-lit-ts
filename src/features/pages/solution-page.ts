@@ -40,18 +40,8 @@ import { TransactionWatcher } from '@components/common/transaction-watcher';
 import { TokenInput } from '@components/common/token-input';
 
 // Utils
-import {
-  formatDate,
-  formatReward,
-  formatAmount,
-  formattedText,
-} from '@utils/format-utils';
-import {
-  calculateProgress,
-  goalFailed,
-  goalReached,
-  parseSolutionInfo,
-} from '@utils/solution/solution-utils';
+import { formatDate, formatReward, formatAmount, formattedText } from '@utils/format-utils';
+import { calculateProgress, goalFailed, goalReached, parseSolutionInfo } from '@utils/solution/solution-utils';
 import { parseProfile } from '@utils/user/user-utils';
 import { modal } from '@utils/web3';
 import { UrqlQueryController } from '@utils/urql-query-controller';
@@ -62,6 +52,7 @@ import { SolutionInfo, SolutionPosition } from '@/features/solution/types';
 
 // Contracts
 import { SolutionContract } from '@contracts/solution';
+import { type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 // State
 import { updraftSettings } from '@state/common';
@@ -355,14 +346,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         this.solutionInfo = parseSolutionInfo(this.solution.info);
 
         layout.rightSidebarContent.set(html`
-          <top-funders
-            .solutionId=${this.solutionId}
-            .tokenSymbol=${this.fundInput?.tokenSymbol}
-          ></top-funders>
-          <other-solutions
-            .ideaId=${this.solution.idea?.id}
-            .currentSolutionId=${this.solutionId}
-          ></other-solutions>
+          <top-funders .solutionId=${this.solutionId} .tokenSymbol=${this.fundInput?.tokenSymbol}></top-funders>
+          <other-solutions .ideaId=${this.solution.idea?.id} .currentSolutionId=${this.solutionId}></other-solutions>
         `);
       } else {
         this.error = 'Solution not found.';
@@ -379,9 +364,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         const solutionContract = new SolutionContract(solutionId);
 
         // Get user's stake
-        const stake = (await solutionContract.read('stakes', [
-          address,
-        ])) as bigint;
+        const stake = (await solutionContract.read('stakes', [address])) as bigint;
 
         return stake > 0n ? stake : null;
       } catch (error) {
@@ -401,9 +384,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         const solution = new SolutionContract(solutionId);
 
         // First, get the total number of positions
-        const numPositions = (await solution.read('numPositions', [
-          address,
-        ])) as bigint;
+        const numPositions = (await solution.read('numPositions', [address])) as bigint;
 
         // If user has no positions, return null
         if (numPositions === 0n) {
@@ -417,31 +398,21 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         const positions: SolutionPosition[] = [];
 
         // Check each position
-        for (
-          let positionIndex = 0n;
-          positionIndex < numPositions;
-          positionIndex++
-        ) {
+        for (let positionIndex = 0n; positionIndex < numPositions; positionIndex++) {
           try {
             // Get position details from positionsByAddress mapping
-            const [contributionAfterFees, , contributionCycle] =
-              (await solution.read('positionsByAddress', [
-                address,
-                positionIndex,
-              ])) as [bigint, bigint, bigint, bigint, boolean];
+            const [contributionAfterFees, , contributionCycle] = (await solution.read('positionsByAddress', [
+              address,
+              positionIndex,
+            ])) as [bigint, bigint, bigint, bigint, boolean];
 
             // Skip positions with zero contribution (transferred)
             if (contributionAfterFees <= 0n) continue;
 
             // Get fees earned from checkPosition
-            const [feesEarned] = (await solution.read('checkPosition', [
-              address,
-              positionIndex,
-            ])) as bigint[];
+            const [feesEarned] = (await solution.read('checkPosition', [address, positionIndex])) as bigint[];
 
-            const refundable = await solution.willSucceed('refund', [
-              positionIndex,
-            ]);
+            const refundable = await solution.willSucceed('refund', [positionIndex]);
 
             let contribution = contributionAfterFees;
 
@@ -449,9 +420,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             if (contributionCycle > 0n) {
               const funderReward = BigInt(this.solution?.funderReward);
               if (funderReward && percentScale > funderReward) {
-                contribution =
-                  (contributionAfterFees * percentScale) /
-                  (percentScale - funderReward);
+                contribution = (contributionAfterFees * percentScale) / (percentScale - funderReward);
               }
             }
 
@@ -487,10 +456,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     if (this.positions.length <= 1) return; // No need to navigate if only one position
 
     // Decrement position index, wrapping around to the end if needed
-    this.positionIndex =
-      this.positionIndex === 0
-        ? this.positions.length - 1
-        : this.positionIndex - 1;
+    this.positionIndex = this.positionIndex === 0 ? this.positions.length - 1 : this.positionIndex - 1;
   }
 
   private nextPosition() {
@@ -530,10 +496,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     label="Previous position"
                     @click=${this.previousPosition}
                   ></sl-icon-button>
-                  <span
-                    >Position ${this.positionIndex + 1} of
-                    ${this.positions.length}</span
-                  >
+                  <span>Position ${this.positionIndex + 1} of ${this.positions.length}</span>
                   <sl-icon-button
                     src=${chevronRight}
                     label="Next position"
@@ -546,10 +509,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         <div class="position-details">
           <p>
             Your contribution:
-            <strong>
-              ${formatAmount(position.contribution)}
-              ${this.fundInput?.tokenSymbol}
-            </strong>
+            <strong> ${formatAmount(position.contribution)} ${this.fundInput?.tokenSymbol} </strong>
             (${formatAmount(position.contributionAfterFees)} after fees
             <sl-tooltip
               content="You paid ${formatAmount(
@@ -562,33 +522,19 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           </p>
           <p>
             Fees earned:
-            <strong>
-              ${formatAmount(position.feesEarned)}
-              ${this.fundInput?.tokenSymbol}
-            </strong>
+            <strong> ${formatAmount(position.feesEarned)} ${this.fundInput?.tokenSymbol} </strong>
           </p>
           ${position.refundable
-            ? html` <p>
-                <strong>Goal Failed:</strong> You can refund your contribution.
-              </p>`
+            ? html` <p><strong>Goal Failed:</strong> You can refund your contribution.</p>`
             : html``}
           <div class="button-row">
             ${position.refundable
-              ? html`
-                  <sl-button variant="primary" @click=${this.handleRefund}>
-                    Refund Position
-                  </sl-button>
-                `
+              ? html` <sl-button variant="primary" @click=${this.handleRefund}> Refund Position </sl-button> `
               : html``}
             ${position.feesEarned > 0n
               ? html`
                   <div class="item-with-tooltip">
-                    <sl-button
-                      variant="primary"
-                      @click=${this.handleCollectFees}
-                    >
-                      Collect Fees
-                    </sl-button>
+                    <sl-button variant="primary" @click=${this.handleCollectFees}> Collect Fees </sl-button>
                     <sl-tooltip
                       content="These are 🎁 funder rewards you earned from funders making contributions after yours."
                     >
@@ -597,10 +543,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                   </div>
                 `
               : html``}
-            <transaction-watcher
-              class="refund"
-              @transaction-success=${this.handleRefundSuccess}
-            ></transaction-watcher>
+            <transaction-watcher class="refund" @transaction-success=${this.handleRefundSuccess}></transaction-watcher>
             <transaction-watcher
               class="collect"
               @transaction-success=${this.handleCollectSuccess}
@@ -610,8 +553,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             <sl-icon-button
               src=${split}
               label="Split or transfer position"
-              href="/split-transfer/${this
-                .solutionId}/${position.positionIndex}"
+              href="/split-transfer/${this.solutionId}/${position.positionIndex}"
             ></sl-icon-button>
           </div>
         </div>
@@ -629,15 +571,10 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       <div class="stat-row">
         <span class="stat-label">Progress:</span>
         <div class="progress-container">
-          <sl-progress-bar
-            class="progress-bar"
-            value="${progress}"
-          ></sl-progress-bar>
+          <sl-progress-bar class="progress-bar" value="${progress}"></sl-progress-bar>
           <span
-            >🚀 <strong>${progress.toFixed(0)}%</strong> complete
-            (${formatAmount(this.solution!.tokensContributed)} /
-            ${formatAmount(this.solution!.fundingGoal)}
-            ${fundingTokenSymbol})</span
+            >🚀 <strong>${progress.toFixed(0)}%</strong> complete (${formatAmount(this.solution!.tokensContributed)} /
+            ${formatAmount(this.solution!.fundingGoal)} ${fundingTokenSymbol})</span
           >
         </div>
       </div>
@@ -671,10 +608,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
   }
 
   private get isDrafter() {
-    return (
-      userAddress.get()?.toLowerCase() ===
-      this.solution?.drafter.id.toLowerCase()
-    );
+    return userAddress.get()?.toLowerCase() === this.solution?.drafter.id.toLowerCase();
   }
 
   private get withdrawalStatus() {
@@ -696,9 +630,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       const currentPosition = this.positions[this.positionIndex];
       const solutionContract = new SolutionContract(this.solutionId);
 
-      this.refundTransaction.hash = await solutionContract.write('refund', [
-        currentPosition.positionIndex,
-      ]);
+      this.refundTransaction.hash = await solutionContract.write('refund', [currentPosition.positionIndex]);
     } catch (e) {
       console.error('Refund error:', e);
       if (e instanceof Error && e.message.startsWith('connection')) {
@@ -717,10 +649,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
       const currentPosition = this.positions[this.positionIndex];
       const solutionContract = new SolutionContract(this.solutionId);
 
-      this.collectTransaction.hash = await solutionContract.write(
-        'collectFees',
-        [currentPosition.positionIndex]
-      );
+      this.collectTransaction.hash = await solutionContract.write('collectFees', [currentPosition.positionIndex]);
     } catch (e) {
       console.error('Collect fees error:', e);
       if (e instanceof Error && e.message.startsWith('connection')) {
@@ -738,14 +667,23 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.stakeTransaction.reset();
     try {
       const solutionContract = new SolutionContract(this.solutionId);
-      this.stakeTransaction.hash = await solutionContract.write('addStake', [
-        stake,
-      ]);
+      this.stakeTransaction.hash = await solutionContract.write('addStake', [stake]);
     } catch (err) {
+      const solutionContract = new SolutionContract(this.solutionId);
+      const originalCall: BatchCall = {
+        to: solutionContract.address,
+        abi: solutionContract.abi,
+        functionName: 'addStake',
+        args: [stake],
+      };
       this.stakeInput.handleTransactionError(
         err,
-        () => this.handleStake(), // Retry after approval
-        () => this.updDialog.show() // Show UPD dialog on low balance
+        () => this.handleStake(), // Retry after approval (EOA)
+        () => this.updDialog.show(), // Show UPD dialog on low balance
+        originalCall,
+        (txHash) => {
+          this.stakeTransaction.hash = txHash;
+        } // Batch success (smart account)
       );
     }
   }
@@ -759,18 +697,27 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     this.fundTransaction.reset();
     try {
       const solutionContract = new SolutionContract(this.solutionId);
-      this.fundTransaction.hash = await solutionContract.write('contribute', [
-        fund,
-      ]);
+      this.fundTransaction.hash = await solutionContract.write('contribute', [fund]);
     } catch (err) {
+      const solutionContract = new SolutionContract(this.solutionId);
+      const originalCall: BatchCall = {
+        to: solutionContract.address,
+        abi: solutionContract.abi,
+        functionName: 'contribute',
+        args: [fund],
+      };
       let onLowBalance = () => {};
       if (this.fundInput!.tokenSymbol === 'UPD') {
         onLowBalance = () => this.updDialog.show();
       }
       this.fundInput!.handleTransactionError(
         err,
-        () => this.handleFund(), // Retry after approval
-        onLowBalance
+        () => this.handleFund(), // Retry after approval (EOA)
+        onLowBalance,
+        originalCall,
+        (txHash) => {
+          this.fundTransaction.hash = txHash;
+        } // Batch success (smart account)
       );
     }
   }
@@ -802,12 +749,9 @@ export class SolutionPage extends SignalWatcher(LitElement) {
 
       const solutionContract = new SolutionContract(this.solutionId);
       this.removeStakeTransaction.reset();
-      this.removeStakeTransaction.hash = await solutionContract.write(
-        'removeStake',
-        [
-          stake, // Remove the entire stake
-        ]
-      );
+      this.removeStakeTransaction.hash = await solutionContract.write('removeStake', [
+        stake, // Remove the entire stake
+      ]);
     } catch (err) {
       console.error('Remove stake error:', err);
       if (err instanceof Error && err.message.startsWith('connection')) {
@@ -825,8 +769,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
     try {
       const solutionContract = new SolutionContract(this.solutionId);
       this.withdrawFundsTransaction.reset();
-      this.withdrawFundsTransaction.hash =
-        await solutionContract.write('withdrawFunds');
+      this.withdrawFundsTransaction.hash = await solutionContract.write('withdrawFunds');
     } catch (err) {
       console.error('Withdraw funds error:', err);
       if (err instanceof Error && err.message.startsWith('connection')) {
@@ -849,9 +792,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
         try {
           const solutionContract = new SolutionContract(solutionId);
           // Get tokens withdrawn from the contract
-          const withdrawn = (await solutionContract.read(
-            'tokensWithdrawn'
-          )) as bigint;
+          const withdrawn = (await solutionContract.read('tokensWithdrawn')) as bigint;
           this.tokensWithdrawn = withdrawn;
           return withdrawn;
         } catch (error) {
@@ -920,9 +861,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                 <h1>${this.solutionInfo?.name || 'Untitled Solution'}</h1>
                 <div class="idea-link">
                   Solution for Idea:
-                  <a
-                    href="/idea/${this.solution.idea?.id}"
-                    title="View linked Idea"
+                  <a href="/idea/${this.solution.idea?.id}" title="View linked Idea"
                     >${this.solution.idea?.name || 'Unknown Idea'}</a
                   >
                 </div>
@@ -933,8 +872,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       class="edit-button"
                       pill
                       size="medium"
-                      href="/edit-solution/${this.solutionId}?tokenSymbol=${this
-                        .fundInput?.tokenSymbol || 'tokens'}"
+                      href="/edit-solution/${this.solutionId}?tokenSymbol=${this.fundInput?.tokenSymbol || 'tokens'}"
                       >Edit
                     </sl-button>
                   `
@@ -950,15 +888,8 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                     As the drafter, you can now withdraw the funds.
                   </p>
                   <div class="withdraw-funds-row">
-                    <sl-button
-                      variant="success"
-                      @click=${this.handleWithdrawFunds}
-                    >
-                      Withdraw Funds
-                    </sl-button>
-                    <span class="withdrawal-status"
-                      >${this.withdrawalStatus}</span
-                    >
+                    <sl-button variant="success" @click=${this.handleWithdrawFunds}> Withdraw Funds </sl-button>
+                    <span class="withdrawal-status">${this.withdrawalStatus}</span>
                     <transaction-watcher
                       class="withdraw-funds"
                       @transaction-success=${this.handleWithdrawFundsSuccess}
@@ -994,20 +925,11 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       </p>
                       ${goalReached(this.solution)
                         ? html`
-                            <p>
-                              <strong>Goal Reached:</strong> You can now remove
-                              your stake.
-                            </p>
-                            <sl-button
-                              variant="primary"
-                              @click=${this.handleRemoveStake}
-                            >
-                              Remove Stake
-                            </sl-button>
+                            <p><strong>Goal Reached:</strong> You can now remove your stake.</p>
+                            <sl-button variant="primary" @click=${this.handleRemoveStake}> Remove Stake </sl-button>
                             <transaction-watcher
                               class="remove-stake"
-                              @transaction-success=${this
-                                .handleRemoveStakeSuccess}
+                              @transaction-success=${this.handleRemoveStakeSuccess}
                             ></transaction-watcher>
                           `
                         : html``}
@@ -1019,8 +941,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             },
           })}
           ${this.userPositionsTask.render({
-            complete: () =>
-              this.positions.length > 0 ? this.renderPositions() : html``,
+            complete: () => (this.positions.length > 0 ? this.renderPositions() : html``),
           })}
           <div class="action-buttons">
             ${!goalFailed(this.solution)
@@ -1031,36 +952,20 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       name="fund"
                       required
                       spendingContract=${this.solutionId}
-                      spendingContractName="${this.solutionInfo?.name ||
-                      'Solution'}"
+                      spendingContractName="${this.solutionInfo?.name || 'Solution'}"
                       tokenAddress=${this.solution.fundingToken}
                       antiSpamFeeMode="none"
                       showDialogs="false"
                     >
-                      ${this.solution.fundingToken ===
-                      updraftSettings.get().updAddress
+                      ${this.solution.fundingToken === updraftSettings.get().updAddress
                         ? html`
-                            <sl-button
-                              slot="invalid"
-                              variant="primary"
-                              @click=${() => this.updDialog.show()}
-                            >
+                            <sl-button slot="invalid" variant="primary" @click=${() => this.updDialog.show()}>
                               Get more UPD
                             </sl-button>
                           `
-                        : html`
-                            <sl-button
-                              slot="invalid"
-                              variant="success"
-                              disabled
-                            >
-                              Fund Solution
-                            </sl-button>
-                          `}
+                        : html` <sl-button slot="invalid" variant="success" disabled> Fund Solution </sl-button> `}
                       <div class="item-with-tooltip" slot="valid">
-                        <sl-button variant="success" @click=${this.handleFund}>
-                          Fund Solution
-                        </sl-button>
+                        <sl-button variant="success" @click=${this.handleFund}> Fund Solution </sl-button>
                         <sl-tooltip
                           content="Part of your funding goes to the Solution fund to help this Solution reach its goal and part goes to 🎁 Funder Rewards for past funders. The percentage was set by the Solution drafter."
                         >
@@ -1083,22 +988,15 @@ export class SolutionPage extends SignalWatcher(LitElement) {
                       name="stake"
                       required
                       spendingContract=${this.solutionId}
-                      spendingContractName="${this.solutionInfo?.name ||
-                      'Solution'}"
+                      spendingContractName="${this.solutionInfo?.name || 'Solution'}"
                       antiSpamFeeMode="none"
                       showDialogs="false"
                     >
-                      <sl-button
-                        slot="invalid"
-                        variant="primary"
-                        @click=${() => this.updDialog.show()}
-                      >
+                      <sl-button slot="invalid" variant="primary" @click=${() => this.updDialog.show()}>
                         Get more UPD
                       </sl-button>
                       <div class="item-with-tooltip" slot="valid">
-                        <sl-button variant="primary" @click=${this.handleStake}>
-                          Add Stake
-                        </sl-button>
+                        <sl-button variant="primary" @click=${this.handleStake}> Add Stake </sl-button>
                         <sl-tooltip
                           content="Adding a 💎 stake adds an incentive for funders because they earn part of the stake if the funding goal fails. If the funding goal succeeds, you  get your stake back; otherwise, your stake is divided among funders."
                         >
@@ -1135,11 +1033,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
             ? html`
                 <div class="solution-repository">
                   <h3>Repository</h3>
-                  <a
-                    href="${this.solutionInfo.repository}"
-                    target="_blank"
-                    rel="noopener"
-                  >
+                  <a href="${this.solutionInfo.repository}" target="_blank" rel="noopener">
                     ${this.solutionInfo.repository}
                   </a>
                 </div>
@@ -1155,11 +1049,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Error Loading Solution</h2>
             <p>${this.error}</p>
-            <sl-button
-              variant="primary"
-              @click=${() => this.solutionController.refresh()}
-              >Retry
-            </sl-button>
+            <sl-button variant="primary" @click=${() => this.solutionController.refresh()}>Retry </sl-button>
           </div>
         `;
       } else if (this.loaded) {
@@ -1167,9 +1057,7 @@ export class SolutionPage extends SignalWatcher(LitElement) {
           <div class="error-container">
             <h2>Solution Not Found</h2>
             <p>Check the id in the URL.</p>
-            <sl-button href="/discover?tab=solutions" variant="primary">
-              Browse Solutions
-            </sl-button>
+            <sl-button href="/discover?tab=solutions" variant="primary"> Browse Solutions </sl-button>
           </div>
         `;
       } else {

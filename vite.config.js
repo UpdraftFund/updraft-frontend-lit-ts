@@ -1,9 +1,22 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import mkcert from 'vite-plugin-mkcert';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  plugins: [
+    mkcert({
+      hosts: ['localhost', 'dev.updraft.fund'],
+    }),
+    nodePolyfills({
+      include: ['buffer'],
+      globals: { Buffer: true },
+    }),
+  ],
   server: {
+    host: '0.0.0.0',
+    allowedHosts: ['dev.updraft.fund'],
     proxy: {
       // Proxy API requests to Next.js dev server
       '/api': {
@@ -17,36 +30,18 @@ export default defineConfig(({ mode }) => ({
     alias: {
       '@': resolve(__dirname, 'src'),
       '@components/idea': resolve(__dirname, 'src/features/idea/components'),
-      '@components/solution': resolve(
-        __dirname,
-        'src/features/solution/components'
-      ),
-      '@components/common': resolve(
-        __dirname,
-        'src/features/common/components'
-      ),
-      '@components/layout': resolve(
-        __dirname,
-        'src/features/layout/components'
-      ),
-      '@components/navigation': resolve(
-        __dirname,
-        'src/features/navigation/components'
-      ),
-      '@components/home': resolve(
-        __dirname,
-        'src/features/pages/home/components'
-      ),
+      '@components/solution': resolve(__dirname, 'src/features/solution/components'),
+      '@components/common': resolve(__dirname, 'src/features/common/components'),
+      '@components/layout': resolve(__dirname, 'src/features/layout/components'),
+      '@components/navigation': resolve(__dirname, 'src/features/navigation/components'),
+      '@components/home': resolve(__dirname, 'src/features/pages/home/components'),
       '@components/tags': resolve(__dirname, 'src/features/tags/components'),
       '@components/user': resolve(__dirname, 'src/features/user/components'),
       '@styles/idea': resolve(__dirname, 'src/features/idea/styles'),
       '@styles/solution': resolve(__dirname, 'src/features/solution/styles'),
       '@styles/common': resolve(__dirname, 'src/features/common/styles'),
       '@styles/layout': resolve(__dirname, 'src/features/layout/styles'),
-      '@styles/navigation': resolve(
-        __dirname,
-        'src/features/navigation/styles'
-      ),
+      '@styles/navigation': resolve(__dirname, 'src/features/navigation/styles'),
       '@state/common': resolve(__dirname, 'src/features/common/state'),
       '@state/idea': resolve(__dirname, 'src/features/idea/state'),
       '@state/layout': resolve(__dirname, 'src/features/layout/state'),
@@ -57,24 +52,12 @@ export default defineConfig(({ mode }) => ({
       '@state/home': resolve(__dirname, 'src/features/pages/home/state'),
       '@icons/common': resolve(__dirname, 'src/features/common/assets/icons'),
       '@icons/idea': resolve(__dirname, 'src/features/idea/assets/icons'),
-      '@icons/navigation': resolve(
-        __dirname,
-        'src/features/navigation/assets/icons'
-      ),
-      '@icons/solution': resolve(
-        __dirname,
-        'src/features/solution/assets/icons'
-      ),
+      '@icons/navigation': resolve(__dirname, 'src/features/navigation/assets/icons'),
+      '@icons/solution': resolve(__dirname, 'src/features/solution/assets/icons'),
       '@icons/user': resolve(__dirname, 'src/features/user/assets/icons'),
-      '@images/home': resolve(
-        __dirname,
-        'src/features/pages/home/assets/images'
-      ),
+      '@images/home': resolve(__dirname, 'src/features/pages/home/assets/images'),
       '@utils/common': resolve(__dirname, 'src/features/common/utils'),
-      '@utils/create-solution': resolve(
-        __dirname,
-        'src/features/pages/create-solution/utils'
-      ),
+      '@utils/create-solution': resolve(__dirname, 'src/features/pages/create-solution/utils'),
       '@utils/home': resolve(__dirname, 'src/features/pages/home/utils'),
       '@utils/idea': resolve(__dirname, 'src/features/idea/utils'),
       '@utils/solution': resolve(__dirname, 'src/features/solution/utils'),
@@ -112,14 +95,7 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'lit-core': ['lit'],
           shoelace: ['@shoelace-style/shoelace'],
-          vendor: [
-            '@lit-labs/router',
-            '@lit-labs/signals',
-            '@lit/context',
-            '@lit/task',
-            'urql',
-            'graphql',
-          ],
+          vendor: ['@lit-labs/router', '@lit-labs/signals', '@lit/context', '@lit/task', 'urql', 'graphql'],
         },
       },
     },

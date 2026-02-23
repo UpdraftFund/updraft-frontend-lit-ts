@@ -85,11 +85,7 @@ function hello() {
 
     turndownService.addRule('nonBreakingSpaces', {
       filter: (node) => {
-        return (
-          node.nodeType === Node.TEXT_NODE &&
-          node.textContent !== null &&
-          node.textContent.includes('\u00A0')
-        );
+        return node.nodeType === Node.TEXT_NODE && node.textContent !== null && node.textContent.includes('\u00A0');
       },
       replacement: (content) => content.replace(/\u00A0/g, ' '),
     });
@@ -205,14 +201,8 @@ Paragraph text`;
 &gt; Quote &amp; text`;
 
     console.log('\n=== TESTING NEW APPROACH ===');
-    console.log(
-      'Plain text with entities:',
-      JSON.stringify(plainTextWithEntities)
-    );
-    console.log(
-      'Has HTML elements?',
-      hasActualHTMLElements(plainTextWithEntities)
-    );
+    console.log('Plain text with entities:', JSON.stringify(plainTextWithEntities));
+    console.log('Has HTML elements?', hasActualHTMLElements(plainTextWithEntities));
 
     const cleaned = cleanPlainTextWithEntities(plainTextWithEntities);
     console.log('After cleaning entities:', JSON.stringify(cleaned));

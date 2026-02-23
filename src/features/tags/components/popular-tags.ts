@@ -47,21 +47,16 @@ export class PopularTags extends LitElement {
   @property({ type: Number }) first = 14;
 
   // Controller for fetching top tags
-  private readonly tagsController = new UrqlQueryController(
-    this,
-    TopTagsDocument,
-    { first: this.first },
-    (result) => {
-      if (result.error) {
-        console.error('Error fetching top tags:', result.error);
-        return;
-      }
-
-      // Filter out blacklisted tags
-      const allTags = result.data?.tagCounts as TagCount[];
-      this.topTags = this.filterBlacklistedTags(allTags);
+  private readonly tagsController = new UrqlQueryController(this, TopTagsDocument, { first: this.first }, (result) => {
+    if (result.error) {
+      console.error('Error fetching top tags:', result.error);
+      return;
     }
-  );
+
+    // Filter out blacklisted tags
+    const allTags = result.data?.tagCounts as TagCount[];
+    this.topTags = this.filterBlacklistedTags(allTags);
+  });
 
   // Method to manually refresh tags if needed
   refreshTags() {
@@ -82,9 +77,7 @@ export class PopularTags extends LitElement {
 
     return tags.filter((tag) => {
       // Check if the tag contains any blacklisted string
-      return !tagBlacklist.some((blacklistedStr) =>
-        tag.id.toLowerCase().includes(blacklistedStr.toLowerCase())
-      );
+      return !tagBlacklist.some((blacklistedStr) => tag.id.toLowerCase().includes(blacklistedStr.toLowerCase()));
     });
   }
 
@@ -95,13 +88,7 @@ export class PopularTags extends LitElement {
             <h2>🌎 Popular Tags</h2>
             <div class="tags-container">
               ${cache(
-                this.topTags.map(
-                  (tag) => html`
-                    <a class="tag" href="/discover?search=[${tag.id}]">
-                      ${tag.id}
-                    </a>
-                  `
-                )
+                this.topTags.map((tag) => html` <a class="tag" href="/discover?search=[${tag.id}]"> ${tag.id} </a> `)
               )}
             </div>
           `

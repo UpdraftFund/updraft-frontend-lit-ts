@@ -18,14 +18,15 @@ import { dialogStyles } from '@styles/dialog-styles';
 
 import { updraftSettings } from '@state/common';
 import { getBalance, refreshBalances } from '@state/user/balances';
-import { userAddress } from '@state/user';
+import { userAddress, walletConnected } from '@state/user';
 
-import { modal } from '@utils/web3';
+import { isSmartAccount, modal } from '@utils/web3';
 import { shortenAddress, shortNum } from '@utils/format-utils';
 
 import { Upd } from '@contracts/upd';
 import { ERC20 } from '@contracts/erc20';
 import { IContract } from '@contracts/contract';
+import { sendBatchCalls, type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 /**
  * Interface for the token-input component.
@@ -61,12 +62,15 @@ export interface ITokenInput {
   readonly valid: boolean;
   readonly balance: number;
   readonly tokenSymbol: string | null;
+  readonly processing: boolean;
 
   // Public methods
   handleTransactionError(
     e: unknown,
     onApprovalSuccess?: () => void,
-    onLowBalance?: () => void
+    onLowBalance?: () => void,
+    originalCall?: BatchCall,
+    onBatchSuccess?: (txHash: `0x${string}`) => void
   ): boolean;
 
   // Form validation methods
@@ -127,10 +131,7 @@ export interface ITokenInput {
  * ```
  */
 @customElement('token-input')
-export class TokenInput
-  extends SignalWatcher(LitElement)
-  implements ITokenInput
-{
+export class TokenInput extends SignalWatcher(LitElement) implements ITokenInput {
   // Indicate that this component can be associated with forms
   static formAssociated = true;
 
@@ -220,6 +221,7 @@ export class TokenInput
   @state() private _error: string | null = null;
   @state() private _balance: number = 0;
   @state() private _validationMessage: string = '';
+  @state() processing = false;
 
   // Element references
   @query('sl-input', true) input!: SlInput;
@@ -287,10 +289,7 @@ export class TokenInput
   private get isUpdraftContract(): boolean {
     if (!this.spendingContract) return false;
 
-    return (
-      this.spendingContract.toLowerCase() ===
-      updraftSettings.get().updraftAddress.toLowerCase()
-    );
+    return this.spendingContract.toLowerCase() === updraftSettings.get().updraftAddress.toLowerCase();
   }
 
   // Check if the current token is the Updraft token
@@ -312,9 +311,7 @@ export class TokenInput
       return 'Updraft';
     }
 
-    return this.spendingContract
-      ? shortenAddress(this.spendingContract)
-      : 'the contract';
+    return this.spendingContract ? shortenAddress(this.spendingContract) : 'the contract';
   }
 
   // Get effective approval strategy - use explicit value if set, otherwise compute
@@ -401,18 +398,11 @@ export class TokenInput
     const validityState: ValidityStateFlags = {};
 
     // Check if the field is required and empty
-    if (
-      this.required &&
-      (this.value === '' || this.value === null || this.value === undefined)
-    ) {
+    if (this.required && (this.value === '' || this.value === null || this.value === undefined)) {
       this._error = 'This field is required';
       this._validationMessage = 'This field is required';
       validityState.valueMissing = true;
-    } else if (
-      this.value === '' ||
-      this.value === null ||
-      this.value === undefined
-    ) {
+    } else if (this.value === '' || this.value === null || this.value === undefined) {
       this._error = null;
       this._validationMessage = '';
     } else if (isNaN(value)) {
@@ -423,6 +413,10 @@ export class TokenInput
       this._error = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
       this._validationMessage = `Amount must be more than ${this.antiSpamFee} ${this._symbol} to cover fees`;
       validityState.customError = true;
+    } else if (value > this._balance && (!userAddress.get() || !walletConnected.get())) {
+      // User is not signed in (fully disconnected or read-only) — don't show "You have 0 UPD"
+      this._error = null;
+      this._validationMessage = '';
     } else if (value > this._balance) {
       this._error = `You have ${this._balance.toFixed(0)} ${this._symbol}`;
       this._validationMessage = `Insufficient balance. You have ${this._balance.toFixed(0)} ${this._symbol}`;
@@ -437,7 +431,7 @@ export class TokenInput
       this.internals.setValidity(
         validityState,
         this._validationMessage,
-        this.input || undefined
+        (this.input as unknown as HTMLElement) || undefined
       );
     } else {
       this.internals.setValidity({});
@@ -461,6 +455,12 @@ export class TokenInput
   }
 
   private handleFocus() {
+    // If user is not signed in (either fully disconnected or read-only/remembered),
+    // open the connect modal instead of showing 0 balance
+    if (!userAddress.get() || !walletConnected.get()) {
+      modal.open({ view: 'Connect' });
+      return;
+    }
     this.refreshBalance.run();
   }
 
@@ -495,18 +495,51 @@ export class TokenInput
     }
   }
 
+  /**
+   * Handle a batched approve + action for smart account users.
+   * Sends both calls as a single user operation — no approval dialog needed.
+   */
+  private async handleBatchedApproval(
+    originalCall: BatchCall,
+    onBatchSuccess?: (txHash: `0x${string}`) => void
+  ): Promise<void> {
+    if (!this.spendingContract) return;
+
+    const tokenContract = this.getTokenContract();
+    if (!tokenContract) return;
+
+    const approveBatchCall: BatchCall = {
+      to: tokenContract.address,
+      abi: tokenContract.abi,
+      functionName: 'approve',
+      args: [this.spendingContract, this.approvalAmount],
+    };
+
+    this.processing = true;
+    try {
+      // sendBatchCalls waits for the user op receipt and returns the actual tx hash
+      const txHash = await sendBatchCalls([approveBatchCall, originalCall]);
+      if (onBatchSuccess) {
+        onBatchSuccess(txHash);
+      }
+    } catch (batchError) {
+      console.error('Batched approve+action failed:', batchError);
+    } finally {
+      this.processing = false;
+    }
+  }
+
   // Public API for error handling
   public handleTransactionError(
     e: unknown,
     onApprovalSuccess?: () => void,
-    onLowBalance?: () => void
+    onLowBalance?: () => void,
+    originalCall?: BatchCall,
+    onBatchSuccess?: (txHash: `0x${string}`) => void
   ): boolean {
     if (e instanceof Error) {
       // Connection errors
-      if (
-        e.message.startsWith('connection') ||
-        e.message.includes('getChainId')
-      ) {
+      if (e.message.startsWith('connection') || e.message.includes('getChainId')) {
         modal.open({ view: 'Connect' });
         return true;
       }
@@ -522,6 +555,12 @@ export class TokenInput
       // Allowance errors
       else if (e.message.includes('exceeds allowance')) {
         if (this.spendingContract) {
+          // Smart account users: batch approve + action into a single user operation
+          if (isSmartAccount() && originalCall) {
+            this.handleBatchedApproval(originalCall, onBatchSuccess);
+            return true;
+          }
+          // EOA users: show the approval dialog (separate tx)
           this.handleApproval(onApprovalSuccess);
           return true;
         }
@@ -626,6 +665,7 @@ export class TokenInput
                 <sl-input
                   name=${this.name}
                   ?required=${this.required}
+                  ?disabled=${this.processing}
                   autocomplete="off"
                   .value=${this.value}
                   @focus=${this.handleFocus}
@@ -635,17 +675,16 @@ export class TokenInput
                 <span>${this._symbol}</span>
 
                 <div class="slot-container">
-                  ${this.invalid
-                    ? html` <slot name="invalid"></slot>`
-                    : html` <slot name="valid"></slot>`}
+                  ${this.processing
+                    ? html`<sl-spinner></sl-spinner> <span>Processing...</span>`
+                    : this.invalid
+                      ? html` <slot name="invalid"></slot>`
+                      : html` <slot name="valid"></slot>`}
                 </div>
 
                 ${this.showAntiSpamFee
                   ? html` <div class="fee-info">
-                      <span
-                        >Anti-Spam Fee: ${shortNum(this.antiSpamFee)}
-                        ${this._symbol}</span
-                      >
+                      <span>Anti-Spam Fee: ${shortNum(this.antiSpamFee)} ${this._symbol}</span>
                       <sl-tooltip
                         content="This fee keeps spam out of Updraft. The fee is fixed at 1 UPD for editing a Solution or profile, and the greater of 1 UPD or 1% for supporting an Idea. All anti-spam fees go to a faucet for new users--which you can collect from the Updraft Discord."
                       >
@@ -661,9 +700,7 @@ export class TokenInput
           : html``}
       </div>
 
-      ${this.isUpdraftToken && this.showDialogs
-        ? html` <upd-dialog></upd-dialog>`
-        : html``}
+      ${this.isUpdraftToken && this.showDialogs ? html` <upd-dialog></upd-dialog>` : html``}
       ${this.showDialogs
         ? html`
             <sl-dialog label="Set Allowance">

@@ -3,8 +3,6 @@ import { signal, computed } from '@lit-labs/signals';
 export const BEGINNER_TASKS = [
   'follow-someone',
   'watch-tag',
-  'connect-wallet',
-  // 'get-gas',
   'get-upd',
   'support-idea',
   'fund-solution',
@@ -15,9 +13,7 @@ export type BeginnerTask = (typeof BEGINNER_TASKS)[number];
 
 export const BEGINNER_TASKS_COUNT = BEGINNER_TASKS.length;
 
-const storedTasks: BeginnerTask[] = JSON.parse(
-  localStorage.getItem('completedTasks') || '[]'
-);
+const storedTasks: BeginnerTask[] = JSON.parse(localStorage.getItem('completedTasks') || '[]');
 const tasksSet = new Set<BeginnerTask>(storedTasks);
 export const completedTasks = signal<Set<BeginnerTask>>(tasksSet);
 
@@ -31,8 +27,7 @@ export const markComplete = (taskId: BeginnerTask): void => {
   try {
     // Set cookie to expire in 30 days instead of 1 year
     // This allows returning users to see landing page again after extended absence
-    document.cookie =
-      'hasUsedApp=true; domain=.updraft.fund; path=/; max-age=2592000; SameSite=Lax';
+    document.cookie = 'hasUsedApp=true; domain=.updraft.fund; path=/; max-age=2592000; SameSite=Lax';
   } catch (error) {
     console.warn('Failed to set cross-subdomain cookie:', error);
   }

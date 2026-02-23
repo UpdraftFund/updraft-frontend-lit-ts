@@ -23,6 +23,10 @@ export default [
         sourceType: 'module',
       },
     },
+    ignores: [
+      // ZeroDev SDK types don't match our strict standards
+      'src/lib/zerodev/passkeyConnector.ts',
+    ],
   },
   prettierConfig,
 ];

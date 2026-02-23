@@ -10,10 +10,7 @@ import { updateSince } from '@state/user/tracked-changes';
  * @param fallbackId - ID to use if parsing fails or no name is found
  * @returns Parsed name or fallback ID
  */
-function parseProfileName(
-  profile: `0x${string}` | null | undefined,
-  fallbackId: string
-): string {
+function parseProfileName(profile: `0x${string}` | null | undefined, fallbackId: string): string {
   if (!profile) {
     return fallbackId;
   }
@@ -51,9 +48,7 @@ export class TrackedChangesManager {
   private changesMap = new Map<string, Change>();
 
   // Priority queue for ordering changes
-  private changesQueue = new MaxPriorityQueue<Change>(
-    (change: Change) => change.time
-  );
+  private changesQueue = new MaxPriorityQueue<Change>((change: Change) => change.time);
 
   // Default target count
   private readonly targetCount: number = 10;
@@ -71,19 +66,10 @@ export class TrackedChangesManager {
 
     if (existingChange) {
       // For NewSupporters and NewFunders, merge
-      if (
-        change.type === 'newSupporter' &&
-        existingChange.type === 'newSupporter'
-      ) {
-        this.mergeSupporter(
-          existingChange as NewSupporters,
-          change as NewSupporters
-        );
+      if (change.type === 'newSupporter' && existingChange.type === 'newSupporter') {
+        this.mergeSupporter(existingChange as NewSupporters, change as NewSupporters);
         return;
-      } else if (
-        change.type === 'newFunder' &&
-        existingChange.type === 'newFunder'
-      ) {
+      } else if (change.type === 'newFunder' && existingChange.type === 'newFunder') {
         this.mergeFunder(existingChange as NewFunders, change as NewFunders);
         return;
       } else {
@@ -120,10 +106,7 @@ export class TrackedChangesManager {
   /**
    * Merge a new supporter into an existing NewSupporters change
    */
-  private mergeSupporter(
-    existingChange: NewSupporters,
-    newChange: NewSupporters
-  ): void {
+  private mergeSupporter(existingChange: NewSupporters, newChange: NewSupporters): void {
     if (!existingChange.additionalCount) {
       existingChange.additionalCount = 0;
     }
@@ -131,17 +114,12 @@ export class TrackedChangesManager {
     const newSupporter = newChange.supporters[0];
 
     // Only add distinct supporters up to 3
-    const supporterNotFound = !existingChange.supporters.some(
-      (supporter) => supporter.id === newSupporter.id
-    );
+    const supporterNotFound = !existingChange.supporters.some((supporter) => supporter.id === newSupporter.id);
 
     if (supporterNotFound && newSupporter.id) {
       if (existingChange.supporters.length < 3) {
         // If we need to show this supporter, extract the name from the profile
-        newSupporter.name = parseProfileName(
-          newSupporter.profile,
-          newSupporter.id
-        );
+        newSupporter.name = parseProfileName(newSupporter.profile, newSupporter.id);
         existingChange.supporters.push(newSupporter);
       } else {
         // Just increment the count, no need to parse the profile
@@ -155,9 +133,7 @@ export class TrackedChangesManager {
 
       // Re-enqueue to update position in priority queue
       this.changesQueue.remove(
-        (item) =>
-          item.type === 'newSupporter' &&
-          (item as NewSupporters).idea?.id === existingChange.idea?.id
+        (item) => item.type === 'newSupporter' && (item as NewSupporters).idea?.id === existingChange.idea?.id
       );
       this.changesQueue.enqueue(existingChange);
     }
@@ -171,9 +147,7 @@ export class TrackedChangesManager {
     const newFunder = newChange.funders[0];
 
     // Only add distinct funders up to 3
-    const funderNotFound = !existingChange.funders.some(
-      (funder) => funder.id === newFunder.id
-    );
+    const funderNotFound = !existingChange.funders.some((funder) => funder.id === newFunder.id);
 
     if (funderNotFound && newFunder.id) {
       if (existingChange.funders.length < 3) {
@@ -192,9 +166,7 @@ export class TrackedChangesManager {
 
       // Re-enqueue to update position in priority queue
       this.changesQueue.remove(
-        (item) =>
-          item.type === 'newFunder' &&
-          (item as NewFunders).solution?.id === existingChange.solution?.id
+        (item) => item.type === 'newFunder' && (item as NewFunders).solution?.id === existingChange.solution?.id
       );
       this.changesQueue.enqueue(existingChange);
     }

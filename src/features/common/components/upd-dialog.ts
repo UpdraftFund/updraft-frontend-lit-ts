@@ -18,11 +18,10 @@ import '@shoelace-style/shoelace/dist/components/tooltip/tooltip.js';
 import { SlDialog, SlTooltip } from '@shoelace-style/shoelace';
 
 import { getBalance, refreshBalances } from '@state/user/balances';
-import {
-  refreshUpdraftSettings,
-  updraftSettings,
-  getUniswapLpUrl,
-} from '@state/common';
+import { getUniswapLpUrl } from '@state/common';
+import { userAddress, walletConnected, connectWallet } from '@state/user';
+
+import signInIcon from '@icons/navigation/arrow-door.svg';
 
 import { shortNum } from '@utils/format-utils';
 
@@ -152,6 +151,14 @@ export class UpdDialog extends SignalWatcher(LitElement) {
         margin-bottom: 0.25rem;
       }
 
+      .address-value {
+        font-family: monospace;
+        font-size: 0.875rem;
+        color: var(--accent);
+        margin-bottom: 0.25rem;
+        word-break: break-all;
+      }
+
       .address-description {
         font-size: 0.875rem;
         color: var(--subtle-text);
@@ -170,7 +177,8 @@ export class UpdDialog extends SignalWatcher(LitElement) {
   ];
 
   @query('sl-dialog', true) dialog!: SlDialog;
-  @query('sl-tooltip', true) clipboardTip!: SlTooltip;
+  @query('.token-address-tip', true) tokenClipboardTip!: SlTooltip;
+  @query('.wallet-address-tip') walletClipboardTip!: SlTooltip;
   @state() private loadingBalance = false;
 
   private checkBalance(event?: Event) {
@@ -185,28 +193,25 @@ export class UpdDialog extends SignalWatcher(LitElement) {
     });
   }
 
-  private async copyTokenAddress(event?: Event) {
+  private async copyWalletAddress(event?: Event) {
     // Remove focus from button to prevent mobile highlighting
     if (event?.target instanceof HTMLElement) {
       event.target.blur();
     }
 
-    const updAddress = updraftSettings.get().updAddress;
-    if (!updAddress) {
-      await refreshUpdraftSettings();
-    }
-    if (updAddress) {
+    const address = userAddress.get();
+    if (address) {
       try {
-        await navigator.clipboard.writeText(updAddress);
-        this.clipboardTip.content = 'Copied!';
+        await navigator.clipboard.writeText(address);
+        this.walletClipboardTip.content = 'Copied!';
       } catch {
-        this.clipboardTip.content = 'Failed to copy';
+        this.walletClipboardTip.content = 'Failed to copy';
       }
 
       // Show and auto-hide tooltip
-      await this.clipboardTip.show();
+      await this.walletClipboardTip.show();
       setTimeout(() => {
-        this.clipboardTip.hide();
+        this.walletClipboardTip.hide();
       }, 1500);
     }
   }
@@ -223,67 +228,65 @@ export class UpdDialog extends SignalWatcher(LitElement) {
         <!-- Balance Section -->
         <div class="balance-section">
           <div class="balance-display">Your UPD Balance</div>
-          <div class="balance-amount">
-            ${this.loadingBalance
-              ? html` <sl-spinner></sl-spinner>`
-              : shortNum(getBalance('updraft'))}
-            UPD
-            <sl-button
-              class="refresh-button"
-              size="small"
-              @click=${this.checkBalance}
-            >
-              <sl-icon slot="prefix" src=${calculator}></sl-icon>
-              Refresh
-            </sl-button>
-          </div>
+          ${walletConnected.get()
+            ? html`
+                <div class="balance-amount">
+                  ${this.loadingBalance ? html` <sl-spinner></sl-spinner>` : shortNum(getBalance('updraft'))} UPD
+                  <sl-button class="refresh-button" size="small" @click=${this.checkBalance}>
+                    <sl-icon slot="prefix" src=${calculator}></sl-icon>
+                    Refresh
+                  </sl-button>
+                </div>
+              `
+            : html`
+                <sl-button variant="primary" @click=${() => connectWallet()}>
+                  <sl-icon slot="prefix" src=${signInIcon}></sl-icon>
+                  Sign in
+                </sl-button>
+              `}
         </div>
 
         <!-- Options Section -->
         <h3>How to get UPD</h3>
         <div class="options-section">
           <!-- Discord Option -->
-          <a
-            href="https://discord.gg/mQJ58MY6Nz"
-            target="_blank"
-            class="option-card"
-          >
+          <a href="https://discord.gg/mQJ58MY6Nz" target="_blank" class="option-card">
             <sl-icon class="option-icon" src=${discord}></sl-icon>
             <div class="option-content">
               <div class="option-title">Get free UPD from Discord</div>
-              <div class="option-description">
-                Join our community and get free UPD tokens
-              </div>
+              <div class="option-description">Join our community and get free UPD tokens</div>
             </div>
           </a>
+
+          <!-- Wallet Address Option -->
+          ${userAddress.get()
+            ? html`
+                <div class="copy-address-card">
+                  <div class="address-info">
+                    <div class="address-label">Your Wallet Address</div>
+                    <div class="address-value">${userAddress.get()}</div>
+                    <div class="address-description">Share this address with someone who can send you UPD</div>
+                  </div>
+                  <sl-tooltip class="wallet-address-tip" placement="bottom" trigger="manual">
+                    <sl-button class="copy-button" @click=${this.copyWalletAddress}>
+                      <sl-icon slot="prefix" src=${copy}></sl-icon>
+                      Copy Address
+                    </sl-button>
+                  </sl-tooltip>
+                </div>
+              `
+            : html``}
 
           <!-- Uniswap Option -->
           <a href="${getUniswapLpUrl()}" target="_blank" class="option-card">
             <sl-icon class="option-icon" src=${uniswap}></sl-icon>
             <div class="option-content">
               <div class="option-title">Buy UPD on Uniswap</div>
-              <div class="option-description">
-                Purchase UPD tokens directly from the liquidity pool
-              </div>
+              <div class="option-description">Purchase UPD tokens directly from the liquidity pool</div>
             </div>
           </a>
-
-          <!-- Token Address Option -->
-          <div class="copy-address-card">
-            <div class="address-info">
-              <div class="address-label">UPD Token Address</div>
-              <div class="address-description">
-                Copy the contract address to add UPD to your wallet
-              </div>
-            </div>
-            <sl-tooltip placement="bottom" trigger="manual">
-              <sl-button class="copy-button" @click=${this.copyTokenAddress}>
-                <sl-icon slot="prefix" src=${copy}></sl-icon>
-                Copy Address
-              </sl-button>
-            </sl-tooltip>
-          </div>
         </div>
+        <!--sl-dialog -->
       </sl-dialog>
     `;
   }

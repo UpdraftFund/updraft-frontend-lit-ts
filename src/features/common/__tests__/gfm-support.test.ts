@@ -53,8 +53,7 @@ const RICH_TEXT_SANITIZE_CONFIG: Config = {
     'class', // For CSS styling (marked.js adds language-* classes to code blocks)
     'id', // For anchoring and accessibility
   ],
-  ALLOWED_URI_REGEXP:
-    /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   KEEP_CONTENT: true, // Preserve text content when removing disallowed tags
 };
 
@@ -84,12 +83,8 @@ describe('GitHub Flavored Markdown Support', () => {
     const container = document.createElement('div');
     render(result, container);
 
-    expect(container.innerHTML).to.include(
-      '<input checked="" disabled="" type="checkbox">'
-    );
-    expect(container.innerHTML).to.include(
-      '<input disabled="" type="checkbox">'
-    );
+    expect(container.innerHTML).to.include('<input checked="" disabled="" type="checkbox">');
+    expect(container.innerHTML).to.include('<input disabled="" type="checkbox">');
     expect(container.innerHTML).to.include('completed task');
     expect(container.innerHTML).to.include('incomplete task');
   });
@@ -141,9 +136,7 @@ describe('GitHub Flavored Markdown Support', () => {
     render(result, container);
 
     expect(container.innerHTML).to.include('<pre>');
-    expect(container.innerHTML).to.include(
-      '<code class="language-javascript">'
-    );
+    expect(container.innerHTML).to.include('<code class="language-javascript">');
     expect(container.innerHTML).to.include('const x = 1;');
   });
 
@@ -198,9 +191,7 @@ describe('GitHub Flavored Markdown Support', () => {
     expect(container.innerHTML).to.include('<h2>Todo List</h2>');
     expect(container.innerHTML).to.include('<ul>');
     expect(container.innerHTML).to.include('<li>');
-    expect(container.innerHTML).to.include(
-      'input checked="" disabled="" type="checkbox"'
-    );
+    expect(container.innerHTML).to.include('input checked="" disabled="" type="checkbox"');
     expect(container.innerHTML).to.include('input disabled="" type="checkbox"');
   });
 });

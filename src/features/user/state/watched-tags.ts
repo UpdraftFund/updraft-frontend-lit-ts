@@ -1,9 +1,7 @@
 import { signal } from '@lit-labs/signals';
 import { markComplete } from './beginner-tasks';
 
-const storedTags: string[] = JSON.parse(
-  localStorage.getItem('watchedTags') || '[]'
-);
+const storedTags: string[] = JSON.parse(localStorage.getItem('watchedTags') || '[]');
 const tagSet = new Set<string>(storedTags);
 export const watchedTags = signal<Set<string>>(tagSet);
 

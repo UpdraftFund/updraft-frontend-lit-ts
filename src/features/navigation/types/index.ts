@@ -1,7 +1,1 @@
-export type DiscoverQueryType =
-  | 'hot-ideas'
-  | 'new-ideas'
-  | 'solutions'
-  | 'followed'
-  | 'search'
-  | 'tags';
+export type DiscoverQueryType = 'hot-ideas' | 'new-ideas' | 'solutions' | 'followed' | 'search' | 'tags';

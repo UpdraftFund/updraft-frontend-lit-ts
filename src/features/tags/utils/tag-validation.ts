@@ -33,9 +33,7 @@ export function splitTags(input: string | null | undefined): string[] {
  * @param minTags Minimum number of tags required (default: 0)
  */
 export function normalizeAndValidateTagsInput(
-  input:
-    | HTMLInputElement
-    | { value: string; setCustomValidity: (message: string) => void },
+  input: HTMLInputElement | { value: string; setCustomValidity: (message: string) => void },
   minTags: number = 0,
   maxTags: number = 5
 ): void {
@@ -51,9 +49,7 @@ export function normalizeAndValidateTagsInput(
   if (tags.length > maxTags) {
     input.setCustomValidity(`Maximum ${maxTags} tags allowed`);
   } else if (tags.length < minTags && normalizedTags.length > 0) {
-    input.setCustomValidity(
-      `At least ${minTags} tag${minTags > 1 ? 's' : ''} is required`
-    );
+    input.setCustomValidity(`At least ${minTags} tag${minTags > 1 ? 's' : ''} is required`);
   } else {
     input.setCustomValidity('');
   }

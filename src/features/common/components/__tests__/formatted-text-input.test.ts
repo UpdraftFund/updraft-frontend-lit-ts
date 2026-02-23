@@ -39,17 +39,13 @@ describe('FormattedTextInput', () => {
 
     expect(element.value).to.equal(testValue);
 
-    const editor = element.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = element.shadowRoot?.querySelector('.editor') as HTMLDivElement;
     expect(editor.innerHTML).to.equal(testValue);
   });
 
   it('sets value before render (saveable-form scenario)', async () => {
     // Create a new element but don't add it to DOM yet
-    const newElement = document.createElement(
-      'formatted-text-input'
-    ) as FormattedTextInput;
+    const newElement = document.createElement('formatted-text-input') as FormattedTextInput;
     newElement.name = 'test';
 
     // Set value BEFORE adding to DOM (simulates saveable-form behavior)
@@ -63,9 +59,7 @@ describe('FormattedTextInput', () => {
     // Value should be preserved
     expect(newElement.value).to.equal(testValue);
 
-    const editor = newElement.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = newElement.shadowRoot?.querySelector('.editor') as HTMLDivElement;
     expect(editor.innerHTML).to.equal(testValue);
 
     // Clean up
@@ -104,9 +98,7 @@ describe('FormattedTextInput', () => {
       </form>
     `);
 
-    const input = form.querySelector(
-      'formatted-text-input'
-    ) as FormattedTextInput;
+    const input = form.querySelector('formatted-text-input') as FormattedTextInput;
     expect(input.form).to.equal(form);
 
     // Test form data
@@ -126,9 +118,7 @@ describe('FormattedTextInput', () => {
 
     expect(element.value).to.equal(testValue);
 
-    const editor = element.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = element.shadowRoot?.querySelector('.editor') as HTMLDivElement;
     expect(editor.innerHTML).to.equal(testValue);
   });
 
@@ -149,9 +139,7 @@ describe('FormattedTextInput', () => {
       changeEventFired = true;
     });
 
-    const editor = element.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = element.shadowRoot?.querySelector('.editor') as HTMLDivElement;
 
     // Simulate input
     editor.innerHTML = '<p>New content</p>';
@@ -163,11 +151,7 @@ describe('FormattedTextInput', () => {
 
   it('handles multiple rapid value changes', async () => {
     // Test that rapid value changes don't cause issues
-    const values = [
-      '<p>First</p>',
-      '<p>Second <strong>bold</strong></p>',
-      '<p>Third <em>italic</em></p>',
-    ];
+    const values = ['<p>First</p>', '<p>Second <strong>bold</strong></p>', '<p>Third <em>italic</em></p>'];
 
     for (const value of values) {
       element.value = value;
@@ -178,9 +162,7 @@ describe('FormattedTextInput', () => {
     // Should have the last value
     expect(element.value).to.equal(values[values.length - 1]);
 
-    const editor = element.shadowRoot?.querySelector(
-      '.editor'
-    ) as HTMLDivElement;
+    const editor = element.shadowRoot?.querySelector('.editor') as HTMLDivElement;
     expect(editor.innerHTML).to.equal(values[values.length - 1]);
   });
 });

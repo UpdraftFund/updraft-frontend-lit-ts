@@ -56,19 +56,12 @@ export class OtherSolutions extends LitElement {
 
       // Filter out the current solution
       const allSolutions = result.data?.solutions as Solution[];
-      this.solutions =
-        allSolutions?.filter(
-          (solution) => solution.id !== this.currentSolutionId
-        ) || [];
+      this.solutions = allSolutions?.filter((solution) => solution.id !== this.currentSolutionId) || [];
     }
   );
 
   updated(changedProperties: Map<string, unknown>) {
-    if (
-      (changedProperties.has('ideaId') ||
-        changedProperties.has('currentSolutionId')) &&
-      this.ideaId
-    ) {
+    if ((changedProperties.has('ideaId') || changedProperties.has('currentSolutionId')) && this.ideaId) {
       this.solutionsController.setVariablesAndSubscribe({
         ideaId: this.ideaId,
         first: 5,
@@ -87,11 +80,7 @@ export class OtherSolutions extends LitElement {
             ? cache(html`
                 <div class="solutions-list">
                   ${this.solutions.map(
-                    (solution) => html`
-                      <solution-card-small
-                        .solution=${solution}
-                      ></solution-card-small>
-                    `
+                    (solution) => html` <solution-card-small .solution=${solution}></solution-card-small> `
                   )}
                 </div>
               `)

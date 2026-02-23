@@ -144,20 +144,12 @@ export class LeftSideBar extends SignalWatcher(LitElement) {
     return html`
       <!-- Toggle button that shows when collapsed (centered at top) -->
       <div class="collapsed-toggle">
-        <sl-icon-button
-          src=${chevronRight}
-          label="Expand sidebar"
-          @click=${this.handleToggle}
-        ></sl-icon-button>
+        <sl-icon-button src=${chevronRight} label="Expand sidebar" @click=${this.handleToggle}></sl-icon-button>
       </div>
 
       <!-- Toggle button that shows inline with first nav item when expanded -->
       <div class="inline-toggle">
-        <sl-icon-button
-          src=${chevronLeft}
-          label="Collapse sidebar"
-          @click=${this.handleToggle}
-        ></sl-icon-button>
+        <sl-icon-button src=${chevronLeft} label="Collapse sidebar" @click=${this.handleToggle}></sl-icon-button>
       </div>
 
       <left-nav></left-nav>

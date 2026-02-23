@@ -32,9 +32,7 @@ import { Contributor } from '@/types';
 
 export abstract class TopContributorsBase<
   TData extends IdeaContributionsQuery | SolutionContributionsQuery,
-  TVariables extends
-    | IdeaContributionsQueryVariables
-    | SolutionContributionsQueryVariables,
+  TVariables extends IdeaContributionsQueryVariables | SolutionContributionsQueryVariables,
 > extends LitElement {
   static styles = css`
     :host {
@@ -97,20 +95,14 @@ export abstract class TopContributorsBase<
   @state() protected contributors?: Contributor[];
 
   // Properties that are set by subclasses
-  protected readonly contributionsDocument: TypedDocumentNode<
-    TData,
-    TVariables
-  >;
+  protected readonly contributionsDocument: TypedDocumentNode<TData, TVariables>;
   protected readonly entityIdVariableName: string;
   protected readonly contributionsPath: string;
   protected readonly titleText: string;
   protected readonly noContributorsText: string;
 
   // Controller for fetching top contributors
-  protected readonly contributorsController: UrqlQueryController<
-    TData,
-    TVariables
-  >;
+  protected readonly contributorsController: UrqlQueryController<TData, TVariables>;
 
   /**
    * Constructor for the base component
@@ -132,40 +124,32 @@ export abstract class TopContributorsBase<
     this.noContributorsText = options.noContributorsText;
     const variables = this.createQueryVariables(this.entityId || '');
 
-    this.contributorsController = new UrqlQueryController(
-      this,
-      this.contributionsDocument,
-      variables,
-      (result) => {
-        if (result.error) {
-          console.error(
-            `Error fetching ${this.contributionsPath}:`,
-            result.error
-          );
-          this.contributors = [];
-          return;
-        }
-
-        // Use proper typing for the data
-        const data = result.data as TData | null;
-
-        if (!data) {
-          this.contributors = [];
-          return;
-        }
-
-        // Get the contributions array from the data
-        // Both IdeaContributionsQuery and SolutionContributionsQuery have similar structure
-        const contributions = this.getContributionsFromData(data);
-
-        if (!contributions || contributions.length === 0) {
-          this.contributors = [];
-          return;
-        }
-
-        this.contributors = this.processContributions(contributions);
+    this.contributorsController = new UrqlQueryController(this, this.contributionsDocument, variables, (result) => {
+      if (result.error) {
+        console.error(`Error fetching ${this.contributionsPath}:`, result.error);
+        this.contributors = [];
+        return;
       }
-    );
+
+      // Use proper typing for the data
+      const data = result.data as TData | null;
+
+      if (!data) {
+        this.contributors = [];
+        return;
+      }
+
+      // Get the contributions array from the data
+      // Both IdeaContributionsQuery and SolutionContributionsQuery have similar structure
+      const contributions = this.getContributionsFromData(data);
+
+      if (!contributions || contributions.length === 0) {
+        this.contributors = [];
+        return;
+      }
+
+      this.contributors = this.processContributions(contributions);
+    });
   }
 
   /**
@@ -183,18 +167,14 @@ export abstract class TopContributorsBase<
     if (this.entityIdVariableName === 'ideaId') {
       (variables as Partial<IdeaContributionsQueryVariables>).ideaId = entityId;
     } else if (this.entityIdVariableName === 'solutionId') {
-      (variables as Partial<SolutionContributionsQueryVariables>).solutionId =
-        entityId;
+      (variables as Partial<SolutionContributionsQueryVariables>).solutionId = entityId;
     }
 
     return variables as TVariables;
   }
 
   updated(changedProperties: Map<string, unknown>) {
-    if (
-      changedProperties.has('entityId') ||
-      changedProperties.has('maxContributors')
-    ) {
+    if (changedProperties.has('entityId') || changedProperties.has('maxContributors')) {
       if (this.entityId) {
         const variables = this.createQueryVariables(this.entityId);
         this.contributorsController.setVariablesAndSubscribe(variables);
@@ -237,9 +217,7 @@ export abstract class TopContributorsBase<
       if (contributorMap.has(funderId)) {
         // Update existing contributor's contribution amount
         const existingContributor = contributorMap.get(funderId)!;
-        const newContribution =
-          BigInt(existingContributor.contribution) +
-          BigInt(contribution.contribution);
+        const newContribution = BigInt(existingContributor.contribution) + BigInt(contribution.contribution);
 
         contributorMap.set(funderId, {
           ...existingContributor,
@@ -247,9 +225,7 @@ export abstract class TopContributorsBase<
         });
       } else {
         // Create a new contributor entry
-        const { name, avatar } = this.parseContributorProfile(
-          contribution.funder
-        );
+        const { name, avatar } = this.parseContributorProfile(contribution.funder);
 
         contributorMap.set(funderId, {
           id: funderId,
@@ -312,24 +288,15 @@ export abstract class TopContributorsBase<
         ${this.contributors === undefined
           ? html` <sl-spinner></sl-spinner>`
           : this.contributors.length === 0
-            ? html` <div class="no-contributors">
-                ${this.noContributorsText}
-              </div>`
+            ? html` <div class="no-contributors">${this.noContributorsText}</div>`
             : cache(html`
                 <div class="contributors-list">
                   ${this.contributors.map(
                     (contributor) => html`
                       <div class="contributor">
-                        <user-avatar
-                          .image=${contributor.avatar}
-                          .address=${contributor.id}
-                        ></user-avatar>
+                        <user-avatar .image=${contributor.avatar} .address=${contributor.id}></user-avatar>
                         <div class="contributor-info">
-                          <a
-                            href="/profile/${contributor.id}"
-                            class="contributor-name"
-                            >${contributor.name}</a
-                          >
+                          <a href="/profile/${contributor.id}" class="contributor-name">${contributor.name}</a>
                           <div class="contributor-contribution">
                             ${this.formatContribution(contributor.contribution)}
                           </div>

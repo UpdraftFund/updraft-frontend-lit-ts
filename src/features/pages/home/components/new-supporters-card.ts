@@ -42,9 +42,7 @@ export class NewSupportersCard extends LitElement {
     return html`
       <sl-card>
         <div slot="header">
-          <a class="change-card-heading" href="/idea/${idea.id}"
-            >${idea.name}</a
-          >
+          <a class="change-card-heading" href="/idea/${idea.id}">${idea.name}</a>
           <div class="change-card-subheading">has new supporters 👥</div>
         </div>
         <div class="supporters">
@@ -55,10 +53,7 @@ export class NewSupportersCard extends LitElement {
           )}
           ${additionalCount > 0
             ? html`
-                <div class="additional-count">
-                  and ${additionalCount}
-                  other${additionalCount === 1 ? '' : 's'}
-                </div>
+                <div class="additional-count">and ${additionalCount} other${additionalCount === 1 ? '' : 's'}</div>
               `
             : ''}
         </div>

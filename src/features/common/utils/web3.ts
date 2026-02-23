@@ -1,25 +1,71 @@
 import { createAppKit } from '@reown/appkit';
 import {
   AppKitNetwork,
-  arbitrumSepolia,
-  arbitrum,
+  arbitrumSepolia as arbitrumSepoliaAppKit,
+  arbitrum as arbitrumAppKit,
+  Chain,
 } from '@reown/appkit/networks';
+import { arbitrumSepolia, arbitrum } from 'viem/chains';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { passkeyConnector } from '@/lib/zerodev/passkeyConnector';
+import { type CreateConnectorFn, getAccount } from '@wagmi/core';
+import { createPublicClient, http } from 'viem';
+
 import { isProduction } from '@state/common/environment';
 
-const projectId = 'a259923fc99520ecad30021b33486037';
+const APPKIT_PROJECT_ID = 'a259923fc99520ecad30021b33486037';
 
-// Environment-based network configuration
-export const networks: [AppKitNetwork, ...AppKitNetwork[]] = isProduction()
-  ? [arbitrum] // Production: Only Arbitrum One
-  : [arbitrumSepolia]; // Dev/Preview: Only Arbitrum Sepolia
+interface Env {
+  zeroDevProjectId: string;
+  chain: Chain;
+  networks: [AppKitNetwork, ...AppKitNetwork[]];
+}
+
+const ENV: Env = isProduction()
+  ? {
+      zeroDevProjectId: '82a467c9-32f3-4993-9eb6-8680a4701446',
+      chain: arbitrum,
+      networks: [arbitrumAppKit],
+    }
+  : {
+      zeroDevProjectId: '898fcf43-7a11-41f3-894b-4fed121bcc66',
+      chain: arbitrumSepolia,
+      networks: [arbitrumSepoliaAppKit],
+    };
+
+export const networks = ENV.networks;
+
+const publicClient = createPublicClient({
+  chain: ENV.chain,
+  transport: http(),
+});
+
+const updraftConnector: CreateConnectorFn = passkeyConnector(
+  ENV.zeroDevProjectId,
+  ENV.chain,
+  'v3',
+  'Updraft', // passkey name
+  publicClient,
+  'New or returning user', // connection name
+  '/assets/updraft-icon.png' // connection icon
+);
 
 export const adapter = new WagmiAdapter({
-  projectId,
+  projectId: APPKIT_PROJECT_ID,
   networks,
+  connectors: [updraftConnector],
 });
 
 export const config = adapter.wagmiConfig;
+
+/**
+ * Check if the current wallet connection is a smart account (passkey).
+ * Smart account users get gas sponsorship and transaction batching.
+ */
+export function isSmartAccount(): boolean {
+  const account = getAccount(config);
+  return account.connector?.type === 'passkeyConnector';
+}
 
 const metadata = {
   name: 'Updraft',
@@ -34,22 +80,17 @@ export const modal = createAppKit({
   adapters: [adapter],
   networks,
   metadata,
-  projectId,
+  projectId: APPKIT_PROJECT_ID,
   enableNetworkSwitch: false,
-  themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light',
+  themeMode: window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
   themeVariables: {
-    '--w3m-accent': 'var(--accent);',
-    '--w3m-font-family': 'var(--sl-font-sans);',
-    '--w3m-color-mix': 'var(--sl-color-primary-100);',
-    '--w3m-color-mix-strength': 25,
+    '--apkt-font-family': 'var(--sl-font-sans);',
   },
   features: {
     analytics: true,
-    socials: false,
-    email: false,
     emailShowWallets: false,
   },
-  allWallets: 'HIDE',
+  includeWalletIds: ['updraft'],
+  enableWalletGuide: false,
+  allWallets: 'ONLY_MOBILE',
 });

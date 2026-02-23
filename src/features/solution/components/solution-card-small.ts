@@ -18,10 +18,7 @@ import { Solution } from '@/features/solution/types';
 import { smallCardStyles } from '@styles/small-card-styles';
 
 import { formatDate, formatAmount, formattedText } from '@utils/format-utils';
-import {
-  calculateProgress,
-  parseSolutionInfo,
-} from '@utils/solution/solution-utils';
+import { calculateProgress, parseSolutionInfo } from '@utils/solution/solution-utils';
 
 @customElement('solution-card-small')
 export class SolutionCardSmall extends SignalWatcher(LitElement) {
@@ -77,9 +74,7 @@ export class SolutionCardSmall extends SignalWatcher(LitElement) {
       <a href="/solution/${id}">
         <hr />
         <h3 class="entity-name">${name}</h3>
-        ${description
-          ? html` <vertical-fade>${formattedText(description)}</vertical-fade>`
-          : html``}
+        ${description ? html` <vertical-fade>${formattedText(description)}</vertical-fade>` : html``}
         <ul class="info-row">
           <li>⏰ ${deadlineDate}</li>
           ${this.showStake ? html` <li>💎 ${formatAmount(stake)}</li>` : html``}

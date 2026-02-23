@@ -13,12 +13,7 @@ import '@shoelace-style/shoelace/dist/components/range/range.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
 import '@shoelace-style/shoelace/dist/components/option/option.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
-import type {
-  SlDialog,
-  SlInput,
-  SlRange,
-  SlSelect,
-} from '@shoelace-style/shoelace';
+import type { SlDialog, SlInput, SlRange, SlSelect } from '@shoelace-style/shoelace';
 
 // Components
 import '@layout/page-heading';
@@ -27,16 +22,8 @@ import '@components/common/transaction-watcher';
 import '@components/common/upd-dialog';
 import '@components/common/share-dialog';
 import '@components/common/label-with-hint';
-import {
-  SaveableForm,
-  formToJson,
-  loadForm,
-  clearForm,
-} from '@components/common/saveable-form';
-import {
-  TransactionWatcher,
-  TransactionSuccess,
-} from '@components/common/transaction-watcher';
+import { SaveableForm, formToJson, loadForm, clearForm } from '@components/common/saveable-form';
+import { TransactionWatcher, TransactionSuccess } from '@components/common/transaction-watcher';
 import { ShareDialog } from '@components/common/share-dialog';
 import { UpdDialog } from '@components/common/upd-dialog';
 import { ITokenInput } from '@components/common/token-input';
@@ -56,6 +43,7 @@ import { hasProfile } from '@state/user';
 
 // Contracts
 import { updraft } from '@contracts/updraft';
+import { type BatchCall } from '@/lib/zerodev/passkeyConnector';
 
 // Schemas
 import solutionSchema from '@schemas/solution-schema.json';
@@ -262,31 +250,42 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
       return;
     }
 
-    const { ideaId, fundingToken, goal, deadline, stake, reward } =
-      solutionForm;
+    const { ideaId, fundingToken, goal, deadline, stake, reward } = solutionForm;
+
+    const settings = updraftSettings.get();
+    // Format the deadline date properly
+    const deadlineTimestamp = dayjs(deadline).unix();
+
+    const createSolutionArgs = [
+      ideaId,
+      fundingToken,
+      stake ? parseUnits(stake, 18) : BigInt(0),
+      parseUnits(goal, 18),
+      BigInt(deadlineTimestamp),
+      BigInt((Number(reward) * Number(settings.percentScale)) / 100),
+      toHex(JSON.stringify(solutionData)),
+    ];
 
     try {
-      const settings = updraftSettings.get();
-      // Format the deadline date properly
-      const deadlineTimestamp = dayjs(deadline).unix();
-
-      this.submitTransaction.hash = await updraft.write('createSolution', [
-        ideaId,
-        fundingToken,
-        stake ? parseUnits(stake, 18) : BigInt(0),
-        parseUnits(goal, 18),
-        BigInt(deadlineTimestamp),
-        BigInt((Number(reward) * Number(settings.percentScale)) / 100),
-        toHex(JSON.stringify(solutionData)),
-      ]);
+      this.submitTransaction.hash = await updraft.write('createSolution', createSolutionArgs);
       this.shareDialog.topic = solutionData.name as string;
     } catch (e) {
       // Use token-input's error handling
       if (this.tokenInput) {
+        const originalCall: BatchCall = {
+          to: updraft.address,
+          abi: updraft.abi,
+          functionName: 'createSolution',
+          args: createSolutionArgs,
+        };
         this.tokenInput.handleTransactionError(
           e,
-          () => this.createSolution(), // Retry after approval
-          () => this.updDialog.show() // Show UPD dialog on low balance
+          () => this.createSolution(), // Retry after approval (EOA)
+          () => this.updDialog.show(), // Show UPD dialog on low balance
+          originalCall,
+          (txHash) => {
+            this.submitTransaction.hash = txHash;
+          } // Batch success (smart account)
         );
       } else {
         console.error('Transaction error:', e);
@@ -362,10 +361,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
 
         <input type="hidden" name="ideaId" value="${this.ideaId}" />
 
-        <sl-select
-          name="fundingTokenSelection"
-          @sl-change=${this.handleTokenSelection}
-        >
+        <sl-select name="fundingTokenSelection" @sl-change=${this.handleTokenSelection}>
           <label-with-hint
             slot="label"
             label="Funding Token*"
@@ -389,19 +385,8 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           ></label-with-hint>
         </sl-input>
 
-        <sl-input
-          name="goal"
-          type="number"
-          step="any"
-          min="0"
-          required
-          autocomplete="off"
-        >
-          <label-with-hint
-            slot="label"
-            label="Goal*"
-            hint="The amount of funding you want to raise"
-          ></label-with-hint>
+        <sl-input name="goal" type="number" step="any" min="0" required autocomplete="off">
+          <label-with-hint slot="label" label="Goal*" hint="The amount of funding you want to raise"></label-with-hint>
         </sl-input>
 
         <sl-input
@@ -432,11 +417,7 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
               spendingContractName="Updraft"
               showDialogs="false"
             >
-              <sl-button
-                slot="invalid"
-                variant="primary"
-                @click=${() => this.updDialog.show()}
-              >
+              <sl-button slot="invalid" variant="primary" @click=${() => this.updDialog.show()}>
                 Get more UPD
               </sl-button>
             </token-input>
@@ -456,13 +437,9 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
           </div>
         </div>
         <span class="button-container">
-          <sl-button href="/create-solution/${this.ideaId}" variant="primary"
-            >Previous
-          </sl-button>
+          <sl-button href="/create-solution/${this.ideaId}" variant="primary">Previous </sl-button>
           ${hasProfile.get()
-            ? html` <sl-button variant="primary" @click=${this.createSolution}
-                >Create Solution
-              </sl-button>`
+            ? html` <sl-button variant="primary" @click=${this.createSolution}>Create Solution </sl-button>`
             : html` <sl-button
                 href="/submit-profile-and-create-solution"
                 variant="primary"
@@ -470,17 +447,13 @@ export class CreateSolution extends SignalWatcher(SaveableForm) {
                 >Next: Create your Profile
               </sl-button>`}
         </span>
-        <transaction-watcher
-          class="submit"
-          @transaction-success=${this.handleTransactionSuccess}
-        ></transaction-watcher>
+        <transaction-watcher class="submit" @transaction-success=${this.handleTransactionSuccess}></transaction-watcher>
       </form>
       <upd-dialog></upd-dialog>
       <share-dialog></share-dialog>
       <sl-dialog label="Set Allowance">
         <p>
-          Before you can create your solution, you need to sign a transaction to
-          allow Updraft to spend your UPD tokens.
+          Before you can create your solution, you need to sign a transaction to allow Updraft to spend your UPD tokens.
         </p>
         <transaction-watcher
           class="approve"

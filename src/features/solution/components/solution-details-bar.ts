@@ -5,11 +5,7 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/badge/badge.js';
 
 import { formatAmount, formatDate, formatReward } from '@utils/format-utils';
-import {
-  calculateProgress,
-  goalFailed,
-  goalReached,
-} from '@utils/solution/solution-utils';
+import { calculateProgress, goalFailed, goalReached } from '@utils/solution/solution-utils';
 
 import { Solution } from '@/types';
 
@@ -58,38 +54,20 @@ export class SolutionDetailsBar extends LitElement {
   render() {
     return html`
       <div class="goal">
-        <sl-progress-bar
-          value="${calculateProgress(this.solution)}"
-        ></sl-progress-bar>
+        <sl-progress-bar value="${calculateProgress(this.solution)}"></sl-progress-bar>
         <div class="goal-text">
-          ${formatAmount(this.solution.tokensContributed)} out of
-          ${formatAmount(this.solution.fundingGoal)}
+          ${formatAmount(this.solution.tokensContributed)} out of ${formatAmount(this.solution.fundingGoal)}
         </div>
       </div>
       ${goalReached(this.solution)
-        ? html`<span class="emoji-badge">
-            <span class="emoji">✅</span>Reached
-          </span>`
+        ? html`<span class="emoji-badge"> <span class="emoji">✅</span>Reached </span>`
         : html``}
       ${goalFailed(this.solution)
-        ? html`<span class="emoji-badge">
-            <span class="emoji">❌</span>Failed
-          </span>`
+        ? html`<span class="emoji-badge"> <span class="emoji">❌</span>Failed </span>`
         : html``}
-      <span class="emoji-badge"
-        ><span class="emoji">⏰</span>${formatDate(
-          this.solution.deadline,
-          'fromNow'
-        )}</span
-      >
-      <span class="emoji-badge"
-        ><span class="emoji">💎</span>${formatAmount(this.solution.stake)}</span
-      >
-      <span class="emoji-badge"
-        ><span class="emoji">🎁</span>${formatReward(
-          this.solution.funderReward
-        )}</span
-      >
+      <span class="emoji-badge"><span class="emoji">⏰</span>${formatDate(this.solution.deadline, 'fromNow')}</span>
+      <span class="emoji-badge"><span class="emoji">💎</span>${formatAmount(this.solution.stake)}</span>
+      <span class="emoji-badge"><span class="emoji">🎁</span>${formatReward(this.solution.funderReward)}</span>
     `;
   }
 }
